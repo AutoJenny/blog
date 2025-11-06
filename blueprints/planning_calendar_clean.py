@@ -27,22 +27,32 @@ def planning_calendar_week_view(post_id):
     """Calendar Week View sub-stage (week-per-view)"""
     from flask import request
     from utils.week_post_resolver import resolve_post_for_week
+    from utils.taxonomy_helpers import get_post_type
     
     # Read week context from URL (required for week view)
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
     
+    # Get post type for the original post_id first
+    original_post_type = get_post_type(post_id)
+    
     # Resolve post if week context provided
+    # BUT: For recipe/profile posts, preserve the original post_id to maintain recipe/profile association
     resolved_post_id = post_id
-    if year and week:
+    if year and week and original_post_type not in ('recipe', 'profile'):
+        # Only resolve for themed posts - recipe/profile posts should keep their original post_id
         resolved = resolve_post_for_week(year, week)
         if resolved:
             resolved_post_id = resolved
+    
+    # Get post type for template (use original if recipe/profile, otherwise use resolved)
+    post_type = original_post_type if original_post_type in ('recipe', 'profile') else get_post_type(resolved_post_id)
     
     return render_template('planning/calendar/week_view.html',
                           post_id=resolved_post_id,
                           year=year,
                           week=week,
+                          post_type=post_type,
                           blueprint_name='planning')
 
 def planning_calendar_ideas(post_id):

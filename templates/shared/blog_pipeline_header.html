@@ -10,6 +10,17 @@
             <span class="pipeline-title-week-info" id="pipeline-title-week-info"></span>
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
             <span class="pipeline-title-theme" id="pipeline-title-theme">Unselected theme</span>
+            {% if post_type is defined and post_type %}
+            <span class="post-type-badge-header" id="post-type-badge-header" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; margin-left:0.75rem; {% if post_type == 'recipe' %}background:#fef3c7;color:#92400e;border:1px solid #fcd34d;{% elif post_type == 'profile' %}background:#e0e7ff;color:#4338ca;border:1px solid #a5b4fc;{% elif post_type == 'themed' %}background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;{% endif %}">
+                {% if post_type == 'recipe' %}
+                    <i class="fas fa-utensils"></i> Recipe
+                {% elif post_type == 'profile' %}
+                    <i class="fas fa-tag"></i> Profile
+                {% elif post_type == 'themed' %}
+                    <i class="fas fa-book"></i> Themed
+                {% endif %}
+            </span>
+            {% endif %}
         </h1>
         <div class="pipeline-title-taxonomy" id="pipeline-title-taxonomy" style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; font-weight: 400; text-align: center;">
             <!-- Taxonomy Category and Type will be displayed here -->
@@ -394,11 +405,47 @@ function setWeekThemesLink() {
     }
 }
 
+// Set post type badge styling
+function setPostTypeBadgeStyle(postType) {
+    const badgeEl = document.getElementById('post-type-badge-header');
+    if (!badgeEl) {
+        // Create badge if it doesn't exist
+        const themeEl = document.getElementById('pipeline-title-theme');
+        if (themeEl) {
+            badgeEl = document.createElement('span');
+            badgeEl.id = 'post-type-badge-header';
+            badgeEl.className = 'post-type-badge-header';
+            badgeEl.style.cssText = 'display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; margin-left:0.75rem;';
+            themeEl.parentNode.insertBefore(badgeEl, themeEl.nextSibling);
+        } else {
+            return; // Can't create badge without theme element
+        }
+    }
+    
+    const postTypeConfig = {
+        'recipe': { icon: 'fa-utensils', label: 'Recipe', bg: '#fef3c7', color: '#92400e', border: '#fcd34d' },
+        'profile': { icon: 'fa-tag', label: 'Profile', bg: '#e0e7ff', color: '#4338ca', border: '#a5b4fc' },
+        'themed': { icon: 'fa-book', label: 'Themed', bg: '#dbeafe', color: '#1e40af', border: '#93c5fd' }
+    };
+    
+    const config = postTypeConfig[postType] || postTypeConfig['themed'];
+    badgeEl.innerHTML = `<i class="fas ${config.icon}"></i> ${config.label}`;
+    badgeEl.style.background = config.bg;
+    badgeEl.style.color = config.color;
+    badgeEl.style.border = `1px solid ${config.border}`;
+    badgeEl.style.display = 'inline-flex';
+}
+
 // Run on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     updateNavigationHighlighting();
     initializeTabs();
     setWeekThemesLink();
+    
+    // Set post type badge if available
+    {% if post_type is defined and post_type %}
+    setPostTypeBadgeStyle('{{ post_type }}');
+    {% endif %}
 });
 
 // Also run after a short delay to catch pages that set window.currentStage after DOM ready

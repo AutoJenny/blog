@@ -66,6 +66,66 @@ def get_week_start_end(year: int, week_number: int):
         return None, None
 
 
+@bp.route('/posts/<int:post_id>')
+def post_detail(post_id):
+    """Redirect to appropriate default stage based on post type"""
+    from flask import redirect, url_for
+    from utils.taxonomy_helpers import get_post_type
+    from datetime import datetime
+    
+    post_type = get_post_type(post_id)
+    
+    # Get week context if available from query params
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    # For recipe posts without week context, calculate from recipe_week_number
+    if not (year and week) and post_type == 'recipe':
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT recipe_week_number FROM post WHERE id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            recipe_week_number = None
+            if result:
+                if isinstance(result, dict):
+                    recipe_week_number = result.get('recipe_week_number')
+                elif isinstance(result, (tuple, list)) and len(result) > 0:
+                    recipe_week_number = result[0]
+            
+            if recipe_week_number:
+                # Calculate calendar week: recipe week 1 = current week
+                current_iso = datetime.now().isocalendar()
+                current_year = current_iso[0]
+                current_week = current_iso[1]
+                
+                weeks_ahead = recipe_week_number - 1
+                target_week = current_week + weeks_ahead
+                
+                if target_week > 52:
+                    year = current_year + 1
+                    week = target_week - 52
+                else:
+                    year = current_year
+                    week = target_week
+    
+    # Determine default route based on post type
+    if post_type == 'recipe':
+        # Recipe posts start at calendar week-view
+        url = url_for('planning.planning_calendar_week_view', post_id=post_id)
+    elif post_type == 'profile':
+        # Profile posts start at calendar week-view
+        url = url_for('planning.planning_calendar_week_view', post_id=post_id)
+    else:
+        # Themed posts start at calendar week-view
+        url = url_for('planning.planning_calendar_week_view', post_id=post_id)
+    
+    # Add week context if available
+    if year and week:
+        url += f'?year={year}&week={week}'
+    
+    return redirect(url)
+
 @bp.route('/posts')
 def posts_list():
     """
@@ -180,25 +240,55 @@ def posts_list():
             else:
                 return 'themed'
         
+        # Get current week for recipe mapping
+        from datetime import datetime
+        current_iso = datetime.now().isocalendar()
+        current_year = current_iso[0]
+        current_week = current_iso[1]
+        
         # Format posts for template
         formatted_posts = []
         for post in posts:
             sched_year = post.get('sched_year') if isinstance(post, dict) else post['sched_year']
             sched_week = post.get('sched_week') if isinstance(post, dict) else post['sched_week']
+            
+            # For recipe posts, calculate calendar week from recipe_week_number if not scheduled
+            post_type = determine_post_type(post)
+            if post_type == 'recipe' and not (sched_year and sched_week):
+                recipe_week_number = post.get('recipe_week_number') if isinstance(post, dict) else post[5] if len(post) > 5 else None
+                if recipe_week_number:
+                    # Calculate calendar week: recipe week 1 = current week
+                    weeks_ahead = recipe_week_number - 1
+                    target_week = current_week + weeks_ahead
+                    
+                    if target_week > 52:
+                        # Wrapped to next year
+                        sched_year = current_year + 1
+                        sched_week = target_week - 52
+                    else:
+                        sched_year = current_year
+                        sched_week = target_week
+            
             week_label = None
             week_sort_key = None
             week_dates_small = ''
+            recipe_week_label = None
+            
             if sched_year and sched_week:
                 week_label = f"W{int(sched_week)}"
                 week_sort_key = int(sched_year) * 100 + int(sched_week)
                 week_start, week_end = get_week_start_end(int(sched_year), int(sched_week))
                 if week_start and week_end:
                     week_dates_small = f"{week_start.strftime('%a %d %b %Y')} – {week_end.strftime('%a %d %b %Y')}"
+            
+            # For recipe posts, also show recipe week number
+            if post_type == 'recipe':
+                recipe_week_number = post.get('recipe_week_number') if isinstance(post, dict) else post[5] if len(post) > 5 else None
+                if recipe_week_number:
+                    recipe_week_label = f"Recipe Week {recipe_week_number}"
 
             created_ts = int(post['created_at'].timestamp() * 1000) if post.get('created_at') else 0
             updated_ts = int(post['updated_at'].timestamp() * 1000) if post.get('updated_at') else 0
-            
-            post_type = determine_post_type(post)
 
             formatted_posts.append({
                 'id': post['id'],
@@ -211,6 +301,7 @@ def posts_list():
                 'updated_ts': updated_ts,
                 'week_label': week_label,
                 'week_dates': week_dates_small,
+                'recipe_week_label': recipe_week_label,  # e.g., "Recipe Week 1"
                 'week_sort': week_sort_key,
                 'week_number': int(sched_week) if sched_week else None,
                 'year': int(sched_year) if sched_year else None,

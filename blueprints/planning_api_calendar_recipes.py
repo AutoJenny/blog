@@ -16,6 +16,11 @@ def api_calendar_recipes(year, week_number):
     """
     Get recipes for a specific year and week.
     
+    Recipes use a perpetual week_number (1-52) that maps to calendar weeks starting from the current week.
+    - Recipe week 1 = current calendar week
+    - Recipe week 2 = current calendar week + 1
+    - etc. (wrapping around at 52)
+    
     Returns:
     1. Recipe definitions from calendar_recipes table (perpetual, based on week_number)
     2. Recipe posts scheduled for this specific year/week (if any exist)
@@ -25,9 +30,32 @@ def api_calendar_recipes(year, week_number):
             # Calculate week start date (Monday)
             week_start_date = date.fromisocalendar(year, week_number, 1)
             
+            # Get current week to calculate recipe mapping
+            current_iso = date.today().isocalendar()
+            current_year = current_iso[0]
+            current_week = current_iso[1]
+            
+            # Calculate which recipe week_number maps to this calendar week
+            # Recipe week 1 starts at current_week, so:
+            # If viewing week 45 and current is 45, recipe_week = 1
+            # If viewing week 46 and current is 45, recipe_week = 2
+            # etc.
+            # Formula: recipe_week = ((calendar_week - current_week) mod 52) + 1
+            # This handles wrapping around year boundaries correctly
+            weeks_from_current = (week_number - current_week) % 52
+            if weeks_from_current < 0:
+                weeks_from_current += 52
+            
+            recipe_week_number = weeks_from_current + 1
+            # Ensure recipe_week_number is in range 1-52
+            if recipe_week_number > 52:
+                recipe_week_number = 1
+            elif recipe_week_number < 1:
+                recipe_week_number = 52
+            
             recipes = []
             
-            # First: Get recipe definition from calendar_recipes for this perpetual week_number
+            # Get recipe definition from calendar_recipes for the calculated recipe_week_number
             cursor.execute("""
                 SELECT 
                     cr.id,
@@ -42,7 +70,7 @@ def api_calendar_recipes(year, week_number):
                 FROM calendar_recipes cr
                 WHERE cr.week_number = %s
                 LIMIT 1
-            """, (week_number,))
+            """, (recipe_week_number,))
             
             recipe_def = cursor.fetchone()
             

@@ -595,6 +595,26 @@ class BlogPipelineHeader {
             weekInfoEl.textContent = '';
         }
         
+        // Check if this is a recipe post - if so, show recipe title instead of theme
+        const postId = this.getPostId();
+        if (postId && postId !== '0' && parseInt(postId) !== 0) {
+            try {
+                // Check post type from API
+                const postTypeResp = await fetch(`/api/post-type-pipeline/posts/${postId}/pipeline`);
+                if (postTypeResp.ok) {
+                    const postTypeData = await postTypeResp.json();
+                    if (postTypeData.success && postTypeData.post_type === 'recipe') {
+                        // For recipe posts, show the recipe title instead of theme
+                        const recipeTitle = postTypeData.post_title || 'Recipe';
+                        themeEl.textContent = recipeTitle;
+                        return; // Don't continue with theme lookup
+                    }
+                }
+            } catch (e) {
+                console.warn('[Blog Pipeline Header] Error checking post type:', e);
+            }
+        }
+        
         // Update theme
         if (selectedTheme) {
             themeEl.textContent = selectedTheme;
