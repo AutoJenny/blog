@@ -150,6 +150,12 @@
                    class="sub-stage-btn" data-substage="drafting">
                     Drafting
                 </a>
+                {% if post_type == 'recipe' %}
+                <a href="{{ url_for('recipes_imaging.recipe_image_style_prompt', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="recipe-image-style-prompt">
+                    Image Style & Prompts
+                </a>
+                {% else %}
                 <a href="{{ url_for('authoring_imaging.authoring_sections_image_concepts', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="image-concepts">
                     Image Concepts
@@ -158,6 +164,7 @@
                    class="sub-stage-btn" data-substage="image-prompts">
                     Image Prompts
                 </a>
+                {% endif %}
                 <a href="{{ url_for('authoring_imaging.authoring_sections_image_captions', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="image-captions">
                     Image Captions

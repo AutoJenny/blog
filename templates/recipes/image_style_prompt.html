@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Image Style & Prompts — {{ recipe_title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/recipes/image-style-prompt.css') }}">
+    {% include 'shared/blog_pipeline_header.html' %}
+</head>
+<body>
+    <div class="recipe-image-style-container">
+        <div class="page-header">
+            <h1><i class="fas fa-images"></i> Recipe Image Style & Prompts</h1>
+            <p class="recipe-title">{{ recipe_title }}</p>
+        </div>
+
+        <div class="content-section">
+            <div class="section-header">
+                <h2>Style Guidelines</h2>
+                <p class="section-description">Define consistent style cues that will be applied to all three images</p>
+            </div>
+
+            <div class="style-guidelines-editor">
+                <div class="guideline-group">
+                    <label for="style-lighting">Lighting</label>
+                    <textarea id="style-lighting" class="guideline-input" rows="2" placeholder="e.g., Warm, natural afternoon light like a Scottish kitchen"></textarea>
+                </div>
+                <div class="guideline-group">
+                    <label for="style-surfaces">Surfaces & Materials</label>
+                    <textarea id="style-surfaces" class="guideline-input" rows="2" placeholder="e.g., Wooden surfaces, worn utensils, traditional crockery"></textarea>
+                </div>
+                <div class="guideline-group">
+                    <label for="style-crockery">Crockery & Utensils Style</label>
+                    <textarea id="style-crockery" class="guideline-input" rows="2" placeholder="e.g., Traditional Scottish pottery, aged wooden spoons"></textarea>
+                </div>
+                <div class="guideline-group">
+                    <label for="style-colors">Color Palette</label>
+                    <textarea id="style-colors" class="guideline-input" rows="2" placeholder="e.g., Warm earth tones, muted greens, cream whites"></textarea>
+                </div>
+                <div class="guideline-group">
+                    <label for="style-mood">Mood & Atmosphere</label>
+                    <textarea id="style-mood" class="guideline-input" rows="2" placeholder="e.g., Nostalgic, warm, authentic, lived-in"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <div class="section-header">
+                <h2>Image Prompts</h2>
+                <p class="section-description">Generate prompts for all three recipe images using the style guidelines above</p>
+            </div>
+
+            <div class="image-prompts-editor">
+                <div class="prompt-group">
+                    <div class="prompt-header">
+                        <h3><i class="fas fa-image"></i> Hero Image</h3>
+                        <p class="prompt-description">Finished dish served in a traditional Scottish setting</p>
+                    </div>
+                    <textarea id="prompt-hero" class="prompt-input" rows="6" placeholder="Detailed prompt for the finished dish..."></textarea>
+                </div>
+
+                <div class="prompt-group">
+                    <div class="prompt-header">
+                        <h3><i class="fas fa-shopping-basket"></i> Ingredients Image</h3>
+                        <p class="prompt-description">Ingredients arranged in a similarly styled kitchen setting</p>
+                    </div>
+                    <textarea id="prompt-ingredients" class="prompt-input" rows="6" placeholder="Detailed prompt for ingredients arrangement..."></textarea>
+                </div>
+
+                <div class="prompt-group">
+                    <div class="prompt-header">
+                        <h3><i class="fas fa-utensils"></i> Method Image</h3>
+                        <p class="prompt-description">A key stage of the cooking method in the same style</p>
+                    </div>
+                    <textarea id="prompt-method" class="prompt-input" rows="6" placeholder="Detailed prompt for a key cooking step..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-section">
+            <button id="generate-btn" class="action-btn primary">
+                <i class="fas fa-magic"></i> Generate Style & Prompts
+            </button>
+            <button id="save-btn" class="action-btn secondary">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <button id="sync-btn" class="action-btn secondary">
+                <i class="fas fa-sync"></i> Sync Prompts to Sections
+            </button>
+        </div>
+
+        <div id="status-message" class="status-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        const postId = {{ post_id }};
+        const styleData = {{ style_data | tojson if style_data else 'null' }};
+
+        // Load existing data if available
+        if (styleData) {
+            if (styleData.style_guidelines) {
+                document.getElementById('style-lighting').value = styleData.style_guidelines.lighting || '';
+                document.getElementById('style-surfaces').value = styleData.style_guidelines.surfaces || '';
+                document.getElementById('style-crockery').value = styleData.style_guidelines.crockery_style || '';
+                document.getElementById('style-colors').value = styleData.style_guidelines.color_palette || '';
+                document.getElementById('style-mood').value = styleData.style_guidelines.mood || '';
+            }
+            if (styleData.hero_image_prompt) {
+                const heroPrompt = typeof styleData.hero_image_prompt === 'string' 
+                    ? styleData.hero_image_prompt 
+                    : JSON.stringify(styleData.hero_image_prompt);
+                document.getElementById('prompt-hero').value = heroPrompt;
+            }
+            if (styleData.ingredients_image_prompt) {
+                const ingredientsPrompt = typeof styleData.ingredients_image_prompt === 'string' 
+                    ? styleData.ingredients_image_prompt 
+                    : JSON.stringify(styleData.ingredients_image_prompt);
+                document.getElementById('prompt-ingredients').value = ingredientsPrompt;
+            }
+            if (styleData.method_image_prompt) {
+                const methodPrompt = typeof styleData.method_image_prompt === 'string' 
+                    ? styleData.method_image_prompt 
+                    : JSON.stringify(styleData.method_image_prompt);
+                document.getElementById('prompt-method').value = methodPrompt;
+            }
+        }
+
+        // Generate button
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('generate-btn');
+            const statusEl = document.getElementById('status-message');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            statusEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/recipes/image-style-prompt/generate`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.style_data) {
+                    // Populate form with generated data
+                    if (data.style_data.style_guidelines) {
+                        document.getElementById('style-lighting').value = data.style_data.style_guidelines.lighting || '';
+                        document.getElementById('style-surfaces').value = data.style_data.style_guidelines.surfaces || '';
+                        document.getElementById('style-crockery').value = data.style_data.style_guidelines.crockery_style || '';
+                        document.getElementById('style-colors').value = data.style_data.style_guidelines.color_palette || '';
+                        document.getElementById('style-mood').value = data.style_data.style_guidelines.mood || '';
+                    }
+                    if (data.style_data.hero_image_prompt) {
+                        const heroPrompt = typeof data.style_data.hero_image_prompt === 'string' 
+                            ? data.style_data.hero_image_prompt 
+                            : JSON.stringify(data.style_data.hero_image_prompt);
+                        document.getElementById('prompt-hero').value = heroPrompt;
+                    }
+                    if (data.style_data.ingredients_image_prompt) {
+                        const ingredientsPrompt = typeof data.style_data.ingredients_image_prompt === 'string' 
+                            ? data.style_data.ingredients_image_prompt 
+                            : JSON.stringify(data.style_data.ingredients_image_prompt);
+                        document.getElementById('prompt-ingredients').value = ingredientsPrompt;
+                    }
+                    if (data.style_data.method_image_prompt) {
+                        const methodPrompt = typeof data.style_data.method_image_prompt === 'string' 
+                            ? data.style_data.method_image_prompt 
+                            : JSON.stringify(data.style_data.method_image_prompt);
+                        document.getElementById('prompt-method').value = methodPrompt;
+                    }
+
+                    statusEl.className = 'status-message success';
+                    statusEl.textContent = 'Style guidelines and prompts generated successfully!';
+                    statusEl.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Generation failed');
+                }
+            } catch (error) {
+                statusEl.className = 'status-message error';
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic"></i> Generate Style & Prompts';
+            }
+        });
+
+        // Save button
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('save-btn');
+            const statusEl = document.getElementById('status-message');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            const styleData = {
+                style_guidelines: {
+                    lighting: document.getElementById('style-lighting').value,
+                    surfaces: document.getElementById('style-surfaces').value,
+                    crockery_style: document.getElementById('style-crockery').value,
+                    color_palette: document.getElementById('style-colors').value,
+                    mood: document.getElementById('style-mood').value
+                },
+                hero_image_prompt: document.getElementById('prompt-hero').value,
+                ingredients_image_prompt: document.getElementById('prompt-ingredients').value,
+                method_image_prompt: document.getElementById('prompt-method').value
+            };
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/recipes/image-style-prompt`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({style_data: styleData})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    statusEl.className = 'status-message success';
+                    statusEl.textContent = 'Changes saved successfully!';
+                    statusEl.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Save failed');
+                }
+            } catch (error) {
+                statusEl.className = 'status-message error';
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }
+        });
+
+        // Sync button
+        document.getElementById('sync-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('sync-btn');
+            const statusEl = document.getElementById('status-message');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/recipes/sync-prompts`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    statusEl.className = 'status-message success';
+                    statusEl.textContent = 'Prompts synced to sections successfully!';
+                    statusEl.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Sync failed');
+                }
+            } catch (error) {
+                statusEl.className = 'status-message error';
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync"></i> Sync Prompts to Sections';
+            }
+        });
+    </script>
+</body>
+</html>
+

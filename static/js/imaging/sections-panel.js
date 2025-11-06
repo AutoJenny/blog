@@ -238,7 +238,13 @@ class ImagingSectionsPanel {
 
     async batchGenerateSelected() {
         const selectedIds = Array.from(this.selectedSections);
-        if (selectedIds.length === 0) return;
+        console.log('[ImagingSectionsPanel] batchGenerateSelected called, selectedIds:', selectedIds);
+        
+        if (selectedIds.length === 0) {
+            console.warn('[ImagingSectionsPanel] No sections selected');
+            alert('Please select at least one section to generate images for.');
+            return;
+        }
 
         const btn = document.getElementById('batch-generate-btn');
         const original = btn ? btn.textContent : '';
@@ -256,10 +262,13 @@ class ImagingSectionsPanel {
 
                 // Obtain prompt for this specific section
                 let image_prompt = '';
+                console.log(`[ImagingSectionsPanel] Getting prompt for section ${sectionId}`);
+                
                 // 1) If prompt panel is showing this section's prompt, use it
                 const panel = document.querySelector(`[data-section-id="${sectionId}"] .prompt-text`);
                 if (panel && panel.textContent.trim()) {
                     image_prompt = panel.textContent.trim();
+                    console.log(`[ImagingSectionsPanel] Found prompt in panel for section ${sectionId}`);
                 }
                 // 2) Fallback to cached sectionsData if available
                 if (!image_prompt && window.sectionsData) {
@@ -269,23 +278,33 @@ class ImagingSectionsPanel {
                         else {
                             try { image_prompt = (JSON.parse(s.image_prompts).image_prompt) || s.image_prompts; } catch { image_prompt = s.image_prompts; }
                         }
+                        if (image_prompt) console.log(`[ImagingSectionsPanel] Found prompt in cached sectionsData for section ${sectionId}`);
                     }
                 }
                 // 3) Final fallback: fetch sections and extract prompt for this id
                 if (!image_prompt) {
                     try {
-                        const resp = await fetch(`/imaging/api/posts/${this.postId}/sections`);
+                        const resp = await fetch(`/authoring/api/posts/${this.postId}/sections`);
                         const data = await resp.json();
-                        if (data.success && Array.isArray(data.sections)) {
-                            const s = data.sections.find(x => String(x.id) === String(sectionId));
+                        if (data && Array.isArray(data)) {
+                            const s = data.find(x => String(x.id) === String(sectionId));
                             if (s && s.image_prompts) {
                                 if (typeof s.image_prompts === 'object') image_prompt = s.image_prompts.image_prompt || '';
                                 else {
                                     try { image_prompt = (JSON.parse(s.image_prompts).image_prompt) || s.image_prompts; } catch { image_prompt = s.image_prompts; }
                                 }
+                                if (image_prompt) console.log(`[ImagingSectionsPanel] Found prompt from API for section ${sectionId}`);
                             }
                         }
-                    } catch(_) { /* ignore */ }
+                    } catch(err) { 
+                        console.error(`[ImagingSectionsPanel] Error fetching sections for prompt:`, err);
+                    }
+                }
+                
+                if (!image_prompt) {
+                    console.warn(`[ImagingSectionsPanel] No prompt found for section ${sectionId}, skipping`);
+                    this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'error', error: 'No image prompt found for this section. Please generate prompts first.' });
+                    continue;
                 }
 
                 // Use different API based on current substage
@@ -411,16 +430,17 @@ class ImagingSectionsPanel {
                     }
                     
                     const payload = {
-                        image_prompt,
                         model_name,
                         parameters
                     };
+                    console.log(`[ImagingSectionsPanel] Generating image for section ${sectionId} with model ${model_name}`);
                     resp = await fetch(`/imaging/api/image-generation/posts/${this.postId}/sections/${sectionId}/generate-image`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
                     data = await resp.json();
+                    console.log(`[ImagingSectionsPanel] Image generation response for section ${sectionId}:`, data);
                 }
 
                 if (data.success) {

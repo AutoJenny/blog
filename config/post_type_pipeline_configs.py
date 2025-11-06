@@ -35,10 +35,9 @@ POST_TYPE_PIPELINE_CONFIGS = {
             'recipe-selection',     # Select recipe (replaces week-ideas)
             'recipe-research',      # Optional: Web research for historical context
             'drafting',             # Authoring — Drafting (all recipe sections via existing workflow)
-            'image-concepts',       # Authoring — Image Concepts (for recipe_gallery section)
-            'image-prompts',        # Authoring — Image Prompts (for recipe_gallery section)
+            'recipe-image-style-prompt',  # Combined: Style guidelines + prompts for all 3 images (hero, ingredients, method)
             'image-captions',       # Authoring — Image Captions
-            'image-generation',     # Imaging — Image Generation (hero + making process)
+            'image-generation',     # Imaging — Image Generation (hero + ingredients + method)
             'optimise',             # Imaging — Optimise
             'header-title-summary', # Header — Title & Summary
             'header-image-prompt',  # Header Image — Prompt
@@ -98,8 +97,7 @@ STEP_FUNCTION_MAPPINGS = {
         'recipe-selection': 'runRecipeSelection',
         'recipe-research': 'runRecipeResearch',
         'drafting': 'runDrafting',  # Uses existing authoring workflow
-        'image-concepts': 'runImageConcepts',
-        'image-prompts': 'runImagePrompts',
+        'recipe-image-style-prompt': 'runRecipeImageStylePrompt',  # Combined style + prompts
         'image-captions': 'runImageCaptions',
         'image-generation': 'runImageGeneration',
         'optimise': 'runImageOptimise',
@@ -153,6 +151,7 @@ STEP_LABELS = {
     'final-review': 'Final Review — Preview',
     'recipe-selection': 'Recipe — Selection',
     'recipe-research': 'Research — Recipe Context',
+    'recipe-image-style-prompt': 'Imaging — Style & Prompts',
     'profile-selection': 'Profile — Selection',
     'profile-data-sync': 'Data Sync — Product Information',
     'profile-sections': 'Profile — Sections',

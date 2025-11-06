@@ -1,0 +1,207 @@
+/* Recipe Image Style & Prompt Page */
+
+.recipe-image-style-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #334155;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+}
+
+.page-header .recipe-title {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.content-section {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+}
+
+.section-header {
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+}
+
+.section-description {
+    color: #94a3b8;
+    font-size: 0.95rem;
+}
+
+.style-guidelines-editor {
+    display: grid;
+    gap: 1rem;
+}
+
+.guideline-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.guideline-group label {
+    font-weight: 600;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+}
+
+.guideline-input {
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.guideline-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.image-prompts-editor {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.prompt-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.prompt-header {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.prompt-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 0.25rem;
+}
+
+.prompt-header h3 i {
+    margin-right: 0.5rem;
+    color: #10b981;
+}
+
+.prompt-description {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.prompt-input {
+    padding: 1rem;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 120px;
+}
+
+.prompt-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.actions-section {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #334155;
+}
+
+.action-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-btn.primary {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.action-btn.primary:hover:not(:disabled) {
+    background: #059669;
+}
+
+.action-btn.secondary {
+    background: #334155;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+}
+
+.action-btn.secondary:hover:not(:disabled) {
+    background: #475569;
+}
+
+.action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.status-message {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.status-message.success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid #10b981;
+    color: #10b981;
+}
+
+.status-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+    color: #ef4444;
+}
+
