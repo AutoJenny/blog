@@ -126,6 +126,85 @@ def get_category_prompt_name(base_name, illustration_method, content_type_name=N
     return base_name
 
 
+def get_post_type(post_id):
+    """
+    Determine post type: recipe, profile, or themed.
+    
+    Args:
+        post_id (int): Post ID
+    
+    Returns:
+        str: Post type ('recipe', 'profile', 'themed')
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    CASE 
+                        WHEN p.recipe_week_number IS NOT NULL THEN 'recipe'
+                        WHEN p.profile_category_id IS NOT NULL THEN 'profile'
+                        ELSE 'themed'
+                    END as post_type
+                FROM post p
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            if result:
+                if isinstance(result, dict):
+                    return result.get('post_type', 'themed')
+                else:
+                    return result[0] if result else 'themed'
+            
+            return 'themed'
+    except Exception as e:
+        logger.error(f"Error determining post type for post {post_id}: {e}")
+        return 'themed'
+
+
+def get_post_type_prompt_name(base_name, post_type, content_type_name=None):
+    """
+    Get prompt name based on post type and category.
+    
+    Extends get_category_prompt_name() to support post type-specific prompts.
+    
+    Args:
+        base_name (str): Base prompt name (e.g., 'Expanded Idea Generation')
+        post_type (str): Post type ('recipe', 'profile', 'themed')
+        content_type_name (str, optional): Content type for additional specificity
+    
+    Returns:
+        str: Post type-specific prompt name
+    
+    Examples:
+        # Recipe post
+        get_post_type_prompt_name('Expanded Idea Generation', 'recipe')
+        # Returns: 'Expanded Idea Generation (Recipe)'
+        
+        # Profile post with content type
+        get_post_type_prompt_name('Section Ideas', 'profile', 'Product')
+        # Returns: 'Section Ideas (Profile: Product)'
+        
+        # Themed post (uses existing category-based logic)
+        get_post_type_prompt_name('Expanded Idea Generation', 'themed', 'History')
+        # Returns: 'Expanded Idea Generation (History)'
+    """
+    # Post type-specific prompts
+    if post_type == 'recipe':
+        prompt_name = f"{base_name} (Recipe)"
+        logger.debug(f"Using recipe-specific prompt: {prompt_name}")
+        return prompt_name
+    elif post_type == 'profile':
+        prompt_name = f"{base_name} (Profile)"
+        if content_type_name:
+            prompt_name = f"{base_name} (Profile: {content_type_name})"
+        logger.debug(f"Using profile-specific prompt: {prompt_name}")
+        return prompt_name
+    else:
+        # Themed posts use existing category-based prompts
+        return get_category_prompt_name(base_name, 'LLM-creation', content_type_name)
+
+
 def get_illustration_method_with_post(post_id, year=None, week=None, default='LLM-creation'):
     """
     Get illustration_method with optional week context resolution.

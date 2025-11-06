@@ -92,28 +92,40 @@ def header_title_summary(post_id):
         year = request.args.get('year', type=int)
         week = request.args.get('week', type=int)
 
+        # Get post type for the original post_id first
+        from utils.taxonomy_helpers import get_post_type
+        original_post_type = get_post_type(post_id)
+
         # Resolve post_id from week context (required for generation, but allow page to render)
+        # BUT: For recipe/profile posts, preserve the original post_id to maintain recipe/profile association
         from utils.week_post_resolver import resolve_post_for_week
         target_post_id = None
         week_has_post = False
         
         if year and week:
-            resolved = resolve_post_for_week(year, week)
-            if resolved:
-                target_post_id = resolved
-                week_has_post = True
-            else:
-                logger.warning(f"No post scheduled for year={year}, week={week}")
-                # Use provided post_id for display only (but flag that generation won't work)
+            if original_post_type in ('recipe', 'profile'):
+                # For recipe/profile posts, preserve original post_id - don't resolve to different post
                 target_post_id = post_id
+                week_has_post = True  # Assume has post if we're preserving it
+            else:
+                # Only resolve for themed posts
+                resolved = resolve_post_for_week(year, week)
+                if resolved:
+                    target_post_id = resolved
+                    week_has_post = True
+                else:
+                    logger.warning(f"No post scheduled for year={year}, week={week}")
+                    target_post_id = post_id
         else:
             # No week context provided - use provided post_id but flag as invalid for generation
             target_post_id = post_id
             logger.warning(f"Title-summary route called without week context: year={year}, week={week}")
 
-        # Use utility function to get illustration_method
+        # Use utility function to get illustration_method and post_type
         from utils.taxonomy_helpers import get_illustration_method
         illustration_method = get_illustration_method(target_post_id)
+        # Use original post_type for recipe/profile, otherwise get from resolved post
+        post_type = original_post_type if original_post_type in ('recipe', 'profile') else get_post_type(target_post_id)
 
         return render_template(
             'header/title_summary.html',
@@ -123,11 +135,14 @@ def header_title_summary(post_id):
             week=week,
             illustration_method=illustration_method,
             week_has_post=week_has_post,
+            post_type=post_type,
             blueprint_name='header'
         )
     except Exception as e:
         logger.error(f"Error loading header title-summary: {e}")
-        return render_template('header/title_summary.html', post_id=post_id, blueprint_name='header')
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(post_id)
+        return render_template('header/title_summary.html', post_id=post_id, post_type=post_type, blueprint_name='header')
 
 @bp.route('/posts/<int:post_id>/header-image')
 def header_header_image(post_id):
@@ -136,19 +151,31 @@ def header_header_image(post_id):
     week = request.args.get('week', type=int)
 
     from utils.week_post_resolver import resolve_post_for_week
+    # Get post type for the original post_id first
+    from utils.taxonomy_helpers import get_post_type
+    original_post_type = get_post_type(post_id)
+    
     # NO FALLBACKS: Only use resolved post_id from week context
+    # BUT: For recipe/profile posts, preserve the original post_id
     if not year or not week:
         logger.error(f"Header image route called without week context: year={year}, week={week}")
         return "Week context (year and week) is required.", 400
     
-    target_post_id = resolve_post_for_week(year, week)
-    if not target_post_id:
-        logger.error(f"No post scheduled for year={year}, week={week}")
-        return f"No post scheduled for week {week}, {year}. Please schedule a post for this week first.", 404
+    if original_post_type in ('recipe', 'profile'):
+        # For recipe/profile posts, preserve original post_id
+        target_post_id = post_id
+    else:
+        # Only resolve for themed posts
+        target_post_id = resolve_post_for_week(year, week)
+        if not target_post_id:
+            logger.error(f"No post scheduled for year={year}, week={week}")
+            return f"No post scheduled for week {week}, {year}. Please schedule a post for this week first.", 404
     
-    # Use utility function to get illustration_method
+    # Use utility function to get illustration_method and post_type
     from utils.taxonomy_helpers import get_illustration_method
     illustration_method = get_illustration_method(target_post_id)
+    # Use original post_type for recipe/profile, otherwise get from resolved post
+    post_type = original_post_type if original_post_type in ('recipe', 'profile') else get_post_type(target_post_id)
 
     return render_template(
         'header/header_image.html', 
@@ -156,7 +183,8 @@ def header_header_image(post_id):
         blueprint_name='header',
         year=year,
         week=week,
-        illustration_method=illustration_method
+        illustration_method=illustration_method,
+        post_type=post_type
     )
 
 @bp.route('/posts/<int:post_id>/seo-meta')
@@ -167,23 +195,36 @@ def header_seo_meta(post_id):
 
     from utils.week_post_resolver import resolve_post_for_week
     
+    # Get post type for the original post_id first
+    from utils.taxonomy_helpers import get_post_type
+    original_post_type = get_post_type(post_id)
+    
     # Resolve post_id from week context (required for generation, but allow page to render)
+    # BUT: For recipe/profile posts, preserve the original post_id
     target_post_id = None
     week_has_post = False
     
     if year and week:
-        resolved = resolve_post_for_week(year, week)
-        if resolved:
-            target_post_id = resolved
+        if original_post_type in ('recipe', 'profile'):
+            # For recipe/profile posts, preserve original post_id
+            target_post_id = post_id
             week_has_post = True
         else:
-            logger.warning(f"No post scheduled for year={year}, week={week}")
-            # Use provided post_id for display only (but flag that generation won't work)
-            target_post_id = post_id
+            # Only resolve for themed posts
+            resolved = resolve_post_for_week(year, week)
+            if resolved:
+                target_post_id = resolved
+                week_has_post = True
+            else:
+                logger.warning(f"No post scheduled for year={year}, week={week}")
+                target_post_id = post_id
     else:
         # No week context provided - use provided post_id but flag as invalid for generation
         target_post_id = post_id
         logger.warning(f"SEO meta route called without week context: year={year}, week={week}")
+    
+    # Use original post_type for recipe/profile, otherwise get from resolved post
+    post_type = original_post_type if original_post_type in ('recipe', 'profile') else get_post_type(target_post_id)
     
     return render_template(
         'header/seo_meta.html', 
@@ -191,7 +232,8 @@ def header_seo_meta(post_id):
         blueprint_name='header',
         year=year,
         week=week,
-        week_has_post=week_has_post
+        week_has_post=week_has_post,
+        post_type=post_type
     )
 
 @bp.route('/posts/<int:post_id>/publishing-details')
@@ -331,12 +373,17 @@ def header_preview(post_id):
                 
                 formatted_sections.append(formatted_section)
             
+            # Get post type
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
             # Pass data to template
             return render_template('header/preview.html', 
                                  post=post, 
                                  header_image=header_image,
                                  sections=formatted_sections,
                                  post_id=post_id,
+                                 post_type=post_type,
                                  blueprint_name='header')
     
     except Exception as e:
@@ -1353,7 +1400,10 @@ def api_title_summary_prompt(post_id):
                 if 'prompt_text' in data:
                     # Format from LLM Prompts Panel - update task prompt
                     task_prompt = data.get('prompt_text', '').strip()
-                    if task_prompt and len(task_prompt) > 10:  # Only update if substantial content
+                    # Only update if substantial content (more than 100 chars to avoid test data)
+                    # Check against original to avoid overwriting with stale/test data
+                    original_task = result.get('task_prompt', '').strip()
+                    if task_prompt and len(task_prompt) > 100 and task_prompt != original_task:
                         # Ensure we're using integer IDs
                         task_prompt_id = int(result['task_prompt_id'])
                         cursor.execute("""
@@ -1364,6 +1414,10 @@ def api_title_summary_prompt(post_id):
                         """, (task_prompt, task_prompt_id))
                         cursor.connection.commit()
                         logger.info(f"Updated Title Generation task prompt (task_prompt_id={task_prompt_id}) for post {post_id}")
+                    elif task_prompt and len(task_prompt) <= 100:
+                        logger.warning(f"Ignored task prompt update - too short (likely test data): {len(task_prompt)} chars")
+                    elif task_prompt == original_task:
+                        logger.info(f"Ignored task prompt update - no changes detected")
                     
                     # Optionally update system prompt if provided AND substantial
                     # Only update if it's actually meaningful content (not empty or test data)

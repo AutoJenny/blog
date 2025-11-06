@@ -32,7 +32,10 @@
         <div class="post-selector" style="margin: 1rem 0 0.5rem 0; padding: 16px; background:#1a1f35; border:1px solid #2d3246; border-radius:8px;">
             <div class="selector-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
                 <div class="selected-post-summary">
-                    <div id="selected-post-title" style="color:#e6e8ef; font-weight:700; font-size:18px;">Loading latest post…</div>
+                    <div id="selected-post-title" style="color:#e6e8ef; font-weight:700; font-size:18px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span id="post-title-text">Loading latest post…</span>
+                        <span id="post-type-badge" style="display:none; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600;"></span>
+                    </div>
                     <div id="selected-post-subtitle" style="color:#9ca3af; font-size:14px; margin-top:4px;">&nbsp;</div>
                 </div>
                 <div class="selector-control" style="min-width:260px;">
@@ -1318,12 +1321,14 @@
             const data = await resp.json();
             const posts = Array.isArray(data) ? data : (data.posts || []);
             const select = document.getElementById('pipeline-post-selector');
-            const titleEl = document.getElementById('selected-post-title');
+            const titleTextEl = document.getElementById('post-title-text');
+            const badgeEl = document.getElementById('post-type-badge');
             const subtitleEl = document.getElementById('selected-post-subtitle');
             if (!select) return;
             if (!posts.length){
                 select.innerHTML = '<option value="">No posts</option>';
-                if (titleEl) titleEl.textContent = 'No posts available';
+                if (titleTextEl) titleTextEl.textContent = 'No posts available';
+                if (badgeEl) badgeEl.style.display = 'none';
                 if (subtitleEl) subtitleEl.textContent = '';
                 return;
             }
@@ -1533,6 +1538,68 @@
     if (runHeaderSeoMetaBtn){ runHeaderSeoMetaBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderSeoMeta(); }); }
 
     // Final Review: open header preview page
+    // Recipe-specific step functions (placeholders - to be implemented)
+    function runRecipeSelection() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        window.location.href = `/recipes`;
+    }
+    function runRecipeResearch() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Recipe research step - to be implemented');
+    }
+    function runRecipeBackground() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Recipe background step - to be implemented');
+    }
+    function runRecipeIngredients() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Recipe ingredients step - to be implemented');
+    }
+    function runRecipeMethod() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Recipe method step - to be implemented');
+    }
+    function runRecipeVariants() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Recipe variants step - to be implemented');
+    }
+    function runRecipeServing() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Recipe serving step - to be implemented');
+    }
+    function runRecipeImageConcepts() { return runImageConcepts(); }
+    function runRecipeImagePrompts() { return runImagePrompts(); }
+    function runRecipeImageGeneration() { return runImageGeneration(); }
+    function runRecipeImageOptimise() { return runImageOptimise(); }
+    
+    // Profile-specific step functions (placeholders - to be implemented)
+    function runProfileSelection() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        window.location.href = `/planning/posts/${postId}/calendar/ideas`;
+    }
+    function runProfileDataSync() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Profile data sync step - to be implemented');
+    }
+    function runProfileSections() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Profile sections step - to be implemented');
+    }
+    function runProfileImageConcepts() { return runImageConcepts(); }
+    function runProfileImagePrompts() { return runImagePrompts(); }
+    function runProfileImageGeneration() { return runImageGeneration(); }
+    function runProfileImageOptimise() { return runImageOptimise(); }
+    
     function runFinalReview(){
         const btn = document.getElementById('run-final-review');
         if (!btn) return;
@@ -1590,21 +1657,55 @@
     }
 
     async function updateSelectedPostSummary(postId){
-        const titleEl = document.getElementById('selected-post-title');
+        const titleTextEl = document.getElementById('post-title-text');
+        const badgeEl = document.getElementById('post-type-badge');
         const subtitleEl = document.getElementById('selected-post-subtitle');
         try {
-            const resp = await fetch(`/planning/api/posts/${postId}`);
-            const data = await resp.json();
-            const post = data.post || {};
-            const schedule = data.schedule || null;
+            // Fetch post data and pipeline info
+            const [postResp, pipelineResp] = await Promise.all([
+                fetch(`/planning/api/posts/${postId}`),
+                fetch(`/api/post-type-pipeline/posts/${postId}/pipeline`)
+            ]);
+            
+            const postData = await postResp.json();
+            const pipelineData = await pipelineResp.json();
+            const post = postData.post || {};
+            const schedule = postData.schedule || null;
+            const postType = pipelineData.post_type || 'themed';
             const title = post.title || 'Untitled';
-            titleEl.textContent = `#${postId} — ${title}`;
-            if (schedule && schedule.year && schedule.week_number){
-                const { start, end } = getWeekDateRange(schedule.year, schedule.week_number);
-                subtitleEl.textContent = `Week W${schedule.week_number} — ${fmtDate(start)} – ${fmtDate(end)}`;
-            } else {
-                subtitleEl.textContent = 'No week scheduled';
+            
+            // Update title text
+            if (titleTextEl) titleTextEl.textContent = `#${postId} — ${title}`;
+            
+            // Update post type badge
+            if (badgeEl) {
+                const postTypeConfig = {
+                    'recipe': { icon: 'fa-utensils', label: 'Recipe', bg: '#fef3c7', color: '#92400e', border: '#fcd34d' },
+                    'profile': { icon: 'fa-tag', label: 'Profile', bg: '#e0e7ff', color: '#4338ca', border: '#a5b4fc' },
+                    'themed': { icon: 'fa-book', label: 'Themed', bg: '#dbeafe', color: '#1e40af', border: '#93c5fd' }
+                };
+                
+                const config = postTypeConfig[postType] || postTypeConfig['themed'];
+                badgeEl.innerHTML = `<i class="fas ${config.icon}"></i> ${config.label}`;
+                badgeEl.style.background = config.bg;
+                badgeEl.style.color = config.color;
+                badgeEl.style.border = `1px solid ${config.border}`;
+                badgeEl.style.display = 'inline-flex';
+                badgeEl.style.alignItems = 'center';
+                badgeEl.style.gap = '0.4rem';
             }
+            
+            if (subtitleEl) {
+                if (schedule && schedule.year && schedule.week_number){
+                    const { start, end } = getWeekDateRange(schedule.year, schedule.week_number);
+                    subtitleEl.textContent = `Week W${schedule.week_number} — ${fmtDate(start)} – ${fmtDate(end)}`;
+                } else {
+                    subtitleEl.textContent = 'No week scheduled';
+                }
+            }
+            
+            // Load pipeline for this post type
+            await loadPipelineForPostType(postId, postType);
             
             // Update Idea Generation Run button state based on idea_seed availability
             const ideaGenBtn = document.getElementById('run-idea-generation');
@@ -1944,7 +2045,8 @@
 
         // Run Taxonomy: navigate to taxonomy page (manual assignment) - duplicate definition removed (see above)
         
-        const pipeline = [
+        // Default pipeline (themed posts) - will be replaced by loadPipelineForPostType
+        let pipeline = [
             { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
             { id:'taxonomy', label:'Planning — Taxonomy', run: runTaxonomy },
             { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
@@ -1966,6 +2068,90 @@
             { id:'header-seo-meta', label:'Header — SEO & Meta', run: runHeaderSeoMeta, completeEvent: events.header_seo_meta_complete },
             { id:'final-review', label:'Final Review — Preview', run: runFinalReview }
         ];
+        
+        // Load pipeline dynamically based on post type
+        async function loadPipelineForPostType(postId, postType) {
+            try {
+                const response = await fetch(`/api/post-type-pipeline/${postType}`);
+                const data = await response.json();
+                if (!data.success) {
+                    console.warn('Failed to load pipeline, using default:', data.error);
+                    return;
+                }
+                
+                const steps = data.steps || [];
+                
+                // Map step IDs to run functions
+                pipeline = steps.map(step => {
+                    const runFunction = getStepRunFunction(step.id, postType);
+                    return {
+                        id: step.id,
+                        label: step.label || step.id,
+                        run: runFunction,
+                        completeEvent: step.complete_event || null
+                    };
+                });
+                
+                console.log(`Loaded ${pipeline.length} steps for ${postType} post type`);
+            } catch (error) {
+                console.error('Error loading pipeline:', error);
+                // Keep default pipeline
+            }
+        }
+        
+        // Get run function for a step based on post type
+        function getStepRunFunction(stepId, postType) {
+            // Recipe-specific steps
+            if (postType === 'recipe') {
+                if (stepId === 'recipe-selection') return runRecipeSelection;
+                if (stepId === 'recipe-research') return runRecipeResearch;
+                if (stepId === 'recipe-background') return runRecipeBackground;
+                if (stepId === 'recipe-ingredients') return runRecipeIngredients;
+                if (stepId === 'recipe-method') return runRecipeMethod;
+                if (stepId === 'recipe-variants') return runRecipeVariants;
+                if (stepId === 'recipe-serving') return runRecipeServing;
+                if (stepId === 'recipe-image-concepts') return runRecipeImageConcepts;
+                if (stepId === 'recipe-image-prompts') return runRecipeImagePrompts;
+                if (stepId === 'recipe-image-generation') return runRecipeImageGeneration;
+                if (stepId === 'recipe-image-optimise') return runRecipeImageOptimise;
+            }
+            
+            // Profile-specific steps
+            if (postType === 'profile') {
+                if (stepId === 'profile-selection') return runProfileSelection;
+                if (stepId === 'profile-data-sync') return runProfileDataSync;
+                if (stepId === 'profile-sections') return runProfileSections;
+                if (stepId === 'profile-image-concepts') return runProfileImageConcepts;
+                if (stepId === 'profile-image-prompts') return runProfileImagePrompts;
+                if (stepId === 'profile-image-generation') return runProfileImageGeneration;
+                if (stepId === 'profile-image-optimise') return runProfileImageOptimise;
+            }
+            
+            // Themed steps (existing)
+            if (stepId === 'week-ideas') return runWeekIdeas;
+            if (stepId === 'taxonomy') return runTaxonomy;
+            if (stepId === 'idea-generation') return runIdeaGeneration;
+            if (stepId === 'topic-brainstorming') return runTopicBrainstorming;
+            if (stepId === 'section-structure-design') return runSectionStructure;
+            if (stepId === 'section-ideas') return runSectionIdeas;
+            if (stepId === 'section-titling') return runSectionTitling;
+            if (stepId === 'drafting') return runDrafting;
+            if (stepId === 'image-concepts') return runImageConcepts;
+            if (stepId === 'image-prompts') return runImagePrompts;
+            if (stepId === 'image-captions') return runImageCaptions;
+            if (stepId === 'image-generation') return runImageGeneration;
+            if (stepId === 'optimise') return runImageOptimise;
+            if (stepId === 'header-title-summary') return () => { const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); };
+            if (stepId === 'header-image-prompt') return runHeaderImagePrompt;
+            if (stepId === 'header-image-details') return runHeaderImageDetails;
+            if (stepId === 'header-image-generate') return runHeaderImageGenerate;
+            if (stepId === 'header-image-optimise') return runHeaderImageOptimize;
+            if (stepId === 'header-seo-meta') return runHeaderSeoMeta;
+            if (stepId === 'final-review') return runFinalReview;
+            
+            // Default: no-op
+            return () => { console.warn(`No run function for step: ${stepId}`); };
+        }
 
         function waitForEvent(eventName, timeoutMs=120000){
             return new Promise((resolve, reject)=>{
