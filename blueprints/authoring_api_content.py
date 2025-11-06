@@ -338,29 +338,90 @@ def api_generate_section_draft(post_id, section_id):
             
             generated_content = result['content'].strip()
             
+            # For recipe sections that require structured JSON, parse and store separately
+            structured_data = None
+            if is_recipe_post and section_type:
+                from utils.recipe_json_parser import (
+                    extract_json_from_response,
+                    validate_ingredients_json,
+                    validate_method_json,
+                    validate_variants_json,
+                    validate_serving_json,
+                    validate_further_reading_json,
+                    sort_ingredients_by_weight
+                )
+                
+                # Try to extract JSON from response
+                json_data = extract_json_from_response(generated_content)
+                
+                if json_data:
+                    # Validate based on section type
+                    is_valid = False
+                    if section_type == 'recipe_ingredients':
+                        is_valid = validate_ingredients_json(json_data)
+                        if is_valid and 'ingredients' in json_data:
+                            # Sort ingredients by weight
+                            json_data['ingredients'] = sort_ingredients_by_weight(json_data['ingredients'])
+                    elif section_type == 'recipe_method':
+                        is_valid = validate_method_json(json_data)
+                    elif section_type == 'recipe_variants':
+                        is_valid = validate_variants_json(json_data)
+                    elif section_type == 'recipe_serving':
+                        is_valid = validate_serving_json(json_data)
+                    elif section_type == 'recipe_further_reading':
+                        is_valid = validate_further_reading_json(json_data)
+                    
+                    if is_valid:
+                        import json as json_module
+                        structured_data = json_module.dumps(json_data)
+                        logger.info(f"Extracted and validated structured JSON for {section_type}")
+                    else:
+                        logger.warning(f"JSON validation failed for {section_type}, storing as plain text")
+            
             # Save the generated content - try UPDATE first, then INSERT if needed
-            cursor.execute("""
-                UPDATE post_section 
-                SET draft = %s, status = 'draft'
-                WHERE post_id = %s AND id = %s
-            """, (generated_content, post_id, section_id))
+            if structured_data:
+                cursor.execute("""
+                    UPDATE post_section 
+                    SET draft = %s, post_section_elements = %s, status = 'draft'
+                    WHERE post_id = %s AND id = %s
+                """, (generated_content, structured_data, post_id, section_id))
+            else:
+                cursor.execute("""
+                    UPDATE post_section 
+                    SET draft = %s, status = 'draft'
+                    WHERE post_id = %s AND id = %s
+                """, (generated_content, post_id, section_id))
             
             # If no row was updated, create one (section might be from post_development.sections)
             if cursor.rowcount == 0:
                 # Get section_order from the section data we retrieved
                 section_order = section.get('section_order', int(section_id))
                 try:
-                    cursor.execute("""
-                        INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, status)
-                        VALUES (%s, %s, %s, %s, %s, %s, 'draft')
-                    """, (
-                        post_id, 
-                        int(section_id), 
-                        section_order,
-                        section.get('section_heading', f'Section {section_id}'),
-                        section.get('section_description', ''),
-                        generated_content
-                    ))
+                    if structured_data:
+                        cursor.execute("""
+                            INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, post_section_elements, status)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, 'draft')
+                        """, (
+                            post_id, 
+                            int(section_id), 
+                            section_order,
+                            section.get('section_heading', f'Section {section_id}'),
+                            section.get('section_description', ''),
+                            generated_content,
+                            structured_data
+                        ))
+                    else:
+                        cursor.execute("""
+                            INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, status)
+                            VALUES (%s, %s, %s, %s, %s, %s, 'draft')
+                        """, (
+                            post_id, 
+                            int(section_id), 
+                            section_order,
+                            section.get('section_heading', f'Section {section_id}'),
+                            section.get('section_description', ''),
+                            generated_content
+                        ))
                 except Exception as insert_error:
                     # If insert fails (e.g., duplicate key), try update instead
                     if 'duplicate' in str(insert_error).lower() or 'unique' in str(insert_error).lower():

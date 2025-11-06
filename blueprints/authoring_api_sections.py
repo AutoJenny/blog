@@ -79,7 +79,8 @@ def api_get_sections(post_id):
                 SELECT id, section_order, section_heading, section_description, 
                        status, draft, polished, ideas_to_include, facts_to_include,
                        highlighting, image_concepts, image_prompts, image_captions,
-                       image_alt_text, selected_image_concept, section_type
+                       image_alt_text, selected_image_concept, section_type,
+                       post_section_elements
                 FROM post_section
                 WHERE post_id = %s
                 ORDER BY section_order
@@ -171,12 +172,23 @@ def api_get_sections(post_id):
                             except (json.JSONDecodeError, TypeError):
                                 pass
                     
+                    # Parse post_section_elements JSON if present
+                    section_elements = None
+                    if section.get('post_section_elements'):
+                        try:
+                            import json
+                            section_elements = json.loads(section['post_section_elements']) if isinstance(section['post_section_elements'], str) else section['post_section_elements']
+                        except (json.JSONDecodeError, TypeError):
+                            logger.warning(f"Failed to parse post_section_elements for section {section['id']}")
+                            section_elements = None
+                    
                     formatted_sections.append({
                         'id': section['id'],
                         'section_order': section['section_order'],
                         'section_heading': section['section_heading'],
                         'section_description': section['section_description'],
                         'section_type': section.get('section_type'),  # Include section_type for recipe sections
+                        'post_section_elements': section_elements,  # Structured JSON data
                         'title': section['section_heading'],
                         'description': section['section_description'],
                         'order': section['section_order'],
