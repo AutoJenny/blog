@@ -1,4 +1,6 @@
 <!-- Planning Navigation - Two Level Structure -->
+{% set hide_planning = post_type in ['recipe', 'profile'] %}
+{% if not hide_planning %}
 <div class="planning-navigation">
     <!-- Main Stage Navigation -->
     <div class="main-stages">
@@ -79,6 +81,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <style>
 .planning-navigation {

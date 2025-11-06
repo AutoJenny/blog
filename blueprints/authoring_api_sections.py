@@ -18,12 +18,68 @@ def api_get_sections(post_id):
     """Get all sections for a post from post_section table, with fallback to post_development.sections"""
     try:
         with db_manager.get_cursor() as cursor:
+            # Check if this is a recipe post and auto-create sections if missing
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
+            if post_type == 'recipe':
+                cursor.execute("""
+                    SELECT COUNT(*) as section_count
+                    FROM post_section
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cursor.fetchone()
+                section_count = result.get('section_count', 0) if isinstance(result, dict) else (result[0] if result else 0)
+                
+                if section_count == 0:
+                    # Auto-create default recipe sections with detailed descriptions
+                    recipe_sections = [
+                        ('recipe_background', 'Background', 'The historic and cultural background of this recipe. Write 2-3 paragraphs (150-200 words) covering the origin story, regional associations, and occasions when traditionally eaten. Use a warm, storytelling voice that evokes place, people, and time.'),
+                        ('recipe_ingredients', 'Ingredients', 'List of ingredients needed for this recipe. Format clearly for home cooks, with amounts and any preparation notes. May include regional variations or historical notes.'),
+                        ('recipe_method', 'Method', 'Step-by-step cooking instructions. Use numbered steps with clear instructions. Aimed at home cooks, not professional chefs.'),
+                        ('recipe_variants', 'Variations', 'Optional twists and regional variations (e.g., "Hebridean version uses smoked haddock only", "Modern twist: add whisky cream"). Not every recipe needs variants - this section is optional.'),
+                        ('recipe_serving', 'Serving Suggestions', 'How Scots traditionally serve this dish. Include drinks, sides, or traditional accompaniments. Optional mention of related products available on clan.com.'),
+                        ('recipe_further_reading', 'Further Reading', 'Search for 2-5 authoritative sources for background information about this recipe. Focus on: cultural/heritage sites, Wikipedia articles, historical sources, ingredient provenance sites, and tourism/heritage organizations. AVOID competing recipe sites or cooking blogs. For each source, provide: Title & Link, Why It\'s Good (brief explanation of the source\'s value), and Use Case in Your Content (how to reference this source in the recipe sections above). Sources should support the Background, Ingredients, Variations, and Serving Suggestions sections.')
+                    ]
+                    
+                    for section_order, (section_type, section_heading, section_description) in enumerate(recipe_sections, start=1):
+                        # Check if section already exists at this order
+                        cursor.execute("""
+                            SELECT id FROM post_section
+                            WHERE post_id = %s AND section_order = %s
+                            LIMIT 1
+                        """, (post_id, section_order))
+                        existing = cursor.fetchone()
+                        
+                        if not existing:
+                            # Insert new section
+                            cursor.execute("""
+                                INSERT INTO post_section (
+                                    post_id, section_order, section_type, section_heading, 
+                                    section_description, status
+                                )
+                                VALUES (%s, %s, %s, %s, %s, 'draft')
+                            """, (post_id, section_order, section_type, section_heading, section_description))
+                        else:
+                            # Update existing section with section_type if missing
+                            cursor.execute("""
+                                UPDATE post_section
+                                SET section_type = %s,
+                                    section_heading = COALESCE(NULLIF(section_heading, ''), %s),
+                                    section_description = COALESCE(NULLIF(section_description, ''), %s)
+                                WHERE post_id = %s AND section_order = %s
+                                  AND (section_type IS NULL OR section_type = '')
+                            """, (section_type, section_heading, section_description, post_id, section_order))
+                    
+                    cursor.connection.commit()
+                    logger.info(f"Auto-created {len(recipe_sections)} recipe sections for post {post_id}")
+            
             # Get sections from post_section table first
             cursor.execute("""
                 SELECT id, section_order, section_heading, section_description, 
                        status, draft, polished, ideas_to_include, facts_to_include,
                        highlighting, image_concepts, image_prompts, image_captions,
-                       image_alt_text, selected_image_concept
+                       image_alt_text, selected_image_concept, section_type
                 FROM post_section
                 WHERE post_id = %s
                 ORDER BY section_order
@@ -120,6 +176,7 @@ def api_get_sections(post_id):
                         'section_order': section['section_order'],
                         'section_heading': section['section_heading'],
                         'section_description': section['section_description'],
+                        'section_type': section.get('section_type'),  # Include section_type for recipe sections
                         'title': section['section_heading'],
                         'description': section['section_description'],
                         'order': section['section_order'],
@@ -146,20 +203,57 @@ def api_get_sections(post_id):
         logger.error(f"Error fetching sections: {e}")
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/api/posts/<int:post_id>/sections/<section_id>', methods=['GET'])
+@bp.route('/api/posts/<int:post_id>/sections/<section_id>', methods=['GET', 'PUT'])
 def api_get_section(post_id, section_id):
-    """Get a specific section for a post from post_section table, with fallback to post_development.sections"""
+    """Get or update a specific section for a post from post_section table"""
     try:
         with db_manager.get_cursor() as cursor:
             # Only get from post_section table - section_id must be numeric
             if not section_id.isdigit():
                 return jsonify({'error': 'Section ID must be numeric'}), 400
+            
+            # Handle PUT request for updating section
+            if request.method == 'PUT':
+                data = request.get_json()
+                update_fields = []
+                update_values = []
                 
+                if 'section_heading' in data:
+                    update_fields.append('section_heading = %s')
+                    update_values.append(data['section_heading'])
+                
+                if 'section_description' in data:
+                    update_fields.append('section_description = %s')
+                    update_values.append(data['section_description'])
+                
+                if not update_fields:
+                    return jsonify({'error': 'No valid fields to update'}), 400
+                
+                update_values.append(post_id)
+                update_values.append(int(section_id))
+                
+                cursor.execute(f"""
+                    UPDATE post_section
+                    SET {', '.join(update_fields)}
+                    WHERE post_id = %s AND id = %s
+                """, update_values)
+                
+                cursor.connection.commit()
+                
+                if cursor.rowcount == 0:
+                    return jsonify({'error': 'Section not found'}), 404
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Section updated successfully'
+                })
+            
+            # Handle GET request
             cursor.execute("""
                 SELECT id, section_order, section_heading, section_description, 
                        status, draft, polished, ideas_to_include, facts_to_include,
                        highlighting, image_concepts, image_prompts, image_captions,
-                       image_alt_text, selected_image_concept
+                       image_alt_text, selected_image_concept, section_type
                 FROM post_section
                 WHERE post_id = %s AND id = %s
             """, (post_id, int(section_id)))
@@ -253,6 +347,7 @@ def api_get_section(post_id, section_id):
                         'section_order': section['section_order'],
                         'section_heading': section['section_heading'],
                         'section_description': section['section_description'],
+                        'section_type': section.get('section_type'),  # Include section_type for recipe sections
                         'title': section['section_heading'],
                         'description': section['section_description'],
                         'detailed_description': detailed_description,

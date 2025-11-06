@@ -27,6 +27,16 @@ def _resolve_post_and_get_week_context(post_id):
 
 def planning_concept_brainstorm(post_id):
     """Brainstorm page"""
+    from flask import redirect, url_for
+    from utils.taxonomy_helpers import get_post_type
+    
+    # Check post type - redirect recipe/profile posts away from Planning stages
+    post_type = get_post_type(post_id)
+    if post_type == 'recipe':
+        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+    elif post_type == 'profile':
+        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+    
     resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
     
     # Get content type name for category banner
@@ -44,6 +54,7 @@ def planning_concept_brainstorm(post_id):
     
     return render_template('planning/concept/brainstorm.html', 
                           post_id=resolved_post_id, year=year, week=week, blueprint_name='planning',
+                          post_type=post_type,
                           content_type_name=content_type_name)
 
 def planning_concept_section_structure(post_id):

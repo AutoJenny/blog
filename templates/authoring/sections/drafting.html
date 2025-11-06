@@ -81,6 +81,11 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endif %}
     
     <div class="workspace-container">
+        <!-- Recipe Sections Management (for recipe posts only) -->
+        {% if post_type == 'recipe' %}
+        {% include 'recipes/sections_management.html' %}
+        {% endif %}
+        
         <!-- Left Panel: Sections List -->
         {% include 'shared/sections_panel.html' %}
         

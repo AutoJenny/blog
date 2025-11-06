@@ -40,6 +40,7 @@
     <!-- Main Stage Navigation -->
     <div class="main-stages-line">
         <div class="main-stages-left">
+            {% if post_type not in ['recipe', 'profile'] %}
             <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
                class="stage-btn" data-stage="calendar">
                 <i class="fas fa-calendar-alt"></i>
@@ -50,6 +51,7 @@
                 <i class="fas fa-lightbulb"></i>
                 Planning
             </a>
+            {% endif %}
             <a href="{{ url_for('authoring.authoring_sections_drafting', post_id=post_id) }}" 
                class="stage-btn" data-stage="authoring">
                 <i class="fas fa-pen-nib"></i>
@@ -94,6 +96,7 @@
     <div class="sub-stages-line" id="sub-stages-line">
         <!-- Sub-stage Navigation -->
         <div class="sub-stages" id="sub-stages">
+            {% if post_type not in ['recipe', 'profile'] %}
             <!-- Calendar sub-stages -->
             <div class="sub-stage-group" data-stage="calendar">
                 <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" 
@@ -139,6 +142,7 @@
                     Section Titling
                 </a>
             </div>
+            {% endif %}
             
             <!-- Authoring sub-stages -->
             <div class="sub-stage-group" data-stage="authoring">

@@ -58,8 +58,18 @@ def planning_calendar_week_view(post_id):
 def planning_calendar_ideas(post_id):
     """Idea Generation sub-stage"""
     try:
-        from flask import request
+        from flask import request, redirect, url_for
         from datetime import datetime
+        from utils.taxonomy_helpers import get_post_type
+        
+        # Check post type - redirect recipe/profile posts away from Planning stages
+        post_type = get_post_type(post_id)
+        if post_type == 'recipe':
+            # Redirect recipe posts to authoring (drafting) stage
+            return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+        elif post_type == 'profile':
+            # Redirect profile posts to authoring stage
+            return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
         
         # SINGLE SOURCE OF TRUTH: Read ONLY from URL query parameters
         url_year = request.args.get('year', type=int)

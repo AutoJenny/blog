@@ -33,6 +33,15 @@ def planning_post_overview(post_id):
 def planning_concept(post_id):
     """Concept development page - redirects to Idea Generation (first planning substage)"""
     from flask import redirect, url_for, request
+    from utils.taxonomy_helpers import get_post_type
+    
+    # Check post type - redirect recipe/profile posts away from Planning stages
+    post_type = get_post_type(post_id)
+    if post_type == 'recipe':
+        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+    elif post_type == 'profile':
+        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+    
     # CRITICAL: Preserve year/week query parameters from URL (canonical source)
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
@@ -65,8 +74,16 @@ def categories_manage():
 
 def planning_research(post_id):
     """Research page"""
-    from flask import request
+    from flask import request, redirect, url_for
     from utils.week_post_resolver import resolve_post_for_week
+    from utils.taxonomy_helpers import get_post_type
+    
+    # Check post type - redirect recipe/profile posts away from Planning stages
+    post_type = get_post_type(post_id)
+    if post_type == 'recipe':
+        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+    elif post_type == 'profile':
+        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
     
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
@@ -78,7 +95,9 @@ def planning_research(post_id):
             resolved_post_id = resolved
     
     return render_template('planning/research/index.html', 
-                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, 
+                          post_type=post_type,
+                          blueprint_name='planning')
 
 # ARCHIVED: planning_old_interface function removed - old interface system has been archived
 # See ARCHIVED_OLD_WORKFLOW/ for archived code

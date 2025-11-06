@@ -141,7 +141,7 @@ def get_post_type(post_id):
             cursor.execute("""
                 SELECT 
                     CASE 
-                        WHEN p.recipe_week_number IS NOT NULL THEN 'recipe'
+                        WHEN p.recipe_id IS NOT NULL THEN 'recipe'
                         WHEN p.profile_category_id IS NOT NULL THEN 'profile'
                         ELSE 'themed'
                     END as post_type

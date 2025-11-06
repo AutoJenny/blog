@@ -34,12 +34,19 @@ This document defines the section types used in Scottish Recipe posts.
 **Display:** Text content  
 **Notes:** Optional mention of related products available on clan.com
 
-### `recipe_gallery`
-**Purpose:** Making process image (second image)  
-**Content:** One image showing one step of the recipe making process  
-**Display:** Single image with caption showing which step is depicted  
-**Storage:** Image stored in `post_images` table linked via `section_id`  
-**Notes:** Shows authentic making process, not stock photography
+### `recipe_further_reading`
+**Purpose:** Authoritative sources for background information  
+**Content:** 2-5 authoritative sources with: Title & Link, Why It's Good, and Use Case in Your Content  
+**Display:** Formatted list of sources with links and explanatory notes  
+**Storage:** Text content in `post_section.polished` or `post_section.draft`  
+**Notes:** 
+- Focus on: cultural/heritage sites, Wikipedia articles, historical sources, ingredient provenance sites, tourism/heritage organizations
+- AVOID: competing recipe sites or cooking blogs
+- Each source should include:
+  - Title & Link
+  - Why It's Good (brief explanation of the source's value)
+  - Use Case in Your Content (how to reference this source in other recipe sections)
+- Sources should support the Background, Ingredients, Variations, and Serving Suggestions sections
 
 ## Section Storage
 
@@ -47,15 +54,6 @@ Sections are stored in the existing `post_section` table:
 - `section_type` - One of the types above
 - `section_heading` - Section title
 - `polished` or `draft` - HTML content
-- `post_images` - Linked via `section_id` for recipe_gallery
-
-## Special Section Data
-
-### Recipe Gallery Section
-- Store making process image in `post_images` table
-- Link via `section_id` to this section
-- Store caption in `post_images.caption` describing which step is shown
-- Display with caption showing which step is depicted
 
 ### Ingredients Section
 - Consider storing structured data in `post_section_elements` JSONB for future use:
@@ -90,7 +88,7 @@ Standard recipe post section order:
 3. `recipe_method` - Recipe steps
 4. `recipe_variants` - Optional variations (if applicable)
 5. `recipe_serving` - Serving suggestions
-6. `recipe_gallery` - Making process image
+6. `recipe_further_reading` - Authoritative sources for background
 
 ## Integration with Existing System
 

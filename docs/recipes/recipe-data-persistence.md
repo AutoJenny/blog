@@ -10,10 +10,12 @@ Recipe posts use a two-level association system to ensure data integrity and fle
 ## Data Model
 
 ### Recipe Definition (Perpetual)
-- `calendar_recipes` table stores recipe definitions with `week_number` (1-52)
-- Each recipe has a perpetual week assignment (e.g., "Cullen Skink" is always recipe week 1)
-- `post.recipe_week_number` links a post to its recipe definition
-- **This association NEVER changes** - a recipe post always points to the same recipe definition
+- `calendar_recipes` table stores recipe definitions with:
+  - `id` (PRIMARY KEY) - **Unique, immutable recipe identifier**
+  - `week_number` (1-52) - Position in the calendar (can change when reordering)
+- `post.recipe_id` links a post to its recipe definition via `calendar_recipes.id`
+- **This association NEVER changes** - a recipe post always points to the same recipe definition, even if recipes are reordered
+- `post.recipe_week_number` is kept for backward compatibility but should NOT be used for joins
 
 ### Calendar Week Scheduling (Flexible)
 - `calendar_week_posts` table stores when/where a post is scheduled
@@ -23,10 +25,13 @@ Recipe posts use a two-level association system to ensure data integrity and fle
 ## Key Principles
 
 ### 1. Recipe Definition is Immutable
-- `post.recipe_week_number` points to `calendar_recipes.week_number`
+- `post.recipe_id` points to `calendar_recipes.id` (the unique recipe definition ID)
 - This link defines **which recipe** the post is about
-- Rescheduling a recipe post to a different calendar week does NOT change this link
-- Example: "Cullen Skink" post (recipe week 1) can be scheduled for week 45, 46, or any week, but it's always "Cullen Skink"
+- **This link NEVER changes**, even if:
+  - Recipes are reordered (week_number changes)
+  - Recipe is rescheduled to a different calendar week
+- Example: "Cullen Skink" post (recipe_id = 1) can be reordered to week 5 or scheduled for week 45, but it's always "Cullen Skink"
+- `post.recipe_week_number` is maintained for backward compatibility but should NOT be used for data integrity
 
 ### 2. Calendar Scheduling is Flexible
 - `calendar_week_posts(year, week_number, post_id)` stores when the post is scheduled
