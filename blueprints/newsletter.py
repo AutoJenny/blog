@@ -112,6 +112,7 @@ def view_issue(issue_id: int):
             "new_products",
             "spotlight",
             "category",
+            "weekly_words",
             "evergreen",
             "closing",
         ]

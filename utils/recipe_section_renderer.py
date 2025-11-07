@@ -137,17 +137,42 @@ def render_ingredients(data: dict) -> str:
         
         for ing in data['ingredients']:
             item = ing.get('item', '')
-            amount_metric = ing.get('amount_metric', '')
-            amount_imperial = ing.get('amount_imperial', '')
+            amount_metric = ing.get('amount_metric', '').strip()
+            amount_imperial_raw = ing.get('amount_imperial', '').strip()
             notes = ing.get('notes', '')
             
-            # Always show both metric and imperial if metric is present
-            # If imperial not provided or same as metric, convert from metric
-            if amount_metric:
-                if not amount_imperial or amount_imperial == amount_metric:
-                    amount_imperial = convert_to_imperial(amount_metric)
+            # Clean up imperial value - remove "(approx.)" and normalize
+            amount_imperial_cleaned = amount_imperial_raw.replace('(approx.)', '').replace('approx.', '').strip() if amount_imperial_raw else ''
             
-            # Format: "smoked haddock (undyed, skinless) — 300g / 11oz approx"
+            # Always convert from metric if we have metric
+            # Only use provided imperial if it's actually different from metric (after cleaning)
+            if amount_metric:
+                # Extract numeric value from metric for comparison
+                metric_match = re.search(r'(\d+(?:\.\d+)?)', amount_metric)
+                metric_value = metric_match.group(1) if metric_match else None
+                
+                # Check if imperial is valid and different from metric
+                imperial_match = re.search(r'(\d+(?:\.\d+)?)', amount_imperial_cleaned) if amount_imperial_cleaned else None
+                imperial_value = imperial_match.group(1) if imperial_match else None
+                
+                # If imperial is missing, same as metric, or invalid, convert from metric
+                if not amount_imperial_cleaned or (metric_value and imperial_value and metric_value == imperial_value):
+                    amount_imperial = convert_to_imperial(amount_metric)
+                else:
+                    # Use cleaned imperial, but ensure it's properly formatted (no decimals, no approx)
+                    amount_imperial = amount_imperial_cleaned
+                    # Remove any remaining "(approx.)" or "approx" text
+                    amount_imperial = re.sub(r'\s*\(?approx\.?\)?\s*', '', amount_imperial, flags=re.IGNORECASE)
+                    # Round any decimal values in imperial
+                    imperial_num_match = re.search(r'(\d+\.\d+)', amount_imperial)
+                    if imperial_num_match:
+                        decimal_val = float(imperial_num_match.group(1))
+                        rounded_val = round(decimal_val)
+                        amount_imperial = amount_imperial.replace(imperial_num_match.group(1), str(rounded_val))
+            else:
+                amount_imperial = amount_imperial_cleaned if amount_imperial_cleaned else ''
+            
+            # Format: "smoked haddock (undyed, skinless) — 300g / 11oz"
             parts = []
             
             # Item name first
@@ -161,10 +186,14 @@ def render_ingredients(data: dict) -> str:
             # Weights after, in distinct font
             if amount_metric:
                 if amount_imperial and amount_imperial != amount_metric:
+                    # Ensure imperial doesn't contain "(approx.)" or similar
+                    amount_imperial = re.sub(r'\s*\(?approx\.?\)?\s*', '', amount_imperial, flags=re.IGNORECASE)
                     parts.append(f'<span class="ingredient-amount"> — {amount_metric} / {amount_imperial}</span>')
                 else:
                     parts.append(f'<span class="ingredient-amount"> — {amount_metric}</span>')
             elif amount_imperial:
+                # Clean imperial before displaying
+                amount_imperial = re.sub(r'\s*\(?approx\.?\)?\s*', '', amount_imperial, flags=re.IGNORECASE)
                 parts.append(f'<span class="ingredient-amount"> — {amount_imperial}</span>')
             
             html.append(f'<li class="ingredient-item">{" ".join(parts)}</li>')

@@ -1244,16 +1244,25 @@ def api_generate_image_captions(post_id, section_id):
                     logger.error(f"Error reading selected concept from post_development: {e}")
             
             # Get illustration_method from post taxonomy for prompt selection
-            cursor.execute("""
-                SELECT content_type.illustration_method, content_type.name as content_type_name
-                FROM post p
-                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
-                WHERE p.id = %s
-            """, (post_id,))
-            taxonomy_data = cursor.fetchone()
+            # For recipe posts, use post_type instead of taxonomy
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
             
-            illustration_method = taxonomy_data.get('illustration_method') if taxonomy_data else 'LLM-creation'
-            content_type_name = taxonomy_data.get('content_type_name') if taxonomy_data else None
+            if post_type == 'recipe':
+                # Recipe posts don't use taxonomy for content_type
+                illustration_method = 'LLM-creation'
+                content_type_name = None
+            else:
+                cursor.execute("""
+                    SELECT content_type.illustration_method, content_type.display_name as content_type_name
+                    FROM post p
+                    LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
+                    WHERE p.id = %s
+                """, (post_id,))
+                taxonomy_data = cursor.fetchone()
+                
+                illustration_method = taxonomy_data.get('illustration_method') if taxonomy_data else 'LLM-creation'
+                content_type_name = taxonomy_data.get('content_type_name') if taxonomy_data else None
             
             # Use utility function to get category-specific prompt name
             from utils.taxonomy_helpers import get_category_prompt_name
@@ -1284,11 +1293,72 @@ def api_generate_image_captions(post_id, section_id):
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
             
+            # For recipe posts, use image prompt as input instead of section content
+            image_prompt_text = ''
+            if post_type == 'recipe':
+                # Get image prompt from section
+                image_prompts = section.get('image_prompts')
+                if image_prompts:
+                    if isinstance(image_prompts, str):
+                        try:
+                            image_prompts_data = json.loads(image_prompts)
+                            if isinstance(image_prompts_data, dict):
+                                # Handle nested JSON: image_prompt might be a JSON string itself
+                                prompt_value = image_prompts_data.get('image_prompt') or image_prompts_data.get('description') or image_prompts_data.get('subject')
+                                if prompt_value:
+                                    # If it's a string that looks like JSON, try to parse it
+                                    if isinstance(prompt_value, str) and prompt_value.strip().startswith('{'):
+                                        try:
+                                            nested_json = json.loads(prompt_value)
+                                            if isinstance(nested_json, dict):
+                                                image_prompt_text = nested_json.get('description') or nested_json.get('image_prompt') or prompt_value
+                                            else:
+                                                image_prompt_text = prompt_value
+                                        except (json.JSONDecodeError, TypeError):
+                                            image_prompt_text = prompt_value
+                                    else:
+                                        image_prompt_text = prompt_value
+                                else:
+                                    image_prompt_text = str(image_prompts_data)
+                            else:
+                                image_prompt_text = image_prompts
+                        except (json.JSONDecodeError, TypeError):
+                            # If it's not JSON, use as-is
+                            image_prompt_text = image_prompts
+                    elif isinstance(image_prompts, dict):
+                        prompt_value = image_prompts.get('image_prompt') or image_prompts.get('description') or image_prompts.get('subject')
+                        if prompt_value and isinstance(prompt_value, str) and prompt_value.strip().startswith('{'):
+                            try:
+                                nested_json = json.loads(prompt_value)
+                                if isinstance(nested_json, dict):
+                                    image_prompt_text = nested_json.get('description') or nested_json.get('image_prompt') or prompt_value
+                                else:
+                                    image_prompt_text = prompt_value
+                            except (json.JSONDecodeError, TypeError):
+                                image_prompt_text = prompt_value
+                        else:
+                            image_prompt_text = prompt_value or str(image_prompts)
+                    else:
+                        image_prompt_text = str(image_prompts)
+                    
+                    logger.info(f"[IMAGE_CAPTIONS] Extracted image prompt text (length: {len(image_prompt_text)}) for recipe post {post_id}, section {section_id}")
+            
             # Replace placeholders with actual data
-            prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept_text or '')
             prompt_text = prompt_text.replace('[SECTION_TITLE]', section['section_heading'] or '')
             prompt_text = prompt_text.replace('[SECTION_DESCRIPTION]', section['section_description'] or '')
-            prompt_text = prompt_text.replace('[SECTION_CONTENT]', section.get('polished') or section.get('draft') or '')
+            
+            # For recipe posts, use image prompt as the selected concept; for others, use section content
+            if post_type == 'recipe' and image_prompt_text:
+                # For recipe posts, the image prompt IS the concept we want to caption
+                prompt_text = prompt_text.replace('[data:selected_concept]', image_prompt_text)
+                prompt_text = prompt_text.replace('[SECTION_CONTENT]', image_prompt_text)
+                prompt_text = prompt_text.replace('[IMAGE_PROMPT]', image_prompt_text)
+                logger.info(f"[IMAGE_CAPTIONS] Using image prompt as selected concept for recipe post {post_id}, section {section_id}")
+            else:
+                # For non-recipe posts, use the selected concept or section content
+                prompt_text = prompt_text.replace('[data:selected_concept]', selected_concept_text or '')
+                prompt_text = prompt_text.replace('[SECTION_CONTENT]', section.get('polished') or section.get('draft') or '')
+                prompt_text = prompt_text.replace('[IMAGE_PROMPT]', image_prompt_text or '')
 
             # Enforce UK British English spelling in captions and alt text with examples
             uk_english_guidance = (
@@ -1319,7 +1389,10 @@ def api_generate_image_captions(post_id, section_id):
             if 'error' in result:
                 return jsonify({'error': f'LLM generation failed: {result["error"]}'}), 500
             
-            raw_content = result['content']
+            raw_content = result.get('content')
+            if not raw_content or not raw_content.strip():
+                logger.error(f"Empty LLM response for post {post_id}, section {section_id}")
+                return jsonify({'error': 'LLM returned empty response. Please check Ollama is running and try again.'}), 500
             
             # Parse JSON response
             try:
@@ -1362,6 +1435,8 @@ def api_generate_image_captions(post_id, section_id):
                     'success': True,
                     'caption': parsed_json['caption'].strip(),
                     'alt_text': parsed_json['alt_text'].strip(),
+                    'image_captions': parsed_json['caption'].strip(),  # Alias for frontend compatibility
+                    'image_alt_text': parsed_json['alt_text'].strip(),  # Alias for frontend compatibility
                     'message': 'Image captions generated successfully'
                 })
                 

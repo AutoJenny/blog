@@ -31,9 +31,15 @@ class SectionsPanel {
     async loadSections() {
         try {
             // Determine the correct API endpoint based on current stage
-            const apiEndpoint = window.currentStage === 'imaging' 
+            let apiEndpoint = window.currentStage === 'imaging' 
                 ? `/imaging/api/posts/${this.postId}/sections`
                 : `/authoring/api/posts/${this.postId}/sections`;
+            
+            // Add image_context parameter if we're in image captions or image generation context
+            if (window.currentSubstage === 'image-captions' || window.currentSubstage === 'image-generation') {
+                const separator = apiEndpoint.includes('?') ? '&' : '?';
+                apiEndpoint += `${separator}image_context=true`;
+            }
             
             const response = await fetch(apiEndpoint);
             const data = await response.json();

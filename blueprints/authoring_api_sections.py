@@ -75,18 +75,35 @@ def api_get_sections(post_id):
                     logger.info(f"Auto-created {len(recipe_sections)} recipe sections for post {post_id}")
             
             # Get sections from post_section table first
-            # For recipe posts in image generation context, only show sections that need images
+            # For recipe posts in image generation or image captions context, only show sections that have images
             # (ingredients and method sections)
             if post_type == 'recipe':
-                # Check if we're in image generation context by checking request path
+                # Check if we're in image generation or image captions context
+                # Check query parameter first, then request path, then referrer
                 from flask import request
-                is_image_generation = request and (
-                    '/image-generation' in request.path or 
-                    '/imaging' in request.path
-                )
+                is_image_context = False
                 
-                if is_image_generation:
-                    # Only show ingredients and method sections for recipe image generation
+                # Check query parameter
+                if request and request.args.get('image_context') == 'true':
+                    is_image_context = True
+                # Check request path
+                elif request and (
+                    '/image-generation' in request.path or 
+                    '/imaging' in request.path or
+                    '/image_captions' in request.path
+                ):
+                    is_image_context = True
+                # Check referrer
+                elif request and request.referrer and (
+                    '/image-generation' in request.referrer or 
+                    '/imaging' in request.referrer or
+                    '/image_captions' in request.referrer
+                ):
+                    is_image_context = True
+                
+                if is_image_context:
+                    # Show ingredients section AND recipe_image_style section for recipe image generation/captions
+                    # (recipe_image_style contains hero image prompt needed for generation)
                     cursor.execute("""
                         SELECT id, section_order, section_heading, section_description, 
                                status, draft, polished, ideas_to_include, facts_to_include,
@@ -95,7 +112,7 @@ def api_get_sections(post_id):
                                post_section_elements
                         FROM post_section
                         WHERE post_id = %s 
-                          AND section_type IN ('recipe_ingredients', 'recipe_method')
+                          AND (section_type = 'recipe_ingredients' OR section_type = 'recipe_image_style')
                         ORDER BY section_order
                     """, (post_id,))
                 else:

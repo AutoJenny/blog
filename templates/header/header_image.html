@@ -3,10 +3,12 @@
 {% block title %}Header - Header Image{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-image-full-width.css') }}">
 <script>
     window.currentStage = 'header';
     window.currentSubstage = 'header-image';
     window.postId = {{ post_id }};
+    window.postType = {{ post_type|tojson|safe if post_type else 'null' }};
     window.year = {{ year | default('null') }};
     window.week = {{ week | default('null') }};
     window.illustrationMethod = "{{ illustration_method | default('LLM-creation') }}";
@@ -27,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="header-workspace">
     <div class="workspace-container">
         <!-- Full Width Content (no left panel for header images) -->
-        <div class="editor-panel" style="width: 100%;">
+        <div class="editor-panel">
             <!-- Route Indicator -->
             <div class="route-indicator header-page">
                 <i class="fas fa-camera"></i>
@@ -37,6 +39,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% endif %}
             </div>
             
+            {% if post_type == 'recipe' %}
+            <!-- Recipe-specific panels -->
+            <!-- Panel 1: Input Data (Always visible) -->
+            {% include 'header/includes/input_data_panel.html' %}
+            
+            <!-- Panel 2: Hero Image Prompt (Recipe-specific) -->
+            {% include 'header/includes/recipe_hero_image_panel.html' %}
+            
+            <!-- Panel 3: Image Generation Settings -->
+            {% include 'header/includes/image_generation_settings_panel.html' %}
+            {% else %}
+            <!-- Themed post panels -->
             <!-- Panel 1: Input Data (Always visible) -->
             {% include 'header/includes/input_data_panel.html' %}
             
@@ -51,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <!-- Panel 5: Image Generation Settings -->
             {% include 'header/includes/image_generation_settings_panel.html' %}
+            {% endif %}
             
             <!-- Panel 6: Raw Generated Images (Auto-expands when generated) -->
             {% include 'header/includes/raw_images_panel.html' %}
@@ -66,6 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- JavaScript for simplified workflow -->
+{% if post_type == 'recipe' %}
+<script src="{{ url_for('static', filename='js/header/recipe-header-image.js') }}?v={{ range(1000, 9999) | random }}"></script>
+{% else %}
 <script src="{{ url_for('static', filename='js/header/header-image-simplified.js') }}?v={{ range(1000, 9999) | random }}"></script>
+{% endif %}
 <script src="{{ url_for('static', filename='js/header/header-workspace.js') }}"></script>
 {% endblock %}

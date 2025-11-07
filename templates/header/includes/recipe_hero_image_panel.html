@@ -1,0 +1,48 @@
+<!-- Recipe Hero Image Prompt Panel - For recipe posts only -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-panel.css') }}">
+<div class="recipe-hero-prompt-panel" id="recipe-hero-prompt-panel">
+    <div class="panel-header">
+        <h4><span class="panel-name-green">Hero Image Prompt:</span> From Image Style & Prompts</h4>
+    </div>
+    <div class="panel-content" style="display: block;">
+        <div class="prompt-display-item">
+            <div class="prompt-label">Hero Image Prompt:</div>
+            <textarea id="recipe-hero-prompt-textarea" rows="8" placeholder="Loading hero image prompt..." style="width: 100%; padding: 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0; font-family: monospace; font-size: 0.9rem; line-height: 1.6;"></textarea>
+            <div style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.875rem;">
+                <i class="fas fa-info-circle"></i> This prompt is from the Image Style & Prompts stage. Edit it there to change it.
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.recipe-hero-prompt-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.recipe-hero-prompt-panel .panel-header {
+    padding: 0.75rem 1rem;
+    background: #0f172a;
+    border-bottom: 1px solid #334155;
+    border-radius: 8px 8px 0 0;
+}
+
+.recipe-hero-prompt-panel .panel-header h4 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.prompt-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+</style>
+

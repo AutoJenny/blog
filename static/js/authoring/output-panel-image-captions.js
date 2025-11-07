@@ -194,10 +194,14 @@ class ImageCaptionsOutputPanel {
             const data = await response.json();
             console.log('[ImageCaptionsOutputPanel] Generation response:', data);
             
-            if (data.success && data.image_captions && data.image_alt_text) {
+            // Support both response formats: 'caption'/'alt_text' and 'image_captions'/'image_alt_text'
+            const caption = data.image_captions || data.caption;
+            const altText = data.image_alt_text || data.alt_text;
+            
+            if (data.success && caption && altText) {
                 this.displayCaptions({
-                    caption: data.image_captions,
-                    alt_text: data.image_alt_text
+                    caption: caption,
+                    alt_text: altText
                 });
                 
                 if (this.lastSavedSpan) {

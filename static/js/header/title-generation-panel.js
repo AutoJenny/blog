@@ -54,6 +54,48 @@
     .then(data => {
       if (data.success && data.title_options) {
         displayTitleOptions(data.title_options, data.selected_index || 0);
+        
+        // For recipe posts, if subtitle is returned, populate it automatically and save it
+        if (data.subtitle) {
+          const subtitleInput = document.getElementById('subtitle-input');
+          if (subtitleInput) {
+            subtitleInput.value = data.subtitle;
+            // Trigger change event to update status
+            subtitleInput.dispatchEvent(new Event('input', { bubbles: true }));
+            
+            // Auto-save the subtitle for recipe posts
+            fetch(`/header/api/posts/${window.postId}/save-selected-subtitle`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                subtitle: data.subtitle,
+                subtitle_index: 0
+              })
+            })
+            .then(response => response.json())
+            .then(saveData => {
+              if (saveData.success) {
+                console.log('[Title Generation Panel] Subtitle auto-saved:', data.subtitle);
+              }
+            })
+            .catch(error => {
+              console.error('[Title Generation Panel] Error auto-saving subtitle:', error);
+            });
+          }
+          // Also update subtitle options display if it exists
+          const subtitleOptions = document.getElementById('subtitle-options');
+          if (subtitleOptions && !subtitleOptions.querySelector('.subtitle-option')) {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'subtitle-option';
+            optionDiv.innerHTML = `
+              <input type="radio" name="subtitle-selection" value="0" id="subtitle-0" checked>
+              <label for="subtitle-0">${data.subtitle}</label>
+            `;
+            subtitleOptions.appendChild(optionDiv);
+          }
+        }
       } else {
         console.error('Failed to generate titles:', data.error);
         showTitleError(data.error || 'Failed to generate titles');

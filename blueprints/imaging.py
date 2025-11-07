@@ -113,41 +113,38 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
         os.makedirs(portrait_dir, exist_ok=True)
         
         landscape_path = f"{landscape_dir}/{landscape_filename}"
-        landscape_exists = os.path.exists(landscape_path)
         
-        # Generate landscape version only if it doesn't exist
-        if not landscape_exists:
-            landscape_data = {
-                'model': 'dall-e-3',
-                'prompt': image_prompt,
-                'n': 1,
-                'size': landscape_size,
-                'quality': quality,
-                'style': style
-            }
-            
-            logger.info(f"DALL-E landscape API request: {landscape_data}")
-            landscape_response = requests.post('https://api.openai.com/v1/images/generations', 
-                                   headers=headers, json=landscape_data, timeout=120)
-            
-            if landscape_response.status_code != 200:
-                return {'success': False, 'error': f'DALL-E landscape API error: {landscape_response.status_code} - {landscape_response.text}'}
-            
-            landscape_result = landscape_response.json()
-            if 'data' not in landscape_result or not landscape_result['data']:
-                return {'success': False, 'error': 'No image data returned from DALL-E landscape'}
-            
-            # Download landscape image
-            landscape_url = landscape_result['data'][0]['url']
-            landscape_image_response = requests.get(landscape_url, timeout=30)
-            if landscape_image_response.status_code != 200:
-                return {'success': False, 'error': f'Failed to download landscape image: {landscape_image_response.status_code}'}
-            
-            with open(landscape_path, 'wb') as f:
-                f.write(landscape_image_response.content)
-            logger.info(f"Generated landscape image: {landscape_path}")
-        else:
-            logger.info(f"Landscape image already exists, skipping generation: {landscape_path}")
+        # Always generate and overwrite existing image (don't skip if file exists)
+        landscape_data = {
+            'model': 'dall-e-3',
+            'prompt': image_prompt,
+            'n': 1,
+            'size': landscape_size,
+            'quality': quality,
+            'style': style
+        }
+        
+        logger.info(f"DALL-E landscape API request: {landscape_data}")
+        landscape_response = requests.post('https://api.openai.com/v1/images/generations', 
+                               headers=headers, json=landscape_data, timeout=120)
+        
+        if landscape_response.status_code != 200:
+            return {'success': False, 'error': f'DALL-E landscape API error: {landscape_response.status_code} - {landscape_response.text}'}
+        
+        landscape_result = landscape_response.json()
+        if 'data' not in landscape_result or not landscape_result['data']:
+            return {'success': False, 'error': 'No image data returned from DALL-E landscape'}
+        
+        # Download landscape image
+        landscape_url = landscape_result['data'][0]['url']
+        landscape_image_response = requests.get(landscape_url, timeout=30)
+        if landscape_image_response.status_code != 200:
+            return {'success': False, 'error': f'Failed to download landscape image: {landscape_image_response.status_code}'}
+        
+        # Always overwrite existing file
+        with open(landscape_path, 'wb') as f:
+            f.write(landscape_image_response.content)
+        logger.info(f"Generated and saved landscape image: {landscape_path} (overwrote existing if present)")
         
         # Generate portrait version with same prompt but portrait dimensions
         portrait_data = {
@@ -267,7 +264,12 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
             return {'success': False, 'error': 'Invalid OPENAI_API_KEY format. API keys should start with "sk-".'}
         
         # Extract parameters with proper type coercion
-        landscape_size = parameters.get('size', '1024x1024')  # Default landscape
+        # For recipe posts, default to landscape; for others, use square default
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(post_id)
+        # GPT-Image-1 only supports: '1024x1024', '1024x1536', '1536x1024', and 'auto'
+        default_size = '1536x1024' if post_type == 'recipe' else '1024x1024'  # Landscape for recipes (max supported)
+        landscape_size = parameters.get('size', default_size)
         portrait_size = parameters.get('portrait_size', '1024x1792')  # Default portrait
         # Map quality values: 'hd' -> 'high', 'standard' -> 'medium'
         quality_raw = parameters.get('quality', 'high')
@@ -772,9 +774,14 @@ def imaging_sections_image_generation(post_id):
         url_year = request.args.get('year', type=int)
         url_week = request.args.get('week', type=int)
         
+        # Check if this is a recipe post first - recipe posts should use URL post_id directly
+        from utils.taxonomy_helpers import get_post_type
+        url_post_type = get_post_type(post_id)
+        
         # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        # BUT: For recipe posts, always use the URL post_id (recipes have their own scheduling)
         target_post_id = post_id
-        if url_year and url_week:
+        if url_post_type != 'recipe' and url_year and url_week:
             from utils.week_post_resolver import resolve_post_for_week
             resolved_post_id = resolve_post_for_week(url_year, url_week)
             if resolved_post_id:
@@ -782,12 +789,21 @@ def imaging_sections_image_generation(post_id):
                 logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
             else:
                 logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        elif url_post_type == 'recipe':
+            logger.info(f"Recipe post {post_id} - using URL post_id directly (not resolving via week)")
         
-        # Use utility function to get illustration_method
-        from utils.taxonomy_helpers import get_illustration_method_with_post
-        target_post_id, illustration_method = get_illustration_method_with_post(
-            post_id, url_year, url_week
-        )
+        # Recipe posts should ALWAYS use LLM-creation (image generation), not Photo-harvesting
+        if url_post_type == 'recipe':
+            illustration_method = 'LLM-creation'
+        else:
+            # Use utility function to get illustration_method for non-recipe posts
+            from utils.taxonomy_helpers import get_illustration_method_with_post
+            resolved_for_method, illustration_method = get_illustration_method_with_post(
+                post_id, url_year, url_week
+            )
+            # Use the resolved post_id from illustration method resolution if it's different (but not for recipes)
+            if resolved_for_method != target_post_id:
+                target_post_id = resolved_for_method
         
         # Check if route is active (Photo-harvesting is inactive but kept in reserve)
         from config.authoring_panel_configs import get_panel_config
@@ -809,14 +825,16 @@ def imaging_sections_image_generation(post_id):
             if not post:
                 return f"Post {target_post_id} not found", 404
             
-            # Check if Photo-harvesting route is active before redirecting
-            photo_harvesting_config = get_panel_config('Photo-harvesting')
-            if illustration_method == 'Photo-harvesting' and photo_harvesting_config.get('active', True):
-                redirect_url = url_for('imaging.imaging_sections_photo_selection', post_id=post_id)
-                if url_year and url_week:
-                    redirect_url += f'?year={url_year}&week={url_week}'
-                return redirect(redirect_url)
-            # If Photo-harvesting is inactive, continue with LLM-creation route (illustration_method already set above)
+            # Recipe posts should NEVER use Photo-harvesting - skip this check for recipes
+            if url_post_type != 'recipe':
+                # Check if Photo-harvesting route is active before redirecting (only for non-recipe posts)
+                photo_harvesting_config = get_panel_config('Photo-harvesting')
+                if illustration_method == 'Photo-harvesting' and photo_harvesting_config.get('active', True):
+                    redirect_url = url_for('imaging.imaging_sections_photo_selection', post_id=post_id)
+                    if url_year and url_week:
+                        redirect_url += f'?year={url_year}&week={url_week}'
+                    return redirect(redirect_url)
+            # If Photo-harvesting is inactive or this is a recipe post, continue with LLM-creation route
             
             # Format dates for display
             post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
@@ -873,7 +891,10 @@ def imaging_sections_optimise(post_id):
             illustration_method = 'LLM-creation'
         
         with db_manager.get_cursor() as cursor:
-            # Get post data
+            # Get post data and post type
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(target_post_id)
+            
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.created_at, p.updated_at
                 FROM post p
@@ -893,6 +914,7 @@ def imaging_sections_optimise(post_id):
                                post_status=post['status'],
                                post_created=post_created,
                                post_updated=post_updated,
+                               post_type=post_type,
                                currentStage='imaging',
                                currentSubstage='optimise',
                                illustration_method=illustration_method)
@@ -908,9 +930,14 @@ def imaging_sections_photo_selection(post_id):
         url_year = request.args.get('year', type=int)
         url_week = request.args.get('week', type=int)
         
+        # Check if this is a recipe post first - recipe posts should use URL post_id directly
+        from utils.taxonomy_helpers import get_post_type
+        url_post_type = get_post_type(post_id)
+        
         # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        # BUT: For recipe posts, always use the URL post_id (recipes have their own scheduling)
         target_post_id = post_id
-        if url_year and url_week:
+        if url_post_type != 'recipe' and url_year and url_week:
             from utils.week_post_resolver import resolve_post_for_week
             resolved_post_id = resolve_post_for_week(url_year, url_week)
             if resolved_post_id:
@@ -918,12 +945,27 @@ def imaging_sections_photo_selection(post_id):
                 logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
             else:
                 logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        elif url_post_type == 'recipe':
+            logger.info(f"Recipe post {post_id} - using URL post_id directly (not resolving via week)")
         
+        # Recipe posts should ALWAYS use image generation (LLM-creation), not Photo-harvesting
+        if url_post_type == 'recipe':
+            # Recipe posts always use image generation, redirect immediately
+            redirect_url = url_for('imaging.imaging_sections_image_generation', post_id=post_id)
+            if url_year and url_week:
+                redirect_url += f'?year={url_year}&week={url_week}'
+            logger.info(f"Recipe post {post_id} - redirecting to image-generation (not photo-selection)")
+            return redirect(redirect_url)
+        
+        # For non-recipe posts, check illustration_method
         # Use utility function to get illustration_method
         from utils.taxonomy_helpers import get_illustration_method_with_post
-        target_post_id, illustration_method = get_illustration_method_with_post(
+        resolved_for_method, illustration_method = get_illustration_method_with_post(
             post_id, url_year, url_week
         )
+        # Use the resolved post_id from illustration method resolution if it's different
+        if resolved_for_method != target_post_id:
+            target_post_id = resolved_for_method
         
         # Check if Photo-harvesting route is active
         from config.authoring_panel_configs import get_panel_config
@@ -938,7 +980,13 @@ def imaging_sections_photo_selection(post_id):
             return redirect(redirect_url)
         
         with db_manager.get_cursor() as cursor:
-            # Get post data
+            # Get post data and post type - use target_post_id consistently
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(target_post_id)
+            
+            # Log for debugging
+            logger.info(f"[IMAGING] Photo selection page: post_id={post_id}, target_post_id={target_post_id}, post_type={post_type}")
+            
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.created_at, p.updated_at
                 FROM post p
@@ -954,12 +1002,13 @@ def imaging_sections_photo_selection(post_id):
             post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
             
         return render_template('imaging/sections/photo_selection.html',
-                             post_id=target_post_id,
+                             post_id=target_post_id,  # Use target_post_id consistently
                              page_title='Photo Selection',
                              post_title=post['title'],
                              post_status=post['status'],
                              post_created=post_created,
                              post_updated=post_updated,
+                             post_type=post_type,  # This should be 'recipe' for post 82
                              currentStage='imaging',
                              currentSubstage='photo-selection',
                              illustration_method=illustration_method)
@@ -1233,10 +1282,10 @@ def imaging_generate_image_flexible(post_id, section_id):
         if post_type == 'recipe':
             # Set landscape dimensions for recipe images
             if model_name == 'gpt-image-1':
-                parameters['size'] = '1792x1024'  # Landscape
+                parameters['size'] = '1536x1024'  # Landscape (max supported by GPT-Image-1)
                 parameters['portrait_size'] = '1024x1792'  # Portrait (for header)
             elif model_name.startswith('dall-e') or model_name.startswith('openai'):
-                parameters['size'] = '1792x1024'  # Landscape
+                parameters['size'] = '1792x1024'  # Landscape (DALL-E supports this)
             elif model_name.startswith('sdxl'):
                 parameters['width'] = 1792
                 parameters['height'] = 1024
@@ -1258,6 +1307,67 @@ def imaging_generate_image_flexible(post_id, section_id):
             # Calculate generation time
             generation_time_ms = int((time.time() - start_time) * 1000)
             
+            # Automatically optimize and watermark the section image after generation
+            logger.info(f"Automatically optimizing section image for post {post_id}, section {resolved_section_id}")
+            optimize_params = {
+                'quality': 50,
+                'overlay_text': 'AI-generated image',
+                'watermark': True,
+                'text_overlay': True
+            }
+            watermark_result = optimize_image_with_watermark(post_id, resolved_section_id, optimize_params)
+            
+            if watermark_result.get('success'):
+                optimized_path = watermark_result.get('optimized_path')
+                logger.info(f"Optimization successful, optimized_path: {optimized_path}")
+                # Save optimized image to database
+                with db_manager.get_cursor() as cursor:
+                    # Get optimized image path
+                    optimized_path_db = optimized_path.lstrip('/') if optimized_path else None
+                    
+                    if optimized_path_db:
+                        logger.info(f"Saving optimized image to database: {optimized_path_db}")
+                        # Insert or update image record
+                        cursor.execute("""
+                            INSERT INTO image (filename, path, alt_text, caption)
+                            VALUES (%s, %s, %s, %s)
+                            ON CONFLICT (path) DO UPDATE 
+                            SET filename = EXCLUDED.filename, alt_text = EXCLUDED.alt_text, caption = EXCLUDED.caption
+                            RETURNING id
+                        """, (
+                            f"{resolved_section_id}_optimized.jpg",
+                            f"/{optimized_path_db}",
+                            f"Optimized image for section {resolved_section_id}",
+                            "AI-generated image"
+                        ))
+                        image_record = cursor.fetchone()
+                        if image_record:
+                            image_id = image_record['id']
+                            logger.info(f"Image record created/updated with ID: {image_id}")
+                            
+                            # Delete any existing post_images link for this section's optimized image
+                            cursor.execute("""
+                                DELETE FROM post_images 
+                                WHERE section_id = %s AND image_type = 'section_optimized'
+                            """, (resolved_section_id,))
+                            
+                            # Create post_images link (include post_id as required by schema)
+                            cursor.execute("""
+                                INSERT INTO post_images (post_id, section_id, image_id, image_type)
+                                VALUES (%s, %s, %s, 'section_optimized')
+                            """, (post_id, resolved_section_id, image_id))
+                            
+                            cursor.connection.commit()
+                            logger.info(f"post_images link created: post_id={post_id}, section_id={resolved_section_id}, image_id={image_id}")
+                        else:
+                            logger.error(f"Failed to get image_id after INSERT/UPDATE")
+                    else:
+                        logger.error(f"optimized_path_db is None or empty")
+            else:
+                error_msg = watermark_result.get('error', 'Unknown error')
+                logger.error(f"Section image optimization failed: {error_msg}")
+                # Continue anyway - raw image was generated successfully
+            
             # Log generation event
             prompt_service.log_generation_event(
                 post_id=post_id,
@@ -1266,21 +1376,32 @@ def imaging_generate_image_flexible(post_id, section_id):
                 params=parameters,
                 prompt_text=image_prompt,
                 rendered_prompt=image_prompt,
-                result_path=result['image_path'],
+                result_path=watermark_result.get('optimized_path') or result['image_path'],
                 success=True,
                 generation_time_ms=generation_time_ms
             )
             
-            return jsonify(
-                {
-                    'success': True,
-                    'image_path': result['image_path'],
-                    'resolved_section_id': resolved_section_id,
-                    'message': 'Image generated successfully',
-                    'debug_info': debug_info,
-                    'generation_time_ms': generation_time_ms
-                }
-            )
+            # Return response with optimization status
+            response_data = {
+                'success': True,
+                'image_path': result['image_path'],
+                'resolved_section_id': resolved_section_id,
+                'message': 'Image generated successfully',
+                'debug_info': debug_info,
+                'generation_time_ms': generation_time_ms
+            }
+            
+            # Include optimization status in response
+            if watermark_result.get('success'):
+                response_data['optimized_path'] = watermark_result.get('optimized_path')
+                response_data['optimization_success'] = True
+                response_data['message'] = 'Image generated and optimized successfully'
+            else:
+                response_data['optimization_success'] = False
+                response_data['optimization_error'] = watermark_result.get('error', 'Unknown error')
+                response_data['message'] = f"Image generated but optimization failed: {watermark_result.get('error', 'Unknown error')}"
+            
+            return jsonify(response_data)
         else:
             # Log failed generation
             prompt_service.log_generation_event(
@@ -1853,11 +1974,11 @@ def imaging_optimize_image(post_id, section_id):
                     WHERE section_id = %s AND image_type = 'section_optimized'
                 """, (resolved_section_id,))
                 
-                # Create post_images link
+                # Create post_images link (include post_id as required by schema)
                 cursor.execute("""
-                    INSERT INTO post_images (section_id, image_id, image_type)
-                    VALUES (%s, %s, 'section_optimized')
-                """, (resolved_section_id, image_id))
+                    INSERT INTO post_images (post_id, section_id, image_id, image_type)
+                    VALUES (%s, %s, %s, 'section_optimized')
+                """, (post_id, resolved_section_id, image_id))
             
             return jsonify({
                 'success': True,

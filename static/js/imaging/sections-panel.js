@@ -116,6 +116,9 @@ class ImagingSectionsPanel {
             container.appendChild(div);
         });
 
+        // Hero images for recipe posts should be generated from the Header stage, not here
+        // (Same as themed posts - keeps it simple and reliable)
+
         // Ensure generate button state reflects current UI after render
         this.updateGenerateButtonState();
     }
@@ -239,6 +242,12 @@ class ImagingSectionsPanel {
     async batchGenerateSelected() {
         const selectedIds = Array.from(this.selectedSections);
         console.log('[ImagingSectionsPanel] batchGenerateSelected called, selectedIds:', selectedIds);
+        console.log('[ImagingSectionsPanel] this.selectedSections:', this.selectedSections);
+        console.log('[ImagingSectionsPanel] this.sections:', this.sections);
+        console.log('[ImagingSectionsPanel] window.postType:', window.postType);
+        console.log('[ImagingSectionsPanel] Hero in selectedIds?', selectedIds.includes('hero'));
+        
+        // Hero images for recipe posts should be generated from the Header stage, not here
         
         if (selectedIds.length === 0) {
             console.warn('[ImagingSectionsPanel] No sections selected');
@@ -247,18 +256,33 @@ class ImagingSectionsPanel {
         }
 
         const btn = document.getElementById('batch-generate-btn');
-        const original = btn ? btn.textContent : '';
-        if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+        if (!btn) {
+            console.error('[ImagingSectionsPanel] batch-generate-btn not found!');
+            alert('Generate button not found. Please refresh the page.');
+            return;
+        }
+        
+        const original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
 
+        console.log('[ImagingSectionsPanel] Calling onBatchStart with', selectedIds);
         this.callbacks.onBatchStart(selectedIds);
 
         try {
-            for (let i = 0; i < selectedIds.length; i++) {
-                const sectionId = selectedIds[i];
+            // Filter out 'hero' if it somehow got selected (shouldn't happen, but be safe)
+            const sectionIds = selectedIds.filter(id => id !== 'hero');
+            const totalItems = sectionIds.length;
+            let currentItem = 0;
+
+            // Process section images
+            for (let i = 0; i < sectionIds.length; i++) {
+                const sectionId = sectionIds[i];
                 const section = this.sections.find(s => s.id === sectionId);
                 const sectionTitle = section ? (section.section_heading || section.title || `Section ${sectionId}`) : `Section ${sectionId}`;
 
-                this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'generating' });
+                currentItem++;
+                this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'generating' });
 
                 // Obtain prompt for this specific section
                 let image_prompt = '';
@@ -284,16 +308,23 @@ class ImagingSectionsPanel {
                 // 3) Final fallback: fetch sections and extract prompt for this id
                 if (!image_prompt) {
                     try {
-                        const resp = await fetch(`/authoring/api/posts/${this.postId}/sections`);
-                        const data = await resp.json();
-                        if (data && Array.isArray(data)) {
-                            const s = data.find(x => String(x.id) === String(sectionId));
-                            if (s && s.image_prompts) {
-                                if (typeof s.image_prompts === 'object') image_prompt = s.image_prompts.image_prompt || '';
-                                else {
-                                    try { image_prompt = (JSON.parse(s.image_prompts).image_prompt) || s.image_prompts; } catch { image_prompt = s.image_prompts; }
+                        const resp = await fetch(`/authoring/api/posts/${this.postId}/sections?image_context=true`);
+                        if (!resp.ok) {
+                            console.warn(`[ImagingSectionsPanel] Failed to fetch sections for prompt: HTTP ${resp.status}`);
+                        } else {
+                            const responseText = await resp.text();
+                            if (responseText) {
+                                const data = JSON.parse(responseText);
+                                if (data && Array.isArray(data)) {
+                                    const s = data.find(x => String(x.id) === String(sectionId));
+                                    if (s && s.image_prompts) {
+                                        if (typeof s.image_prompts === 'object') image_prompt = s.image_prompts.image_prompt || '';
+                                        else {
+                                            try { image_prompt = (JSON.parse(s.image_prompts).image_prompt) || s.image_prompts; } catch { image_prompt = s.image_prompts; }
+                                        }
+                                        if (image_prompt) console.log(`[ImagingSectionsPanel] Found prompt from API for section ${sectionId}`);
+                                    }
                                 }
-                                if (image_prompt) console.log(`[ImagingSectionsPanel] Found prompt from API for section ${sectionId}`);
                             }
                         }
                     } catch(err) { 
@@ -303,7 +334,7 @@ class ImagingSectionsPanel {
                 
                 if (!image_prompt) {
                     console.warn(`[ImagingSectionsPanel] No prompt found for section ${sectionId}, skipping`);
-                    this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'error', error: 'No image prompt found for this section. Please generate prompts first.' });
+                    this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: 'No image prompt found for this section. Please generate prompts first.' });
                     continue;
                 }
 
@@ -324,11 +355,29 @@ class ImagingSectionsPanel {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(optParams)
                     });
-                    data = await resp.json();
+                    
+                    if (!resp.ok) {
+                        const errorText = await resp.text();
+                        console.error(`[ImagingSectionsPanel] HTTP error ${resp.status} for optimization section ${sectionId}:`, errorText);
+                        this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: `HTTP ${resp.status}: ${errorText}` });
+                        continue;
+                    }
+                    
+                    try {
+                        const responseText = await resp.text();
+                        if (!responseText) {
+                            throw new Error('Empty response from server');
+                        }
+                        data = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error(`[ImagingSectionsPanel] Failed to parse JSON response for optimization section ${sectionId}:`, parseError);
+                        this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: `Failed to parse response: ${parseError.message}` });
+                        continue;
+                    }
                 } else if (window.currentSubstage === 'photo-selection') {
                     // On photo-selection page (Photo-harvesting route), search and auto-select photos
                     if (!image_prompt) {
-                        this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'error', error: 'No search term found for section' });
+                        this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: 'No search term found for section' });
                         continue;
                     }
                     
@@ -357,7 +406,7 @@ class ImagingSectionsPanel {
                     
                     const searchData = await searchResp.json();
                     if (!searchData.success || !searchData.results || searchData.results.length === 0) {
-                        this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'error', error: searchData.error || 'No photos found' });
+                        this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: searchData.error || 'No photos found' });
                         continue;
                     }
                     
@@ -429,18 +478,66 @@ class ImagingSectionsPanel {
                         parameters = window.modelSelectionPanel.parameters || {};
                     }
                     
+                    // For recipe posts, ensure landscape dimensions
+                    if (window.postType === 'recipe') {
+                        if (model_name === 'gpt-image-1') {
+                            parameters.size = '1536x1024';  // Landscape (max supported by GPT-Image-1)
+                        } else if (model_name.startsWith('dall-e') || model_name.startsWith('openai')) {
+                            parameters.size = '1792x1024';  // Landscape (DALL-E supports this)
+                        } else if (model_name.startsWith('sdxl')) {
+                            parameters.width = 1792;
+                            parameters.height = 1024;
+                        }
+                    }
+                    
                     const payload = {
                         model_name,
                         parameters
                     };
-                    console.log(`[ImagingSectionsPanel] Generating image for section ${sectionId} with model ${model_name}`);
-                    resp = await fetch(`/imaging/api/image-generation/posts/${this.postId}/sections/${sectionId}/generate-image`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    data = await resp.json();
-                    console.log(`[ImagingSectionsPanel] Image generation response for section ${sectionId}:`, data);
+                    console.log(`[ImagingSectionsPanel] Generating image for section ${sectionId} with model ${model_name}`, payload);
+                    
+                    // Create AbortController for timeout handling
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+                    
+                    try {
+                        resp = await fetch(`/imaging/api/image-generation/posts/${this.postId}/sections/${sectionId}/generate-image`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                            signal: controller.signal
+                        });
+                        clearTimeout(timeoutId);
+                    } catch (fetchError) {
+                        clearTimeout(timeoutId);
+                        if (fetchError.name === 'AbortError') {
+                            throw new Error('Request timed out after 5 minutes');
+                        } else if (fetchError.message && fetchError.message.includes('Failed to fetch')) {
+                            throw new Error('Network connection lost. Please check your connection and try again.');
+                        } else {
+                            throw fetchError;
+                        }
+                    }
+                    
+                    if (!resp.ok) {
+                        const errorText = await resp.text();
+                        console.error(`[ImagingSectionsPanel] HTTP error ${resp.status} for section ${sectionId}:`, errorText);
+                        this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: `HTTP ${resp.status}: ${errorText}` });
+                        continue;
+                    }
+                    
+                    try {
+                        const responseText = await resp.text();
+                        if (!responseText) {
+                            throw new Error('Empty response from server');
+                        }
+                        data = JSON.parse(responseText);
+                        console.log(`[ImagingSectionsPanel] Image generation response for section ${sectionId}:`, data);
+                    } catch (parseError) {
+                        console.error(`[ImagingSectionsPanel] Failed to parse JSON response for section ${sectionId}:`, parseError);
+                        this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: `Failed to parse response: ${parseError.message}` });
+                        continue;
+                    }
                 }
 
                 if (data.success) {
@@ -455,20 +552,30 @@ class ImagingSectionsPanel {
                             }
                         }
                     }
-                    this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'success' });
+                    this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'success' });
                 } else {
-                    this.callbacks.onBatchProgress({ current: i + 1, total: selectedIds.length, sectionId, sectionTitle, status: 'error', error: data.error });
+                    this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: data.error });
                 }
 
                 // Small pacing delay
-                if (i < selectedIds.length - 1) await new Promise(r => setTimeout(r, 500));
+                if (i < sectionIds.length - 1) await new Promise(r => setTimeout(r, 500));
             }
 
-            this.callbacks.onBatchComplete({ totalSections: selectedIds.length, successCount: selectedIds.length });
+            const totalGenerated = totalItems;
+            console.log('[ImagingSectionsPanel] Batch generation complete, calling onBatchComplete');
+            this.callbacks.onBatchComplete({ totalSections: totalGenerated, successCount: totalGenerated });
         } catch (err) {
             console.error('[ImagingSectionsPanel] Batch generation error:', err);
+            console.error('[ImagingSectionsPanel] Error stack:', err.stack);
+            const errorMessage = err.message || (typeof err === 'string' ? err : 'Unknown error');
+            console.error('[ImagingSectionsPanel] Error message:', errorMessage);
+            alert(`Error during batch generation: ${errorMessage}`);
         } finally {
-            if (btn) { btn.disabled = false; btn.textContent = original; }
+            const btn = document.getElementById('batch-generate-btn');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = original;
+            }
         }
     }
 
@@ -491,6 +598,82 @@ class ImagingSectionsPanel {
         }
 
         console.log(`[Imaging Sections Panel] Updated section ${sectionId} status to: ${newStatus}`);
+    }
+
+    async getRecipeHeroImagePrompt() {
+        // Get hero image prompt from recipe_image_style section
+        console.log('[ImagingSectionsPanel] getRecipeHeroImagePrompt called for post', this.postId);
+        
+        try {
+            // Fetch directly from API
+            const resp = await fetch(`/authoring/api/posts/${this.postId}/sections`);
+            if (!resp.ok) {
+                console.error(`[ImagingSectionsPanel] Failed to fetch sections: HTTP ${resp.status}`);
+                return null;
+            }
+            
+            const data = await resp.json();
+            const sections = data.sections || data; // Handle both wrapped and unwrapped responses
+            
+            if (!Array.isArray(sections)) {
+                console.error('[ImagingSectionsPanel] Sections is not an array:', typeof sections);
+                return null;
+            }
+            
+            console.log('[ImagingSectionsPanel] Found', sections.length, 'sections');
+            const styleSection = sections.find(s => s.section_type === 'recipe_image_style');
+            
+            if (!styleSection) {
+                console.error('[ImagingSectionsPanel] recipe_image_style section NOT FOUND');
+                console.error('[ImagingSectionsPanel] Available section types:', sections.map(s => s.section_type).join(', '));
+                return null;
+            }
+            
+            if (!styleSection.post_section_elements) {
+                console.error('[ImagingSectionsPanel] post_section_elements is missing');
+                return null;
+            }
+            
+            let elements = styleSection.post_section_elements;
+            if (typeof elements === 'string') {
+                elements = JSON.parse(elements);
+            }
+            
+            if (!elements || !elements.hero_image_prompt) {
+                console.error('[ImagingSectionsPanel] hero_image_prompt not found in elements');
+                console.error('[ImagingSectionsPanel] Elements keys:', elements ? Object.keys(elements) : 'null');
+                return null;
+            }
+            
+            const heroPrompt = elements.hero_image_prompt;
+            
+            // Extract the actual prompt text
+            let promptText = null;
+            if (typeof heroPrompt === 'string' && heroPrompt.trim()) {
+                promptText = heroPrompt.trim();
+            } else if (typeof heroPrompt === 'object' && heroPrompt !== null) {
+                promptText = heroPrompt.description || heroPrompt.image_prompt || heroPrompt.prompt;
+                if (promptText && typeof promptText === 'string') {
+                    promptText = promptText.trim();
+                } else {
+                    promptText = null;
+                }
+            }
+            
+            if (!promptText) {
+                console.error('[ImagingSectionsPanel] No valid prompt text extracted');
+                console.error('[ImagingSectionsPanel] hero_image_prompt structure:', JSON.stringify(heroPrompt, null, 2));
+                return null;
+            }
+            
+            console.log('[ImagingSectionsPanel] Successfully extracted hero prompt, length:', promptText.length);
+            return promptText;
+            
+        } catch (error) {
+            console.error('[ImagingSectionsPanel] Error fetching hero image prompt:', error);
+            console.error('[ImagingSectionsPanel] Error stack:', error.stack);
+            return null;
+        }
     }
 }
 

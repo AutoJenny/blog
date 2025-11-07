@@ -606,7 +606,17 @@ class BlogPipelineHeader {
                     if (postTypeData.success && postTypeData.post_type === 'recipe') {
                         // For recipe posts, show the recipe title instead of theme
                         const recipeTitle = postTypeData.post_title || 'Recipe';
-                        themeEl.textContent = recipeTitle;
+                        if (themeEl) {
+                            themeEl.textContent = recipeTitle;
+                        }
+                        return; // Don't continue with theme lookup
+                    }
+                    if (postTypeData.success && postTypeData.post_type === 'profile') {
+                        // For profile posts, show the profile title instead of theme
+                        const profileTitle = postTypeData.post_title || 'Profile';
+                        if (themeEl) {
+                            themeEl.textContent = profileTitle;
+                        }
                         return; // Don't continue with theme lookup
                     }
                 }

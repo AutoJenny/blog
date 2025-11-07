@@ -141,6 +141,14 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
             'metadata': {},
         }
     
+    elif block_type == 'weekly_words':
+        # Weekly Words block - placeholder for now (will need its own selector)
+        return {
+            'suggestions': [],
+            'current': None,
+            'metadata': {},
+        }
+    
     else:
         # Unknown block type: return empty
         return {'suggestions': [], 'current': None, 'metadata': {}}
@@ -194,6 +202,10 @@ def auto_select_for_block(*, block_type: str, issue_id: int, target_week: str) -
     
     elif block_type == 'evergreen':
         return current  # Already in correct format
+    
+    elif block_type == 'weekly_words':
+        # Weekly Words block - placeholder for now
+        return {}
     
     return {}
 

@@ -454,10 +454,16 @@ async function loadWeek(year, weekNumber) {
     if (ideasRes.status === 'fulfilled') {
       const ideasData = ideasRes.value;
       ideas = Array.isArray(ideasData) ? ideasData : (ideasData?.ideas || []);
+      console.log(`[CalendarWeekView] Loaded ${ideas.length} ideas for week ${weekNumber}`);
+    } else {
+      console.warn('[CalendarWeekView] Ideas request failed:', ideasRes.reason);
     }
     if (eventsRes.status === 'fulfilled') {
       const eventsData = eventsRes.value;
       events = Array.isArray(eventsData) ? eventsData : (eventsData?.events || []);
+      console.log(`[CalendarWeekView] Loaded ${events.length} events for week ${weekNumber}`);
+    } else {
+      console.warn('[CalendarWeekView] Events request failed:', eventsRes.reason);
     }
     if (scheduleRes.status === 'fulfilled') {
       const scheduleData = scheduleRes.value;
@@ -528,6 +534,7 @@ async function loadWeek(year, weekNumber) {
   const annualEventsCells = ensureRowCells('annual-events-row');
   const specialEventsCells = ensureRowCells('special-events-row');
   const ideasCells = ensureRowCells('ideas-row');
+  const weeklyWordsCells = ensureRowCells('weekly-words-row');
   const syndicationCells = ensureRowCells('syndication-row');
   const profilesCells = ensureRowCells('profiles-row');
   const recipesCells = ensureRowCells('recipes-row');
@@ -584,8 +591,18 @@ async function loadWeek(year, weekNumber) {
     }
   }
   
-  // All ideas are regular ideas (no more theme classification)
-  const regularIdeas = Array.isArray(ideas) ? ideas : [];
+  // Separate ideas by classification
+  const allIdeas = Array.isArray(ideas) ? ideas : [];
+  console.log(`[CalendarWeekView] Total ideas: ${allIdeas.length}`);
+  const regularIdeas = allIdeas.filter(idea => {
+    const classification = idea.item_classification || 'idea';
+    return classification === 'idea' || classification === 'theme';
+  });
+  const weeklyWords = allIdeas.filter(idea => {
+    const classification = idea.item_classification || 'idea';
+    return classification === 'weekly_word' || classification === 'weekly_phrase';
+  });
+  console.log(`[CalendarWeekView] Regular ideas: ${regularIdeas.length}, Weekly words: ${weeklyWords.length}`);
   
   // Also include ideas scheduled for this specific week (year/week) from calendar_schedule
   // These are ideas that were assigned to this week but may have a different perpetual week_number
@@ -619,14 +636,18 @@ async function loadWeek(year, weekNumber) {
   const annualEventsSections = document.querySelectorAll('[data-filter="annual-events"]');
   const specialEventsSections = document.querySelectorAll('[data-filter="special-events"]');
   const ideasSections = document.querySelectorAll('[data-filter="ideas"]');
+  const weeklyWordsSections = document.querySelectorAll('[data-filter="weekly-words"]');
   const syndicationSections = document.querySelectorAll('[data-filter="syndication"]');
   const profilesSections = document.querySelectorAll('[data-filter="profiles"]');
   const recipesSections = document.querySelectorAll('[data-filter="recipes"]');
+  
+  const showWeeklyWords = document.getElementById('toggle-weekly-words')?.checked ?? true;
   
   themesSections.forEach(section => section.classList.toggle('hidden', !showThemes));
   annualEventsSections.forEach(section => section.classList.toggle('hidden', !showAnnualEvents));
   specialEventsSections.forEach(section => section.classList.toggle('hidden', !showSpecialEvents));
   ideasSections.forEach(section => section.classList.toggle('hidden', !showIdeas));
+  weeklyWordsSections.forEach(section => section.classList.toggle('hidden', !showWeeklyWords));
   syndicationSections.forEach(section => section.classList.toggle('hidden', !showSyndication));
   profilesSections.forEach(section => section.classList.toggle('hidden', !showProfiles));
   recipesSections.forEach(section => section.classList.toggle('hidden', !showRecipes));
@@ -680,12 +701,42 @@ async function loadWeek(year, weekNumber) {
 
   // Render regular ideas per day into Ideas row
   if (showIdeas && ideasCells && regularIdeas.length) {
+    console.log(`[CalendarWeekView] Rendering ${regularIdeas.length} regular ideas`);
     regularIdeas.forEach((idea) => {
       // Ideas are assigned to a specific weekday (default to Monday if not set)
       const dayIdx = idea.weekday || idea.day || 1; // 1..7
       const target = document.getElementById(`ideas-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-      if (target) renderItems(target, [idea], 'idea');
+      if (target) {
+        renderItems(target, [idea], 'idea');
+      } else {
+        console.warn(`[CalendarWeekView] Target cell not found for ideas-row-day-${dayIdx}`);
+      }
     });
+  } else {
+    console.log(`[CalendarWeekView] Skipping ideas render: showIdeas=${showIdeas}, ideasCells=${!!ideasCells}, regularIdeas.length=${regularIdeas.length}`);
+  }
+
+  // Render weekly words/phrases per day into Weekly Words row
+  if (showWeeklyWords && weeklyWordsCells && weeklyWords.length) {
+    console.log(`[CalendarWeekView] Rendering ${weeklyWords.length} weekly words`);
+    weeklyWords.forEach((word) => {
+      // Weekly words are assigned to a specific weekday (default to Monday if not set)
+      const dayIdx = word.weekday || word.day || 1; // 1..7
+      const target = document.getElementById(`weekly-words-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+      if (target) {
+        // Make weekly words clickable like ideas
+        const wordItem = {
+          ...word,
+          id: word.id,
+          idea_title: word.idea_title || word.title || 'Weekly Word',
+        };
+        renderItems(target, [wordItem], 'idea'); // Use 'idea' type so they're clickable
+      } else {
+        console.warn(`[CalendarWeekView] Target cell not found for weekly-words-row-day-${dayIdx}`);
+      }
+    });
+  } else {
+    console.log(`[CalendarWeekView] Skipping weekly words render: showWeeklyWords=${showWeeklyWords}, weeklyWordsCells=${!!weeklyWordsCells}, weeklyWords.length=${weeklyWords.length}`);
   }
 
   // Split events into annual and special based on event_recurrence_type
@@ -1155,6 +1206,7 @@ async function loadWeek(year, weekNumber) {
   };
       attach('toggle-themes');
       attach('toggle-ideas');
+      attach('toggle-weekly-words');
       attach('toggle-annual-events');
       attach('toggle-special-events');
       attach('toggle-syndication');
@@ -1165,6 +1217,7 @@ async function loadWeek(year, weekNumber) {
     const map = [
       { id: 'toggle-themes', cls: 'filter-themes' },
       { id: 'toggle-ideas', cls: 'filter-ideas' },
+      { id: 'toggle-weekly-words', cls: 'filter-weekly-words' },
       { id: 'toggle-annual-events', cls: 'filter-annual-events' },
       { id: 'toggle-special-events', cls: 'filter-special-events' },
       { id: 'toggle-syndication', cls: 'filter-syndication' },

@@ -31,16 +31,24 @@ class AuthorPanel {
                 if (data.author_name) {
                     this.authorSelect.value = data.author_name;
                 } else {
-                    // Default to Caitrin Stewart if no author set
-                    this.authorSelect.value = 'Caitrin Stewart';
+                    // Check if this is a recipe post to default to Marion MacLeod
+                    const isRecipePost = window.postType === 'recipe' || 
+                                        window.location.pathname.includes('/recipes/') ||
+                                        (data.post_type === 'recipe');
+                    
+                    const defaultAuthor = isRecipePost ? 'Marion MacLeod' : 'Caitrin Stewart';
+                    this.authorSelect.value = defaultAuthor;
                     this.saveAuthor(); // Auto-save the default
                 }
                 this.updateStatus();
             })
             .catch(error => {
                 console.error('Error loading current author:', error);
-                // Default to Caitrin Stewart on error
-                this.authorSelect.value = 'Caitrin Stewart';
+                // Check if this is a recipe post to default to Marion MacLeod
+                const isRecipePost = window.postType === 'recipe' || 
+                                    window.location.pathname.includes('/recipes/');
+                const defaultAuthor = isRecipePost ? 'Marion MacLeod' : 'Caitrin Stewart';
+                this.authorSelect.value = defaultAuthor;
                 this.updateStatus();
             });
     }

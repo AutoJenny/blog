@@ -243,6 +243,46 @@ class PromptService:
                 from utils.taxonomy_helpers import get_illustration_method
                 illustration_method = get_illustration_method(post_id)
             
+            # Check if this is a recipe post - if so, use hero_image_prompt from recipe_image_style section
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
+            if post_type == 'recipe':
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        SELECT post_section_elements
+                        FROM post_section
+                        WHERE post_id = %s AND section_type = 'recipe_image_style'
+                        LIMIT 1
+                    """, (post_id,))
+                    style_section = cursor.fetchone()
+                    
+                    if style_section and style_section.get('post_section_elements'):
+                        import json
+                        try:
+                            elements = style_section['post_section_elements']
+                            if isinstance(elements, str):
+                                elements = json.loads(elements)
+                            
+                            if elements and elements.get('hero_image_prompt'):
+                                hero_prompt = elements['hero_image_prompt']
+                                # Extract description if it's an object
+                                if isinstance(hero_prompt, dict):
+                                    prompt_text = hero_prompt.get('description') or hero_prompt.get('image_prompt') or hero_prompt.get('prompt') or ''
+                                elif isinstance(hero_prompt, str):
+                                    prompt_text = hero_prompt
+                                else:
+                                    prompt_text = str(hero_prompt)
+                                
+                                if prompt_text and prompt_text.strip():
+                                    return prompt_text.strip(), {
+                                        'source': 'recipe_hero_prompt',
+                                        'model_key': model_key,
+                                        'section_type': 'recipe_image_style'
+                                    }
+                        except (json.JSONDecodeError, TypeError, KeyError) as e:
+                            logger.warning(f"Failed to extract hero prompt from recipe_image_style: {e}")
+            
             # Load active post-wide style
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""

@@ -52,6 +52,7 @@
             <label class="filter-pill filter-annual-events active"><input type="checkbox" id="toggle-annual-events" checked> Annual Events</label>
             <label class="filter-pill filter-special-events active"><input type="checkbox" id="toggle-special-events" checked> Special Events</label>
             <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Ideas</label>
+            <label class="filter-pill filter-weekly-words active"><input type="checkbox" id="toggle-weekly-words" checked> Weekly Words</label>
             <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
             <label class="filter-pill filter-profiles active"><input type="checkbox" id="toggle-profiles" checked> Profiles</label>
             <label class="filter-pill filter-recipes active"><input type="checkbox" id="toggle-recipes" checked> Recipes</label>
@@ -129,6 +130,14 @@
                     </button>
                 </div>
                 <div class="row-grid" id="ideas-row"></div>
+            </div>
+
+            <!-- Weekly Words row: header + 7 aligned cells -->
+            <div class="row-section" data-filter="weekly-words">
+                <div class="row-header">
+                    <span>Weekly Words</span>
+                </div>
+                <div class="row-grid" id="weekly-words-row"></div>
             </div>
 
             <!-- Syndication row: header + 7 aligned cells -->

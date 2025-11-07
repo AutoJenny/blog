@@ -1,15 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recipe Image Style & Prompts — {{ recipe_title }}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/recipes/image-style-prompt.css') }}">
-    {% include 'shared/blog_pipeline_header.html' %}
-</head>
-<body>
-    <div class="recipe-image-style-container">
+{% extends 'base.html' %}
+
+{% block title %}Authoring - Image Style & Prompts{% endblock %}
+
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recipes/image-style-prompt.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Set page context for navigation highlighting -->
+<script>
+    window.currentStage = 'authoring';
+    window.currentSubstage = 'recipe-image-style-prompt';
+    window.postId = {{ post_id }};
+</script>
+
+<!-- Include condensed header -->
+{% include 'shared/blog_pipeline_header.html' %}
+
+<script>
+// Move recipe image style content to process-tab after page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const recipeContent = document.querySelector('.recipe-image-style-container');
+    const processTab = document.getElementById('process-tab');
+    if (recipeContent && processTab) {
+        processTab.appendChild(recipeContent);
+    }
+});
+</script>
+
+<div class="recipe-image-style-container">
         <div class="page-header">
             <h1><i class="fas fa-images"></i> Recipe Image Style & Prompts</h1>
             <p class="recipe-title">{{ recipe_title }}</p>
@@ -18,7 +39,7 @@
         <div class="content-section">
             <div class="section-header">
                 <h2>Style Guidelines</h2>
-                <p class="section-description">Define consistent style cues that will be applied to all three images</p>
+                <p class="section-description">Define consistent style cues that will be applied to both images</p>
             </div>
 
             <div class="style-guidelines-editor">
@@ -48,7 +69,7 @@
         <div class="content-section">
             <div class="section-header">
                 <h2>Image Prompts</h2>
-                <p class="section-description">Generate prompts for all three recipe images using the style guidelines above</p>
+                <p class="section-description">Generate prompts for the hero and ingredients images using the style guidelines above</p>
             </div>
 
             <div class="image-prompts-editor">
@@ -68,13 +89,6 @@
                     <textarea id="prompt-ingredients" class="prompt-input" rows="6" placeholder="Detailed prompt for ingredients arrangement..."></textarea>
                 </div>
 
-                <div class="prompt-group">
-                    <div class="prompt-header">
-                        <h3><i class="fas fa-utensils"></i> Method Image</h3>
-                        <p class="prompt-description">A key stage of the cooking method in the same style</p>
-                    </div>
-                    <textarea id="prompt-method" class="prompt-input" rows="6" placeholder="Detailed prompt for a key cooking step..."></textarea>
-                </div>
             </div>
         </div>
 
@@ -118,12 +132,6 @@
                     : JSON.stringify(styleData.ingredients_image_prompt);
                 document.getElementById('prompt-ingredients').value = ingredientsPrompt;
             }
-            if (styleData.method_image_prompt) {
-                const methodPrompt = typeof styleData.method_image_prompt === 'string' 
-                    ? styleData.method_image_prompt 
-                    : JSON.stringify(styleData.method_image_prompt);
-                document.getElementById('prompt-method').value = methodPrompt;
-            }
         }
 
         // Generate button
@@ -164,12 +172,6 @@
                             : JSON.stringify(data.style_data.ingredients_image_prompt);
                         document.getElementById('prompt-ingredients').value = ingredientsPrompt;
                     }
-                    if (data.style_data.method_image_prompt) {
-                        const methodPrompt = typeof data.style_data.method_image_prompt === 'string' 
-                            ? data.style_data.method_image_prompt 
-                            : JSON.stringify(data.style_data.method_image_prompt);
-                        document.getElementById('prompt-method').value = methodPrompt;
-                    }
 
                     statusEl.className = 'status-message success';
                     statusEl.textContent = 'Style guidelines and prompts generated successfully!';
@@ -204,8 +206,7 @@
                     mood: document.getElementById('style-mood').value
                 },
                 hero_image_prompt: document.getElementById('prompt-hero').value,
-                ingredients_image_prompt: document.getElementById('prompt-ingredients').value,
-                method_image_prompt: document.getElementById('prompt-method').value
+                ingredients_image_prompt: document.getElementById('prompt-ingredients').value
             };
 
             try {
@@ -267,6 +268,6 @@
             }
         });
     </script>
-</body>
-</html>
+</div>
+{% endblock %}
 
