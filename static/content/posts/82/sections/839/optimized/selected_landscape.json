@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-06T12:42:00.501250",
+  "post_id": 82,
+  "section_id": 839,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "4038783",
+    "url": "https://images.pexels.com/photos/4038783/pexels-photo-4038783.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/4038783/pexels-photo-4038783.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 6720,
+    "height": 4480,
+    "orientation": "landscape",
+    "photographer": "Karola G",
+    "photographer_url": "https://www.pexels.com/@karola-g",
+    "credits": "Photo by Karola G on Pexels",
+    "search_term": "{\"description\":\"Ingredients for Cullen Skink arranged on a wooden table or stone countertop, in a traditional Scottish-style kitchen. The ingredients should be artfully arranged to evoke a sense of movement and energy. Soft afternoon light highlights the textures of the ingredients and the surfaces around them.\",\"mood\":\"Nostalgic warmth and authenticity\",\"objects\":[\"Smoked haddock\",\"Potatoes\",\"Onions\",\"Garlic\",\"Fresh parsley or chives\"]} The ingredients shown are: Smoked haddock, Potatoes, Milk, Onions, Dill, Garlic.",
+    "selected": false,
+    "selected_at": "2025-11-06T12:42:00.501241",
+    "provider_data": {
+      "pexels_id": "4038783",
+      "pexels_url": "https://www.pexels.com/photo/photo-of-egg-beside-pasta-4038783/",
+      "photographer_id": 2332540
+    },
+    "selection_orientation": "landscape"
+  }
+}

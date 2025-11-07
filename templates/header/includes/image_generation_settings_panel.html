@@ -3,9 +3,9 @@
 <div class="image-generation-settings-panel" id="image-generation-settings-panel">
     <div class="panel-header" onclick="toggleImageGenerationSettingsAccordion()">
         <h4><span class="panel-name-green">Image Generation Settings:</span> Model and Parameters</h4>
-        <div class="header-actions">
+        <div class="header-actions" onclick="event.stopPropagation();">
             <button class="btn-primary" id="generate-images-btn" disabled style="padding: 0.5rem 1rem; border-radius: 4px; background: #3b82f6; color: white; border: none; cursor: pointer; font-weight: 600;">
-                <i class="fas fa-image"></i> Generate Images (Landscape + Portrait)
+                <i class="fas fa-image"></i> <span id="generate-btn-text">Generate Hero Image</span>
             </button>
             <i class="fas fa-chevron-down" id="image-generation-settings-accordion-icon"></i>
         </div>

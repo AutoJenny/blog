@@ -209,6 +209,47 @@ async function displayPromptsForMultipleSections(sectionIds) {
 }
 
 async function fetchSectionData(sectionId, { forceReload = false } = {}) {
+    // Handle "hero" as a special case - it's not a real section
+    if (sectionId === 'hero' || String(sectionId) === 'hero') {
+        console.log('[Generated Prompts] Hero image selected - fetching prompt from recipe_image_style section');
+        try {
+            const postId = window.postId || 60;
+            const resp = await fetch(`/authoring/api/posts/${postId}/sections`);
+            if (!resp.ok) return null;
+            
+            const data = await resp.json();
+            const sections = data.sections || data;
+            if (!Array.isArray(sections)) return null;
+            
+            const styleSection = sections.find(s => s.section_type === 'recipe_image_style');
+            if (!styleSection || !styleSection.post_section_elements) return null;
+            
+            let elements = styleSection.post_section_elements;
+            if (typeof elements === 'string') {
+                elements = JSON.parse(elements);
+            }
+            
+            if (elements && elements.hero_image_prompt) {
+                const heroPrompt = elements.hero_image_prompt;
+                const promptText = typeof heroPrompt === 'string' 
+                    ? heroPrompt 
+                    : (heroPrompt.description || heroPrompt.image_prompt || heroPrompt.prompt);
+                
+                if (promptText) {
+                    return {
+                        id: 'hero',
+                        section_heading: 'Hero Image',
+                        image_prompts: { image_prompt: promptText },
+                        section_type: 'hero'
+                    };
+                }
+            }
+        } catch (e) {
+            console.error('[Generated Prompts] Error fetching hero prompt:', e);
+        }
+        return null;
+    }
+    
     // Prefer fresh imaging API data unless cache has image_prompts for this section
     if (!forceReload && window.sectionsData && window.sectionsData.length > 0) {
         const cached = window.sectionsData.find(s => s.id == sectionId);
@@ -236,7 +277,7 @@ async function fetchSectionData(sectionId, { forceReload = false } = {}) {
     
     if (data.success && data.sections) {
         const sectionData = data.sections.find(s => s.id == sectionId);
-        console.log('[Generated Pro mpts] Found section via API:', sectionData);
+        console.log('[Generated Prompts] Found section via API:', sectionData);
         return sectionData;
     }
     

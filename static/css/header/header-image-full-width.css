@@ -1,0 +1,16 @@
+/* Override workspace-container for header image page to use full width */
+.header-workspace .workspace-container {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding: 0 1rem !important;
+    width: 100% !important;
+}
+
+.header-workspace .editor-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+

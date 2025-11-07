@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-06T12:42:03.699135",
+  "post_id": 82,
+  "section_id": 840,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "6716750",
+    "url": "https://images.pexels.com/photos/6716750/pexels-photo-6716750.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/6716750/pexels-photo-6716750.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3464,
+    "height": 2309,
+    "orientation": "landscape",
+    "photographer": "Denniz Futalan",
+    "photographer_url": "https://www.pexels.com/@denniz-futalan-339724",
+    "credits": "Photo by Denniz Futalan on Pexels",
+    "search_term": "{\"description\":\"A key stage of the cooking process for Cullen Skink, such as simmering the fish in a flavorful broth. The scene should be set in a traditional Scottish-style kitchen, with warm lighting and comfortable textures. The focus should be on the action of cooking, rather than the finished dish.\",\"mood\":\"Nostalgic warmth and authenticity\",\"objects\":[\"Simmering pot\",\"Fish heads or bones\",\"Vegetables such as onions and carrots\",\"Flavorful broth\"]}",
+    "selected": false,
+    "selected_at": "2025-11-06T12:42:03.699130",
+    "provider_data": {
+      "pexels_id": "6716750",
+      "pexels_url": "https://www.pexels.com/photo/homemade-soup-stock-in-pot-6716750/",
+      "photographer_id": 339724
+    },
+    "selection_orientation": "landscape"
+  }
+}

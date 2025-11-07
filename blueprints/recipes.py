@@ -388,14 +388,24 @@ def api_create_recipe_post(recipe_week_number):
                         'error': f'Recipe title mismatch for week {recipe_week_number}'
                     }), 500
                 
+                # Get Marion MacLeod as default author for recipe posts
+                cursor.execute("""
+                    SELECT id FROM author WHERE name = 'Marion MacLeod' LIMIT 1
+                """)
+                author_row = cursor.fetchone()
+                author_id = author_row['id'] if author_row and isinstance(author_row, dict) else (author_row[0] if author_row else None)
+                
+                if not author_id:
+                    logger.warning("Marion MacLeod author not found, creating recipe post without author")
+                
                 # Create post - use recipe_id (unique recipe definition ID) instead of recipe_week_number
                 cursor.execute("""
                     INSERT INTO post (
-                        title, slug, subtitle, recipe_id, recipe_week_number, status, created_at, updated_at
+                        title, slug, subtitle, recipe_id, recipe_week_number, author_id, status, created_at, updated_at
                     )
-                    VALUES (%s, %s, %s, %s, %s, 'draft', NOW(), NOW())
+                    VALUES (%s, %s, %s, %s, %s, %s, 'draft', NOW(), NOW())
                     RETURNING id
-                """, (recipe_title, slug, recipe_description, recipe_definition_id, recipe_week_number))
+                """, (recipe_title, slug, recipe_description, recipe_definition_id, recipe_week_number, author_id))
                 
                 post_result = cursor.fetchone()
                 post_id = post_result['id'] if isinstance(post_result, dict) else post_result[0]

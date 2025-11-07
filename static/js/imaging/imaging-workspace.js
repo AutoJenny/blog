@@ -169,6 +169,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.imagingOutputPanel.loadSectionImages(data.sectionId);
                     window.imagingOutputPanel.updateSectionTitle(data.sectionTitle || `Section ${data.sectionId}`);
                 }
+            },
+            onBatchStart: (selectedIds) => {
+                console.log('[Imaging Workspace] Batch generation started for sections:', selectedIds);
+            },
+            onBatchProgress: (progress) => {
+                console.log('[Imaging Workspace] Batch progress:', progress);
+                // Show progress in console and UI
+                if (progress.status === 'generating') {
+                    console.log(`Generating image ${progress.current}/${progress.total}: ${progress.sectionTitle}`);
+                    showBatchProgress(progress);
+                } else if (progress.status === 'success') {
+                    console.log(`✓ Successfully generated image ${progress.current}/${progress.total}: ${progress.sectionTitle}`);
+                    updateBatchProgress(progress);
+                } else if (progress.status === 'error') {
+                    console.error(`✗ Error generating image ${progress.current}/${progress.total}: ${progress.sectionTitle} - ${progress.error}`);
+                    updateBatchProgress(progress);
+                }
+            },
+            onBatchComplete: (result) => {
+                console.log('[Imaging Workspace] Batch generation complete:', result);
+                alert(`Batch generation complete! Generated ${result.successCount} of ${result.totalSections} images.`);
             }
         });
         
@@ -182,6 +203,59 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('All imaging panels initialized successfully');
 });
+
+// Batch progress UI functions
+let batchProgressContainer = null;
+
+function showBatchProgress(progress) {
+    if (!batchProgressContainer) {
+        // Create progress container
+        batchProgressContainer = document.createElement('div');
+        batchProgressContainer.id = 'batch-progress-container';
+        batchProgressContainer.style.cssText = 'position:fixed;top:20px;right:20px;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:1rem;min-width:300px;z-index:10000;box-shadow:0 4px 6px rgba(0,0,0,0.3);';
+        document.body.appendChild(batchProgressContainer);
+    }
+    
+    const progressHtml = `
+        <div style="color:#e2e8f0;font-weight:bold;margin-bottom:0.5rem;">Generating Images</div>
+        <div style="color:#94a3b8;font-size:0.9rem;margin-bottom:0.5rem;">
+            ${progress.current} / ${progress.total}: ${progress.sectionTitle || progress.sectionId}
+        </div>
+        <div style="background:#1e293b;border-radius:4px;height:8px;overflow:hidden;">
+            <div style="background:#10b981;height:100%;width:${(progress.current / progress.total) * 100}%;transition:width 0.3s;"></div>
+        </div>
+    `;
+    batchProgressContainer.innerHTML = progressHtml;
+    batchProgressContainer.style.display = 'block';
+}
+
+function updateBatchProgress(progress) {
+    if (!batchProgressContainer) return;
+    
+    const statusIcon = progress.status === 'success' ? '✓' : progress.status === 'error' ? '✗' : '';
+    const statusColor = progress.status === 'success' ? '#10b981' : progress.status === 'error' ? '#ef4444' : '#94a3b8';
+    
+    const progressHtml = `
+        <div style="color:#e2e8f0;font-weight:bold;margin-bottom:0.5rem;">Generating Images</div>
+        <div style="color:${statusColor};font-size:0.9rem;margin-bottom:0.5rem;">
+            ${statusIcon} ${progress.current} / ${progress.total}: ${progress.sectionTitle || progress.sectionId}
+            ${progress.error ? `<div style="color:#ef4444;font-size:0.8rem;margin-top:0.25rem;">${progress.error}</div>` : ''}
+        </div>
+        <div style="background:#1e293b;border-radius:4px;height:8px;overflow:hidden;">
+            <div style="background:${progress.status === 'success' ? '#10b981' : progress.status === 'error' ? '#ef4444' : '#3b82f6'};height:100%;width:${(progress.current / progress.total) * 100}%;transition:width 0.3s;"></div>
+        </div>
+    `;
+    batchProgressContainer.innerHTML = progressHtml;
+    
+    // Hide after 3 seconds if complete
+    if (progress.current >= progress.total && progress.status !== 'generating') {
+        setTimeout(() => {
+            if (batchProgressContainer) {
+                batchProgressContainer.style.display = 'none';
+            }
+        }, 3000);
+    }
+}
 
 // Export functions for global access
 window.toggleImagingInputDetailsAccordion = toggleImagingInputDetailsAccordion;

@@ -17,13 +17,12 @@ def _sync_recipe_prompts_to_sections(post_id, style_prompt_data, cursor):
         logger.info(f"Syncing recipe prompts to sections for post {post_id}")
         logger.info(f"Style prompt data keys: {list(style_prompt_data.keys()) if isinstance(style_prompt_data, dict) else 'Not a dict'}")
         
-        # Map prompts to sections
+        # Map prompts to sections (only ingredients - method image deprecated)
         prompt_mapping = {
-            'recipe_ingredients': style_prompt_data.get('ingredients_image_prompt'),
-            'recipe_method': style_prompt_data.get('method_image_prompt')
+            'recipe_ingredients': style_prompt_data.get('ingredients_image_prompt')
         }
         
-        logger.info(f"Prompt mapping: ingredients={bool(prompt_mapping['recipe_ingredients'])}, method={bool(prompt_mapping['recipe_method'])}")
+        logger.info(f"Prompt mapping: ingredients={bool(prompt_mapping['recipe_ingredients'])}")
         
         for section_type, prompt_text in prompt_mapping.items():
             if not prompt_text:
@@ -68,10 +67,15 @@ def _sync_recipe_prompts_to_sections(post_id, style_prompt_data, cursor):
                                     ingredient_names.append(ing['item'])
                             
                             if ingredient_names:
-                                # Replace generic "including" with actual ingredients
-                                # Remove any "including X, Y, Z" pattern and replace with actual list
+                                # Replace generic "including" or "etc." patterns with actual ingredients
+                                # Remove any "including X, Y, Z" or "X, Y, etc." patterns
                                 import re
+                                # Remove "including X, Y, Z" patterns
                                 prompt_text = re.sub(r'including[^.]*\.?', '', prompt_text, flags=re.IGNORECASE)
+                                # Remove "X, Y, etc." patterns
+                                prompt_text = re.sub(r',\s*etc\.?', '', prompt_text, flags=re.IGNORECASE)
+                                # Remove "X, Y, Z, etc." patterns (with comma before etc)
+                                prompt_text = re.sub(r'[,\s]+etc\.?', '', prompt_text, flags=re.IGNORECASE)
                                 prompt_text = prompt_text.strip()
                                 
                                 # Append actual ingredients list
@@ -159,9 +163,21 @@ def recipe_image_style_prompt(post_id):
             recipe_description = post.get('recipe_description') or post.get('subtitle', '')
             seasonal_context = post.get('seasonal_context', '')
             
+            # Get post status and dates for header
+            cursor.execute("""
+                SELECT status, created_at, updated_at
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            post_info = cursor.fetchone()
+            
             return render_template(
                 'recipes/image_style_prompt.html',
                 post_id=post_id,
+                post_type='recipe',
+                post_status=post_info['status'] if post_info else 'Unknown',
+                post_created=post_info['created_at'] if post_info else None,
+                post_updated=post_info['updated_at'] if post_info else None,
                 post=post,
                 recipe_title=recipe_title,
                 recipe_description=recipe_description,

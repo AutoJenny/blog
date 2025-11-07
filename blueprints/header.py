@@ -109,6 +109,43 @@ llm_service = LLMService()
 
 bp = Blueprint('header', __name__, url_prefix='/header')
 
+def resolve_target_post_id(post_id, year=None, week=None, require_week=False):
+    """
+    Resolve target_post_id from week context, preserving post_id for recipe/profile posts.
+    
+    Args:
+        post_id: Original post_id from URL
+        year: Year from query params (optional)
+        week: Week from query params (optional)
+        require_week: If True, return error if year/week not provided
+    
+    Returns:
+        tuple: (target_post_id, error_message)
+        If error_message is not None, target_post_id should be ignored
+    """
+    from utils.taxonomy_helpers import get_post_type
+    from utils.week_post_resolver import resolve_post_for_week
+    
+    # Get post type for the original post_id first
+    original_post_type = get_post_type(post_id)
+    
+    # For recipe/profile posts, always preserve original post_id
+    if original_post_type in ('recipe', 'profile'):
+        return (post_id, None)
+    
+    # For themed posts, resolve from week context
+    if require_week and (not year or not week):
+        return (None, 'Week context (year and week) is required')
+    
+    if year and week:
+        target_post_id = resolve_post_for_week(year, week)
+        if not target_post_id:
+            return (None, f'No post scheduled for week {week}, {year}')
+        return (target_post_id, None)
+    
+    # No week context and not required - use provided post_id
+    return (post_id, None)
+
 # Main routes
 @bp.route('/posts/<int:post_id>/title-summary')
 def header_title_summary(post_id):
@@ -280,18 +317,28 @@ def header_preview(post_id):
     """Preview the blog post in its final format (matches clan.com/blog)"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get post data
+            # Get post data with author name from author table
             cursor.execute("""
-                SELECT id, title, subtitle, summary, slug, status, 
-                       clan_post_id, clan_uploaded_url,
-                       created_at, updated_at, header_image_id, author_id, author_name
-                FROM post
-                WHERE id = %s
+                SELECT p.id, p.title, p.subtitle, p.summary, p.slug, p.status, 
+                       p.clan_post_id, p.clan_uploaded_url,
+                       p.created_at, p.updated_at, p.header_image_id, p.author_id,
+                       a.name as author_name
+                FROM post p
+                LEFT JOIN author a ON p.author_id = a.id
+                WHERE p.id = %s
             """, (post_id,))
             post = cursor.fetchone()
             
             if not post:
                 return "Post not found", 404
+            
+            # Get post type early - needed for image selection logic
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
+            # If no author and this is a recipe post, default to Marion MacLeod
+            if not post.get('author_name') and post_type == 'recipe':
+                post['author_name'] = 'Marion MacLeod'
             
             # Get header image if exists
             header_image = None
@@ -302,14 +349,32 @@ def header_preview(post_id):
                     WHERE id = %s
                 """, (post['header_image_id'],))
                 header_image = cursor.fetchone()
-                if header_image and header_image['path']:
-                    # Use optimized image path instead of raw
-                    # Replace /static/content/posts/X/header/raw/header.png with optimized version
-                    optimized_path = header_image['path'].replace('/raw/', '/optimized/').replace('.png', '.jpg')
-                    header_image['path'] = optimized_path
+                if header_image and header_image.get('path'):
+                    # ONLY show optimized images - no fallback to raw
+                    import os
+                    raw_path = header_image.get('path', '')
+                    if raw_path:
+                        optimized_path = raw_path.replace('/raw/', '/optimized/').replace('.png', '.jpg')
+                        
+                        # Check if optimized version exists on filesystem
+                        filesystem_optimized = optimized_path.lstrip('/')
+                        if os.path.exists(filesystem_optimized):
+                            header_image['path'] = optimized_path
+                        else:
+                            # No optimized version - don't show image (no fallback to raw)
+                            logger.warning(f"Header image optimized version not found: {optimized_path}")
+                            header_image = None
+                    else:
+                        # No path in database - set header_image to None
+                        logger.warning(f"Header image {post['header_image_id']} has no path")
+                        header_image = None
+                else:
+                    # No header_image or no path - set to None
+                    header_image = None
             
             # Get sections with images via post_images linking table
             # Exclude recipe_image_style section (internal use only)
+            # Exclude recipe_method section (method image deprecated - no third image)
             cursor.execute("""
                 SELECT ps.id,
                        ps.section_heading,
@@ -331,6 +396,7 @@ def header_preview(post_id):
                 LEFT JOIN image i ON pi.image_id = i.id
                 WHERE ps.post_id = %s
                   AND ps.section_type != 'recipe_image_style'
+                  AND ps.section_type != 'recipe_method'
                 ORDER BY ps.section_order
             """, (post_id,))
             sections = cursor.fetchall()
@@ -390,37 +456,44 @@ def header_preview(post_id):
                     'content': content,
                 }
                 
-                # Add image if exists - check Photo-harvesting JSON first, then DB link, then filesystem
+                # Add image if exists - for recipe posts, skip Photo-harvesting and use LLM-generated images only
+                # For recipe posts, also skip recipe_method section (method image deprecated)
                 image_path = None
                 caption_text = ''
                 alt_text = section.get('section_image_alt') or section.get('alt_text') or ''
                 
-                # Priority 1: Check Photo-harvesting route (selected_landscape.json)
-                # For Photo-harvesting, ONLY use credits from JSON, not descriptive captions
-                try:
-                    import os
-                    import json
-                    photo_json_path = f"static/content/posts/{post_id}/sections/{section['id']}/optimized/selected_landscape.json"
-                    if os.path.exists(photo_json_path):
-                        with open(photo_json_path, 'r') as f:
-                            photo_data = json.load(f)
-                            photo = photo_data.get('photo', {})
-                            if photo.get('url'):
-                                # Use hotlinked provider URL (Pexels/Unsplash)
-                                image_path = photo['url']
-                                # For Photo-harvesting, ONLY use credits, not descriptive captions
-                                if photo.get('credits'):
-                                    caption_text = photo['credits']
-                                if not alt_text and photo.get('photographer'):
-                                    alt_text = f"Photo by {photo['photographer']}"
-                except Exception as e:
-                    logger.debug(f"Could not load Photo-harvesting JSON for section {section['id']}: {e}")
+                # Skip images for recipe_method section (method image deprecated)
+                if post_type == 'recipe' and section.get('section_type') == 'recipe_method':
+                    # Don't add image for method section
+                    pass
+                # For recipe posts, skip Photo-harvesting entirely - only use LLM-generated images
+                elif post_type != 'recipe':
+                    # Priority 1: Check Photo-harvesting route (selected_landscape.json) - ONLY for non-recipe posts
+                    # For Photo-harvesting, ONLY use credits from JSON, not descriptive captions
+                    try:
+                        import os
+                        import json
+                        photo_json_path = f"static/content/posts/{post_id}/sections/{section['id']}/optimized/selected_landscape.json"
+                        if os.path.exists(photo_json_path):
+                            with open(photo_json_path, 'r') as f:
+                                photo_data = json.load(f)
+                                photo = photo_data.get('photo', {})
+                                if photo.get('url'):
+                                    # Use hotlinked provider URL (Pexels/Unsplash)
+                                    image_path = photo['url']
+                                    # For Photo-harvesting, ONLY use credits, not descriptive captions
+                                    if photo.get('credits'):
+                                        caption_text = photo['credits']
+                                    if not alt_text and photo.get('photographer'):
+                                        alt_text = f"Photo by {photo['photographer']}"
+                    except Exception as e:
+                        logger.debug(f"Could not load Photo-harvesting JSON for section {section['id']}: {e}")
                 
                 # Only use database captions if NOT Photo-harvesting (image_path not set from JSON)
                 if not caption_text and not image_path:
                     caption_text = section.get('section_image_captions') or section.get('caption') or ''
                 
-                # Priority 2: Database link (post_images)
+                # Priority 2: Database link (post_images) - for all post types
                 if not image_path and section['image_path']:
                     image_path = section['image_path']
                     if not image_path.startswith('http'):
@@ -428,21 +501,17 @@ def header_preview(post_id):
                             image_path = f"/static{image_path}"
                         image_path = image_path.replace('/raw/', '/optimized/').replace('.png', '.jpg')
                 
-                # Priority 3: Filesystem fallback
-                if not image_path:
+                # Priority 3: Filesystem check - ONLY optimized images, no fallback to raw
+                # Skip filesystem check for recipe_method section (method image deprecated)
+                if not image_path and not (post_type == 'recipe' and section.get('section_type') == 'recipe_method'):
                     try:
                         import os
-                        # First try optimized version
+                        # ONLY check optimized version - no fallback to raw
                         candidate_optimized = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
                         filesystem_path_opt = candidate_optimized.lstrip('/')
                         if os.path.exists(filesystem_path_opt):
                             image_path = candidate_optimized
-                        else:
-                            # Fallback to raw version if optimized doesn't exist
-                            candidate_raw = f"/static/content/posts/{post_id}/sections/{section['id']}/raw/{section['id']}.png"
-                            filesystem_path_raw = candidate_raw.lstrip('/')
-                            if os.path.exists(filesystem_path_raw):
-                                image_path = candidate_raw
+                        # If optimized doesn't exist, image_path remains None (no fallback)
                     except Exception:
                         pass
 
@@ -455,11 +524,7 @@ def header_preview(post_id):
                 
                 formatted_sections.append(formatted_section)
             
-            # Get post type
-            from utils.taxonomy_helpers import get_post_type
-            post_type = get_post_type(post_id)
-            
-            # Pass data to template
+            # Pass data to template (post_type already retrieved above)
             return render_template('header/preview.html', 
                                  post=post, 
                                  header_image=header_image,
@@ -585,22 +650,143 @@ def api_save_prompts(step_id):
 @bp.route('/api/posts/<int:post_id>/generate-titles', methods=['POST'])
 def api_generate_titles(post_id):
     """Generate three title options based on Development tab content using LLM"""
-    # NO FALLBACKS: Resolve target_post_id from week context (required)
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
     
-    if not year or not week:
-        return jsonify({'error': 'Week context (year and week) is required'}), 400
-    
-    from utils.week_post_resolver import resolve_post_for_week
-    target_post_id = resolve_post_for_week(year, week)
-    if not target_post_id:
-        return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+    target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+    if error:
+        return jsonify({'error': error}), 400 if 'required' in error else 404
     
     # Replace post_id with target_post_id for all operations
     post_id = target_post_id
     
     try:
+        # Check if this is a recipe post
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(post_id)
+        
+        # For recipe posts, use recipe title directly and generate subtitle only
+        if post_type == 'recipe':
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT cr.recipe_title, cr.recipe_description
+                    FROM post p
+                    LEFT JOIN calendar_recipes cr ON cr.id = p.recipe_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                recipe_data = cursor.fetchone()
+                
+                if recipe_data and recipe_data.get('recipe_title'):
+                    recipe_title = recipe_data['recipe_title']
+                    recipe_description = recipe_data.get('recipe_description', '')
+                    
+                    # For recipes, title is just the recipe name - simple and clean
+                    title_options = [recipe_title, recipe_title, recipe_title]  # All same, user can edit if needed
+                    
+                    # Generate subtitle using recipe description
+                    # Get subtitle generation prompt (step 61)
+                    cursor.execute("""
+                        SELECT 
+                            sp.system_prompt,
+                            tp.prompt_text as task_prompt
+                        FROM workflow_step_prompt wsp
+                        LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                        LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                        WHERE wsp.step_id = 61
+                    """)
+                    subtitle_result = cursor.fetchone()
+                    
+                    if subtitle_result:
+                        subtitle_system = subtitle_result.get('system_prompt', '')
+                        subtitle_task = subtitle_result.get('task_prompt', '')
+                        
+                        # Modify subtitle prompt for recipes - evocative phrase without repeating recipe name
+                        subtitle_task = f"""Generate a short, evocative subtitle (8-12 words) for this Scottish recipe blog post.
+
+Recipe Name: {recipe_title}
+Recipe Description: {recipe_description}
+
+CRITICAL REQUIREMENTS:
+- Do NOT repeat the recipe name "{recipe_title}" in the subtitle
+- Create a warm, inviting phrase that captures the essence, tradition, or appeal of this dish
+- Focus on what makes it special: its heritage, when it's enjoyed, its comforting nature, or its regional significance
+- Keep it poetic and evocative, not descriptive or instructional
+- Examples of good subtitles: "A warming bowl of coastal comfort" or "Traditional fare for cold winter evenings" or "A taste of Highland heritage"
+
+Return ONLY a single subtitle string, not an array. Do not use quotes or brackets."""
+                        
+                        messages = [
+                            {'role': 'system', 'content': subtitle_system},
+                            {'role': 'user', 'content': subtitle_task}
+                        ]
+                        
+                        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+                        
+                        if 'error' not in llm_response and llm_response.get('content'):
+                            generated_subtitle = llm_response['content'].strip()
+                            # Remove quotes and brackets
+                            generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
+                            
+                            # Clean up any JSON array if LLM returned one
+                            import re
+                            json_match = re.search(r'\[.*?\]', generated_subtitle, re.DOTALL)
+                            if json_match:
+                                try:
+                                    import json
+                                    subtitle_array = json.loads(json_match.group(0))
+                                    if isinstance(subtitle_array, list) and len(subtitle_array) > 0:
+                                        generated_subtitle = subtitle_array[0].strip().strip('"').strip("'")
+                                except:
+                                    pass
+                            
+                            # Remove any remaining quotes or brackets
+                            generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
+                            
+                            # If subtitle still contains the recipe name, try to extract just the evocative part
+                            if recipe_title.lower() in generated_subtitle.lower():
+                                # Try to find a phrase that doesn't include the recipe name
+                                # Split by common separators and take the most evocative part
+                                parts = re.split(r'[:\-–—]', generated_subtitle)
+                                for part in parts:
+                                    part = part.strip()
+                                    if part and recipe_title.lower() not in part.lower() and len(part) > 10:
+                                        generated_subtitle = part
+                                        break
+                            
+                            # Final validation: if it still contains the recipe name, generate a simple fallback
+                            if recipe_title.lower() in generated_subtitle.lower() or len(generated_subtitle) < 5:
+                                # Generate a simple evocative phrase manually
+                                if 'soup' in recipe_title.lower() or 'skink' in recipe_title.lower():
+                                    generated_subtitle = "A warming bowl of coastal comfort"
+                                elif 'stew' in recipe_title.lower() or 'casserole' in recipe_title.lower():
+                                    generated_subtitle = "Traditional fare for cold winter evenings"
+                                else:
+                                    generated_subtitle = "A taste of Highland heritage"
+                        else:
+                            # If LLM fails, use a simple evocative phrase instead of recipe description
+                            if 'soup' in recipe_title.lower() or 'skink' in recipe_title.lower():
+                                generated_subtitle = "A warming bowl of coastal comfort"
+                            elif 'stew' in recipe_title.lower() or 'casserole' in recipe_title.lower():
+                                generated_subtitle = "Traditional fare for cold winter evenings"
+                            else:
+                                generated_subtitle = "A taste of Highland heritage"
+                    else:
+                        # If no subtitle prompt found, use a simple evocative phrase
+                        if 'soup' in recipe_title.lower() or 'skink' in recipe_title.lower():
+                            generated_subtitle = "A warming bowl of coastal comfort"
+                        elif 'stew' in recipe_title.lower() or 'casserole' in recipe_title.lower():
+                            generated_subtitle = "Traditional fare for cold winter evenings"
+                        else:
+                            generated_subtitle = "A taste of Highland heritage"
+                    
+                    return jsonify({
+                        'success': True,
+                        'title_options': title_options,
+                        'selected_index': 0,
+                        'subtitle': generated_subtitle
+                    })
+        
+        # For non-recipe posts, use normal title generation
         data = request.get_json()
         idea_seed = data.get('idea_seed', '')
         expanded_idea = data.get('expanded_idea', '')
@@ -690,22 +876,140 @@ def api_generate_titles(post_id):
 @bp.route('/api/posts/<int:post_id>/generate-subtitle', methods=['POST'])
 def api_generate_subtitle(post_id):
     """Generate multiple subtitle options based on Development tab content and selected title using LLM"""
-    # NO FALLBACKS: Resolve target_post_id from week context (required)
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
     
-    if not year or not week:
-        return jsonify({'error': 'Week context (year and week) is required'}), 400
-    
-    from utils.week_post_resolver import resolve_post_for_week
-    target_post_id = resolve_post_for_week(year, week)
-    if not target_post_id:
-        return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+    target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+    if error:
+        return jsonify({'error': error}), 400 if 'required' in error else 404
     
     # Replace post_id with target_post_id for all operations
     post_id = target_post_id
     
     try:
+        # Check if this is a recipe post
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(post_id)
+        
+        # For recipe posts, use the same logic as title generation
+        if post_type == 'recipe':
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT cr.recipe_title, cr.recipe_description
+                    FROM post p
+                    LEFT JOIN calendar_recipes cr ON cr.id = p.recipe_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                recipe_data = cursor.fetchone()
+                
+                if recipe_data and recipe_data.get('recipe_title'):
+                    recipe_title = recipe_data['recipe_title']
+                    recipe_description = recipe_data.get('recipe_description', '')
+                    
+                    # Generate subtitle (same logic as api_generate_titles)
+                    cursor.execute("""
+                        SELECT 
+                            sp.system_prompt,
+                            tp.prompt_text as task_prompt
+                        FROM workflow_step_prompt wsp
+                        LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                        LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                        WHERE wsp.step_id = 61
+                    """)
+                    subtitle_result = cursor.fetchone()
+                    
+                    generated_subtitle = ''
+                    if subtitle_result:
+                        subtitle_system = subtitle_result.get('system_prompt', '')
+                        subtitle_task = subtitle_result.get('task_prompt', '')
+                        
+                        # Modify subtitle prompt for recipes - evocative phrase without repeating recipe name
+                        subtitle_task = f"""Generate a short, evocative subtitle (8-12 words) for this Scottish recipe blog post.
+
+Recipe Name: {recipe_title}
+Recipe Description: {recipe_description}
+
+CRITICAL REQUIREMENTS:
+- Do NOT repeat the recipe name "{recipe_title}" in the subtitle
+- Create a warm, inviting phrase that captures the essence, tradition, or appeal of this dish
+- Focus on what makes it special: its heritage, when it's enjoyed, its comforting nature, or its regional significance
+- Keep it poetic and evocative, not descriptive or instructional
+- Examples of good subtitles: "A warming bowl of coastal comfort" or "Traditional fare for cold winter evenings" or "A taste of Highland heritage"
+
+Return ONLY a single subtitle string, not an array. Do not use quotes or brackets."""
+                        
+                        messages = [
+                            {'role': 'system', 'content': subtitle_system},
+                            {'role': 'user', 'content': subtitle_task}
+                        ]
+                        
+                        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+                        
+                        if 'error' not in llm_response and llm_response.get('content'):
+                            generated_subtitle = llm_response['content'].strip()
+                            # Remove quotes and brackets
+                            generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
+                            
+                            # Clean up any JSON array if LLM returned one
+                            import re
+                            json_match = re.search(r'\[.*?\]', generated_subtitle, re.DOTALL)
+                            if json_match:
+                                try:
+                                    import json
+                                    subtitle_array = json.loads(json_match.group(0))
+                                    if isinstance(subtitle_array, list) and len(subtitle_array) > 0:
+                                        generated_subtitle = subtitle_array[0].strip().strip('"').strip("'")
+                                except:
+                                    pass
+                            
+                            # Remove any remaining quotes or brackets
+                            generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
+                            
+                            # If subtitle still contains the recipe name, try to extract just the evocative part
+                            if recipe_title.lower() in generated_subtitle.lower():
+                                # Try to find a phrase that doesn't include the recipe name
+                                # Split by common separators and take the most evocative part
+                                parts = re.split(r'[:\-–—]', generated_subtitle)
+                                for part in parts:
+                                    part = part.strip()
+                                    if part and recipe_title.lower() not in part.lower() and len(part) > 10:
+                                        generated_subtitle = part
+                                        break
+                            
+                            # Final validation: if it still contains the recipe name, generate a simple fallback
+                            if recipe_title.lower() in generated_subtitle.lower() or len(generated_subtitle) < 5:
+                                # Generate a simple evocative phrase manually
+                                if 'soup' in recipe_title.lower() or 'skink' in recipe_title.lower():
+                                    generated_subtitle = "A warming bowl of coastal comfort"
+                                elif 'stew' in recipe_title.lower() or 'casserole' in recipe_title.lower():
+                                    generated_subtitle = "Traditional fare for cold winter evenings"
+                                else:
+                                    generated_subtitle = "A taste of Highland heritage"
+                        else:
+                            # If LLM fails, use a simple evocative phrase instead of recipe description
+                            if 'soup' in recipe_title.lower() or 'skink' in recipe_title.lower():
+                                generated_subtitle = "A warming bowl of coastal comfort"
+                            elif 'stew' in recipe_title.lower() or 'casserole' in recipe_title.lower():
+                                generated_subtitle = "Traditional fare for cold winter evenings"
+                            else:
+                                generated_subtitle = "A taste of Highland heritage"
+                    else:
+                        # If no subtitle prompt found, use a simple evocative phrase
+                        if 'soup' in recipe_title.lower() or 'skink' in recipe_title.lower():
+                            generated_subtitle = "A warming bowl of coastal comfort"
+                        elif 'stew' in recipe_title.lower() or 'casserole' in recipe_title.lower():
+                            generated_subtitle = "Traditional fare for cold winter evenings"
+                        else:
+                            generated_subtitle = "A taste of Highland heritage"
+                    
+                    # Return as a single-item array for consistency with the API
+                    return jsonify({
+                        'success': True,
+                        'subtitle_options': [generated_subtitle],
+                        'selected_index': 0
+                    })
+        
+        # For non-recipe posts, use normal subtitle generation
         data = request.get_json()
         idea_seed = data.get('idea_seed', '')
         expanded_idea = data.get('expanded_idea', '')
@@ -802,22 +1106,139 @@ def api_generate_subtitle(post_id):
 @bp.route('/api/posts/<int:post_id>/generate-title-summary', methods=['POST'])
 def api_generate_title_summary(post_id):
     """Generate all header elements (title, subtitle, summary, slug) in one call"""
-    # NO FALLBACKS: Resolve target_post_id from week context (required)
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
     
-    if not year or not week:
-        return jsonify({'error': 'Week context (year and week) is required'}), 400
-    
-    from utils.week_post_resolver import resolve_post_for_week
-    target_post_id = resolve_post_for_week(year, week)
-    if not target_post_id:
-        return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+    target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+    if error:
+        return jsonify({'error': error}), 400 if 'required' in error else 404
     
     # Replace post_id with target_post_id for all operations
     post_id = target_post_id
     
     try:
+        # Check if this is a recipe post
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(post_id)
+        
+        # For recipe posts, use recipe title directly and generate subtitle only
+        if post_type == 'recipe':
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT cr.recipe_title, cr.recipe_description
+                    FROM post p
+                    LEFT JOIN calendar_recipes cr ON cr.id = p.recipe_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                recipe_data = cursor.fetchone()
+                
+                if recipe_data and recipe_data.get('recipe_title'):
+                    recipe_title = recipe_data['recipe_title']
+                    recipe_description = recipe_data.get('recipe_description', '')
+                    
+                    # For recipes, title is just the recipe name - simple and clean
+                    title_options = [recipe_title, recipe_title, recipe_title]
+                    
+                    # Generate subtitle (same logic as api_generate_titles)
+                    cursor.execute("""
+                        SELECT 
+                            sp.system_prompt,
+                            tp.prompt_text as task_prompt
+                        FROM workflow_step_prompt wsp
+                        LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                        LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                        WHERE wsp.step_id = 61
+                    """)
+                    subtitle_result = cursor.fetchone()
+                    
+                    generated_subtitle = ''
+                    if subtitle_result:
+                        subtitle_system = subtitle_result.get('system_prompt', '')
+                        subtitle_task = subtitle_result.get('task_prompt', '')
+                        
+                        # Modify subtitle prompt for recipes - evocative phrase without repeating recipe name
+                        subtitle_task = f"""Generate a short, evocative subtitle (8-12 words) for this Scottish recipe blog post.
+
+Recipe Name: {recipe_title}
+Recipe Description: {recipe_description}
+
+CRITICAL REQUIREMENTS:
+- Do NOT repeat the recipe name "{recipe_title}" in the subtitle
+- Create a warm, inviting phrase that captures the essence, tradition, or appeal of this dish
+- Focus on what makes it special: its heritage, when it's enjoyed, its comforting nature, or its regional significance
+- Keep it poetic and evocative, not descriptive or instructional
+- Examples of good subtitles: "A warming bowl of coastal comfort" or "Traditional fare for cold winter evenings" or "A taste of Highland heritage"
+
+Return ONLY a single subtitle string, not an array. Do not use quotes or brackets."""
+                        
+                        messages = [
+                            {'role': 'system', 'content': subtitle_system},
+                            {'role': 'user', 'content': subtitle_task}
+                        ]
+                        
+                        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+                        
+                        if 'error' not in llm_response and llm_response.get('content'):
+                            generated_subtitle = llm_response['content'].strip()
+                            # Remove quotes and brackets
+                            generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
+                            
+                            # Clean up any JSON array if LLM returned one
+                            import re
+                            json_match = re.search(r'\[.*?\]', generated_subtitle, re.DOTALL)
+                            if json_match:
+                                try:
+                                    import json
+                                    subtitle_array = json.loads(json_match.group(0))
+                                    if isinstance(subtitle_array, list) and len(subtitle_array) > 0:
+                                        generated_subtitle = subtitle_array[0].strip().strip('"').strip("'")
+                                except:
+                                    pass
+                            
+                            # Remove any remaining quotes or brackets
+                            generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
+                            
+                            # If subtitle still contains the recipe name, try to extract just the evocative part
+                            if recipe_title.lower() in generated_subtitle.lower():
+                                # Try to find a phrase that doesn't include the recipe name
+                                # Split by common separators and take the most evocative part
+                                parts = re.split(r'[:\-–—]', generated_subtitle)
+                                for part in parts:
+                                    part = part.strip()
+                                    if part and recipe_title.lower() not in part.lower() and len(part) > 10:
+                                        generated_subtitle = part
+                                        break
+                            
+                            # Final validation: if it still contains the recipe name, generate a simple fallback
+                            if recipe_title.lower() in generated_subtitle.lower() or len(generated_subtitle) < 5:
+                                # Generate a simple evocative phrase manually
+                                if 'soup' in recipe_title.lower() or 'skink' in recipe_title.lower():
+                                    generated_subtitle = "A warming bowl of coastal comfort"
+                                elif 'stew' in recipe_title.lower() or 'casserole' in recipe_title.lower():
+                                    generated_subtitle = "Traditional fare for cold winter evenings"
+                                else:
+                                    generated_subtitle = "A taste of Highland heritage"
+                        else:
+                            # If LLM fails, use a simple evocative phrase instead of recipe description
+                            if 'soup' in recipe_title.lower() or 'skink' in recipe_title.lower():
+                                generated_subtitle = "A warming bowl of coastal comfort"
+                            elif 'stew' in recipe_title.lower() or 'casserole' in recipe_title.lower():
+                                generated_subtitle = "Traditional fare for cold winter evenings"
+                            else:
+                                generated_subtitle = "A taste of Highland heritage"
+                    
+                    # Generate summary and slug (simplified for recipes)
+                    # For now, return what we have - summary and slug can be generated separately if needed
+                    return jsonify({
+                        'success': True,
+                        'title_options': title_options,
+                        'selected_index': 0,
+                        'subtitle': generated_subtitle,
+                        'summary': '',  # Can be generated separately
+                        'slug': recipe_title.lower().replace(' ', '-').replace("'", '').replace(':', '')
+                    })
+        
+        # For non-recipe posts, use normal generation
         # Get content from Development tab
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -1198,19 +1619,14 @@ def api_generate_seo_meta(post_id):
     try:
         from modules.llm_service import llm_service
         
-        # NO FALLBACKS: Resolve target_post_id from week context (required)
         year = request.args.get('year', type=int)
         week = request.args.get('week', type=int)
         
-        if not year or not week:
-            return jsonify({'error': 'Week context (year and week) is required'}), 400
+        target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+        if error:
+            return jsonify({'error': error}), 400 if 'required' in error else 404
         
-        from utils.week_post_resolver import resolve_post_for_week
-        target_post_id = resolve_post_for_week(year, week)
-        if not target_post_id:
-            return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
-        
-        # Get post title and summary from post table (use resolved post_id)
+        # Get post title and summary from post table (use target_post_id)
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT title, summary
@@ -1567,21 +1983,31 @@ def api_title_summary_prompt(post_id):
 def api_get_title_summary(post_id):
     """Get post title, subtitle, summary, and author"""
     try:
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(post_id)
+        
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT title, subtitle, summary, author_name
-                FROM post 
-                WHERE id = %s
+                SELECT p.title, p.subtitle, p.summary, a.name as author_name
+                FROM post p
+                LEFT JOIN author a ON p.author_id = a.id
+                WHERE p.id = %s
             """, (post_id,))
             
             result = cursor.fetchone()
             
             if result:
+                author_name = result.get('author_name', '') or ''
+                # If no author and this is a recipe post, default to Marion MacLeod
+                if not author_name and post_type == 'recipe':
+                    author_name = 'Marion MacLeod'
+                
                 return jsonify({
                     'title': result.get('title', '') or '',
                     'subtitle': result.get('subtitle', '') or '',
                     'summary': result.get('summary', '') or '',
-                    'author_name': result.get('author_name', '') or ''
+                    'author_name': author_name,
+                    'post_type': post_type
                 })
             else:
                 return jsonify({'error': 'Post not found'}), 404
@@ -1744,17 +2170,12 @@ def api_get_header_data(post_id):
 @bp.route('/api/posts/<int:post_id>/generate-summary', methods=['POST'])
 def api_generate_summary(post_id):
     """Generate summary for a post using LLM"""
-    # NO FALLBACKS: Resolve target_post_id from week context (required)
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
     
-    if not year or not week:
-        return jsonify({'error': 'Week context (year and week) is required'}), 400
-    
-    from utils.week_post_resolver import resolve_post_for_week
-    target_post_id = resolve_post_for_week(year, week)
-    if not target_post_id:
-        return jsonify({'error': f'No post scheduled for week {week}, {year}'}), 404
+    target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+    if error:
+        return jsonify({'error': error}), 400 if 'required' in error else 404
     
     # Replace post_id with target_post_id for all operations
     post_id = target_post_id
@@ -1956,6 +2377,53 @@ def api_save_slug(post_id):
 def api_compile_header_prompt(post_id):
     """Compile header prompt from theme name and expanded idea using LLM"""
     try:
+        # Check if this is a recipe post - if so, return hero_image_prompt directly
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(post_id)
+        
+        if post_type == 'recipe':
+            # For recipe posts, use the hero_image_prompt from recipe_image_style section
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT post_section_elements
+                    FROM post_section
+                    WHERE post_id = %s AND section_type = 'recipe_image_style'
+                    LIMIT 1
+                """, (post_id,))
+                style_section = cursor.fetchone()
+                
+                if style_section and style_section.get('post_section_elements'):
+                    import json
+                    try:
+                        elements = style_section['post_section_elements']
+                        if isinstance(elements, str):
+                            elements = json.loads(elements)
+                        
+                        if elements and elements.get('hero_image_prompt'):
+                            hero_prompt = elements['hero_image_prompt']
+                            # Extract description if it's an object
+                            if isinstance(hero_prompt, dict):
+                                prompt_text = hero_prompt.get('description') or hero_prompt.get('image_prompt') or hero_prompt.get('prompt') or ''
+                            elif isinstance(hero_prompt, str):
+                                prompt_text = hero_prompt
+                            else:
+                                prompt_text = str(hero_prompt)
+                            
+                            if prompt_text and prompt_text.strip():
+                                return jsonify({
+                                    'success': True,
+                                    'compiled_prompt': prompt_text.strip(),
+                                    'source': 'recipe_hero_prompt'
+                                })
+                    except (json.JSONDecodeError, TypeError, KeyError) as e:
+                        logger.warning(f"Failed to extract hero prompt from recipe_image_style: {e}")
+            
+            # If we couldn't get the recipe prompt, return an error
+            return jsonify({
+                'success': False,
+                'error': 'No hero image prompt found. Please generate prompts at the Image Style & Prompts stage first.'
+            }), 400
+        
         # Get the selected model and illustration method from request data
         data = request.get_json() or {}
         selected_model = data.get('model', 'gpt-image-1')
@@ -2189,11 +2657,40 @@ def api_get_prompt_assembly_data(post_id):
             week = request.args.get('week', type=int)
             
             # For header images, use theme name and expanded idea (not sections)
+            # BUT: For recipe/profile posts, use recipe/profile data instead
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
             theme_name = None
             expanded_idea = None
             
-            if year and week:
-                # Get theme and expanded idea from week context
+            if post_type == 'recipe':
+                # For recipe posts, get recipe title and description
+                cursor.execute("""
+                    SELECT cr.recipe_title, cr.recipe_description, cr.seasonal_context
+                    FROM post p
+                    LEFT JOIN calendar_recipes cr ON cr.id = p.recipe_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                recipe_data = cursor.fetchone()
+                if recipe_data:
+                    theme_name = recipe_data.get('recipe_title') or ''
+                    expanded_idea = recipe_data.get('recipe_description') or ''
+                    if recipe_data.get('seasonal_context'):
+                        expanded_idea = f"{expanded_idea}\n\nSeasonal Context: {recipe_data['seasonal_context']}".strip()
+            elif post_type == 'profile':
+                # For profile posts, get profile data
+                cursor.execute("""
+                    SELECT title, subtitle
+                    FROM post
+                    WHERE id = %s
+                """, (post_id,))
+                profile_data = cursor.fetchone()
+                if profile_data:
+                    theme_name = profile_data.get('title') or ''
+                    expanded_idea = profile_data.get('subtitle') or ''
+            elif year and week:
+                # For themed posts, get theme and expanded idea from week context
                 from utils.week_post_resolver import resolve_post_for_week
                 target_post_id = resolve_post_for_week(year, week)
                 
@@ -2401,9 +2898,17 @@ def api_generate_header_image(post_id):
             )
             return jsonify({'error': result.get('error', 'Image generation failed')}), 500
         
-        # Skip watermarking/optimization - that's a separate stage
-        # watermark_result = optimize_image_with_watermark(post_id, 'header', parameters)
-        watermark_result = {'success': True, 'optimized_path': result.get('image_path')}
+        # Automatically optimize and watermark the header image after generation
+        logger.info(f"Automatically optimizing header image for post {post_id}")
+        watermark_result = optimize_image_with_watermark(post_id, 'header', parameters)
+        
+        if not watermark_result.get('success'):
+            logger.error(f"Header image optimization failed: {watermark_result.get('error', 'Unknown error')}")
+            # NO FALLBACK - optimization must succeed for image to be shown
+            return jsonify({
+                'success': False,
+                'error': f"Image generation succeeded but optimization failed: {watermark_result.get('error', 'Unknown error')}"
+            }), 500
         
         # Create or update image table record
         with db_manager.get_cursor() as cursor:
@@ -2414,8 +2919,17 @@ def api_generate_header_image(post_id):
             
             existing_image_id = cursor.fetchone()
             
-            # Get the new optimized path
-            new_path = watermark_result.get('optimized_path', result.get('image_path'))
+            # Get the optimized path - ONLY optimized, no fallback to raw
+            new_path = watermark_result.get('optimized_path')
+            if not new_path:
+                logger.error(f"No optimized path returned from watermark_result for post {post_id}")
+                return jsonify({
+                    'success': False,
+                    'error': 'Image optimization did not return an optimized path'
+                }), 500
+            # Ensure path starts with /static
+            if new_path and not new_path.startswith('/static'):
+                new_path = f"/static{new_path}" if not new_path.startswith('/') else f"/static/{new_path}"
             
             if existing_image_id and existing_image_id['header_image_id']:
                 # Delete any other image records with the same path to avoid conflict
@@ -2450,7 +2964,7 @@ def api_generate_header_image(post_id):
                 """, (
                     'header.jpg',
                     'original_header.png', 
-                    watermark_result.get('optimized_path', result.get('image_path')),
+                    new_path,
                     image_prompt,
                     'Header image for blog post',
                     'Generated header image'
@@ -2473,7 +2987,7 @@ def api_generate_header_image(post_id):
                 params=parameters,
                 prompt_text=image_prompt,
                 rendered_prompt=image_prompt,
-                result_path=watermark_result.get('optimized_path', result.get('image_path')),
+                result_path=new_path,
                 success=True,
                 generation_time_ms=generation_time_ms
             )
@@ -2485,7 +2999,7 @@ def api_generate_header_image(post_id):
                 'success': True,
                 'image_id': image_id,
                 'raw_path': result.get('image_path'),
-                'optimized_path': watermark_result.get('optimized_path', result.get('image_path')),
+                'optimized_path': new_path,
                 'portrait_path': portrait_path,
                 'portrait_generated': result.get('portrait_generated', False),
                 'dimensions': {'width': 2358, 'height': 1048},

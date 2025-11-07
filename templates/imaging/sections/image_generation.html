@@ -19,6 +19,7 @@
     window.currentStage = 'imaging';
     window.currentSubstage = 'image-generation';
     window.postId = {{ post_id|default(0) }};
+    window.postType = {{ post_type|tojson|safe if post_type else 'null' }};
     window.imagingStage = true;
     window.imagingSubstage = 'image-generation';
 </script>

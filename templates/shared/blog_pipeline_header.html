@@ -8,8 +8,16 @@
         <h1 class="pipeline-title" id="pipeline-title">
             <span class="pipeline-title-prefix" id="pipeline-title-prefix"></span>
             <span class="pipeline-title-week-info" id="pipeline-title-week-info"></span>
+            {% if post_type is defined and post_type and post_type not in ['recipe', 'profile'] %}
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
             <span class="pipeline-title-theme" id="pipeline-title-theme">Unselected theme</span>
+            {% elif post_type is defined and post_type == 'recipe' %}
+            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
+            <span class="pipeline-title-theme" id="pipeline-title-theme">Recipe</span>
+            {% elif post_type is defined and post_type == 'profile' %}
+            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
+            <span class="pipeline-title-theme" id="pipeline-title-theme">Profile</span>
+            {% endif %}
             {% if post_type is defined and post_type %}
             <span class="post-type-badge-header" id="post-type-badge-header" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; margin-left:0.75rem; {% if post_type == 'recipe' %}background:#fef3c7;color:#92400e;border:1px solid #fcd34d;{% elif post_type == 'profile' %}background:#e0e7ff;color:#4338ca;border:1px solid #a5b4fc;{% elif post_type == 'themed' %}background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;{% endif %}">
                 {% if post_type == 'recipe' %}
@@ -22,9 +30,11 @@
             </span>
             {% endif %}
         </h1>
+        {% if post_type is defined and post_type and post_type not in ['recipe', 'profile'] %}
         <div class="pipeline-title-taxonomy" id="pipeline-title-taxonomy" style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; font-weight: 400; text-align: center;">
             <!-- Taxonomy Category and Type will be displayed here -->
         </div>
+        {% endif %}
     </div>
     
     <!-- Post Details Line -->
