@@ -88,6 +88,18 @@ def strip_html_doc(content):
     
     return content.strip()
 
+# Custom Jinja2 filter to strip H2 headings from content
+@app.template_filter('strip_h2_headings')
+def strip_h2_headings(content):
+    """Strip H2 headings and their content from HTML."""
+    if not content:
+        return content
+    
+    import re
+    # Remove H2 tags and their content (including attributes)
+    content = re.sub(r'<h2[^>]*>.*?</h2>', '', content, flags=re.IGNORECASE | re.DOTALL)
+    return content
+
 # Add route to serve blog-images static files
 @app.route('/static/content/posts/<int:post_id>/sections/<int:section_id>/<directory>/<filename>')
 def serve_section_image(post_id, section_id, directory, filename):
@@ -2319,14 +2331,50 @@ def get_post_with_development(post_id):
         if not post:
             return None
             
-        # Get header image if exists
-        if post.get('header_image_id'):
+        # Get header image - use new post_images/images schema (same for ALL post types)
+        # Try post_images -> images first (preferred)
+        cur.execute("""
+            SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+            FROM post_images pi
+            JOIN images i ON pi.image_id = i.id
+            WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
+            ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
+                          WHEN pi.image_type = 'header_watermarked' THEN 2
+                          ELSE 3 END
+            LIMIT 1
+        """, (post_id,))
+        img_row = cur.fetchone()
+        if img_row and img_row.get('file_path'):
+            header_path = img_row['file_path']
+            # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
+            # Remove any leading slashes, then ensure it starts with /static/
+            header_path = header_path.lstrip('/')
+            if not header_path.startswith('static/'):
+                header_path = 'static/' + header_path.lstrip('/')
+            header_path = '/' + header_path  # Add leading slash
+            post['header_image'] = {
+                'path': header_path,
+                'alt_text': img_row.get('alt_text'),
+                'title': img_row.get('filename'),
+                'caption': img_row.get('caption'),
+                'width': img_row.get('width'),
+                'height': img_row.get('height')
+            }
+        elif post.get('header_image_id'):
+            # Fallback to legacy image table (should not be needed, but handle gracefully)
             cur.execute("""
                 SELECT * FROM image WHERE id = %s
             """, (post['header_image_id'],))
             header_image = cur.fetchone()
             if header_image:
-                post['header_image'] = dict(header_image)
+                header_img_dict = dict(header_image)
+                # Normalize path to always use /static/ format
+                if header_img_dict.get('path'):
+                    path = header_img_dict['path']
+                    if not path.startswith('/static/'):
+                        path = '/static/' + path.lstrip('/')
+                    header_img_dict['path'] = path
+                    post['header_image'] = header_img_dict
         
         post_dict = dict(post)
         # Always use post_id for the edit link
@@ -2358,36 +2406,32 @@ def find_header_image(post_id):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)  # Go up from blog-launchpad/ to project root
     
-    # Try blog-images/static first (legacy location)
-    blog_images_static = os.path.join(project_root, 'blog-images', 'static')
-    # Also try project static/ (unified app location)
+    # ALL images are in project_root/static/ - NO FALLBACKS
     project_static = os.path.join(project_root, 'static')
     
     image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
 
-    # 1. Look for images in the header's optimized directory first (try both locations)
-    for static_dir in [project_static, blog_images_static]:
+    # 1. Look for images in the header's optimized directory (project_static only - NO FALLBACKS)
+    for static_dir in [project_static]:
         header_optimized_path = os.path.join(static_dir, "content", "posts", str(post_id), "header", "optimized")
         if os.path.exists(header_optimized_path):
             image_files = [f for f in os.listdir(header_optimized_path)
                           if f.lower().endswith(image_extensions) and not f.startswith('.')]
             if image_files:
                 image_filename = image_files[0]
-                # URL-encode the filename to handle spaces and special characters
-                encoded_filename = urllib.parse.quote(image_filename)
-                return f"/static/content/posts/{post_id}/header/optimized/{encoded_filename}"
+                # DO NOT URL-encode - use filename as-is for consistency with database paths
+                return f"/static/content/posts/{post_id}/header/optimized/{image_filename}"
 
-    # 2. Fall back to raw directory if optimized is empty (try both locations)
-    for static_dir in [project_static, blog_images_static]:
+    # 2. Fall back to raw directory if optimized is empty (project_static only - NO FALLBACKS)
+    for static_dir in [project_static]:
         header_raw_path = os.path.join(static_dir, "content", "posts", str(post_id), "header", "raw")
         if os.path.exists(header_raw_path):
             image_files = [f for f in os.listdir(header_raw_path)
                           if f.lower().endswith(image_extensions) and not f.startswith('.')]
             if image_files:
                 image_filename = image_files[0]
-                # URL-encode the filename to handle spaces and special characters
-                encoded_filename = urllib.parse.quote(image_filename)
-                return f"/static/content/posts/{post_id}/header/raw/{encoded_filename}"
+                # DO NOT URL-encode - use filename as-is for consistency with database paths
+                return f"/static/content/posts/{post_id}/header/raw/{image_filename}"
 
     return None
 
@@ -2433,7 +2477,8 @@ def get_post_sections_with_images(post_id):
     with get_db_connection() as conn:
         cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
-        # Get all sections for the post
+        # Get all sections for the post, including recipe section data
+        # Exclude recipe_image_style section (internal use only, not for publishing)
         cur.execute("""
             SELECT 
                 id, post_id, section_order, 
@@ -2441,10 +2486,12 @@ def get_post_sections_with_images(post_id):
                 section_description, ideas_to_include, facts_to_include,
                 draft, polished, highlighting, image_concepts,
                 image_prompts,
-                image_meta_descriptions, image_captions, status,
-                image_title, image_width, image_height
+                image_captions, status,
+                image_title, image_width, image_height,
+                section_type, post_section_elements
             FROM post_section 
             WHERE post_id = %s 
+            AND (section_type IS NULL OR section_type != 'recipe_image_style')
             ORDER BY section_order
         """, (post_id,))
         
@@ -2453,6 +2500,39 @@ def get_post_sections_with_images(post_id):
         
         for section in raw_sections:
             section_dict = dict(section)
+            
+            # IMPORTANT: Use polished field directly - no transformations here!
+            # Recipe sections should have HTML already rendered and saved to polished during content generation
+            # Only safety check: filter out raw JSON if somehow it got into polished/draft
+            polished = section.get('polished') or section.get('draft') or ''
+            if polished:
+                polished_stripped = polished.strip()
+                if polished_stripped.startswith('{') or polished_stripped.startswith('[') or '```json' in polished_stripped.lower():
+                    logger.warning(f"Section {section['id']} contains raw JSON in polished/draft - this should not happen!")
+                    section_dict['polished'] = '<p><em>No content available for this section.</em></p>'
+                else:
+                    # For recipe sections, ALWAYS strip H2 headings to prevent duplicates
+                    # The template will also skip adding H2 from section_heading for recipe sections
+                    is_recipe_section = section.get('section_type') and section['section_type'].startswith('recipe_')
+                    
+                    if is_recipe_section:
+                        import re
+                        original_polished = polished
+                        polished = re.sub(r'<h2[^>]*>.*?</h2>', '', polished, flags=re.IGNORECASE | re.DOTALL)
+                        if original_polished != polished:
+                            logger.info(f"✅ Stripped H2 from recipe section {section['id']} ({section.get('section_type')}) - removed {len(original_polished) - len(polished)} chars")
+                        else:
+                            logger.debug(f"No H2 found in recipe section {section['id']} ({section.get('section_type')})")
+                    section_dict['polished'] = polished
+            else:
+                section_dict['polished'] = '<p><em>No content available for this section.</em></p>'
+            
+            # Clear draft to ensure we only use polished
+            section_dict['draft'] = None
+            
+            # Ensure section_type is in the dict for template filtering
+            if 'section_type' not in section_dict:
+                section_dict['section_type'] = section.get('section_type')
             
             # Priority 1: Check Photo-harvesting route (selected_landscape.json)
             image_path = None
@@ -2773,9 +2853,61 @@ def publish_post_to_clan(post_id):
         if post.get('created_at') and not isinstance(post['created_at'], str):
             post['created_at'] = post['created_at'].isoformat() if hasattr(post['created_at'], 'isoformat') else str(post['created_at'])
         
-        # Add header image if exists
-        header_image_path = find_header_image(post_id)
-        if header_image_path:
+        # Add header image if exists - prefer from new post_images schema, then filesystem
+        logger.info(f"=== HEADER IMAGE CHECK FOR POST {post_id} ===")
+        logger.info(f"Post has header_image: {post.get('header_image')}")
+        logger.info(f"Post header_image path: {post.get('header_image', {}).get('path') if post.get('header_image') else 'N/A'}")
+        
+        if not post.get('header_image') or not post['header_image'].get('path'):
+            logger.info("Header image not set, attempting to find it...")
+            # Try to get from new post_images/images schema first
+            with get_db_connection() as conn:
+                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+                cur.execute("""
+                    SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+                    FROM post_images pi
+                    JOIN images i ON pi.image_id = i.id
+                    WHERE pi.post_id = %s AND pi.image_type LIKE 'header%'
+                    ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 ELSE 2 END
+                    LIMIT 1
+                """, (post_id,))
+                img_row = cur.fetchone()
+                if img_row and img_row.get('file_path'):
+                    # Use optimized path if available, otherwise raw
+                    header_path = img_row['file_path']
+                    # Ensure path starts with /static/ for web access
+                    if not header_path.startswith('/static/'):
+                        header_path = '/static/' + header_path.lstrip('/')
+                    if not post.get('header_image'):
+                        post['header_image'] = {}
+                    post['header_image']['path'] = header_path
+                    post['header_image']['alt_text'] = img_row.get('alt_text')
+                    post['header_image']['title'] = img_row.get('filename')
+                    post['header_image']['caption'] = img_row.get('caption')
+                    post['header_image']['width'] = img_row.get('width')
+                    post['header_image']['height'] = img_row.get('height')
+                    logger.info(f"✅ Loaded header_image from database: {header_path}")
+                else:
+                    logger.info("No header image found in post_images table")
+            
+            # Fallback to filesystem if not in database
+            if not post.get('header_image') or not post['header_image'].get('path'):
+                logger.info("Falling back to filesystem search...")
+                header_image_path = find_header_image(post_id)
+                logger.info(f"find_header_image returned: {header_image_path}")
+                if header_image_path:
+                    if not post.get('header_image'):
+                        post['header_image'] = {}
+                    post['header_image']['path'] = header_image_path
+                    logger.info(f"✅ Set header_image path from filesystem: {header_image_path}")
+                    logger.info(f"Final header_image dict: {post['header_image']}")
+                else:
+                    logger.warning(f"❌ find_header_image returned None for post {post_id}")
+        else:
+            logger.info(f"✅ Header image already set: {post['header_image'].get('path')}")
+        
+        # Get header image metadata from database if not already set
+        if post.get('header_image') and post['header_image'].get('path'):
             with get_db_connection() as conn:
                 cur = conn.cursor(row_factory=psycopg.rows.dict_row)
                 cur.execute("""
@@ -2788,14 +2920,15 @@ def publish_post_to_clan(post_id):
                 """, (post_id,))
                 header_data = cur.fetchone()
                 
-                post['header_image'] = {
-                    'path': header_image_path,
-                    'alt_text': f"Header image for {post.get('title', 'this post')}",
-                    'caption': header_data['header_image_caption'] if header_data else None,
-                    'title': header_data['header_image_title'] if header_data else None,
-                    'width': header_data['header_image_width'] if header_data else None,
-                    'height': header_data['header_image_height'] if header_data else None
-                }
+                if header_data:
+                    if not post['header_image'].get('caption'):
+                        post['header_image']['caption'] = header_data['header_image_caption']
+                    if not post['header_image'].get('title'):
+                        post['header_image']['title'] = header_data['header_image_title']
+                    if not post['header_image'].get('width'):
+                        post['header_image']['width'] = header_data['header_image_width']
+                    if not post['header_image'].get('height'):
+                        post['header_image']['height'] = header_data['header_image_height']
                 
                 post['cross_promotion'] = {
                     'category_id': header_data['cross_promotion_category_id'] if header_data else None,
@@ -2818,6 +2951,14 @@ def publish_post_to_clan(post_id):
         logger.info(f"Number of sections: {len(sections) if sections else 0}")
         if sections:
             logger.info(f"Section IDs: {[s.get('id') for s in sections]}")
+        
+        # CRITICAL: Verify header_image is set before publishing
+        logger.info(f"=== PRE-PUBLISH HEADER IMAGE VERIFICATION ===")
+        logger.info(f"post.get('header_image'): {post.get('header_image')}")
+        if post.get('header_image'):
+            logger.info(f"post['header_image'].get('path'): {post['header_image'].get('path')}")
+        else:
+            logger.warning(f"⚠️ WARNING: post['header_image'] is None/empty before calling publish_to_clan!")
         
         # Create publisher instance and attempt to publish
         publisher = ClanPublisher()
@@ -5274,6 +5415,9 @@ def generate_batch_items():
             'success': False,
             'error': f'Failed to generate batch items: {str(e)}'
         }), 500
+
+# Blueprints should be registered in unified_app.py, not here
+# Registering blueprints here causes routing conflicts and template/header issues
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))

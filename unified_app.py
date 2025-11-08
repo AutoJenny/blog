@@ -197,6 +197,20 @@ def create_app(config_name=None):
     from blueprints.side_projects import bp as side_projects_bp
     app.register_blueprint(side_projects_bp)
 
+    # Register publish blueprint (for recipe post publishing)
+    try:
+        import sys
+        import os
+        # Add blog-launchpad to path to import publish module
+        blog_launchpad_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'blog-launchpad')
+        if blog_launchpad_path not in sys.path:
+            sys.path.insert(0, blog_launchpad_path)
+        from publish import register_blueprint as register_publish_blueprint
+        register_publish_blueprint(app)
+        logging.getLogger(__name__).info("✅ Registered publish blueprint")
+    except Exception as e:
+        logging.getLogger(__name__).warning(f"Could not register publish blueprint: {e}")
+
     # Additional blueprints will be added in Phase 2
     from blueprints.database import bp as database_bp
     app.register_blueprint(database_bp)
