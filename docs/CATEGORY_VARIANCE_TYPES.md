@@ -268,3 +268,6 @@ When adding or modifying category variance:
 - [ ] Both types: Verify week context resolution works
 - [ ] Both types: Verify no silent fallbacks (prompts fail clearly if missing)
 
+
+
+

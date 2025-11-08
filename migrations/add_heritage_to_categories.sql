@@ -20,3 +20,6 @@ COMMENT ON COLUMN clan_categories.llm_analyzed_at IS 'Timestamp when LLM analysi
 
 COMMIT;
 
+
+
+

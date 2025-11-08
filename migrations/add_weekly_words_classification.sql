@@ -12,3 +12,6 @@ ALTER TABLE calendar_ideas ADD CONSTRAINT calendar_ideas_item_classification_che
 COMMENT ON COLUMN calendar_ideas.item_classification IS 
     'Classification: theme (week-wide concepts), idea (regular content ideas), weekly_word (Scottish word of the week), weekly_phrase (Scots phrase of the week)';
 
+
+
+

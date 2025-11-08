@@ -89,3 +89,6 @@ def api_calendar_profiles(year, week_number):
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+
+
+

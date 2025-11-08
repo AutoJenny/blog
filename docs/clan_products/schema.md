@@ -98,3 +98,6 @@ All new columns are added with `ADD COLUMN IF NOT EXISTS` to support existing in
 - **ID Consistency**: `id` (clan.com product ID) is primary key, ensuring one record per product
 - **Hash Consistency**: Hash is recomputed on every upsert to reflect current product content
 
+
+
+

@@ -189,3 +189,6 @@ if __name__ == '__main__':
         print("Usage: python representative_products_selector.py <category_id> [limit]")
         print("Example: python representative_products_selector.py 123 8")
 
+
+
+

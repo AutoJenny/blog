@@ -1,15 +1,159 @@
+<style>
+/* Recipe Section Styling for Clan.com */
+.recipe-section {
+    margin: 2rem 0;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+.recipe-section:last-child {
+    border-bottom: none;
+}
+/* Recipe sections now use H2 headings from section_heading field (single source of truth) */
+/* No special CSS needed - H2s are rendered consistently for all section types */
+.recipe-meta {
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0;
+    font-size: 0.95rem;
+    color: #4b5563;
+    border-bottom: 1px solid #e5e7eb;
+}
+.recipe-meta strong {
+    color: #1f2937;
+    margin-right: 0.5rem;
+}
+.recipe-ingredients {
+    margin-bottom: 1.5rem;
+}
+.recipe-ingredients h3 {
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+    font-weight: 600;
+    font-family: Georgia, serif;
+}
+/* Prevent clan.com CSS from styling recipe H3s as H2s */
+.recipe-section h3 {
+    display: block;
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.5rem !important;
+}
+.ingredients-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.ingredients-list .ingredient-item {
+    padding: 0.25rem 0;
+    margin-bottom: 0;
+    border-bottom: 1px dotted #d1d5db;
+}
+.ingredients-list .ingredient-item:last-child {
+    border-bottom: none;
+}
+.ingredient-item-name {
+    color: #374151;
+    font-weight: 500;
+}
+.ingredient-amount {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #6b7280;
+    font-weight: 400;
+    font-style: italic;
+}
+.ingredient-notes {
+    color: #6b7280;
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+.recipe-method {
+    margin-bottom: 1.5rem;
+}
+.recipe-method h3 {
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+    font-weight: 600;
+    font-family: Georgia, serif;
+}
+.method-steps {
+    list-style: decimal;
+    padding-left: 2rem;
+    margin: 0;
+}
+.method-steps .method-step {
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+.method-steps .method-step:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+.step-instruction {
+    color: #374151;
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+}
+.step-meta {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-style: italic;
+}
+.recipe-variants, .recipe-serving {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f9fafb;
+    border-left: 3px solid #d97706;
+}
+.recipe-variants h3, .recipe-serving h3 {
+    font-size: 1.25rem;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    color: #1f2937;
+    font-weight: 600;
+}
+.recipe-further-reading {
+    margin: 1.5rem 0;
+}
+.recipe-further-reading h3 {
+    font-size: 1.25rem;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    color: #1f2937;
+    font-weight: 600;
+}
+.further-reading-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.further-reading-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+.further-reading-list li:last-child {
+    border-bottom: none;
+}
+.further-reading-link {
+    color: #d97706;
+    text-decoration: none;
+    font-weight: 500;
+}
+.further-reading-link:hover {
+    text-decoration: underline;
+}
+</style>
 <div class="mp-content std fix-me">
     <header class="blog-post__header">
-        {% if post.header_image and post.header_image.path and not post.exclude_header_image %}
-        <figure class="header-image">
-            <img src="{{ post.header_image.path }}" 
-                 alt="{{ post.header_image.title or 'Header image' }}"
-                 title="{{ post.header_image.caption or post.header_image.title or 'Header image' }}">
-            {% if post.header_image.caption %}
-            <figcaption>{{ post.header_image.caption }}</figcaption>
-            {% endif %}
-        </figure>
-        {% endif %}
+        {# Header image is handled by clan.com as featured image - don't include in HTML content #}
+        {# The exclude_header_image flag is set in clan_publisher.py to prevent duplication #}
         
         {% if post.subtitle %}
         <p class="blog-post__subtitle">{{ post.subtitle }}</p>
@@ -27,12 +171,53 @@
     {% if sections %}
     <div class="blog-sections">
     {% for section in sections %}
-    <section class="blog-section" id="section-{{ loop.index }}">
+    {# Skip recipe_image_style section - internal use only #}
+    {# Also skip if section heading contains 'Recipe Image Style' as a safety measure #}
+    {% if section.section_type != 'recipe_image_style' and 'Recipe Image Style' not in (section.section_heading or '') %}
+    {# Determine if this is a recipe section using custom test #}
+    {% set is_recipe = section.section_type is is_recipe_section %}
+    <section class="blog-section{% if is_recipe %} recipe-section recipe-{{ section.section_type }}{% endif %}" id="section-{{ loop.index }}">
+        {# Always add H2 from section_heading if it exists - this is the single source of truth #}
+        {# Content should never contain headings - they come from section_heading only #}
+        {% if section.section_heading %}
+            <h2>{{ section.section_heading }}</h2>
+        {% endif %}
         <div class="section-text">
             {% if section.polished %}
-                {{ section.polished|strip_html_doc|safe }}
+                {# Safety check: filter out raw JSON from polished (should never happen, but does for existing posts) #}
+                {% set polished_content = section.polished %}
+                {% if polished_content.strip().startswith('{') or polished_content.strip().startswith('[') or '```json' in polished_content.lower() %}
+                    {# This is raw JSON - try to render it if we have section_type and post_section_elements #}
+                    {% if is_recipe and section.post_section_elements %}
+                        {# JSON should be rendered server-side, but if it's here, skip it #}
+                        <p><em>Content not available - please regenerate this section.</em></p>
+                    {% else %}
+                        <p><em>Content not available - please regenerate this section.</em></p>
+                    {% endif %}
+                {% else %}
+                    {# For recipe sections, strip any remaining H2 headings from polished content #}
+                    {% if is_recipe %}
+                        {# Apply strip_h2_headings first, then strip_html_doc #}
+                        {% set cleaned_content = polished_content|strip_h2_headings %}
+                        {{ cleaned_content|strip_html_doc|safe }}
+                    {% else %}
+                        {{ polished_content|strip_html_doc|safe }}
+                    {% endif %}
+                {% endif %}
             {% elif section.draft %}
-                {{ section.draft|strip_html_doc|safe }}
+                {# For recipe sections, check if draft contains raw JSON and skip it #}
+                {% if is_recipe and (section.draft.startswith('{') or section.draft.startswith('[') or '```json' in section.draft.lower()) %}
+                    <p><em>Content not available - please regenerate this section.</em></p>
+                {% else %}
+                    {# For recipe sections, strip H2 headings from draft since we don't want duplicate headings #}
+                    {% if is_recipe %}
+                        {# Apply strip_h2_headings first, then strip_html_doc #}
+                        {% set cleaned_draft = section.draft|strip_h2_headings %}
+                        {{ cleaned_draft|strip_html_doc|safe }}
+                    {% else %}
+                        {{ section.draft|strip_html_doc|safe }}
+                    {% endif %}
+                {% endif %}
             {% elif section.content %}
                 {{ section.content|strip_html_doc|safe }}
             {% else %}
@@ -49,6 +234,7 @@
         </figure>
         {% endif %}
     </section>
+    {% endif %} {# End skip recipe_image_style #}
     
     {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
         {% if post.cross_promotion.category_widget_html %}

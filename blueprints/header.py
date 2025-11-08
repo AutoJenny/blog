@@ -340,9 +340,38 @@ def header_preview(post_id):
             if not post.get('author_name') and post_type == 'recipe':
                 post['author_name'] = 'Marion MacLeod'
             
-            # Get header image if exists
+            # Get header image if exists - use SAME schema as new system (post_images -> images)
             header_image = None
-            if post['header_image_id']:
+            # Try post_images -> images first (same for ALL post types)
+            cursor.execute("""
+                SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+                FROM post_images pi
+                JOIN images i ON pi.image_id = i.id
+                WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
+                ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
+                              WHEN pi.image_type = 'header_watermarked' THEN 2
+                              ELSE 3 END
+                LIMIT 1
+            """, (post_id,))
+            img_row = cursor.fetchone()
+            if img_row and img_row.get('file_path'):
+                # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
+                header_path = img_row['file_path']
+                header_path = header_path.lstrip('/')
+                if not header_path.startswith('static/'):
+                    header_path = 'static/' + header_path.lstrip('/')
+                header_path = '/' + header_path  # Add leading slash
+                
+                header_image = {
+                    'path': header_path,
+                    'filename': img_row.get('filename'),
+                    'alt_text': img_row.get('alt_text'),
+                    'caption': img_row.get('caption'),
+                    'width': img_row.get('width'),
+                    'height': img_row.get('height')
+                }
+            elif post.get('header_image_id'):
+                # Fallback to legacy image table (should not be needed, but handle gracefully)
                 cursor.execute("""
                     SELECT id, filename, path, alt_text, caption
                     FROM image
@@ -401,52 +430,20 @@ def header_preview(post_id):
             """, (post_id,))
             sections = cursor.fetchall()
             
-            # Import recipe section renderer
-            from utils.recipe_section_renderer import render_recipe_section
-            
             # Format sections for template
+            # IMPORTANT: Use polished field directly - no transformations here!
+            # Recipe sections should have HTML already rendered and saved to polished during content generation
             formatted_sections = []
             for section in sections:
-                # Parse post_section_elements if present
-                section_elements = None
-                if section.get('post_section_elements'):
-                    try:
-                        section_elements = json.loads(section['post_section_elements']) if isinstance(section['post_section_elements'], str) else section['post_section_elements']
-                    except (json.JSONDecodeError, TypeError):
-                        logger.warning(f"Failed to parse post_section_elements for section {section['id']}")
-                        section_elements = None
+                # Use polished if available, otherwise draft, otherwise empty
+                content = section.get('polished') or section.get('draft') or ''
                 
-                # Render content based on section type
-                section_type = section.get('section_type')
-                content = None
-                
-                if section_type and section_elements:
-                    # Use structured JSON renderer for recipe sections
-                    # Filter out raw JSON from draft/polished if present
-                    draft_content = section.get('polished') or section.get('draft') or ''
-                    if draft_content:
-                        draft_stripped = draft_content.strip()
-                        # If draft looks like raw JSON, don't use it as fallback
-                        if draft_stripped.startswith('{') or draft_stripped.startswith('[') or '```json' in draft_stripped.lower():
-                            draft_content = None
-                    
-                    content = render_recipe_section(
-                        section_type,
-                        section_elements,
-                        draft_content
-                    )
-                else:
-                    # Fallback to polished or draft content
-                    # But filter out raw JSON
-                    draft_content = section.get('polished') or section.get('draft') or ''
-                    if draft_content:
-                        draft_stripped = draft_content.strip()
-                        if draft_stripped.startswith('{') or draft_stripped.startswith('[') or '```json' in draft_stripped.lower():
-                            content = ''
-                        else:
-                            content = draft_content
-                    else:
-                        content = ''
+                # Safety check: filter out raw JSON (should never happen if rendering works correctly)
+                if content:
+                    content_stripped = content.strip()
+                    if content_stripped.startswith('{') or content_stripped.startswith('[') or '```json' in content_stripped.lower():
+                        logger.warning(f"Section {section['id']} contains raw JSON in polished/draft - this should not happen!")
+                        content = '<p><em>No content available for this section.</em></p>'
                 
                 formatted_section = {
                     'id': section['id'],
@@ -2927,38 +2924,64 @@ def api_generate_header_image(post_id):
                     'success': False,
                     'error': 'Image optimization did not return an optimized path'
                 }), 500
-            # Ensure path starts with /static
-            if new_path and not new_path.startswith('/static'):
-                new_path = f"/static{new_path}" if not new_path.startswith('/') else f"/static/{new_path}"
+            # Normalize path: strip leading slash, then ensure it starts with /static/
+            # This matches the normalization in api_optimize_header_image for consistency
+            if new_path:
+                new_path = new_path.lstrip('/')
+                if not new_path.startswith('static/'):
+                    new_path = 'static/' + new_path.lstrip('/')
+                new_path = '/' + new_path  # Add leading slash
             
+            # CRITICAL: Write to images table (plural) with file_path column for publishing system
             if existing_image_id and existing_image_id['header_image_id']:
-                # Delete any other image records with the same path to avoid conflict
-                cursor.execute("""
-                    DELETE FROM image WHERE path = %s AND id != %s
-                """, (new_path, existing_image_id['header_image_id']))
+                # Check if record exists in images table
+                cursor.execute("SELECT id FROM images WHERE id = %s", (existing_image_id['header_image_id'],))
+                existing_images_record = cursor.fetchone()
                 
-                # Update existing image record
-                cursor.execute("""
-                    UPDATE image 
-                    SET filename = %s, original_filename = %s, path = %s, 
-                        image_prompt = %s, alt_text = %s, caption = %s,
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s
-                """, (
-                    'header.jpg',
-                    'original_header.png', 
-                    new_path,
-                    image_prompt,
-                    'Header image for blog post',
-                    'Generated header image',
-                    existing_image_id['header_image_id']
-                ))
-                
-                image_id = existing_image_id['header_image_id']
+                if existing_images_record:
+                    # Update existing images record
+                    cursor.execute("""
+                        UPDATE images 
+                        SET filename = %s, original_filename = %s, file_path = %s, 
+                            image_prompt = %s, alt_text = %s, caption = %s,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (
+                        'header.jpg',
+                        'original_header.png', 
+                        new_path,
+                        image_prompt,
+                        'Header image for blog post',
+                        'Generated header image',
+                        existing_image_id['header_image_id']
+                    ))
+                    image_id = existing_image_id['header_image_id']
+                else:
+                    # Create new record in images table
+                    cursor.execute("""
+                        INSERT INTO images (filename, original_filename, file_path, image_prompt, alt_text, caption)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                    """, (
+                        'header.jpg',
+                        'original_header.png', 
+                        new_path,
+                        image_prompt,
+                        'Header image for blog post',
+                        'Generated header image'
+                    ))
+                    image_id = cursor.fetchone()['id']
+                    
+                    # Update post.header_image_id to point to images table record
+                    cursor.execute("""
+                        UPDATE post 
+                        SET header_image_id = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (image_id, post_id))
             else:
-                # Create new image record
+                # Create new images record
                 cursor.execute("""
-                    INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
+                    INSERT INTO images (filename, original_filename, file_path, image_prompt, alt_text, caption)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
@@ -2978,6 +3001,19 @@ def api_generate_header_image(post_id):
                     SET header_image_id = %s, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
                 """, (image_id, post_id))
+            
+            # CRITICAL: Create post_images record for publishing system (same as api_optimize_header_image)
+            # Delete any existing post_images link for header_optimized
+            cursor.execute("""
+                DELETE FROM post_images 
+                WHERE post_id = %s AND section_id IS NULL AND image_type = 'header_optimized'
+            """, (post_id,))
+            
+            # Create post_images link for header_optimized
+            cursor.execute("""
+                INSERT INTO post_images (post_id, section_id, image_id, image_type)
+                VALUES (%s, NULL, %s, 'header_optimized')
+            """, (post_id, image_id))
             
             # Log successful generation event
             prompt_service.log_generation_event(
@@ -3201,30 +3237,59 @@ def api_optimize_header_image(post_id):
         if result['success']:
             # Save optimized image to image table and create post_images link
             with db_manager.get_cursor() as cursor:
-                # Get optimized image paths
-                optimized_path = result['optimized_path'].lstrip('/') if result.get('optimized_path') else None
+                # Get optimized image paths and normalize consistently
+                optimized_path = result.get('optimized_path')
+                if optimized_path:
+                    # Normalize path: strip leading slash, then ensure it starts with /static/
+                    # This matches the normalization in api_generate_header_image and load_header_image_from_db
+                    optimized_path = optimized_path.lstrip('/')
+                    if not optimized_path.startswith('static/'):
+                        optimized_path = 'static/' + optimized_path.lstrip('/')
+                    optimized_path = '/' + optimized_path  # Add leading slash
+                else:
+                    optimized_path = None
+                
                 portrait_optimized_path = result.get('portrait_path', '').lstrip('/') if result.get('portrait_path') else None
                 
-                # Insert or update image record
+                # CRITICAL: Write to images table (plural) with file_path column for publishing system
                 # Get the caption from the post's header_image_caption field
                 cursor.execute("SELECT header_image_caption FROM post WHERE id = %s", (post_id,))
                 post_row = cursor.fetchone()
                 caption = post_row['header_image_caption'] if post_row else None
                 
-                cursor.execute("""
-                    INSERT INTO image (filename, path, alt_text, caption)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (path) DO UPDATE 
-                    SET filename = EXCLUDED.filename, alt_text = EXCLUDED.alt_text, caption = EXCLUDED.caption
-                    RETURNING id
-                """, (
-                    'header.jpg',
-                    f"/{optimized_path}",
-                    'Header image',
-                    caption
-                ))
-                image_record = cursor.fetchone()
-                image_id = image_record['id']
+                # Check if image already exists in images table by file_path
+                cursor.execute("SELECT id FROM images WHERE file_path = %s", (optimized_path,))
+                existing_images_record = cursor.fetchone()
+                
+                if existing_images_record:
+                    # Update existing record
+                    cursor.execute("""
+                        UPDATE images 
+                        SET filename = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                        RETURNING id
+                    """, (
+                        'header.jpg',
+                        'Header image',
+                        caption,
+                        existing_images_record['id']
+                    ))
+                    image_record = cursor.fetchone()
+                    image_id = image_record['id']
+                else:
+                    # Insert new record
+                    cursor.execute("""
+                        INSERT INTO images (filename, file_path, alt_text, caption)
+                        VALUES (%s, %s, %s, %s)
+                        RETURNING id
+                    """, (
+                        'header.jpg',
+                        optimized_path,
+                        'Header image',
+                        caption
+                    ))
+                    image_record = cursor.fetchone()
+                    image_id = image_record['id']
                 
                 # Delete any existing post_images link for header_optimized
                 cursor.execute("""

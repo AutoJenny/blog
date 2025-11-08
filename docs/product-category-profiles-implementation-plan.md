@@ -948,3 +948,6 @@ VALUES ('profile', 'Weekly product or category profile feature');
 - Test data should be created for each component
 - Documentation should be updated as development progresses
 
+
+
+

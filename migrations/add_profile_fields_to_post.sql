@@ -42,3 +42,6 @@ COMMENT ON COLUMN post.profile_quick_facts IS 'JSONB object storing quick facts:
 
 COMMIT;
 
+
+
+

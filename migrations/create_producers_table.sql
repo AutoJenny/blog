@@ -27,3 +27,6 @@ COMMENT ON TABLE producers IS 'Normalized producer/supplier information for Prod
 
 COMMIT;
 
+
+
+

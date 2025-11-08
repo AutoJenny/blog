@@ -1648,29 +1648,37 @@ def get_post_with_development(post_id):
         
         post_dict = dict(post)
         
-        # Try to get optimized header via post_images link first
+        # Try to get optimized header via post_images link first (use SAME schema as new system)
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT i.path, i.alt_text, i.caption, i.filename
+                SELECT i.file_path, i.alt_text, i.caption, i.filename, i.width, i.height, pi.image_type
                 FROM post_images pi
-                JOIN image i ON pi.image_id = i.id
-                WHERE pi.section_id IS NULL 
-                  AND pi.image_type = 'header_optimized'
-                  AND pi.post_id = %s
+                JOIN images i ON pi.image_id = i.id
+                WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
+                ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
+                              WHEN pi.image_type = 'header_watermarked' THEN 2
+                              ELSE 3 END
                 LIMIT 1
             """, (post_id,))
             header_img = cursor.fetchone()
             
-            if header_img and header_img['path']:
+            if header_img and header_img.get('file_path'):
+                # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
+                header_path = header_img['file_path']
+                header_path = header_path.lstrip('/')
+                if not header_path.startswith('static/'):
+                    header_path = 'static/' + header_path.lstrip('/')
+                header_path = '/' + header_path  # Add leading slash
+                
                 # Use optimized header from post_images
                 post_dict['header_image'] = {
-                    'path': header_img['path'],
+                    'path': header_path,
                     'id': post_dict.get('header_image_id'),
-                    'caption': header_img['caption'] or post_dict.get('header_image_caption'),
-                    'title': header_img['filename'] or post_dict.get('header_image_title'),
-                    'alt_text': header_img['alt_text'],
-                    'width': post_dict.get('header_image_width'),
-                    'height': post_dict.get('header_image_height')
+                    'caption': header_img.get('caption') or post_dict.get('header_image_caption'),
+                    'title': header_img.get('filename') or post_dict.get('header_image_title'),
+                    'alt_text': header_img.get('alt_text'),
+                    'width': header_img.get('width') or post_dict.get('header_image_width'),
+                    'height': header_img.get('height') or post_dict.get('header_image_height')
                 }
             else:
                 # Fallback to find_header_image() for legacy posts
@@ -1852,39 +1860,95 @@ def publish_post_to_clan(post_id):
                 logger.error(f"Unknown date type: {type(post['created_at'])}")
                 post['created_at'] = None
         
-        # Add header image if exists
-        header_image_path = find_header_image(post_id)
-        if header_image_path:
+        # Add header image if exists - use SAME logic as new modular system (post_images -> images schema)
+        # This ensures BOTH post types use the EXACT same path format
+        if not post.get('header_image') or not post['header_image'].get('path'):
+            # Try post_images -> images first (same for ALL post types)
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                           cross_promotion_category_id, cross_promotion_category_title,
+                    SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+                    FROM post_images pi
+                    JOIN images i ON pi.image_id = i.id
+                    WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
+                    ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
+                                  WHEN pi.image_type = 'header_watermarked' THEN 2
+                                  ELSE 3 END
+                    LIMIT 1
+                """, (post_id,))
+                img_row = cursor.fetchone()
+                if img_row and img_row.get('file_path'):
+                    header_path = img_row['file_path']
+                    # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
+                    header_path = header_path.lstrip('/')
+                    if not header_path.startswith('static/'):
+                        header_path = 'static/' + header_path.lstrip('/')
+                    header_path = '/' + header_path  # Add leading slash
+                    
+                    # Get additional header data from post table
+                    cursor.execute("""
+                        SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                               cross_promotion_category_id, cross_promotion_category_title,
+                               cross_promotion_product_id, cross_promotion_product_title,
+                               cross_promotion_category_position, cross_promotion_product_position,
+                               cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                        FROM post WHERE id = %s
+                    """, (post_id,))
+                    header_data = cursor.fetchone()
+                    
+                    post['header_image'] = {
+                        'path': header_path,
+                        'alt_text': img_row.get('alt_text') or f"Header image for {post.get('title', 'this post')}",
+                        'caption': img_row.get('caption') or (header_data['header_image_caption'] if header_data else None),
+                        'title': img_row.get('filename') or (header_data['header_image_title'] if header_data else None),
+                        'width': img_row.get('width') or (header_data['header_image_width'] if header_data else None),
+                        'height': img_row.get('height') or (header_data['header_image_height'] if header_data else None)
+                    }
+                else:
+                    # Fallback to filesystem (should not be needed, but handle gracefully)
+                    header_image_path = find_header_image(post_id)
+                    if header_image_path:
+                        with db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                                       cross_promotion_category_id, cross_promotion_category_title,
+                                       cross_promotion_product_id, cross_promotion_product_title,
+                                       cross_promotion_category_position, cross_promotion_product_position,
+                                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                                FROM post WHERE id = %s
+                            """, (post_id,))
+                            header_data = cursor.fetchone()
+                            
+                            post['header_image'] = {
+                                'path': header_image_path,
+                                'alt_text': f"Header image for {post.get('title', 'this post')}",
+                                'caption': header_data['header_image_caption'] if header_data else None,
+                                'title': header_data['header_image_title'] if header_data else None,
+                                'width': header_data['header_image_width'] if header_data else None,
+                                'height': header_data['header_image_height'] if header_data else None
+                            }
+        
+        # Get cross-promotion data if header_image was set
+        if post.get('header_image'):
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT cross_promotion_category_id, cross_promotion_category_title,
                            cross_promotion_product_id, cross_promotion_product_title,
                            cross_promotion_category_position, cross_promotion_product_position,
                            cross_promotion_category_widget_html, cross_promotion_product_widget_html
                     FROM post WHERE id = %s
                 """, (post_id,))
                 header_data = cursor.fetchone()
-                
-                post['header_image'] = {
-                    'path': header_image_path,
-                    'alt_text': f"Header image for {post.get('title', 'this post')}",
-                    'caption': header_data['header_image_caption'] if header_data else None,
-                    'title': header_data['header_image_title'] if header_data else None,
-                    'width': header_data['header_image_width'] if header_data else None,
-                    'height': header_data['header_image_height'] if header_data else None
-                }
-                
-                post['cross_promotion'] = {
-                    'category_id': header_data['cross_promotion_category_id'] if header_data else None,
-                    'category_title': header_data['cross_promotion_category_title'] if header_data else None,
-                    'product_id': header_data['cross_promotion_product_id'] if header_data else None,
-                    'product_title': header_data['cross_promotion_product_title'] if header_data else None,
-                    'category_position': header_data.get('cross_promotion_category_position'),
-                    'product_position': header_data.get('cross_promotion_product_position'),
-                    'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
-                    'product_widget_html': header_data.get('cross_promotion_product_widget_html')
-                }
+                if header_data:
+                    post['cross_promotion'] = {
+                        'category_id': header_data['cross_promotion_category_id'] if header_data else None,
+                        'category_title': header_data['cross_promotion_category_title'] if header_data else None,
+                        'product_id': header_data['cross_promotion_product_id'] if header_data else None,
+                        'product_title': header_data['cross_promotion_product_title'] if header_data else None,
+                        'category_position': header_data.get('cross_promotion_category_position'),
+                        'product_position': header_data.get('cross_promotion_product_position'),
+                        'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
+                        'product_widget_html': header_data.get('cross_promotion_product_widget_html')
+                    }
         
         # Import publishing class
         import sys

@@ -2534,36 +2534,29 @@ def get_post_sections_with_images(post_id):
             if 'section_type' not in section_dict:
                 section_dict['section_type'] = section.get('section_type')
             
-            # Priority 1: Check Photo-harvesting route (selected_landscape.json)
+            # Priority 1: Check post_images table (approved optimized images)
             image_path = None
             caption_text = section.get('image_captions') or ''
             alt_text = f"Image for {section.get('section_heading', 'section')}"
             
-            try:
-                import os
-                import json
-                photo_json_path = os.path.join('static', 'content', 'posts', str(post_id), 'sections', str(section['id']), 'optimized', 'selected_landscape.json')
-                if os.path.exists(photo_json_path):
-                    with open(photo_json_path, 'r') as f:
-                        photo_data = json.load(f)
-                        photo = photo_data.get('photo', {})
-                        if photo.get('url'):
-                            # Use hotlinked provider URL (Pexels/Unsplash)
-                            image_path = photo['url']
-                            # Extract caption/alt from photo metadata if not already set
-                            if not caption_text and photo.get('credits'):
-                                caption_text = photo['credits']
-                            if photo.get('photographer'):
-                                alt_text = f"Photo by {photo['photographer']}"
-            except Exception as e:
-                logger.debug(f"Could not load Photo-harvesting JSON for section {section['id']}: {e}")
-            
-            # Priority 2: Try to find image in the new directory structure
-            if not image_path:
-                image_path = find_section_image(post_id, section['id'])
+            # ONLY use post_images table - NO FALLBACKS
+            cur.execute("""
+                SELECT i.path, i.filename, i.alt_text, i.caption
+                FROM post_images pi
+                JOIN image i ON pi.image_id = i.id
+                WHERE pi.section_id = %s AND pi.image_type = 'section_optimized'
+                LIMIT 1
+            """, (section['id'],))
+            db_image = cur.fetchone()
+            if db_image and db_image.get('path'):
+                image_path = db_image['path']
+                if db_image.get('caption'):
+                    caption_text = db_image['caption']
+                if db_image.get('alt_text'):
+                    alt_text = db_image['alt_text']
             
             if image_path:
-                # Found image (Photo-harvesting or filesystem)
+                # Found image in post_images table
                 section_dict['image'] = {
                     'path': image_path,
                     'alt_text': alt_text,
@@ -2573,29 +2566,8 @@ def get_post_sections_with_images(post_id):
                 }
                 # Also set the caption directly on the section for template compatibility
                 section_dict['image_captions'] = caption_text
-            elif section.get('image_id'):
-                # Fallback to legacy image_id system
-                cur.execute("""
-                    SELECT * FROM image WHERE id = %s
-                """, (section['image_id'],))
-                image = cur.fetchone()
-                if image:
-                    section_dict['image'] = dict(image)
-                    # Also set the caption directly on the section for template compatibility
-                    section_dict['image_captions'] = section.get('image_captions')
-            elif section.get('generated_image_url'):
-                # Fallback to generated_image_url
-                section_dict['image'] = {
-                    'path': section['generated_image_url'],
-                    'alt_text': section.get('image_captions') or 'Section image',
-                    'title': section.get('image_title'),
-                    'width': section.get('image_width'),
-                    'height': section.get('image_height')
-                }
-                # Also set the caption directly on the section for template compatibility
-                section_dict['image_captions'] = section.get('image_captions')
             else:
-                # No image found - provide placeholder info
+                # No image in post_images table - NO FALLBACKS
                 section_dict['image'] = {
                     'path': None,
                     'alt_text': f"No image available for {section.get('section_heading', 'this section')}",
@@ -2860,9 +2832,10 @@ def publish_post_to_clan(post_id):
         
         if not post.get('header_image') or not post['header_image'].get('path'):
             logger.info("Header image not set, attempting to find it...")
-            # Try to get from new post_images/images schema first
+            # Try to get from new post_images/images schema first, then fallback to image table
             with get_db_connection() as conn:
                 cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+                # First try images table (new schema)
                 cur.execute("""
                     SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
                     FROM post_images pi
@@ -2872,6 +2845,18 @@ def publish_post_to_clan(post_id):
                     LIMIT 1
                 """, (post_id,))
                 img_row = cur.fetchone()
+                if not img_row or not img_row.get('file_path'):
+                    # Fallback to image table (old schema) - for FK constraint compatibility
+                    cur.execute("""
+                        SELECT i.path as file_path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
+                        FROM post_images pi
+                        JOIN image i ON pi.image_id = i.id
+                        WHERE pi.post_id = %s AND pi.image_type LIKE 'header%'
+                        ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 ELSE 2 END
+                        LIMIT 1
+                    """, (post_id,))
+                    img_row = cur.fetchone()
+                
                 if img_row and img_row.get('file_path'):
                     # Use optimized path if available, otherwise raw
                     header_path = img_row['file_path']
