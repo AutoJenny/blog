@@ -16,3 +16,6 @@ COMMENT ON COLUMN clan_products.producer_id IS 'Reference to normalized producer
 
 COMMIT;
 
+
+
+

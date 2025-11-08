@@ -416,6 +416,14 @@ def api_generate_section_draft(post_id, section_id):
             if not generated_content:
                 return jsonify({'error': 'LLM returned empty content'}), 500
             
+            # Strip any H2 headings that LLM might have added (defensive measure)
+            # H2 headings should only come from section_heading field, never from generated content
+            import re
+            original_content = generated_content
+            generated_content = re.sub(r'<h2[^>]*>.*?</h2>', '', generated_content, flags=re.IGNORECASE | re.DOTALL)
+            if original_content != generated_content:
+                logger.info(f"Stripped H2 heading from generated content for section {section_id}")
+            
             # For recipe sections that require structured JSON, parse and store separately
             structured_data = None
             if is_recipe_post and section_type:
@@ -456,13 +464,38 @@ def api_generate_section_draft(post_id, section_id):
                     else:
                         logger.warning(f"JSON validation failed for {section_type}, storing as plain text")
             
+            # For recipe sections with structured data, render to HTML and save to polished
+            polished_html = None
+            if structured_data and section_type and section_type.startswith('recipe_'):
+                try:
+                    from utils.recipe_section_renderer import render_recipe_section
+                    # structured_data is a JSON string, need to parse it to dict
+                    import json as json_module
+                    section_elements = json_module.loads(structured_data)
+                    polished_html = render_recipe_section(section_type, section_elements, generated_content)
+                    logger.info(f"Rendered recipe section {section_id} ({section_type}) to HTML")
+                except Exception as e:
+                    logger.error(f"Error rendering recipe section {section_id} to HTML: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    # Fall back to generated_content if rendering fails
+                    polished_html = generated_content
+            
             # Save the generated content - try UPDATE first, then INSERT if needed
             if structured_data:
-                cursor.execute("""
-                    UPDATE post_section 
-                    SET draft = %s, post_section_elements = %s, status = 'draft'
-                    WHERE post_id = %s AND id = %s
-                """, (generated_content, structured_data, post_id, section_id))
+                if polished_html:
+                    # Save both JSON (for editing) and HTML (for preview/publish)
+                    cursor.execute("""
+                        UPDATE post_section 
+                        SET draft = %s, post_section_elements = %s, polished = %s, status = 'draft'
+                        WHERE post_id = %s AND id = %s
+                    """, (generated_content, structured_data, polished_html, post_id, section_id))
+                else:
+                    cursor.execute("""
+                        UPDATE post_section 
+                        SET draft = %s, post_section_elements = %s, status = 'draft'
+                        WHERE post_id = %s AND id = %s
+                    """, (generated_content, structured_data, post_id, section_id))
             else:
                 cursor.execute("""
                     UPDATE post_section 
@@ -472,22 +505,52 @@ def api_generate_section_draft(post_id, section_id):
             
             # If no row was updated, create one (section might be from post_development.sections)
             if cursor.rowcount == 0:
+                # For recipe sections, ensure polished HTML is set
+                if structured_data and section_type and section_type.startswith('recipe_') and not polished_html:
+                    try:
+                        from utils.recipe_section_renderer import render_recipe_section
+                        # Parse JSON if needed
+                        if isinstance(structured_data, str):
+                            import json
+                            section_elements = json.loads(structured_data)
+                        else:
+                            section_elements = structured_data
+                        polished_html = render_recipe_section(section_type, section_elements, generated_content)
+                    except Exception as e:
+                        logger.error(f"Error rendering recipe section {section_id} to HTML during insert: {e}")
+                        polished_html = None
+                
                 # Get section_order from the section data we retrieved
                 section_order = section.get('section_order', int(section_id))
                 try:
                     if structured_data:
-                        cursor.execute("""
-                            INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, post_section_elements, status)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, 'draft')
-                        """, (
-                            post_id, 
-                            int(section_id), 
-                            section_order,
-                            section.get('section_heading', f'Section {section_id}'),
-                            section.get('section_description', ''),
-                            generated_content,
-                            structured_data
-                        ))
+                        if polished_html:
+                            cursor.execute("""
+                                INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, post_section_elements, polished, status)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'draft')
+                            """, (
+                                post_id, 
+                                int(section_id), 
+                                section_order,
+                                section.get('section_heading', f'Section {section_id}'),
+                                section.get('section_description', ''),
+                                generated_content,
+                                structured_data,
+                                polished_html
+                            ))
+                        else:
+                            cursor.execute("""
+                                INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, post_section_elements, status)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, 'draft')
+                            """, (
+                                post_id, 
+                                int(section_id), 
+                                section_order,
+                                section.get('section_heading', f'Section {section_id}'),
+                                section.get('section_description', ''),
+                                generated_content,
+                                structured_data
+                            ))
                     else:
                         cursor.execute("""
                             INSERT INTO post_section (post_id, id, section_order, section_heading, section_description, draft, status)

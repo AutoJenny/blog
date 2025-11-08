@@ -108,8 +108,25 @@ def render_recipe_section(section_type: str, section_elements: dict, draft_conte
         return render_serving(section_elements)
     elif section_type == 'recipe_further_reading':
         return render_further_reading(section_elements)
+    elif section_type == 'recipe_background':
+        # Background section uses draft content, but filter out any raw JSON
+        if draft_content:
+            # Strip any H2 headings (defensive measure - H2s should only come from section_heading)
+            import re
+            draft_content = re.sub(r'<h2[^>]*>.*?</h2>', '', draft_content, flags=re.IGNORECASE | re.DOTALL)
+            
+            draft_stripped = draft_content.strip()
+            # Check if draft_content looks like raw JSON (starts with { or [)
+            if draft_stripped.startswith('{') or draft_stripped.startswith('[') or '```json' in draft_stripped.lower():
+                # This is likely raw JSON, don't display it
+                return '<p><em>No content available for this section.</em></p>'
+        return draft_content or '<p><em>No content available for this section.</em></p>'
     else:
-        # For recipe_background or other sections, use draft content
+        # For other recipe sections, use draft content but filter JSON
+        if draft_content:
+            draft_stripped = draft_content.strip()
+            if draft_stripped.startswith('{') or draft_stripped.startswith('[') or '```json' in draft_stripped.lower():
+                return '<p><em>No content available for this section.</em></p>'
         return draft_content or '<p><em>No content available for this section.</em></p>'
 
 
@@ -132,7 +149,6 @@ def render_ingredients(data: dict) -> str:
     # Ingredients list
     if data.get('ingredients'):
         html.append('<div class="recipe-ingredients">')
-        html.append('<h3>Ingredients</h3>')
         html.append('<ul class="ingredients-list">')
         
         for ing in data['ingredients']:
@@ -210,7 +226,6 @@ def render_method(data: dict) -> str:
     
     if data.get('steps'):
         html.append('<div class="recipe-method">')
-        html.append('<h3>Method</h3>')
         html.append('<ol class="method-steps">')
         
         for step in data['steps']:
@@ -248,7 +263,6 @@ def render_variants(data: dict) -> str:
     
     if data.get('variants'):
         html.append('<div class="recipe-variants">')
-        html.append('<h3>Variations</h3>')
         
         for variant in data['variants']:
             name = variant.get('name', '')
@@ -278,7 +292,6 @@ def render_serving(data: dict) -> str:
     
     if data.get('serving_suggestions'):
         html.append('<div class="recipe-serving">')
-        html.append('<h3>Serving Suggestions</h3>')
         
         for suggestion in data['serving_suggestions']:
             suggestion_type = suggestion.get('type', '')
@@ -308,7 +321,6 @@ def render_further_reading(data: dict) -> str:
     
     if data.get('sources'):
         html.append('<div class="recipe-further-reading">')
-        html.append('<h3>Further Reading</h3>')
         html.append('<div class="reading-sources">')
         
         for source in data['sources']:

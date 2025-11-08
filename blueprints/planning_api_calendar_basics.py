@@ -55,3 +55,6 @@ def api_calendar_weeks(year):
         logger.error(f"Error fetching calendar weeks: {e}")
         return jsonify({'error': str(e)}), 500
 
+
+
+

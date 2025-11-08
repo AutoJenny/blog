@@ -111,3 +111,6 @@ Sections are stored in the existing `post_section` table:
   ```
 - Query products on render for fresh data
 
+
+
+

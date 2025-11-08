@@ -96,3 +96,6 @@ See the sync process used in November 2025 for reference.
 - **Deleted products**: Products in DB but not in CSV are likely disabled/deleted; can be removed from cache
 - **ID gaps**: Configurable products create large ID gaps (1800+ IDs per product); CSV handles this naturally
 
+
+
+

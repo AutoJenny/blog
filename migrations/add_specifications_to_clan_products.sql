@@ -16,3 +16,6 @@ COMMENT ON COLUMN clan_products.specifications IS 'JSONB object storing product 
 
 COMMIT;
 
+
+
+

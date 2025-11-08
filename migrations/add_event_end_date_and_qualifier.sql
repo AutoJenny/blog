@@ -19,3 +19,6 @@ CREATE INDEX IF NOT EXISTS idx_nsi_date_qualifier
 COMMENT ON COLUMN newsletter_source_item.end_date IS 'Event end date (for date ranges or "until" dates)';
 COMMENT ON COLUMN newsletter_source_item.date_qualifier IS 'Which dates are available: start_only, end_only, both, or NULL (unknown/none)';
 
+
+
+

@@ -438,18 +438,12 @@ class ClanPublisher:
         logger.info(f"Post header_image_id: {post.get('header_image_id')}")
         
         # Process header image - use header image path from post data
+        logger.info(f"=== PROCESS_IMAGES: Checking for header image ===")
+        logger.info(f"post.get('header_image'): {post.get('header_image')}")
         header_path = post.get('header_image', {}).get('path')
+        logger.info(f"header_path extracted: {header_path}")
         if header_path:
             logger.info(f"✅ Found header image: {header_path}")
-            
-            # Check if file exists - convert web path to file system path
-            fs_path = path_resolver.convert_web_path_to_filesystem(header_path)
-            if os.path.exists(fs_path):
-                logger.info(f"✅ Header image file exists at: {fs_path}")
-                logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
-            else:
-                logger.error(f"❌ Header image file NOT found at: {fs_path}")
-                logger.error(f"Current working directory: {os.getcwd()}")
             
             # Generate unique filename with timestamp for cache busting
             filename = f"header_{post['id']}_{int(time.time())}.jpg"
@@ -457,18 +451,37 @@ class ClanPublisher:
             
             try:
                 # Convert web path to file system path for upload
+                # Try path_resolver first, but also check static/ directly if it fails
                 fs_path = path_resolver.convert_web_path_to_filesystem(header_path)
                 logger.info(f"Converting web path '{header_path}' to file system path '{fs_path}'")
                 
-                uploaded_url = self.upload_image(fs_path, filename)
-                logger.info(f"upload_image returned: {uploaded_url}")
+                # NO FALLBACKS - path_resolver should find it or fail clearly
+                if not os.path.exists(fs_path):
+                    logger.error(f"❌ Header image file NOT found at: {fs_path}")
+                    logger.error(f"   Web path was: {header_path}")
+                    logger.error(f"   Project root: {path_resolver.project_root}")
+                    logger.error(f"   This should not happen - path_resolver should find files in project_root/static/")
                 
-                if uploaded_url:
-                    uploaded_images[header_path] = uploaded_url
-                    logger.info(f"✅ Header image uploaded successfully: {header_path} -> {uploaded_url}")
-                    logger.info(f"✅ uploaded_images dictionary now contains: {uploaded_images}")
+                # Check if file exists before attempting upload
+                if os.path.exists(fs_path):
+                    logger.info(f"✅ Header image file exists at: {fs_path}")
+                    logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
+                    
+                    uploaded_url = self.upload_image(fs_path, filename)
+                    logger.info(f"upload_image returned: {uploaded_url}")
+                    
+                    if uploaded_url:
+                        uploaded_images[header_path] = uploaded_url
+                        logger.info(f"✅ Header image uploaded successfully: {header_path} -> {uploaded_url}")
+                        logger.info(f"✅ Stored in uploaded_images with key: '{header_path}' (type: {type(header_path)}, len: {len(header_path)})")
+                        logger.info(f"✅ uploaded_images keys: {list(uploaded_images.keys())}")
+                        logger.info(f"✅ uploaded_images values: {list(uploaded_images.values())}")
+                    else:
+                        logger.error(f"❌ upload_image returned None/empty for: {header_path}")
                 else:
-                    logger.error(f"❌ upload_image returned None/empty for: {header_path}")
+                    logger.error(f"❌ Header image file NOT found at: {fs_path}")
+                    logger.error(f"Current working directory: {os.getcwd()}")
+                    logger.error(f"Web path was: {header_path}")
             except Exception as e:
                 logger.error(f"❌ Exception during header image upload: {str(e)}")
                 import traceback
@@ -709,60 +722,64 @@ class ClanPublisher:
                 endpoint = f"{self.api_base_url}createPost"
                 json_args = {}
             
-            # Get header image path for thumbnails
-            header_image_path = None
-            if post.get('header_image') and post['header_image'].get('path'):
-                header_image_path = post['header_image']['path']
-            
             # Set thumbnails based on uploaded header image availability
             # CRITICAL: These fields are MANDATORY according to clan.com API docs
             list_thumbnail = '/blog/placeholder.jpg'  # Default fallback that should exist on clan.com
             post_thumbnail = '/blog/placeholder.jpg'  # Default fallback that should exist on clan.com
             
-            # Look for header image in uploaded_images
+            # Get header image path from post data (not from uploaded_images keys)
             header_image_path = None
-            for path in uploaded_images.keys():
-                if 'header' in path:
-                    header_image_path = path
-                    break
+            if post.get('header_image') and post['header_image'].get('path'):
+                header_image_path = post['header_image']['path']
             
-            if uploaded_images and header_image_path and header_image_path in uploaded_images:
-                # Extract the filename from the clan.com URL and create the thumbnail path
-                uploaded_url = uploaded_images[header_image_path]
-                if uploaded_url and '/media/blog/' in uploaded_url:
+            logger.info(f"=== CREATE_OR_UPDATE_POST: Looking for header image ===")
+            logger.info(f"Header image path from post: '{header_image_path}' (type: {type(header_image_path)}, len: {len(header_image_path) if header_image_path else 0})")
+            logger.info(f"uploaded_images keys: {list(uploaded_images.keys()) if uploaded_images else 'None'}")
+            if uploaded_images:
+                for key, value in uploaded_images.items():
+                    logger.info(f"  Key: '{key}' (type: {type(key)}, len: {len(key)}) -> Value: {value}")
+            
+            # Look for the header image in uploaded_images using EXACT match only (NO FALLBACKS)
+            header_uploaded_url = None
+            if header_image_path and uploaded_images:
+                logger.info(f"Searching for exact match: '{header_image_path}'")
+                
+                # Try exact match only
+                if header_image_path in uploaded_images:
+                    header_uploaded_url = uploaded_images[header_image_path]
+                    logger.info(f"✅ Found header image with EXACT path match: '{header_image_path}' -> {header_uploaded_url}")
+                else:
+                    logger.error(f"❌ EXACT MATCH FAILED: '{header_image_path}' not in uploaded_images")
+                    logger.error(f"   Looking for: '{header_image_path}' (repr: {repr(header_image_path)})")
+                    logger.error(f"   Available keys:")
+                    for key in uploaded_images.keys():
+                        logger.error(f"     '{key}' (repr: {repr(key)})")
+                        logger.error(f"     Match: {key == header_image_path}")
+                        logger.error(f"     Equal: {key == header_image_path}")
+                        if key == header_image_path:
+                            logger.error(f"     WHY DIDN'T IT MATCH???")
+            
+            logger.info(f"header_uploaded_url: {header_uploaded_url}")
+            if header_uploaded_url:
+                # Check if it's a clan.com media URL
+                if '/media/blog/' in header_uploaded_url or '/media/' in header_uploaded_url:
                     # Extract filename from URL like "https://static.clan.com/media/blog/header_53_1703123456.jpg"
                     # We need the path relative to /media, so extract everything after /media/
-                    media_path = uploaded_url.split('/media/')[-1]
+                    media_path = header_uploaded_url.split('/media/')[-1]
                     thumbnail_path = f"/{media_path}"  # This gives us /blog/header_53_1703123456.jpg
                     list_thumbnail = thumbnail_path
                     post_thumbnail = thumbnail_path
                     logger.info(f"✅ Using uploaded header image for thumbnails: {thumbnail_path}")
                 else:
-                    logger.warning(f"Unexpected uploaded URL format: {uploaded_url}")
-                    logger.info("Using default placeholder thumbnails due to unexpected URL format")
-            elif list_thumbnail and list_thumbnail.startswith('/blog/header_'):
-                # Header image was uploaded for thumbnails but not included in uploaded_images
-                # Add it to uploaded_images for HTML replacement
-                header_image_path = full_post_data.get('header_image', {}).get('path')
+                    logger.warning(f"⚠️ Header image URL doesn't contain /media/: {header_uploaded_url}")
+            else:
+                # No header image found - use placeholder (DO NOT fall back to section images)
                 if header_image_path:
-                    # Convert thumbnail path to full URL
-                    thumbnail_filename = list_thumbnail.split('/')[-1]  # e.g., "header_53_1758883937.jpg"
-                    clan_url = f"https://static.clan.com/media/blog/{thumbnail_filename}"
-                    uploaded_images[header_image_path] = clan_url
-                    logger.info(f"✅ Added header image to uploaded_images for HTML replacement: {header_image_path} -> {clan_url}")
-            elif uploaded_images:
-                # Try to use any available image as thumbnail if no header image
-                first_image_url = list(uploaded_images.values())[0]
-                if first_image_url and '/media/blog/' in first_image_url:
-                    media_path = first_image_url.split('/media/')[-1]
-                    thumbnail_path = f"/{media_path}"
-                    list_thumbnail = thumbnail_path
-                    post_thumbnail = thumbnail_path
-                    logger.info(f"✅ Using first available image for thumbnails: {thumbnail_path}")
+                    logger.warning(f"⚠️ Header image path exists ({header_image_path}) but not found in uploaded_images. Using placeholder.")
+                    if uploaded_images:
+                        logger.warning(f"Available image paths: {list(uploaded_images.keys())}")
                 else:
                     logger.info("No header image available, using default placeholder thumbnails")
-            else:
-                logger.info("No images available, using default placeholder thumbnails")
             
             # Common post metadata - using new database meta fields for proper OG tags
             meta_title = post.get('meta_title') or post.get('title')
@@ -971,7 +988,8 @@ class ClanPublisher:
                     return {
                         'success': True,
                         'clan_post_id': clan_post_id,
-                        'url': post_url
+                        'clan_url': post_url,
+                        'url': post_url  # Keep for backward compatibility
                     }
                 else:
                     error_msg = result.get('error', 'Unknown API error')
@@ -1022,14 +1040,29 @@ class ClanPublisher:
                 full_post_data = dict(zip(column_names, post_row))
             
             # Merge the passed post data with the database data (passed data takes precedence)
+            # CRITICAL: Preserve header_image from post data if it exists, as it was set by the Flask route
+            logger.info(f"=== CLAN_PUBLISHER MERGE DEBUG ===")
+            logger.info(f"post.get('header_image') BEFORE merge: {post.get('header_image')}")
+            logger.info(f"full_post_data.get('header_image') BEFORE merge: {full_post_data.get('header_image')}")
+            
+            header_image_from_post = post.get('header_image')
             full_post_data.update(post)
+            
+            # If post had header_image, ensure it's preserved (update might have overwritten it)
+            if header_image_from_post:
+                full_post_data['header_image'] = header_image_from_post
+                logger.info(f"✅ Preserved header_image from post data: {header_image_from_post.get('path')}")
+            else:
+                logger.warning(f"⚠️ No header_image in post data to preserve")
+            
+            logger.info(f"full_post_data.get('header_image') AFTER merge: {full_post_data.get('header_image')}")
+            logger.info(f"full_post_data['header_image'].get('path') AFTER merge: {full_post_data.get('header_image', {}).get('path') if full_post_data.get('header_image') else 'None'}")
             
             # Check if this is an update (post already exists on clan.com)
             is_update = bool(full_post_data.get('clan_post_id'))
             logger.info(f"Is update: {is_update} (clan_post_id: {full_post_data.get('clan_post_id')})")
             
             logger.info(f"Post header_image_id: {full_post_data.get('header_image_id')}")
-            logger.info(f"Post header_image: {full_post_data.get('header_image')}")
             
             # Use sections passed from the endpoint (already loaded with images)
             sections_list = sections
@@ -1038,21 +1071,75 @@ class ClanPublisher:
             # Step 0: Finding image paths from file system
             logger.info("Step 0: Finding image paths from file system...")
             
-            # Preserve header image from post data if it exists, otherwise look it up
+            # CRITICAL: Ensure header_image is set BEFORE process_images is called
+            # Preserve header image from post data if it exists, otherwise look it up from database
             if not full_post_data.get('header_image') or not full_post_data['header_image'].get('path'):
                 header_image_path = post.get('header_image', {}).get('path') if post.get('header_image') else None
                 logger.info(f"Looking up header image from post data: {header_image_path}")
+                
+                # If still not found, try to load from database using find_header_image
+                if not header_image_path:
+                    logger.warning("⚠️ No header_image in post data, attempting to load from database")
+                    try:
+                        # Define find_header_image locally to avoid import issues
+                        # CRITICAL: Use same logic as app.py find_header_image - check project_static first, then blog_images_static
+                        def find_header_image_local(post_id):
+                            """Find header image for a post - local definition to avoid import issues."""
+                            import urllib.parse
+                            
+                            # Get project root (same logic as app.py)
+                            current_dir = os.path.dirname(os.path.abspath(__file__))
+                            project_root = os.path.dirname(current_dir)  # Go up from blog-launchpad/ to project root
+                            
+                            # Try project static/ first (unified app location), then blog-images/static/ (legacy)
+                            project_static = os.path.join(project_root, 'static')
+                            blog_images_static = os.path.join(project_root, 'blog-images', 'static')
+                            
+                            image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
+                            image_types = ['optimized', 'watermarked', 'raw']  # Check optimized first
+                            
+                            # Check both static directories for each image type
+                            for image_type in image_types:
+                                for static_dir in [project_static, blog_images_static]:
+                                    header_path = os.path.join(static_dir, "content", "posts", str(post_id), "header", image_type)
+                                    if os.path.exists(header_path):
+                                        image_files = [f for f in os.listdir(header_path)
+                                                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
+                                        if image_files:
+                                            image_filename = image_files[0]
+                                            encoded_filename = urllib.parse.quote(image_filename)
+                                            return f"/static/content/posts/{post_id}/header/{image_type}/{encoded_filename}"
+                            return None
+                        
+                        header_image_path = find_header_image_local(full_post_data.get('id'))
+                        if header_image_path:
+                            logger.info(f"✅ Loaded header_image from database: {header_image_path}")
+                        else:
+                            logger.warning("❌ No header image found in database either")
+                    except Exception as e:
+                        logger.error(f"❌ Error loading header image from database: {str(e)}")
+                        import traceback
+                        logger.error(f"Traceback: {traceback.format_exc()}")
                 
                 if header_image_path:
                     # Preserve existing header_image structure if it exists
                     if not full_post_data.get('header_image'):
                         full_post_data['header_image'] = {}
                     full_post_data['header_image']['path'] = header_image_path
+                    logger.info(f"✅ Set header_image path in full_post_data: {header_image_path}")
                     logger.info(f"✅ Set full_post_data['header_image']['path'] = '{header_image_path}'")
                 else:
-                    logger.warning("❌ No header image found in post data")
+                    logger.warning("❌ No header image found anywhere")
             else:
                 logger.info(f"✅ Preserving existing header image: {full_post_data['header_image'].get('path')}")
+            
+            # CRITICAL: Verify header_image is set before process_images
+            logger.info(f"=== PRE-PROCESS_IMAGES HEADER IMAGE VERIFICATION ===")
+            logger.info(f"full_post_data.get('header_image'): {full_post_data.get('header_image')}")
+            if full_post_data.get('header_image'):
+                logger.info(f"full_post_data['header_image'].get('path'): {full_post_data['header_image'].get('path')}")
+            else:
+                logger.error(f"❌ ERROR: full_post_data['header_image'] is None/empty before process_images!")
             
             # Sections already have image paths structured in section['image']['path'] from endpoint
             for i, section in enumerate(sections_list):
@@ -1310,15 +1397,43 @@ class ClanPublisher:
                 """Strip HTML document tags and return just the content"""
                 if not content:
                     return content
-                # Remove DOCTYPE, html, head, body tags and their content
+                # Remove DOCTYPE, html, head, body tags but preserve their content
+                # CRITICAL: Only match if content starts with these tags (full document), not fragments
                 import re
                 content = re.sub(r'<!DOCTYPE[^>]*>', '', content)
-                content = re.sub(r'<html[^>]*>.*?</html>', '', content, flags=re.DOTALL)
-                content = re.sub(r'<head[^>]*>.*?</head>', '', content, flags=re.DOTALL)
-                content = re.sub(r'<body[^>]*>.*?</body>', '', content, flags=re.DOTALL)
+                # Only remove <html> wrapper if it's at the start (full document)
+                # Extract content between <html> and </html> if present
+                if content.strip().startswith('<html'):
+                    match = re.match(r'^<html[^>]*>(.*?)</html>', content, flags=re.DOTALL)
+                    if match:
+                        content = match.group(1)
+                # Only remove <head> if it's at the start
+                if content.strip().startswith('<head'):
+                    content = re.sub(r'^<head[^>]*>.*?</head>', '', content, flags=re.DOTALL)
+                # Only remove <body> wrapper but preserve content
+                if content.strip().startswith('<body'):
+                    match = re.match(r'^<body[^>]*>(.*?)</body>', content, flags=re.DOTALL)
+                    if match:
+                        content = match.group(1)
                 return content.strip()
             
+            def strip_h2_headings(content):
+                """Strip H2 headings and their content from HTML."""
+                if not content:
+                    return content
+                import re
+                content = re.sub(r'<h2[^>]*>.*?</h2>', '', content, flags=re.IGNORECASE | re.DOTALL)
+                return content
+            
+            def is_recipe_section(value):
+                """Check if a section_type value indicates a recipe section."""
+                if not value:
+                    return False
+                return str(value).startswith('recipe_')
+            
             env.filters['strip_html_doc'] = strip_html_doc
+            env.filters['strip_h2_headings'] = strip_h2_headings
+            env.tests['is_recipe_section'] = is_recipe_section
             
             # Load the template from the FileSystemLoader
             template = env.get_template('clan_post_raw.html')
@@ -1326,8 +1441,20 @@ class ClanPublisher:
             # Fix author_name if it's the literal string "author_name" (database column name)
             post_for_template = post.copy()
             if not post_for_template.get('author_name') or post_for_template.get('author_name') == 'author_name':
-                post_for_template['author_name'] = 'Caitrin Stewart'
-                logger.info(f"Fixed author_name: was '{post.get('author_name')}', now 'Caitrin Stewart'")
+                # Check if this is a recipe post - use Marion MacLeod
+                try:
+                    from config.database import db_manager
+                    from utils.taxonomy_helpers import get_post_type
+                    post_type = get_post_type(post.get('id'))
+                    if post_type == 'recipe':
+                        post_for_template['author_name'] = 'Marion MacLeod'
+                        logger.info(f"Fixed author_name for recipe post: now 'Marion MacLeod'")
+                    else:
+                        post_for_template['author_name'] = 'Caitrin Stewart'
+                        logger.info(f"Fixed author_name: was '{post.get('author_name')}', now 'Caitrin Stewart'")
+                except:
+                    post_for_template['author_name'] = 'Caitrin Stewart'
+                    logger.info(f"Fixed author_name: was '{post.get('author_name')}', now 'Caitrin Stewart'")
             
             # Exclude header image from HTML content (Clan.com adds it as featured image automatically)
             post_for_template['exclude_header_image'] = True
