@@ -1390,20 +1390,12 @@ class ClanPublisher:
             # Fix author_name if it's the literal string "author_name" (database column name)
             post_for_template = post.copy()
             if not post_for_template.get('author_name') or post_for_template.get('author_name') == 'author_name':
-                # Check if this is a recipe post - use Marion MacLeod
-                try:
-                    from config.database import db_manager
-                    from utils.taxonomy_helpers import get_post_type
-                    post_type = get_post_type(post.get('id'))
-                    if post_type == 'recipe':
-                        post_for_template['author_name'] = 'Marion MacLeod'
-                        logger.info(f"Fixed author_name for recipe post: now 'Marion MacLeod'")
-                    else:
-                        post_for_template['author_name'] = 'Caitrin Stewart'
-                        logger.info(f"Fixed author_name: was '{post.get('author_name')}', now 'Caitrin Stewart'")
-                except:
-                    post_for_template['author_name'] = 'Caitrin Stewart'
-                    logger.info(f"Fixed author_name: was '{post.get('author_name')}', now 'Caitrin Stewart'")
+                # Use author from database (post.author_id) - no recipe-specific logic
+                # Author should come from post.author_id via JOIN in query
+                # If missing, use template default
+                if not post_for_template.get('author_name'):
+                    post_for_template['author_name'] = 'Caitrin Stewart'  # Template default
+                    logger.info(f"Using default author_name: 'Caitrin Stewart'")
             
             # Exclude header image from HTML content (Clan.com adds it as featured image automatically)
             post_for_template['exclude_header_image'] = True
