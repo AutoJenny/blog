@@ -49,48 +49,14 @@ def find_header_image_filesystem(post_id):
 def load_header_image_from_db(post_id):
     """
     Load header image from post_images table.
-    Tries images table first, then falls back to image table (for FK constraint compatibility).
+    Uses image table (singular) - foreign keys point here.
     Returns dict with path, alt_text, caption, width, height or None.
     """
     try:
         with db_manager.get_cursor() as cursor:
-            # First try images table (new schema)
+            # Use image table (singular) - foreign keys point here
             cursor.execute("""
-                SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
-                FROM post_images pi
-                JOIN images i ON pi.image_id = i.id
-                WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
-                ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
-                              WHEN pi.image_type = 'header_watermarked' THEN 2
-                              ELSE 3 END
-                LIMIT 1
-            """, (post_id,))
-            
-            img_row = cursor.fetchone()
-            if img_row and img_row.get('file_path'):
-                header_path = img_row['file_path']
-                # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
-                # Remove any leading slashes, then ensure it starts with /static/
-                header_path = header_path.lstrip('/')
-                if not header_path.startswith('static/'):
-                    header_path = 'static/' + header_path.lstrip('/')
-                header_path = '/' + header_path  # Add leading slash
-                logger.info(f"Normalized header path: {repr(img_row['file_path'])} -> {repr(header_path)}")
-                
-                header_image = {
-                    'path': header_path,
-                    'alt_text': img_row.get('alt_text'),
-                    'title': img_row.get('filename'),
-                    'caption': img_row.get('caption'),
-                    'width': img_row.get('width'),
-                    'height': img_row.get('height')
-                }
-                logger.info(f"Found header image in database (images table): {header_path}")
-                return header_image
-            
-            # Fallback to image table (old schema) - for FK constraint compatibility
-            cursor.execute("""
-                SELECT i.path as file_path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
+                SELECT i.path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
                 FROM post_images pi
                 JOIN image i ON pi.image_id = i.id
                 WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
@@ -101,15 +67,15 @@ def load_header_image_from_db(post_id):
             """, (post_id,))
             
             img_row = cursor.fetchone()
-            if img_row and img_row.get('file_path'):
-                header_path = img_row['file_path']
+            if img_row and img_row.get('path'):
+                header_path = img_row['path']
                 # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
                 # Remove any leading slashes, then ensure it starts with /static/
                 header_path = header_path.lstrip('/')
                 if not header_path.startswith('static/'):
                     header_path = 'static/' + header_path.lstrip('/')
                 header_path = '/' + header_path  # Add leading slash
-                logger.info(f"Normalized header path (image table): {repr(img_row['file_path'])} -> {repr(header_path)}")
+                logger.info(f"Normalized header path: {repr(img_row['path'])} -> {repr(header_path)}")
                 
                 header_image = {
                     'path': header_path,
@@ -119,7 +85,7 @@ def load_header_image_from_db(post_id):
                     'width': img_row.get('width'),
                     'height': img_row.get('height')
                 }
-                logger.info(f"Found header image in database (image table): {header_path}")
+                logger.info(f"Found header image in database: {header_path}")
                 return header_image
     
     except Exception as e:

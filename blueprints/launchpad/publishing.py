@@ -361,10 +361,10 @@ def publish_post_to_clan(post_id):
                 cp = post['cross_promotion']
                 needs_update = False
                 if cp.get('category_id') and cp.get('category_position') and not cp.get('category_widget_html'):
-                    cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\" title=\"{cp.get('category_title') or 'Related Department'}\"}}}}"
+                    cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\"}}}}"
                     needs_update = True
                 if cp.get('product_id') and cp.get('product_position') and not cp.get('product_widget_html'):
-                    cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\" title=\"{cp.get('product_title') or 'Related Products'}\"}}}}"
+                    cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\"}}}}"
                     needs_update = True
                 if needs_update:
                     with db_manager.get_cursor() as cursor2:
@@ -951,10 +951,10 @@ def validate_publish_data(post_id):
                 # Ensure widget HTML exists for preview/publish consistency
                 widget_changed = False
                 if post['cross_promotion'].get('category_id') and post['cross_promotion'].get('category_position') and not post['cross_promotion'].get('category_widget_html'):
-                    post['cross_promotion']['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{post['cross_promotion'].get('category_id')}\" title=\"{post['cross_promotion'].get('category_title') or 'Related Department'}\"}}}}"
+                    post['cross_promotion']['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{post['cross_promotion'].get('category_id')}\"}}}}"
                     widget_changed = True
                 if post['cross_promotion'].get('product_id') and post['cross_promotion'].get('product_position') and not post['cross_promotion'].get('product_widget_html'):
-                    post['cross_promotion']['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{post['cross_promotion'].get('product_id')}\" title=\"{post['cross_promotion'].get('product_title') or 'Related Products'}\"}}}}"
+                    post['cross_promotion']['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{post['cross_promotion'].get('product_id')}\"}}}}"
                     widget_changed = True
                 if widget_changed:
                     with db_manager.get_cursor() as c2:

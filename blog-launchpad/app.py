@@ -2331,12 +2331,11 @@ def get_post_with_development(post_id):
         if not post:
             return None
             
-        # Get header image - use new post_images/images schema (same for ALL post types)
-        # Try post_images -> images first (preferred)
+        # Get header image - use post_images -> image table (singular) - foreign keys point here
         cur.execute("""
-            SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+            SELECT i.path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
             FROM post_images pi
-            JOIN images i ON pi.image_id = i.id
+            JOIN image i ON pi.image_id = i.id
             WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
             ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
                           WHEN pi.image_type = 'header_watermarked' THEN 2
@@ -2344,8 +2343,8 @@ def get_post_with_development(post_id):
             LIMIT 1
         """, (post_id,))
         img_row = cur.fetchone()
-        if img_row and img_row.get('file_path'):
-            header_path = img_row['file_path']
+        if img_row and img_row.get('path'):
+            header_path = img_row['path']
             # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
             # Remove any leading slashes, then ensure it starts with /static/
             header_path = header_path.lstrip('/')
@@ -2360,7 +2359,9 @@ def get_post_with_development(post_id):
                 'width': img_row.get('width'),
                 'height': img_row.get('height')
             }
-        elif post.get('header_image_id'):
+        
+        # Final fallback to legacy post.header_image_id -> image table (if no post_images record)
+        if not post.get('header_image') and post.get('header_image_id'):
             # Fallback to legacy image table (should not be needed, but handle gracefully)
             cur.execute("""
                 SELECT * FROM image WHERE id = %s
@@ -2627,10 +2628,10 @@ def update_cross_promotion(post_id):
     product_widget_html = None
     
     if data.get('category_id') and data.get('category_position'):
-        category_widget_html = f'{{{{widget type="swcatalog/widget_crossSell_category" category_id="{data.get("category_id")}" title="{data.get("category_title") or "Related Department"}"}}}}'
+        category_widget_html = f'{{{{widget type="swcatalog/widget_crossSell_category" category_id="{data.get("category_id")}"}}}}'
     
     if data.get('product_id') and data.get('product_position'):
-        product_widget_html = f'{{{{widget type="swcatalog/widget_crossSell_product" product_id="{data.get("product_id")}" title="{data.get("product_title") or "Related Products"}"}}}}'
+        product_widget_html = f'{{{{widget type="swcatalog/widget_crossSell_product" product_id="{data.get("product_id")}"}}}}'
     
     with get_db_connection() as conn:
         cur = conn.cursor()
@@ -2832,34 +2833,23 @@ def publish_post_to_clan(post_id):
         
         if not post.get('header_image') or not post['header_image'].get('path'):
             logger.info("Header image not set, attempting to find it...")
-            # Try to get from new post_images/images schema first, then fallback to image table
+            # Use post_images -> image table (singular) - foreign keys point here
             with get_db_connection() as conn:
                 cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-                # First try images table (new schema)
+                # Use image table (singular) - foreign keys point here
                 cur.execute("""
-                    SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+                    SELECT i.path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
                     FROM post_images pi
-                    JOIN images i ON pi.image_id = i.id
+                    JOIN image i ON pi.image_id = i.id
                     WHERE pi.post_id = %s AND pi.image_type LIKE 'header%'
                     ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 ELSE 2 END
                     LIMIT 1
                 """, (post_id,))
                 img_row = cur.fetchone()
-                if not img_row or not img_row.get('file_path'):
-                    # Fallback to image table (old schema) - for FK constraint compatibility
-                    cur.execute("""
-                        SELECT i.path as file_path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
-                        FROM post_images pi
-                        JOIN image i ON pi.image_id = i.id
-                        WHERE pi.post_id = %s AND pi.image_type LIKE 'header%'
-                        ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 ELSE 2 END
-                        LIMIT 1
-                    """, (post_id,))
-                    img_row = cur.fetchone()
                 
-                if img_row and img_row.get('file_path'):
+                if img_row and img_row.get('path'):
                     # Use optimized path if available, otherwise raw
-                    header_path = img_row['file_path']
+                    header_path = img_row['path']
                     # Ensure path starts with /static/ for web access
                     if not header_path.startswith('/static/'):
                         header_path = '/static/' + header_path.lstrip('/')
