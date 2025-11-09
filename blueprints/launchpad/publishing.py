@@ -39,9 +39,9 @@ def get_post_with_development(post_id):
         # Try to get optimized header via post_images link first
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT i.path, i.alt_text, i.caption, i.filename
+                SELECT i.file_path as path, i.alt_text, i.caption, i.filename
                 FROM post_images pi
-                JOIN image i ON pi.image_id = i.id
+                JOIN images i ON pi.image_id = i.id
                 WHERE pi.section_id IS NULL 
                   AND pi.image_type = 'header_optimized'
                   AND pi.post_id = %s
@@ -89,12 +89,12 @@ def get_post_sections_with_images(post_id):
                 ps.image_alt_text, ps.image_captions, ps.status,
                 i.id AS image_id,
                 i.filename,
-                i.path AS image_path,
+                i.file_path AS image_path,
                 i.alt_text AS image_alt_text,
                 i.caption AS image_caption
             FROM post_section ps
             LEFT JOIN post_images pi ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
-            LEFT JOIN image i ON pi.image_id = i.id
+            LEFT JOIN images i ON pi.image_id = i.id
             WHERE ps.post_id = %s
             ORDER BY ps.section_order
         """, (post_id,))
