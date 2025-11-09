@@ -459,38 +459,7 @@ def header_preview(post_id):
                 caption_text = ''
                 alt_text = section.get('section_image_alt') or section.get('alt_text') or ''
                 
-                # Skip images for recipe_method section (method image deprecated)
-                if post_type == 'recipe' and section.get('section_type') == 'recipe_method':
-                    # Don't add image for method section
-                    pass
-                # For recipe posts, skip Photo-harvesting entirely - only use LLM-generated images
-                elif post_type != 'recipe':
-                    # Priority 1: Check Photo-harvesting route (selected_landscape.json) - ONLY for non-recipe posts
-                    # For Photo-harvesting, ONLY use credits from JSON, not descriptive captions
-                    try:
-                        import os
-                        import json
-                        photo_json_path = f"static/content/posts/{post_id}/sections/{section['id']}/optimized/selected_landscape.json"
-                        if os.path.exists(photo_json_path):
-                            with open(photo_json_path, 'r') as f:
-                                photo_data = json.load(f)
-                                photo = photo_data.get('photo', {})
-                                if photo.get('url'):
-                                    # Use hotlinked provider URL (Pexels/Unsplash)
-                                    image_path = photo['url']
-                                    # For Photo-harvesting, ONLY use credits, not descriptive captions
-                                    if photo.get('credits'):
-                                        caption_text = photo['credits']
-                                    if not alt_text and photo.get('photographer'):
-                                        alt_text = f"Photo by {photo['photographer']}"
-                    except Exception as e:
-                        logger.debug(f"Could not load Photo-harvesting JSON for section {section['id']}: {e}")
-                
-                # Only use database captions if NOT Photo-harvesting (image_path not set from JSON)
-                if not caption_text and not image_path:
-                    caption_text = section.get('section_image_captions') or section.get('caption') or ''
-                
-                # Priority 2: Database link (post_images) - for all post types
+                # Priority 1: Database link (post_images) - for all post types
                 if not image_path and section['image_path']:
                     image_path = section['image_path']
                     if not image_path.startswith('http'):
@@ -498,9 +467,12 @@ def header_preview(post_id):
                             image_path = f"/static{image_path}"
                         image_path = image_path.replace('/raw/', '/optimized/').replace('.png', '.jpg')
                 
-                # Priority 3: Filesystem check - ONLY optimized images, no fallback to raw
-                # Skip filesystem check for recipe_method section (method image deprecated)
-                if not image_path and not (post_type == 'recipe' and section.get('section_type') == 'recipe_method'):
+                # Use database captions
+                if not caption_text:
+                    caption_text = section.get('section_image_captions') or section.get('caption') or ''
+                
+                # Priority 2: Filesystem check - ONLY optimized images, no fallback to raw
+                if not image_path:
                     try:
                         import os
                         # ONLY check optimized version - no fallback to raw
