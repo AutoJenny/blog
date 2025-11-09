@@ -499,62 +499,11 @@ class ClanPublisher:
                 section_path = section['image']['path']
                 logger.info(f"Processing section image: {section_path}")
                 
-                # Handle Photo-harvesting URLs (Pexels/Unsplash) - download and upload to clan.com CDN
+                # Reject URLs (Photo-harvesting deprecated - only local files supported)
                 if section_path.startswith(('http://', 'https://')):
-                    # CRITICAL DEBUG: Print to console as well as logger
-                    print(f"\n{'='*80}")
-                    print(f"📥 PHOTO-HARVESTING URL DETECTED!")
-                    print(f"Section {i+1} ({section.get('id')}): {section.get('title', section.get('section_heading', 'No title'))}")
-                    print(f"URL: {section_path}")
-                    print(f"{'='*80}\n")
-                    
-                    logger.info(f"📥 Photo-harvesting URL detected: {section_path}")
-                    logger.info(f"   Section ID: {section.get('id')}")
-                    logger.info(f"   Section title: {section.get('title', section.get('section_heading', 'No title'))}")
-                    logger.info(f"   Downloading and uploading to clan.com CDN (attribution preserved in captions)")
-                    
-                    # Generate unique filename
-                    import time
-                    provider = 'pexels' if 'pexels.com' in section_path else 'unsplash' if 'unsplash.com' in section_path else 'photo'
-                    filename = f"section_{post['id']}_{i+1}_{provider}_{int(time.time())}.jpg"
-                    
-                    try:
-                        # Upload directly from URL (upload_image handles downloading)
-                        # Use the base URL (without query params) for upload to get original quality
-                        from urllib.parse import urlparse
-                        base_url_for_upload = urlparse(section_path).scheme + '://' + urlparse(section_path).netloc + urlparse(section_path).path
-                        
-                        print(f"Uploading Photo-harvesting image...")
-                        print(f"  Base URL: {base_url_for_upload}")
-                        print(f"  Filename: {filename}")
-                        
-                        uploaded_url = self.upload_image(base_url_for_upload, filename)
-                        
-                        if uploaded_url:
-                            # Map both the exact path (as it appears in template) and base URL
-                            uploaded_images[section_path] = uploaded_url
-                            uploaded_images[base_url_for_upload] = uploaded_url
-                            
-                            print(f"✅ SUCCESS! Uploaded to: {uploaded_url}\n")
-                            logger.info(f"✅ Photo-harvesting image uploaded to clan.com CDN")
-                            logger.info(f"   Mapped: {section_path} -> {uploaded_url}")
-                            logger.info(f"   Also mapped base URL: {base_url_for_upload} -> {uploaded_url}")
-                            logger.info(f"   Attribution preserved in caption: {section.get('image_captions', section.get('image', {}).get('caption', 'N/A'))}")
-                        else:
-                            print(f"❌ FAILED! upload_image returned None\n")
-                            logger.error(f"❌ Failed to upload Photo-harvesting image: {section_path}")
-                            logger.error(f"   upload_image returned None/empty")
-                            # Keep original URL as fallback (though it may not display on clan.com)
-                            logger.warning(f"⚠️ Keeping original URL as fallback (may not display on clan.com)")
-                    except Exception as e:
-                        print(f"❌ EXCEPTION: {str(e)}\n")
-                        logger.error(f"❌ Exception during Photo-harvesting image upload: {str(e)}")
-                        import traceback
-                        traceback_str = traceback.format_exc()
-                        print(f"Traceback:\n{traceback_str}")
-                        logger.error(f"Traceback: {traceback_str}")
-                        # Keep original URL as fallback
-                        logger.warning(f"⚠️ Keeping original URL as fallback due to error")
+                    logger.warning(f"⚠️ URL detected in section image (Photo-harvesting deprecated): {section_path}")
+                    logger.warning(f"   Section ID: {section.get('id')}")
+                    logger.warning(f"   Skipping URL - only local files are supported")
                     continue
                 
                 # Check if file exists - convert web path to file system path

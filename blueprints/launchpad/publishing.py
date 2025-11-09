@@ -105,62 +105,15 @@ def get_post_sections_with_images(post_id):
         for section in raw_sections:
             section_dict = dict(section)
             
-            # Priority 1: Check Photo-harvesting route (selected_landscape.json)
+            # Priority 1: Database link (post_images)
             image_path = None
             caption_text = section_dict.get('image_captions') or ''
             alt_text = section_dict.get('image_alt_text') or ''
             
-            try:
-                import os
-                import json
-                photo_json_path = f"static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/selected_landscape.json"
-                if os.path.exists(photo_json_path):
-                    with open(photo_json_path, 'r') as f:
-                        photo_data = json.load(f)
-                        photo = photo_data.get('photo', {})
-                        if photo.get('url'):
-                            base_url = photo['url']
-                            
-                            # For Pexels: prefer pregenerated size URLs or add sizing parameters
-                            if 'pexels.com' in base_url:
-                                # Check if we have api_response with pregenerated sizes
-                                api_response = photo.get('api_response', {})
-                                src = api_response.get('src', {}) if api_response else {}
-                                
-                                # Prefer landscape size for blog posts (optimal for display: w=1200)
-                                if src.get('landscape'):
-                                    image_path = src['landscape']
-                                elif src.get('large'):
-                                    image_path = src['large']
-                                else:
-                                    # Add sizing parameters to base URL for blog posts
-                                    # Use w=1200 for landscape blog images (good balance of quality/size)
-                                    # This is larger than thumbnail (w=940) but smaller than original
-                                    if '?' in base_url:
-                                        image_path = f"{base_url}&auto=compress&cs=tinysrgb&w=1200"
-                                    else:
-                                        image_path = f"{base_url}?auto=compress&cs=tinysrgb&w=1200"
-                            elif 'unsplash.com' in base_url:
-                                # For Unsplash, use the base URL as-is (they handle sizing differently)
-                                image_path = base_url
-                            else:
-                                # Other providers - use base URL
-                                image_path = base_url
-                            
-                            # Extract caption/alt from photo metadata if not already set
-                            if not caption_text and photo.get('credits'):
-                                caption_text = photo['credits']
-                            if not alt_text and photo.get('photographer'):
-                                alt_text = f"Photo by {photo['photographer']}"
-            except Exception as e:
-                logger.debug(f"Could not load Photo-harvesting JSON for section {section_dict['id']}: {e}")
-            
-            # Priority 2: Database link (post_images)
-            if not image_path:
-                image_path = section_dict.get('image_path')
+            image_path = section_dict.get('image_path')
             
             if image_path:
-                # Image exists (Photo-harvesting or post_images linking table)
+                # Image exists (from post_images linking table)
                 section_dict['image'] = {
                     'path': image_path,
                     'caption': caption_text,
@@ -168,7 +121,7 @@ def get_post_sections_with_images(post_id):
                     'placeholder': False
                 }
             else:
-                # Priority 3: Fallback: check filesystem for conventional optimized path
+                # Priority 2: Fallback: check filesystem for conventional optimized path
                 try:
                     import os
                     candidate = f"/static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/{section_dict['id']}.jpg"
