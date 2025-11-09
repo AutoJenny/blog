@@ -31,7 +31,7 @@ def index():
                     p.slug as post_slug,
                     p.status as post_status,
                     i.id as header_image_id,
-                    i.path as header_image_path,
+                    i.file_path as header_image_path,
                     i.filename as header_image_filename
                 FROM calendar_recipes cr
                 LEFT JOIN post p ON p.recipe_id = cr.id AND p.status != 'deleted'
@@ -116,7 +116,7 @@ def api_recipes():
                     p.title as post_title,
                     p.slug as post_slug,
                     p.status as post_status,
-                    i.path as header_image_path
+                    i.file_path as header_image_path
                 FROM calendar_recipes cr
                 LEFT JOIN post p ON p.recipe_id = cr.id AND p.status != 'deleted'
                 LEFT JOIN images i ON p.header_image_id = i.id
