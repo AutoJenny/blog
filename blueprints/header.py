@@ -1969,9 +1969,8 @@ def api_get_title_summary(post_id):
             
             if result:
                 author_name = result.get('author_name', '') or ''
-                # If no author and this is a recipe post, default to Marion MacLeod
-                if not author_name and post_type == 'recipe':
-                    author_name = 'Marion MacLeod'
+                # Use author from database - no recipe-specific logic
+                # Author should come from post.author_id via JOIN in query
                 
                 return jsonify({
                     'title': result.get('title', '') or '',
