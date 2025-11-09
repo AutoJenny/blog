@@ -2333,9 +2333,9 @@ def get_post_with_development(post_id):
             
         # Get header image - use post_images -> image table (singular) - foreign keys point here
         cur.execute("""
-            SELECT i.path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
+            SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
             FROM post_images pi
-            JOIN image i ON pi.image_id = i.id
+            JOIN images i ON pi.image_id = i.id
             WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
             ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
                           WHEN pi.image_type = 'header_watermarked' THEN 2
@@ -2360,11 +2360,11 @@ def get_post_with_development(post_id):
                 'height': img_row.get('height')
             }
         
-        # Final fallback to legacy post.header_image_id -> image table (if no post_images record)
+        # Final fallback to legacy post.header_image_id -> images table (if no post_images record)
         if not post.get('header_image') and post.get('header_image_id'):
-            # Fallback to legacy image table (should not be needed, but handle gracefully)
+            # Fallback to legacy images table (should not be needed, but handle gracefully)
             cur.execute("""
-                SELECT * FROM image WHERE id = %s
+                SELECT id, filename, file_path as path, alt_text, caption FROM images WHERE id = %s
             """, (post['header_image_id'],))
             header_image = cur.fetchone()
             if header_image:
@@ -2542,9 +2542,9 @@ def get_post_sections_with_images(post_id):
             
             # ONLY use post_images table - NO FALLBACKS
             cur.execute("""
-                SELECT i.path, i.filename, i.alt_text, i.caption
+                SELECT i.file_path as path, i.filename, i.alt_text, i.caption
                 FROM post_images pi
-                JOIN image i ON pi.image_id = i.id
+                JOIN images i ON pi.image_id = i.id
                 WHERE pi.section_id = %s AND pi.image_type = 'section_optimized'
                 LIMIT 1
             """, (section['id'],))
@@ -2838,9 +2838,9 @@ def publish_post_to_clan(post_id):
                 cur = conn.cursor(row_factory=psycopg.rows.dict_row)
                 # Use image table (singular) - foreign keys point here
                 cur.execute("""
-                    SELECT i.path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
+                    SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
                     FROM post_images pi
-                    JOIN image i ON pi.image_id = i.id
+                    JOIN images i ON pi.image_id = i.id
                     WHERE pi.post_id = %s AND pi.image_type LIKE 'header%'
                     ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 ELSE 2 END
                     LIMIT 1
