@@ -153,9 +153,11 @@
 }
 
 .variant-description {
-    color: #4b5563;
+    color: #6b7280;
     margin-bottom: 0.5rem;
-    line-height: 1.6;
+    line-height: 1.5;
+    font-size: 0.875rem;
+    font-style: italic;
 }
 
 .variant-changes {
