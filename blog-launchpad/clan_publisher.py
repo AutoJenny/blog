@@ -1290,10 +1290,10 @@ class ClanPublisher:
                     widget_changed = False
                     cp = full_post_data['cross_promotion']
                     if cp.get('category_id') and cp.get('category_position') and not cp.get('category_widget_html'):
-                        cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\" title=\"{cp.get('category_title') or 'Related Department'}\"}}}}"
+                        cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\"}}}}"
                         widget_changed = True
                     if cp.get('product_id') and cp.get('product_position') and not cp.get('product_widget_html'):
-                        cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\" title=\"{cp.get('product_title') or 'Related Products'}\"}}}}"
+                        cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\"}}}}"
                         widget_changed = True
                     if widget_changed:
                         from config.database import db_manager as _db

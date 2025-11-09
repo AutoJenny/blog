@@ -340,13 +340,13 @@ def header_preview(post_id):
             if not post.get('author_name') and post_type == 'recipe':
                 post['author_name'] = 'Marion MacLeod'
             
-            # Get header image if exists - use SAME schema as new system (post_images -> images)
+            # Get header image if exists - use image table (singular) - foreign keys point here
             header_image = None
-            # Try post_images -> images first (same for ALL post types)
+            # Use post_images -> image table (singular) - same for ALL post types
             cursor.execute("""
-                SELECT i.file_path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+                SELECT i.path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
                 FROM post_images pi
-                JOIN images i ON pi.image_id = i.id
+                JOIN image i ON pi.image_id = i.id
                 WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
                 ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
                               WHEN pi.image_type = 'header_watermarked' THEN 2
@@ -354,9 +354,9 @@ def header_preview(post_id):
                 LIMIT 1
             """, (post_id,))
             img_row = cursor.fetchone()
-            if img_row and img_row.get('file_path'):
+            if img_row and img_row.get('path'):
                 # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
-                header_path = img_row['file_path']
+                header_path = img_row['path']
                 header_path = header_path.lstrip('/')
                 if not header_path.startswith('static/'):
                     header_path = 'static/' + header_path.lstrip('/')
@@ -2932,56 +2932,29 @@ def api_generate_header_image(post_id):
                     new_path = 'static/' + new_path.lstrip('/')
                 new_path = '/' + new_path  # Add leading slash
             
-            # CRITICAL: Write to images table (plural) with file_path column for publishing system
+            # CRITICAL: Write to image table (singular) with path column - foreign keys point here
             if existing_image_id and existing_image_id['header_image_id']:
-                # Check if record exists in images table
-                cursor.execute("SELECT id FROM images WHERE id = %s", (existing_image_id['header_image_id'],))
-                existing_images_record = cursor.fetchone()
-                
-                if existing_images_record:
-                    # Update existing images record
-                    cursor.execute("""
-                        UPDATE images 
-                        SET filename = %s, original_filename = %s, file_path = %s, 
-                            image_prompt = %s, alt_text = %s, caption = %s,
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                    """, (
-                        'header.jpg',
-                        'original_header.png', 
-                        new_path,
-                        image_prompt,
-                        'Header image for blog post',
-                        'Generated header image',
-                        existing_image_id['header_image_id']
-                    ))
-                    image_id = existing_image_id['header_image_id']
-                else:
-                    # Create new record in images table
-                    cursor.execute("""
-                        INSERT INTO images (filename, original_filename, file_path, image_prompt, alt_text, caption)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                        RETURNING id
-                    """, (
-                        'header.jpg',
-                        'original_header.png', 
-                        new_path,
-                        image_prompt,
-                        'Header image for blog post',
-                        'Generated header image'
-                    ))
-                    image_id = cursor.fetchone()['id']
-                    
-                    # Update post.header_image_id to point to images table record
-                    cursor.execute("""
-                        UPDATE post 
-                        SET header_image_id = %s, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                    """, (image_id, post_id))
-            else:
-                # Create new images record
+                # Update existing image record
                 cursor.execute("""
-                    INSERT INTO images (filename, original_filename, file_path, image_prompt, alt_text, caption)
+                    UPDATE image 
+                    SET filename = %s, original_filename = %s, path = %s, 
+                        image_prompt = %s, alt_text = %s, caption = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (
+                    'header.jpg',
+                    'original_header.png', 
+                    new_path,
+                    image_prompt,
+                    'Header image for blog post',
+                    'Generated header image',
+                    existing_image_id['header_image_id']
+                ))
+                image_id = existing_image_id['header_image_id']
+            else:
+                # Create new image record
+                cursor.execute("""
+                    INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
@@ -3068,7 +3041,7 @@ def api_get_header_image(post_id):
                 'success': True,
                 'image_id': result['id'],
                 'filename': result['filename'],
-                'file_path': result['path'],
+                'path': result['path'],
                 'alt_text': result['alt_text'],
                 'caption': result['caption'],
                 'image_prompt': result['image_prompt']
@@ -3251,35 +3224,31 @@ def api_optimize_header_image(post_id):
                 
                 portrait_optimized_path = result.get('portrait_path', '').lstrip('/') if result.get('portrait_path') else None
                 
-                # CRITICAL: Write to images table (plural) with file_path column for publishing system
+                # CRITICAL: Write to image table (singular) with path column - foreign keys point here
                 # Get the caption from the post's header_image_caption field
-                cursor.execute("SELECT header_image_caption FROM post WHERE id = %s", (post_id,))
+                cursor.execute("SELECT header_image_caption, header_image_id FROM post WHERE id = %s", (post_id,))
                 post_row = cursor.fetchone()
                 caption = post_row['header_image_caption'] if post_row else None
+                existing_header_image_id = post_row['header_image_id'] if post_row else None
                 
-                # Check if image already exists in images table by file_path
-                cursor.execute("SELECT id FROM images WHERE file_path = %s", (optimized_path,))
-                existing_images_record = cursor.fetchone()
-                
-                if existing_images_record:
-                    # Update existing record
+                if existing_header_image_id:
+                    # Update existing image record
                     cursor.execute("""
-                        UPDATE images 
-                        SET filename = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
+                        UPDATE image 
+                        SET filename = %s, path = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
                         WHERE id = %s
-                        RETURNING id
                     """, (
                         'header.jpg',
+                        optimized_path,
                         'Header image',
                         caption,
-                        existing_images_record['id']
+                        existing_header_image_id
                     ))
-                    image_record = cursor.fetchone()
-                    image_id = image_record['id']
+                    image_id = existing_header_image_id
                 else:
                     # Insert new record
                     cursor.execute("""
-                        INSERT INTO images (filename, file_path, alt_text, caption)
+                        INSERT INTO image (filename, path, alt_text, caption)
                         VALUES (%s, %s, %s, %s)
                         RETURNING id
                     """, (
