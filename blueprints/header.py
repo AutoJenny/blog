@@ -336,9 +336,11 @@ def header_preview(post_id):
             from utils.taxonomy_helpers import get_post_type
             post_type = get_post_type(post_id)
             
-            # If no author and this is a recipe post, default to Marion MacLeod
-            if not post.get('author_name') and post_type == 'recipe':
-                post['author_name'] = 'Marion MacLeod'
+            # Use author from database (post.author_id) - no recipe-specific logic
+            if not post.get('author_name'):
+                # Author should come from post.author_id via JOIN in query
+                # If missing, will be handled by template default
+                pass
             
             # Get header image if exists - use image table (singular) - foreign keys point here
             header_image = None
