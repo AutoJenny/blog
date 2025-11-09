@@ -336,8 +336,8 @@ def get_post_details(post_id):
             header_image = None
             if post['header_image_id']:
                 cursor.execute("""
-                    SELECT path, alt_text, caption
-                    FROM image
+                    SELECT file_path as path, alt_text, caption
+                    FROM images
                     WHERE id = %s
                 """, (post['header_image_id'],))
                 img_result = cursor.fetchone()

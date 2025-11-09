@@ -35,7 +35,7 @@ def index():
                     i.filename as header_image_filename
                 FROM calendar_recipes cr
                 LEFT JOIN post p ON p.recipe_id = cr.id AND p.status != 'deleted'
-                LEFT JOIN image i ON p.header_image_id = i.id
+                LEFT JOIN images i ON p.header_image_id = i.id
                 ORDER BY cr.week_number ASC
             """)
             
@@ -119,7 +119,7 @@ def api_recipes():
                     i.path as header_image_path
                 FROM calendar_recipes cr
                 LEFT JOIN post p ON p.recipe_id = cr.id AND p.status != 'deleted'
-                LEFT JOIN image i ON p.header_image_id = i.id
+                LEFT JOIN images i ON p.header_image_id = i.id
                 ORDER BY cr.week_number ASC
             """)
             
