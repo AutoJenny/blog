@@ -49,16 +49,16 @@ def find_header_image_filesystem(post_id):
 def load_header_image_from_db(post_id):
     """
     Load header image from post_images table.
-    Uses image table (singular) - foreign keys point here.
+    Uses images table (plural) - foreign keys point here.
     Returns dict with path, alt_text, caption, width, height or None.
     """
     try:
         with db_manager.get_cursor() as cursor:
-            # Use image table (singular) - foreign keys point here
+            # Use images table (plural) - foreign keys point here
             cursor.execute("""
-                SELECT i.path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
+                SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
                 FROM post_images pi
-                JOIN image i ON pi.image_id = i.id
+                JOIN images i ON pi.image_id = i.id
                 WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
                 ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
                               WHEN pi.image_type = 'header_watermarked' THEN 2
