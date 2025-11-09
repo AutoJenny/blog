@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T21:34:07.437083",
+  "post_id": 81,
+  "section_id": 831,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "5291853",
+    "url": "https://images.pexels.com/photos/5291853/pexels-photo-5291853.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/5291853/pexels-photo-5291853.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3007,
+    "height": 2005,
+    "orientation": "landscape",
+    "photographer": "Nataliya Vaitkevich",
+    "photographer_url": "https://www.pexels.com/@n-voitkevich",
+    "credits": "Photo by Nataliya Vaitkevich on Pexels",
+    "search_term": "{\"image_prompt\": \"Autumn Scotland, Stirling Castle, golden light, autumn foliage, historic architecture, misty morning\"}}",
+    "selected": false,
+    "selected_at": "2025-11-04T21:34:07.437068",
+    "provider_data": {
+      "pexels_id": "5291853",
+      "pexels_url": "https://www.pexels.com/photo/brown-horse-on-road-5291853/",
+      "photographer_id": 2906295
+    },
+    "selection_orientation": "landscape"
+  }
+}

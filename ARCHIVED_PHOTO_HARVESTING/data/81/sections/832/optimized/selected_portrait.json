@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T21:34:10.223414",
+  "post_id": 81,
+  "section_id": 832,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "28847495",
+    "url": "https://images.pexels.com/photos/28847495/pexels-photo-28847495.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/28847495/pexels-photo-28847495.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3456,
+    "height": 5184,
+    "orientation": "portrait",
+    "photographer": "Sedanur Kunuk",
+    "photographer_url": "https://www.pexels.com/@sedanur-kunuk-78972032",
+    "credits": "Photo by Sedanur Kunuk on Pexels",
+    "search_term": "Autumn colour palette, Edinburgh Castle, street photography, bloom, morning light, warm tones",
+    "selected": false,
+    "selected_at": "2025-11-04T21:34:10.223404",
+    "provider_data": {
+      "pexels_id": "28847495",
+      "pexels_url": "https://www.pexels.com/photo/cozy-autumn-coffee-scene-with-vintage-camera-28847495/",
+      "photographer_id": 78972032
+    },
+    "selection_orientation": "portrait"
+  }
+}

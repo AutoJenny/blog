@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T21:34:21.899881",
+  "post_id": 81,
+  "section_id": 837,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "34533068",
+    "url": "https://images.pexels.com/photos/34533068/pexels-photo-34533068.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/34533068/pexels-photo-34533068.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 6240,
+    "height": 4160,
+    "orientation": "landscape",
+    "photographer": "Daniel J. Schwarz",
+    "photographer_url": "https://www.pexels.com/@danieljschwarz",
+    "credits": "Photo by Daniel J. Schwarz on Pexels",
+    "search_term": "Autumn Scotland, Eilean Donan Castle, misty landscape, fading light, no text overlay, no watermark",
+    "selected": false,
+    "selected_at": "2025-11-04T21:34:21.899855",
+    "provider_data": {
+      "pexels_id": "34533068",
+      "pexels_url": "https://www.pexels.com/photo/eilean-donan-castle-in-autumn-scotland-34533068/",
+      "photographer_id": 2156483715
+    },
+    "selection_orientation": "landscape"
+  }
+}

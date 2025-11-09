@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-06T12:42:03.729405",
+  "post_id": 82,
+  "section_id": 840,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "7287707",
+    "url": "https://images.pexels.com/photos/7287707/pexels-photo-7287707.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/7287707/pexels-photo-7287707.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 2500,
+    "height": 3500,
+    "orientation": "portrait",
+    "photographer": "Anna Tarazevich",
+    "photographer_url": "https://www.pexels.com/@anntarazevich",
+    "credits": "Photo by Anna Tarazevich on Pexels",
+    "search_term": "{\"description\":\"A key stage of the cooking process for Cullen Skink, such as simmering the fish in a flavorful broth. The scene should be set in a traditional Scottish-style kitchen, with warm lighting and comfortable textures. The focus should be on the action of cooking, rather than the finished dish.\",\"mood\":\"Nostalgic warmth and authenticity\",\"objects\":[\"Simmering pot\",\"Fish heads or bones\",\"Vegetables such as onions and carrots\",\"Flavorful broth\"]}",
+    "selected": false,
+    "selected_at": "2025-11-06T12:42:03.729391",
+    "provider_data": {
+      "pexels_id": "7287707",
+      "pexels_url": "https://www.pexels.com/photo/soup-dish-cooking-in-a-pot-7287707/",
+      "photographer_id": 2871253
+    },
+    "selection_orientation": "portrait"
+  }
+}

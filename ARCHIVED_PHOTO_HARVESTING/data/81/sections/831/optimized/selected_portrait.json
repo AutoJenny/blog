@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T21:34:07.473158",
+  "post_id": 81,
+  "section_id": 831,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "2832044",
+    "url": "https://images.pexels.com/photos/2832044/pexels-photo-2832044.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/2832044/pexels-photo-2832044.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 3986,
+    "height": 5979,
+    "orientation": "portrait",
+    "photographer": "Felix Mittermeier",
+    "photographer_url": "https://www.pexels.com/@felix-mittermeier",
+    "credits": "Photo by Felix Mittermeier on Pexels",
+    "search_term": "{\"image_prompt\": \"Autumn Scotland, Stirling Castle, golden light, autumn foliage, historic architecture, misty morning\"}}",
+    "selected": false,
+    "selected_at": "2025-11-04T21:34:07.473149",
+    "provider_data": {
+      "pexels_id": "2832044",
+      "pexels_url": "https://www.pexels.com/photo/scenic-photo-of-castle-during-dawn-2832044/",
+      "photographer_id": 344572
+    },
+    "selection_orientation": "portrait"
+  }
+}

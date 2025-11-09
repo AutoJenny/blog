@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-06T12:42:00.540128",
+  "post_id": 82,
+  "section_id": 839,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "33199884",
+    "url": "https://images.pexels.com/photos/33199884/pexels-photo-33199884.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/33199884/pexels-photo-33199884.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 4000,
+    "height": 6000,
+    "orientation": "portrait",
+    "photographer": "TIVASEE .",
+    "photographer_url": "https://www.pexels.com/@tivasee-17374727",
+    "credits": "Photo by TIVASEE . on Pexels",
+    "search_term": "{\"description\":\"Ingredients for Cullen Skink arranged on a wooden table or stone countertop, in a traditional Scottish-style kitchen. The ingredients should be artfully arranged to evoke a sense of movement and energy. Soft afternoon light highlights the textures of the ingredients and the surfaces around them.\",\"mood\":\"Nostalgic warmth and authenticity\",\"objects\":[\"Smoked haddock\",\"Potatoes\",\"Onions\",\"Garlic\",\"Fresh parsley or chives\"]} The ingredients shown are: Smoked haddock, Potatoes, Milk, Onions, Dill, Garlic.",
+    "selected": false,
+    "selected_at": "2025-11-06T12:42:00.540120",
+    "provider_data": {
+      "pexels_id": "33199884",
+      "pexels_url": "https://www.pexels.com/photo/rustic-kitchen-setup-with-fresh-herbs-33199884/",
+      "photographer_id": 17374727
+    },
+    "selection_orientation": "portrait"
+  }
+}

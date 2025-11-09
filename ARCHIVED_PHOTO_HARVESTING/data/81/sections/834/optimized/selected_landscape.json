@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T21:34:14.741602",
+  "post_id": 81,
+  "section_id": 834,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "9048878",
+    "url": "https://images.pexels.com/photos/9048878/pexels-photo-9048878.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/9048878/pexels-photo-9048878.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 5760,
+    "height": 3840,
+    "orientation": "landscape",
+    "photographer": "\u0410\u043b\u0435\u043a\u0441\u0430\u043d\u0434\u0440 \u041c\u0430\u043a\u0441\u0438\u043d",
+    "photographer_url": "https://www.pexels.com/@alexmaksin55",
+    "credits": "Photo by \u0410\u043b\u0435\u043a\u0441\u0430\u043d\u0434\u0440 \u041c\u0430\u043a\u0441\u0438\u043d on Pexels",
+    "search_term": "Autumn Scotland, CairnGorm Mountain, autumn foliage, hiking trails, outdoor gear, golden hour photography",
+    "selected": false,
+    "selected_at": "2025-11-04T21:34:14.741597",
+    "provider_data": {
+      "pexels_id": "9048878",
+      "pexels_url": "https://www.pexels.com/photo/green-grass-and-brown-trees-during-golden-hour-9048878/",
+      "photographer_id": 2999497
+    },
+    "selection_orientation": "landscape"
+  }
+}
