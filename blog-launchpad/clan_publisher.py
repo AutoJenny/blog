@@ -1537,6 +1537,12 @@ class ClanPublisher:
             import re
             html_content = re.sub(r'http://localhost:\d+', '', html_content)
             
+            # Remove title parameters from widget tags (headings should not be included)
+            # Pattern matches: {{widget ... title="..." ...}} or {{widget ... title='...' ...}}
+            # Removes the title parameter and its value
+            html_content = re.sub(r'\s+title=["\'][^"\']*["\']', '', html_content)
+            logger.info("✅ Removed title parameters from widget tags")
+            
             # Save the HTML file for inspection
             debug_file = f'/tmp/upload_html_post_{post["id"]}_{int(time.time())}.html'
             with open(debug_file, 'w', encoding='utf-8') as f:
