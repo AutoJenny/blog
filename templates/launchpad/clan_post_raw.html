@@ -119,6 +119,11 @@
     color: #1f2937;
     font-weight: 600;
 }
+/* Recipe variations section heading (h2) should be italic */
+.recipe-section.recipe-recipe_variants h2,
+section.recipe-recipe_variants h2 {
+    font-style: italic !important;
+}
 .recipe-further-reading {
     margin: 1.5rem 0;
 }
@@ -156,7 +161,7 @@
         {# The exclude_header_image flag is set in clan_publisher.py to prevent duplication #}
         
         {% if post.subtitle %}
-        <p class="blog-post__subtitle">{{ post.subtitle }}</p>
+        <div class="blog-post__subtitle">{{ post.subtitle }}</div>
         {% endif %}
         
         <div class="post-meta">
@@ -236,28 +241,18 @@
     </section>
     {% endif %} {# End skip recipe_image_style #}
     
-    {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
-        {% if post.cross_promotion.category_widget_html %}
+    {# Place first widget after 3rd section (loop.index 3) #}
+    {% if loop.index == 3 %}
+        {% if post.cross_promotion and post.cross_promotion.category_widget_html %}
             {{ post.cross_promotion.category_widget_html|safe }}
-        {% endif %}
-    {% endif %}
-    
-    {% if post.cross_promotion and post.cross_promotion.product_position == loop.index %}
-        {% if post.cross_promotion.product_widget_html %}
-            {{ post.cross_promotion.product_widget_html|safe }}
         {% endif %}
     {% endif %}
     
     {% endfor %}
     
-    {% if post.cross_promotion %}
-        {% if post.cross_promotion.category_position == sections|length + 1 and post.cross_promotion.category_widget_html %}
-            {{ post.cross_promotion.category_widget_html|safe }}
-        {% endif %}
-        
-        {% if post.cross_promotion.product_position == sections|length + 1 and post.cross_promotion.product_widget_html %}
-            {{ post.cross_promotion.product_widget_html|safe }}
-        {% endif %}
+    {# Place second widget after final section #}
+    {% if post.cross_promotion and post.cross_promotion.product_widget_html %}
+        {{ post.cross_promotion.product_widget_html|safe }}
     {% endif %}
     </div>
     {% endif %}

@@ -1387,15 +1387,32 @@ class ClanPublisher:
             # Load the template from the FileSystemLoader
             template = env.get_template('clan_post_raw.html')
             
-            # Fix author_name if it's the literal string "author_name" (database column name)
+            # Use author_name from post dict (already loaded by get_post_with_development via JOIN with author table)
+            # DO NOT override - preview and publishing must use the same source
             post_for_template = post.copy()
+            
+            # Validate author_name is set (should already be set by get_post_with_development)
             if not post_for_template.get('author_name') or post_for_template.get('author_name') == 'author_name':
-                # Use author from database (post.author_id) - no recipe-specific logic
-                # Author should come from post.author_id via JOIN in query
-                # If missing, use template default
-                if not post_for_template.get('author_name'):
-                    post_for_template['author_name'] = 'Caitrin Stewart'  # Template default
+                # Only fallback if missing - this should rarely happen if get_post_with_development is working
+                logger.warning(f"author_name missing or invalid in post dict: {repr(post_for_template.get('author_name'))}")
+                if post_for_template.get('author_id'):
+                    try:
+                        from config.database import db_manager
+                        with db_manager.get_cursor() as cursor:
+                            cursor.execute("SELECT name FROM author WHERE id = %s", (post_for_template['author_id'],))
+                            author_row = cursor.fetchone()
+                            if author_row and author_row.get('name'):
+                                post_for_template['author_name'] = author_row['name']
+                                logger.info(f"Loaded author_name from author table as fallback: {author_row['name']}")
+                    except Exception as e:
+                        logger.warning(f"Could not load author_name from author table: {e}")
+                
+                # Final fallback
+                if not post_for_template.get('author_name') or post_for_template.get('author_name') == 'author_name':
+                    post_for_template['author_name'] = 'Caitrin Stewart'
                     logger.info(f"Using default author_name: 'Caitrin Stewart'")
+            
+            logger.info(f"Using author_name from post dict: {repr(post_for_template.get('author_name'))}")
             
             # Exclude header image from HTML content (Clan.com adds it as featured image automatically)
             post_for_template['exclude_header_image'] = True

@@ -2316,13 +2316,15 @@ def get_post_with_development(post_id):
         # Get post data, alias post.id as post_id
         cur.execute("""
             SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
-                   p.clan_post_id, p.clan_uploaded_url, p.author_id, p.author_name,
+                   p.clan_post_id, p.clan_uploaded_url, p.author_id,
+                   a.name as author_name,
                    pd.idea_seed, pd.intro_blurb, pd.main_title,
                    p.cross_promotion_category_id, p.cross_promotion_category_title,
                    p.cross_promotion_product_id, p.cross_promotion_product_title,
                    p.cross_promotion_category_position, p.cross_promotion_product_position,
                    p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html
             FROM post p
+            LEFT JOIN author a ON p.author_id = a.id
             LEFT JOIN post_development pd ON pd.post_id = p.id
             WHERE p.id = %s
         """, (post_id,))
@@ -2331,7 +2333,7 @@ def get_post_with_development(post_id):
         if not post:
             return None
             
-        # Get header image - use post_images -> image table (singular) - foreign keys point here
+        # Get header image - use post_images -> images table (plural) - foreign keys point to image_archive but data is in images
         cur.execute("""
             SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
             FROM post_images pi
@@ -2833,10 +2835,10 @@ def publish_post_to_clan(post_id):
         
         if not post.get('header_image') or not post['header_image'].get('path'):
             logger.info("Header image not set, attempting to find it...")
-            # Use post_images -> image table (singular) - foreign keys point here
+            # Use post_images -> images table (plural) - foreign keys point to image_archive but data is in images
             with get_db_connection() as conn:
                 cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-                # Use image table (singular) - foreign keys point here
+                # Use images table (plural) - foreign keys point to image_archive but data is in images
                 cur.execute("""
                     SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
                     FROM post_images pi
