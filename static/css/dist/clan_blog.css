@@ -280,9 +280,9 @@ body {
 .blog-post__subtitle {
     font-size: 1.25rem;
     font-weight: 400;
+    font-style: italic !important;
     color: #666;
     margin: 0.5rem 0 1.5rem;
-    font-style: italic;
 }
 .post-meta__author, .post-meta__date, .post-meta__status, .post-meta__reading-time {
     color: #888;
