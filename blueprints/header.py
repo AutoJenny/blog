@@ -342,11 +342,11 @@ def header_preview(post_id):
             
             # Get header image if exists - use image table (singular) - foreign keys point here
             header_image = None
-            # Use post_images -> image table (singular) - same for ALL post types
+            # Use post_images -> images table (plural) - same for ALL post types
             cursor.execute("""
-                SELECT i.path, i.filename, i.alt_text, i.caption, NULL as width, NULL as height, pi.image_type
+                SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
                 FROM post_images pi
-                JOIN image i ON pi.image_id = i.id
+                JOIN images i ON pi.image_id = i.id
                 WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
                 ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
                               WHEN pi.image_type = 'header_watermarked' THEN 2
@@ -371,10 +371,10 @@ def header_preview(post_id):
                     'height': img_row.get('height')
                 }
             elif post.get('header_image_id'):
-                # Fallback to legacy image table (should not be needed, but handle gracefully)
+                # Fallback to legacy images table (should not be needed, but handle gracefully)
                 cursor.execute("""
-                    SELECT id, filename, path, alt_text, caption
-                    FROM image
+                    SELECT id, filename, file_path as path, alt_text, caption
+                    FROM images
                     WHERE id = %s
                 """, (post['header_image_id'],))
                 header_image = cursor.fetchone()
@@ -416,13 +416,13 @@ def header_preview(post_id):
                        ps.image_alt_text AS section_image_alt,
                        i.id AS image_id,
                        i.filename,
-                       i.path AS image_path,
+                       i.file_path AS image_path,
                        i.alt_text,
                        i.caption
                 FROM post_section ps
                 LEFT JOIN post_images pi
                   ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
-                LEFT JOIN image i ON pi.image_id = i.id
+                LEFT JOIN images i ON pi.image_id = i.id
                 WHERE ps.post_id = %s
                   AND ps.section_type != 'recipe_image_style'
                   AND ps.section_type != 'recipe_method'
@@ -1735,9 +1735,9 @@ Return in JSON format:
             
             # Get header image path for OG image
             cursor.execute("""
-                SELECT i.path 
+                SELECT i.file_path as path 
                 FROM post p
-                JOIN image i ON p.header_image_id = i.id
+                JOIN images i ON p.header_image_id = i.id
                 WHERE p.id = %s
             """, (post_id,))
             
@@ -2567,7 +2567,7 @@ def api_compile_header_prompt(post_id):
                     if post_result and post_result.get('header_image_id'):
                         # Update existing image record with the compiled prompt
                         cursor.execute("""
-                            UPDATE image 
+                            UPDATE images 
                             SET image_prompt = %s, updated_at = CURRENT_TIMESTAMP
                             WHERE id = %s
                         """, (compiled_prompt, post_result['header_image_id']))
@@ -2575,7 +2575,7 @@ def api_compile_header_prompt(post_id):
                     else:
                         # Create new image record with just the prompt (no actual image yet)
                         cursor.execute("""
-                            INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
+                            INSERT INTO images (filename, original_filename, file_path, image_prompt, alt_text, caption)
                             VALUES (%s, %s, %s, %s, %s, %s)
                             RETURNING id
                         """, (
@@ -2932,12 +2932,12 @@ def api_generate_header_image(post_id):
                     new_path = 'static/' + new_path.lstrip('/')
                 new_path = '/' + new_path  # Add leading slash
             
-            # CRITICAL: Write to image table (singular) with path column - foreign keys point here
+            # CRITICAL: Write to images table (plural) with file_path column - foreign keys point here
             if existing_image_id and existing_image_id['header_image_id']:
                 # Update existing image record
                 cursor.execute("""
-                    UPDATE image 
-                    SET filename = %s, original_filename = %s, path = %s, 
+                    UPDATE images 
+                    SET filename = %s, original_filename = %s, file_path = %s, 
                         image_prompt = %s, alt_text = %s, caption = %s,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
@@ -2954,7 +2954,7 @@ def api_generate_header_image(post_id):
             else:
                 # Create new image record
                 cursor.execute("""
-                    INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
+                    INSERT INTO images (filename, original_filename, file_path, image_prompt, alt_text, caption)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
@@ -3026,10 +3026,10 @@ def api_get_header_image(post_id):
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT i.id, i.filename, i.path, 
+                SELECT i.id, i.filename, i.file_path as path, 
                        i.alt_text, i.caption, i.image_prompt
                 FROM post p
-                JOIN image i ON p.header_image_id = i.id
+                JOIN images i ON p.header_image_id = i.id
                 WHERE p.id = %s
             """, (post_id,))
             result = cursor.fetchone()
@@ -3060,7 +3060,7 @@ def api_generate_image_details(post_id):
             cursor.execute("""
                 SELECT i.image_prompt 
                 FROM post p
-                JOIN image i ON p.header_image_id = i.id
+                JOIN images i ON p.header_image_id = i.id
                 WHERE p.id = %s
             """, (post_id,))
             result = cursor.fetchone()
@@ -3148,7 +3148,7 @@ def api_generate_image_details(post_id):
         # Auto-save to database
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                UPDATE image 
+                UPDATE images 
                 SET caption = %s, alt_text = %s, updated_at = CURRENT_TIMESTAMP
                 WHERE id = (
                     SELECT header_image_id FROM post WHERE id = %s
@@ -3176,9 +3176,9 @@ def api_save_image_details(post_id):
         title = data.get('title', '')
         
         with db_manager.get_cursor() as cursor:
-            # Update image table with details
+            # Update images table with details
             cursor.execute("""
-                UPDATE image 
+                UPDATE images 
                 SET caption = %s, alt_text = %s, updated_at = CURRENT_TIMESTAMP
                 WHERE id = (
                     SELECT header_image_id FROM post WHERE id = %s
@@ -3234,8 +3234,8 @@ def api_optimize_header_image(post_id):
                 if existing_header_image_id:
                     # Update existing image record
                     cursor.execute("""
-                        UPDATE image 
-                        SET filename = %s, path = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
+                        UPDATE images 
+                        SET filename = %s, file_path = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
                         WHERE id = %s
                     """, (
                         'header.jpg',
@@ -3248,7 +3248,7 @@ def api_optimize_header_image(post_id):
                 else:
                     # Insert new record
                     cursor.execute("""
-                        INSERT INTO image (filename, path, alt_text, caption)
+                        INSERT INTO images (filename, file_path, alt_text, caption)
                         VALUES (%s, %s, %s, %s)
                         RETURNING id
                     """, (
@@ -3810,7 +3810,7 @@ def api_execute_llm():
                     if existing_image and existing_image['header_image_id']:
                         # UPDATE existing image record - THIS OVERWRITES THE OLD PROMPT
                         cursor.execute("""
-                            UPDATE image 
+                            UPDATE images 
                             SET image_prompt = %s, updated_at = CURRENT_TIMESTAMP
                             WHERE id = %s
                         """, (new_prompt, existing_image['header_image_id']))
@@ -3818,7 +3818,7 @@ def api_execute_llm():
                     else:
                         # Create new image record with just the prompt
                         cursor.execute("""
-                            INSERT INTO image (filename, original_filename, path, image_prompt, alt_text, caption)
+                            INSERT INTO images (filename, original_filename, file_path, image_prompt, alt_text, caption)
                             VALUES (%s, %s, %s, %s, %s, %s)
                             RETURNING id
                         """, (
