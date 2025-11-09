@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T21:34:10.184126",
+  "post_id": 81,
+  "section_id": 832,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "3356685",
+    "url": "https://images.pexels.com/photos/3356685/pexels-photo-3356685.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/3356685/pexels-photo-3356685.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 5760,
+    "height": 3840,
+    "orientation": "landscape",
+    "photographer": "Kelly",
+    "photographer_url": "https://www.pexels.com/@kelly",
+    "credits": "Photo by Kelly on Pexels",
+    "search_term": "Autumn colour palette, Edinburgh Castle, street photography, bloom, morning light, warm tones",
+    "selected": false,
+    "selected_at": "2025-11-04T21:34:10.184119",
+    "provider_data": {
+      "pexels_id": "3356685",
+      "pexels_url": "https://www.pexels.com/photo/orange-leaves-about-to-fall-3356685/",
+      "photographer_id": 1179532
+    },
+    "selection_orientation": "landscape"
+  }
+}

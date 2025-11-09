@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T21:34:16.683190",
+  "post_id": 81,
+  "section_id": 835,
+  "orientation": "landscape",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "1486976",
+    "url": "https://images.pexels.com/photos/1486976/pexels-photo-1486976.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/1486976/pexels-photo-1486976.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 5678,
+    "height": 3952,
+    "orientation": "landscape",
+    "photographer": "James Wheeler",
+    "photographer_url": "https://www.pexels.com/@souvenirpixels",
+    "credits": "Photo by James Wheeler on Pexels",
+    "search_term": "Autumn Scotland, Eilean Donan Castle, golden light, seasonal produce, Scottish whisky, harvest festival",
+    "selected": false,
+    "selected_at": "2025-11-04T21:34:16.683180",
+    "provider_data": {
+      "pexels_id": "1486976",
+      "pexels_url": "https://www.pexels.com/photo/photo-of-field-full-of-pumpkins-1486976/",
+      "photographer_id": 558609
+    },
+    "selection_orientation": "landscape"
+  }
+}

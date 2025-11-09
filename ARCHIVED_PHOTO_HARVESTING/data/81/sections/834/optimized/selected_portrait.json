@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-04T21:34:14.771773",
+  "post_id": 81,
+  "section_id": 834,
+  "orientation": "portrait",
+  "photo": {
+    "provider": "pexels",
+    "image_id": "5709181",
+    "url": "https://images.pexels.com/photos/5709181/pexels-photo-5709181.jpeg",
+    "thumbnail_url": "https://images.pexels.com/photos/5709181/pexels-photo-5709181.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "width": 2670,
+    "height": 4000,
+    "orientation": "portrait",
+    "photographer": "Arina Krasnikova",
+    "photographer_url": "https://www.pexels.com/@arina-krasnikova",
+    "credits": "Photo by Arina Krasnikova on Pexels",
+    "search_term": "Autumn Scotland, CairnGorm Mountain, autumn foliage, hiking trails, outdoor gear, golden hour photography",
+    "selected": false,
+    "selected_at": "2025-11-04T21:34:14.771769",
+    "provider_data": {
+      "pexels_id": "5709181",
+      "pexels_url": "https://www.pexels.com/photo/rocky-stream-near-autumn-forest-on-hills-5709181/",
+      "photographer_id": 3414985
+    },
+    "selection_orientation": "portrait"
+  }
+}

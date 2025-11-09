@@ -1,0 +1,53 @@
+<!-- Photo Search Panel -->
+<div class="panel photo-search-panel" id="photo-search-panel">
+    <div class="panel-header">
+        <h3><i class="fas fa-search"></i> Photo Search</h3>
+    </div>
+    <div class="panel-content">
+        <div class="form-group">
+            <label for="photo-search-term">Search Term</label>
+            <input type="text" 
+                   id="photo-search-term" 
+                   class="form-control" 
+                   placeholder="e.g., Scottish landscape, autumn scenery"
+                   value="">
+            <small class="form-text text-muted">Enter search terms for finding photos from Pexels/Unsplash</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="photo-search-provider">Provider</label>
+            <select id="photo-search-provider" class="form-control">
+                <option value="both">Both (Pexels & Unsplash)</option>
+                <option value="pexels">Pexels Only</option>
+                <option value="unsplash">Unsplash Only</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="photo-search-orientation">Orientation</label>
+            <select id="photo-search-orientation" class="form-control">
+                <option value="">All Orientations</option>
+                <option value="landscape">Landscape</option>
+                <option value="portrait">Portrait</option>
+                <option value="square">Square</option>
+            </select>
+            <small class="form-text text-muted">Filter photos by orientation (optional)</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="photo-search-per-page">Results Per Page</label>
+            <select id="photo-search-per-page" class="form-control">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="30">30</option>
+            </select>
+        </div>
+        
+        <button id="photo-search-btn" class="btn btn-primary" style="width: 100%;">
+            <i class="fas fa-search"></i> Search Photos
+        </button>
+        
+        <div id="photo-search-status" class="mt-2" style="display: none;"></div>
+    </div>
+</div>
+
