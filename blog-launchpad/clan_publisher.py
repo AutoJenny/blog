@@ -1470,8 +1470,8 @@ class ClanPublisher:
                         if row and row.get('header_image_id'):
                             # Load header image data from database
                             cursor.execute("""
-                                SELECT id, filename, path, alt_text, caption
-                                FROM image WHERE id = %s
+                                SELECT id, filename, file_path as path, alt_text, caption
+                                FROM images WHERE id = %s
                             """, (row['header_image_id'],))
                             img_row = cursor.fetchone()
                             if img_row and img_row.get('path'):
