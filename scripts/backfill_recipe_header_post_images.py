@@ -40,10 +40,10 @@ def backfill_recipe_header_post_images(dry_run=True):
                     p.title,
                     p.header_image_id,
                     i.id as image_id,
-                    i.path as image_path,
+                    i.file_path as image_path,
                     i.filename
                 FROM post p
-                JOIN image i ON p.header_image_id = i.id
+                JOIN images i ON p.header_image_id = i.id
                 LEFT JOIN post_images pi ON pi.post_id = p.id 
                     AND pi.section_id IS NULL 
                     AND pi.image_type = 'header_optimized'
