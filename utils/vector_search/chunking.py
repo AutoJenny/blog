@@ -67,11 +67,11 @@ class ContentChunker:
         Returns:
             Dictionary with chunk_text and metadata
         """
-        # Extract and clean fields
-        name = product.get('name', '').strip()
+        # Extract and clean fields (handle None values)
+        name = (product.get('name') or '').strip()
         short_desc = self.clean_html(product.get('short_description'))
         description = self.clean_html(product.get('description'))
-        supplier_name = product.get('supplier_name', '').strip()
+        supplier_name = (product.get('supplier_name') or '').strip()
         supplier_desc = self.clean_html(product.get('supplier_description'))
         
         # Build structured text
@@ -123,7 +123,7 @@ class ContentChunker:
         Returns:
             Dictionary with chunk_text and metadata
         """
-        name = category.get('name', '').strip()
+        name = (category.get('name') or '').strip()
         description = self.clean_html(category.get('description'))
         
         # Build structured text

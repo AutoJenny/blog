@@ -772,6 +772,31 @@ def api_generate_image_prompt_from_builder():
             if not generated_prompt:
                 return jsonify({'error': 'Failed to generate prompt after retries'}), 500
             
+            # Prepend Selected Idea (theme name) to the generated prompt
+            # Use theme_name that was already retrieved earlier (from theme_data processing)
+            selected_idea = None
+            if url_year and url_week:
+                # Get theme name from calendar_week_selection (reuse logic from theme_data section)
+                cursor.execute("""
+                    SELECT ct.theme_title
+                    FROM calendar_week_selection cws
+                    JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                    WHERE cws.year = %s AND cws.week_number = %s
+                """, (url_year, url_week))
+                theme_result = cursor.fetchone()
+                if theme_result:
+                    selected_idea = theme_result.get('theme_title')
+            
+            # If no theme from week context, try to get from post title
+            if not selected_idea:
+                if post_data and post_data.get('title'):
+                    selected_idea = post_data['title']
+            
+            # Prepend Selected Idea if available
+            if selected_idea:
+                generated_prompt = f"{selected_idea}: {generated_prompt}"
+                logger.info(f"[IMAGE_PROMPTS] Prepended Selected Idea '{selected_idea}' to generated prompt")
+            
             # Log the generation step
             pipeline_steps.append({
                 'step': 'initial_generation',
@@ -817,11 +842,19 @@ def api_generate_image_prompt_from_builder():
             
             # imaging_limit already calculated above
             
-            # Save to database
+            # Append style name to the final generated prompt (for display and use)
+            final_prompt_with_style = generated_prompt
+            if illustration_method != 'Photo-harvesting' and active_style:
+                style_name = active_style.get('name', '')
+                if style_name:
+                    final_prompt_with_style = f"{generated_prompt}, style: {style_name}"
+                    logger.info(f"[IMAGE_PROMPTS] Appended style '{style_name}' to final prompt")
+            
+            # Save to database (save the version WITH style for consistency)
             try:
                 # Update the post_section table with the generated prompt
                 image_prompts_json = json.dumps({
-                    'image_prompt': generated_prompt,
+                    'image_prompt': final_prompt_with_style,
                     'base_concept': compiled_prompt
                 })
                 
@@ -837,16 +870,16 @@ def api_generate_image_prompt_from_builder():
             
             cursor.connection.commit()
             
-            logger.info(f"[DEBUG] Generated prompt: {generated_prompt[:100]}...")
+            logger.info(f"[DEBUG] Generated prompt: {final_prompt_with_style[:100]}...")
             logger.info(f"[DEBUG] Saved to database for post {post_id}, section {section_id}")
             
-            # Return detailed pipeline information
+            # Return detailed pipeline information (return the version WITH style)
             return jsonify({
                 'success': True,
-                'image_prompt': generated_prompt,
+                'image_prompt': final_prompt_with_style,
                 'message': 'Image prompt generated and saved successfully',
                 'pipeline_steps': pipeline_steps,
-                'final_length': len(generated_prompt),
+                'final_length': len(final_prompt_with_style),
                 'character_limit': imaging_limit,
                 'compression_used': compression_used,
                 'expansion_used': expansion_used,
