@@ -8,6 +8,7 @@ This allows easy customization of the right-hand panel order without modifying t
 # Panel configuration for each illustration method
 ILLUSTRATION_PANEL_CONFIGS = {
     'LLM-creation': {
+        'active': True,  # LLM-creation is the active illustration method
         'panels': [
             {
                 'type': 'llm_settings',
@@ -34,6 +35,7 @@ ILLUSTRATION_PANEL_CONFIGS = {
         'output_script': 'js/authoring/image-concepts-output-panel.js'
     },
     'Photo-harvesting': {
+        'active': False,  # DEPRECATED: Photo-harvesting is inactive
         'panels': [
             {
                 'type': 'photo_settings',

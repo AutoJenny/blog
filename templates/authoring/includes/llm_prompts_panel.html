@@ -42,4 +42,8 @@
     </div>
 </div>
 
+<!-- NOTE: llm-prompts-panel.js should be loaded in the page's js_assets block BEFORE this include -->
+<!-- Only include it here if it hasn't been loaded yet (for backward compatibility) -->
+{% if not llm_prompts_panel_js_loaded %}
 <script src="{{ url_for('static', filename='js/authoring/llm-prompts-panel.js') }}"></script>
+{% endif %}

@@ -12,7 +12,9 @@
 
 {% block js_assets %}
 {{ js_assets('imaging') }}
+<!-- CRITICAL: llm-config.js must load BEFORE llm-prompts-panel.js -->
 <script src="{{ url_for('static', filename='js/llm-config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/authoring/llm-prompts-panel.js') }}"></script>
 <script src="{{ url_for('static', filename='js/imaging/imaging-workspace.js') }}"></script>
 <script src="{{ url_for('static', filename='js/imaging/sections-panel.js') }}"></script>
 <script>
@@ -137,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function(){
             
             <!-- LLM Prompts Panel (authoring include) -->
             <div class="llm-prompts-container">
+                {% set llm_prompts_panel_js_loaded = true %}
                 {% include 'authoring/includes/llm_prompts_panel.html' %}
             </div>
         <script>

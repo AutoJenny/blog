@@ -88,7 +88,7 @@ def generate_portrait_for_section(post_id, section_id, image_prompt):
     
     # Fallback: call function directly
     try:
-        from blueprints.imaging import imaging_generate_dalle_image
+        from blueprints.imaging_generators import imaging_generate_dalle_image
         
         result = imaging_generate_dalle_image(
             image_prompt, 

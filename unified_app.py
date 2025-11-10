@@ -98,6 +98,11 @@ def create_app(config_name=None):
     from blueprints.post_type_config import bp as post_type_config_bp
     app.register_blueprint(post_type_config_bp)
     
+    # Register content search API blueprint
+    from blueprints.content_search_api import bp as content_search_bp, register_routes
+    register_routes(content_search_bp)
+    app.register_blueprint(content_search_bp)
+    
     # Register post type pipeline blueprint
     from blueprints.post_type_pipeline import bp as post_type_pipeline_bp
     app.register_blueprint(post_type_pipeline_bp)

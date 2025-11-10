@@ -9,34 +9,50 @@ async function getJSON(url) {
   return await res.json();
 }
 
-async function postJSON(url, body) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body || {})
-  });
+async function postJSON(url, body, options = {}) {
+  // Create AbortController for timeout handling
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), options.timeout || 120000); // Default 2 minutes
   
-  // Try to parse JSON even if status is not ok to get error message
-  let jsonData;
   try {
-    jsonData = await res.json();
-  } catch (e) {
-    // If JSON parsing fails, return error object
-    if (!res.ok) {
-      throw new Error(`POST ${url} failed: ${res.status} ${res.statusText}`);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+      signal: controller.signal,
+      ...options
+    });
+    
+    clearTimeout(timeoutId);
+    
+    // Try to parse JSON even if status is not ok to get error message
+    let jsonData;
+    try {
+      jsonData = await res.json();
+    } catch (e) {
+      // If JSON parsing fails, return error object
+      if (!res.ok) {
+        throw new Error(`POST ${url} failed: ${res.status} ${res.statusText}`);
+      }
+      throw new Error('Invalid JSON response');
     }
-    throw new Error('Invalid JSON response');
+    
+    // If response is not ok, return error object with message
+    if (!res.ok) {
+      return {
+        success: false,
+        error: jsonData.error || `HTTP ${res.status}: ${res.statusText}`
+      };
+    }
+    
+    return jsonData;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timeout: ${url} took longer than ${options.timeout || 120000}ms`);
+    }
+    throw error;
   }
-  
-  // If response is not ok, return error object with message
-  if (!res.ok) {
-    return {
-      success: false,
-      error: jsonData.error || `HTTP ${res.status}: ${res.statusText}`
-    };
-  }
-  
-  return jsonData;
 }
 
 async function saveSelectedConcept(postId, sectionId, conceptId) {
@@ -522,7 +538,8 @@ class ImageConceptsOutputPanel {
       }
       
       console.log('[DEBUG] Calling API:', apiUrl);
-      const res = await postJSON(apiUrl, {});
+      // Image concepts generation can take 30-60 seconds, so use a longer timeout
+      const res = await postJSON(apiUrl, {}, { timeout: 180000 }); // 3 minutes timeout
       console.log('[DEBUG] API response received:', res);
       console.log('[DEBUG] Response success:', res.success);
       console.log('[DEBUG] Response error:', res.error);
