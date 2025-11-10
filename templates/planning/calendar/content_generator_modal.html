@@ -1,0 +1,184 @@
+<!-- Content Generator Modal Component -->
+<!-- For generating blog posts from products/categories -->
+
+<div id="content-generator-modal" class="content-generator-modal-overlay" style="display: none;">
+    <div class="content-generator-modal-container">
+        <!-- Modal Header -->
+        <div class="content-generator-modal-header">
+            <div class="content-generator-modal-header-top">
+                <h2 class="content-generator-modal-title" id="content-generator-modal-title">Generate Blog Post</h2>
+                <button class="content-generator-modal-close" id="content-generator-modal-close" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="content-generator-modal-type-selector">
+                <label class="content-generator-type-option">
+                    <input type="radio" name="content-generator-type" value="product" id="content-generator-type-product" checked />
+                    <span><i class="fas fa-box"></i> Product</span>
+                </label>
+                <label class="content-generator-type-option">
+                    <input type="radio" name="content-generator-type" value="category" id="content-generator-type-category" />
+                    <span><i class="fas fa-folder"></i> Category</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="content-generator-modal-body" id="content-generator-modal-body">
+            
+            <div id="content-generator-modal-loading" class="content-generator-modal-loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> <span id="content-generator-loading-text">Loading...</span>
+            </div>
+
+            <!-- Main Form -->
+            <form id="content-generator-modal-form" class="content-generator-modal-form">
+                <!-- Source Selection Section -->
+                <section class="content-generator-section" id="source-selection-section">
+                    <h3 class="content-generator-section-title">
+                        <i class="fas fa-search"></i>
+                        Select Source
+                    </h3>
+                    
+                    <!-- Product Selection -->
+                    <div id="product-selection-group">
+                        <div class="content-generator-form-group">
+                            <label for="content-generator-product-search" class="content-generator-label required">Search Products</label>
+                            <input type="text" id="content-generator-product-search" class="content-generator-input" 
+                                   placeholder="Search by product name, SKU, or producer...">
+                            <div id="content-generator-product-search-results" class="search-results"></div>
+                        </div>
+                        
+                        <div id="content-generator-selected-product" class="selected-item" style="display: none;">
+                            <div class="selected-item-info">
+                                <img id="content-generator-product-image" src="" alt="Product image">
+                                <div>
+                                    <h4 id="content-generator-product-name"></h4>
+                                    <p id="content-generator-product-producer"></p>
+                                    <p id="content-generator-product-price"></p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-remove" id="content-generator-remove-product">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Selection -->
+                    <div id="category-selection-group" style="display: none;">
+                        <div class="content-generator-form-group">
+                            <label for="content-generator-category-select" class="content-generator-label required">Category</label>
+                            <select id="content-generator-category-select" class="content-generator-select">
+                                <option value="">-- Select Category --</option>
+                            </select>
+                        </div>
+                        
+                        <div id="content-generator-selected-category" class="selected-item" style="display: none;">
+                            <div class="selected-item-info">
+                                <div>
+                                    <h4 id="content-generator-category-name"></h4>
+                                    <p id="content-generator-category-path"></p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-remove" id="content-generator-remove-category">Remove</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Generation Options Section -->
+                <section class="content-generator-section">
+                    <h3 class="content-generator-section-title">
+                        <i class="fas fa-cog"></i>
+                        Generation Options
+                    </h3>
+                    
+                    <div class="content-generator-form-group">
+                        <label for="content-generator-generation-type" class="content-generator-label required">Generation Type</label>
+                        <select id="content-generator-generation-type" class="content-generator-select">
+                            <option value="deep_dive">Deep Dive</option>
+                            <option value="feature" id="content-generator-type-feature" style="display: none;">Category Feature</option>
+                            <option value="comparison">Product Comparison</option>
+                        </select>
+                    </div>
+                    
+                    <div class="content-generator-form-grid">
+                        <div class="content-generator-form-group">
+                            <label for="content-generator-tone" class="content-generator-label">Tone</label>
+                            <select id="content-generator-tone" class="content-generator-select">
+                                <option value="warm" selected>Warm</option>
+                                <option value="professional">Professional</option>
+                                <option value="casual">Casual</option>
+                            </select>
+                        </div>
+                        
+                        <div class="content-generator-form-group">
+                            <label for="content-generator-length" class="content-generator-label">Length</label>
+                            <select id="content-generator-length" class="content-generator-select">
+                                <option value="short">Short (2-3 sections)</option>
+                                <option value="medium" selected>Medium (3-5 sections)</option>
+                                <option value="long">Long (5-7 sections)</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Idea Suggestions Section (Collapsible) -->
+                <section class="content-generator-section">
+                    <div class="content-generator-section-header">
+                        <h3 class="content-generator-section-title">
+                            <i class="fas fa-lightbulb"></i>
+                            Get Suggestions
+                        </h3>
+                        <button type="button" class="btn-link" id="content-generator-toggle-suggestions">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="content-generator-suggestions-panel" class="content-generator-suggestions-panel" style="display: none;">
+                        <div class="content-generator-form-group">
+                            <label for="content-generator-suggestions-query" class="content-generator-label">Search Query (optional)</label>
+                            <input type="text" id="content-generator-suggestions-query" class="content-generator-input" 
+                                   placeholder="e.g., interesting Scottish products, heritage items...">
+                        </div>
+                        <button type="button" class="btn-secondary" id="content-generator-get-suggestions">
+                            <i class="fas fa-search"></i> Get Suggestions
+                        </button>
+                        <div id="content-generator-suggestions-results" class="suggestions-results"></div>
+                    </div>
+                </section>
+
+                <!-- Preview Section (shown after generation) -->
+                <section class="content-generator-section" id="content-generator-preview-section" style="display: none;">
+                    <h3 class="content-generator-section-title">
+                        <i class="fas fa-eye"></i>
+                        Preview Generated Content
+                    </h3>
+                    
+                    <div class="content-generator-form-group">
+                        <label for="content-generator-preview-headline" class="content-generator-label">Headline</label>
+                        <input type="text" id="content-generator-preview-headline" class="content-generator-input">
+                    </div>
+                    
+                    <div class="content-generator-form-group">
+                        <label for="content-generator-preview-standfirst" class="content-generator-label">Standfirst</label>
+                        <textarea id="content-generator-preview-standfirst" class="content-generator-textarea" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="content-generator-form-group">
+                        <label class="content-generator-label">Sections</label>
+                        <div id="content-generator-preview-sections" class="preview-sections"></div>
+                    </div>
+                </section>
+
+                <!-- Error Message -->
+                <div id="content-generator-modal-error" class="content-generator-error" style="display: none;"></div>
+            </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="content-generator-modal-footer">
+            <button type="button" class="btn-secondary" id="content-generator-modal-cancel">Cancel</button>
+            <button type="button" class="btn-secondary" id="content-generator-modal-preview" style="display: none;">Preview Only</button>
+            <button type="button" class="btn-primary" id="content-generator-modal-generate">Generate Post</button>
+            <button type="button" class="btn-primary" id="content-generator-modal-save" style="display: none;">Save Post</button>
+        </div>
+    </div>
+</div>
+

@@ -225,6 +225,12 @@ def api_calendar_recipes(year, week_number):
     from blueprints.planning_api_calendar_recipes import api_calendar_recipes as recipes_func
     return recipes_func(year, week_number)
 
+@bp.route('/api/calendar/content-generator/<int:year>/<int:week_number>', methods=['GET'])
+def api_calendar_content_generator(year, week_number):
+    """Get generated posts scheduled for a specific year and week"""
+    from blueprints.planning_api_calendar_content_generator import api_calendar_content_generator as content_generator_func
+    return content_generator_func(year, week_number)
+
 @bp.route('/api/profiles', methods=['POST'])
 def api_create_profile_route():
     """Create a new profile"""

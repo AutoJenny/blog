@@ -58,17 +58,55 @@ def api_generate_content():
                 'error': 'source_id is required'
             }), 400
         
-        # Generate content
+        # Create post first (with placeholder title) so we have a post_id for LLM intercept_context
+        post_creator = PostCreator()
+        
+        # Get source name for idea_seed
+        from utils.vector_search.retrieval import ContentRetriever
+        retriever = ContentRetriever()
+        context_result = retriever.search(
+            query=f"{source_type} {source_id}",
+            chunk_types=[source_type],
+            limit=1
+        )
+        
+        source_name = f'{source_type} {source_id}'
+        if context_result.get('results'):
+            for result in context_result['results']:
+                if result['source_id'] == source_id:
+                    metadata = result.get('metadata', {})
+                    source_name = metadata.get(f'{source_type}_name') or metadata.get('name', source_name)
+                    break
+        
+        # Create placeholder post
+        placeholder_title = f"Generating content for {source_name}..."
+        idea_seed = f"Generated from {source_type}: {source_name}"
+        post_id = post_creator.create_post(
+            title=placeholder_title,
+            standfirst='',
+            idea_seed=idea_seed,
+            expanded_idea=''
+        )
+        
+        # Generate content (now we have a valid post_id)
         orchestrator = GenerationOrchestrator()
         generation_result = orchestrator.generate_content(
             source_type=source_type,
             source_id=source_id,
             generation_type=generation_type,
             tone=tone,
-            length=length
+            length=length,
+            post_id=post_id  # Pass post_id for intercept_context
         )
         
         if not generation_result.get('success'):
+            # Delete placeholder post if generation failed
+            try:
+                from config.database import db_manager
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("DELETE FROM post WHERE id = %s", (post_id,))
+            except Exception as e:
+                logger.warning(f"Failed to delete placeholder post {post_id}: {e}")
             return jsonify(generation_result), 500
         
         content_data = generation_result['content']
@@ -78,22 +116,21 @@ def api_generate_content():
         standfirst = content_data.get('standfirst', '')
         sections = content_data.get('sections', [])
         
-        # Create idea seed
-        source_name = generation_result['context']['primary'].get('metadata', {}).get(
-            f'{source_type}_name',
-            f'{source_type} {source_id}'
-        )
-        idea_seed = f"Generated from {source_type}: {source_name}"
+        # Update post with generated content
         expanded_idea = json.dumps([s.get('heading', '') for s in sections])
-        
-        # Create post
-        post_creator = PostCreator()
-        post_id = post_creator.create_post(
-            title=headline,
-            standfirst=standfirst,
-            idea_seed=idea_seed,
-            expanded_idea=expanded_idea
-        )
+        from config.database import db_manager
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post 
+                SET title = %s, summary = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (headline, standfirst, post_id))
+            
+            cursor.execute("""
+                UPDATE post_development
+                SET expanded_idea = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE post_id = %s
+            """, (expanded_idea, post_id))
         
         # Create sections
         section_ids = post_creator.create_sections_from_generated(
@@ -159,31 +196,123 @@ def api_preview_content():
                 'error': 'source_id is required'
             }), 400
         
-        # Generate content (without creating post)
-        orchestrator = GenerationOrchestrator()
-        generation_result = orchestrator.generate_content(
-            source_type=source_type,
-            source_id=source_id,
-            generation_type=generation_type
+        # For preview, we need a temporary post_id for intercept_context
+        # Create a temporary post that we'll delete after preview
+        post_creator = PostCreator()
+        temp_post_id = post_creator.create_post(
+            title='[PREVIEW] Temporary Post',
+            standfirst='',
+            idea_seed=f'Preview: {source_type} {source_id}',
+            expanded_idea=''
         )
         
-        if not generation_result.get('success'):
-            return jsonify(generation_result), 500
-        
-        content_data = generation_result['content']
-        
-        return jsonify({
-            'success': True,
-            'preview': {
-                'headline': content_data.get('headline', ''),
-                'standfirst': content_data.get('standfirst', ''),
-                'sections': content_data.get('sections', [])
-            }
-        })
-        
+        try:
+            # Generate content (without updating post)
+            orchestrator = GenerationOrchestrator()
+            generation_result = orchestrator.generate_content(
+                source_type=source_type,
+                source_id=source_id,
+                generation_type=generation_type,
+                post_id=temp_post_id
+            )
+            
+            if not generation_result.get('success'):
+                return jsonify(generation_result), 500
+            
+            content_data = generation_result['content']
+            
+            return jsonify({
+                'success': True,
+                'preview': {
+                    'headline': content_data.get('headline', ''),
+                    'standfirst': content_data.get('standfirst', ''),
+                    'sections': content_data.get('sections', [])
+                }
+            })
+        finally:
+            # Clean up temporary post
+            try:
+                from config.database import db_manager
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("DELETE FROM post WHERE id = %s", (temp_post_id,))
+            except Exception as e:
+                logger.warning(f"Failed to delete temporary preview post {temp_post_id}: {e}")
     except Exception as e:
         logger.error(f"Error previewing content: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
         }), 500
+
+
+@bp.route('/api/content/suggest-ideas', methods=['POST'])
+def api_suggest_ideas():
+        """
+        Get content suggestions from vector search.
+        
+        Request body:
+        {
+            "query": "interesting Scottish products",  // optional
+            "limit": 10  // optional, default 10
+        }
+        
+        Response:
+        {
+            "success": true,
+            "suggestions": [
+                {
+                    "type": "product",
+                    "id": 123,
+                    "name": "Lambswool Scarf",
+                    "reason": "Rich heritage and craftsmanship details",
+                    "score": 0.89
+                }
+            ]
+        }
+        """
+        try:
+            data = request.get_json() or {}
+            query = data.get('query', 'interesting Scottish products')
+            limit = data.get('limit', 10)
+            
+            from utils.vector_search.retrieval import ContentRetriever
+            
+            retriever = ContentRetriever()
+            results = retriever.search(
+                query=query,
+                chunk_types=['product', 'category'],
+                limit=limit
+            )
+            
+            suggestions = []
+            for result in results.get('results', []):
+                metadata = result.get('metadata', {})
+                chunk_type = result.get('chunk_type', 'product')
+                
+                suggestion = {
+                    'type': chunk_type,
+                    'id': result.get('source_id'),
+                    'name': metadata.get(f'{chunk_type}_name') or metadata.get('name', 'Unknown'),
+                    'reason': f"Relevant content with {chunk_type} details",
+                    'score': result.get('score', 0)
+                }
+                
+                # Add more specific reason based on metadata
+                if chunk_type == 'product' and metadata.get('supplier_name'):
+                    suggestion['reason'] = f"Product from {metadata['supplier_name']}"
+                elif chunk_type == 'category' and metadata.get('category_name'):
+                    suggestion['reason'] = f"Category: {metadata['category_name']}"
+                
+                suggestions.append(suggestion)
+            
+            return jsonify({
+                'success': True,
+                'suggestions': suggestions
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting suggestions: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
