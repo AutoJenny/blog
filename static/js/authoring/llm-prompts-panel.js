@@ -212,7 +212,7 @@ class LLMPromptsPanel {
             } else {
                 // Extract category name from prompt name
                 // Handle both "Expanded Idea Generation (History)" and "Topic Brainstorming (History)" formats
-                const match = prompt.name.match(/(?:Expanded Idea Generation|Topic Brainstorming|Section Structure Design|Topic Allocation|Section Titling|Section Drafting|Image Concepts Generation|Image Prompt Generation) \(([^)]+)\)/);
+                const match = prompt.name.match(/(?:Expanded Idea Generation|Topic Brainstorming|Section Structure Design|Topic Allocation|Section Titling|Section Drafting) \(([^)]+)\)/);
                 if (match) {
                     option.textContent = match[1];
                 } else {
@@ -277,8 +277,8 @@ class LLMPromptsPanel {
                 url = `${url}${separator}prompt_name=${encodeURIComponent(this.currentPromptName)}`;
             }
             
-            // Append illustration_method to endpoint if available and endpoint is for image-concepts, image-prompts, or image-captions
-            if ((url.includes('/image-concepts') || url.includes('/image-prompts') || url.includes('/image-captions')) && window.illustrationMethod) {
+            // Append illustration_method to endpoint if available and endpoint is for image-concepts or image-prompts
+            if ((url.includes('/image-concepts') || url.includes('/image-prompts')) && window.illustrationMethod) {
                 const separator = url.includes('?') ? '&' : '?';
                 url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
                 console.log('[LLM Prompts Panel] Added illustration_method to URL:', window.illustrationMethod, 'URL:', url);
@@ -327,25 +327,16 @@ class LLMPromptsPanel {
                 this.updatePromptTitle(prompt.name || this.config.resultsTitle);
                 this.callbacks.onPromptLoad(prompt);
             } else {
-                // NO FALLBACKS: Show actual error, don't display fake prompts
                 const errorMsg = data.error || `Prompt not found for ${this.pageType}`;
                 console.warn(`[LLM Prompts Panel] ${errorMsg}`);
-                this.updatePromptDisplay('', '');
+                this.updatePromptDisplay('', errorMsg);
                 this.updatePromptTitle(errorMsg);
-                // Show error in a clear way without fake prompt content
-                if (this.promptDisplay) {
-                    this.promptDisplay.innerHTML = `<div class="error-message" style="color: #ef4444; padding: 1rem; background: #1e293b; border: 1px solid #ef4444; border-radius: 4px;">${errorMsg}</div>`;
-                }
             }
         } catch (error) {
             console.error(`[LLM Prompts Panel] Error loading prompt for ${this.pageType}:`, error);
             const errorMsg = `Error: ${error.message || 'Failed to load prompt'}`;
-            this.updatePromptDisplay('', '');
+            this.updatePromptDisplay('', errorMsg);
             this.updatePromptTitle(errorMsg);
-            // Show error in a clear way without fake prompt content
-            if (this.promptDisplay) {
-                this.promptDisplay.innerHTML = `<div class="error-message" style="color: #ef4444; padding: 1rem; background: #1e293b; border: 1px solid #ef4444; border-radius: 4px;">${errorMsg}</div>`;
-            }
         }
     }
 
@@ -410,17 +401,10 @@ class LLMPromptsPanel {
         const userPrompt = this.userPromptEdit?.value || '';
         
         try {
-            // Build endpoint URL with illustration_method if needed (for image-prompts or image-captions)
-            let url = this.config.promptEndpoint;
-            if ((url.includes('/image-prompts') || url.includes('/image-captions')) && window.illustrationMethod) {
-                const separator = url.includes('?') ? '&' : '?';
-                url = `${url}${separator}illustration_method=${encodeURIComponent(window.illustrationMethod)}`;
-            }
-            
-            console.log('[LLM Prompts Panel] Saving prompt to:', url);
+            console.log('[LLM Prompts Panel] Saving prompt to:', this.config.promptEndpoint);
             
             // Save to API (DB only)
-            const response = await fetch(url, {
+            const response = await fetch(this.config.promptEndpoint, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -441,8 +425,9 @@ class LLMPromptsPanel {
             const data = await response.json();
             
             if (data.success) {
-                // Reload prompt from API to ensure we have the latest version (including any server-side modifications)
-                await this.loadPromptFromAPI();
+                // Update in-memory and display
+                this.currentPrompt = { system_prompt: systemPrompt, prompt_text: userPrompt };
+                this.updatePromptDisplay(systemPrompt, userPrompt);
                 
                 // Exit edit mode
                 this.cancelEdit();
@@ -472,15 +457,14 @@ class LLMPromptsPanel {
             }
             
             // Display raw prompts without any transformations
-            // NO FALLBACKS: Only show actual data from database, or clear error if missing
             this.promptDisplay.innerHTML = `
                 <div class="prompt-section">
                     <h6>System Prompt: <span class="field-source">(llm_prompt.system_prompt)</span></h6>
-                    <div class="prompt-content">${systemPrompt || ''}</div>
+                    <div class="prompt-content">${systemPrompt || 'No system prompt set'}</div>
                 </div>
                 <div class="prompt-section">
                     <h6>User Prompt: <span class="field-source">(llm_prompt.prompt_text)</span></h6>
-                    <div class="prompt-content">${userPrompt || ''}</div>
+                    <div class="prompt-content">${userPrompt || 'No user prompt set'}</div>
                 </div>
             `;
         }

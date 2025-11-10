@@ -94,13 +94,12 @@
         
         // Save the summary to database
         await saveSummary(data.summary);
-        // Update status which will also update button to "Regenerate"
-        updateSummaryStatus(data.summary);
       } else {
         throw new Error(data.error || 'Failed to generate summary');
       }
       
       generateBtn.disabled = false;
+      generateBtn.textContent = 'Generate';
       
     } catch (error) {
       console.error('Error generating summary:', error);
@@ -139,12 +138,6 @@
       }
       
       statusElement.textContent = displayText;
-    }
-    
-    // Update button text to "Regenerate" since we have a summary
-    const generateBtn = document.getElementById('generate-summary-btn');
-    if (generateBtn && summary) {
-      generateBtn.textContent = 'Regenerate';
     }
   }
 
@@ -210,11 +203,6 @@
           textarea.value = data.summary;
           updateWordCount();
           updateSummaryStatus(data.summary);
-        }
-        // Update button text to "Regenerate" since summary exists
-        const generateBtn = document.getElementById('generate-summary-btn');
-        if (generateBtn) {
-          generateBtn.textContent = 'Regenerate';
         }
       }
     } catch (error) {

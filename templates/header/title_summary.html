@@ -33,11 +33,11 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Right Panel: Content -->
             <div class="editor-panel">
                 <!-- Route Indicator -->
-                <div class="route-indicator header-page">
+                <div class="route-indicator" style="background:#1e40af;color:#fff;padding:0.6rem 0.9rem;border-radius:8px;margin-bottom:1rem;font-weight:600;display:flex;align-items:center;gap:0.5rem;">
                     <i class="fas fa-camera"></i>
                     <span>Illustration Route: <strong>{{ illustration_method if illustration_method is defined else 'LLM-creation' }}</strong></span>
                     {% if year and week %}
-                    <span>Week {{ week }}, {{ year }}</span>
+                    <span style="margin-left:auto;font-weight:500;opacity:0.85;">Week {{ week }}, {{ year }}</span>
                     {% endif %}
                 </div>
                 
@@ -52,18 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- LLM Settings Panel -->
                 {% include 'authoring/includes/llm_settings_panel.html' %}
                 
-                <!-- LLM Prompts Panel -->
-                {% include 'authoring/includes/llm_prompts_panel.html' %}
-                
-                <!-- Generate Button Section -->
-                <div class="uber-generate-section" style="background: #1e293b; border: 2px solid #3b82f6; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
-                    <h3 style="color: #f1f5f9; margin-top: 0; margin-bottom: 1rem; font-size: 1.2rem;">
-                        <i class="fas fa-magic"></i> Generate Content
-                    </h3>
-                    <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.9rem;">
-                        Generate title, subtitle, summary, and slug in one click
-                    </p>
-                    <button class="btn-primary btn-large" id="uber-generate-btn" {% if not week_has_post %}disabled title="No post scheduled for this week"{% endif %} style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: 600; min-width: 250px;">
+                <!-- Uber Generate Button -->
+                <div class="uber-generate-section">
+                    <button class="btn-primary btn-large" id="uber-generate-btn" {% if not week_has_post %}disabled title="No post scheduled for this week"{% endif %}>
                         <i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)
                     </button>
                 </div>
@@ -82,24 +73,116 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <!-- Author Panel -->
             {% include 'header/includes/author_panel.html' %}
+            
+            <!-- Header Image Photo-harvesting Panels (only for Photo-harvesting route) -->
+            {% if illustration_method and illustration_method == 'Photo-harvesting' %}
+                <!-- Main Action: Generate & Search Header Image -->
+                <div class="panel" style="background: #f8f9fa; border: 2px solid #1e40af; margin-bottom: 1.5rem;">
+                    <div class="panel-content" style="padding: 1.5rem;">
+                        <h3 style="margin-top: 0; margin-bottom: 1rem; color: #1e40af;">
+                            <i class="fas fa-image"></i> Header Image Selection
+                        </h3>
+                        <p style="margin-bottom: 1rem; color: #64748b;">
+                            Generate a search term from your theme, search photo libraries, and automatically select the best landscape and portrait images for your header.
+                        </p>
+                        <button class="btn-primary btn-large" id="header-generate-and-search-btn" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                            <i class="fas fa-magic"></i> Generate & Search Header Image
+                        </button>
+                        <div id="header-generate-and-search-status" class="mt-3" style="display: none; padding: 0.75rem; background: #fff; border-radius: 4px; border: 1px solid #e2e8f0;"></div>
+                    </div>
+                </div>
+                
+                <!-- Hidden manual search controls (for debugging/fallback) -->
+                <div class="panel photo-search-panel" id="header-photo-search-panel" style="display: none;">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-search"></i> Manual Search (Advanced)</h3>
+                    </div>
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label for="header-photo-search-term">Search Term</label>
+                            <input type="text" 
+                                   id="header-photo-search-term" 
+                                   class="form-control" 
+                                   placeholder="e.g., Scottish autumn landscape"
+                                   value="">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="header-photo-search-provider">Provider</label>
+                            <select id="header-photo-search-provider" class="form-control">
+                                <option value="both">Both (Pexels & Unsplash)</option>
+                                <option value="pexels">Pexels Only</option>
+                                <option value="unsplash">Unsplash Only</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="header-photo-search-per-page">Results Per Page</label>
+                            <select id="header-photo-search-per-page" class="form-control">
+                                <option value="10">10</option>
+                                <option value="20" selected>20</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                        
+                        <button id="header-photo-search-btn" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-search"></i> Search Photos
+                        </button>
+                        
+                        <div id="header-photo-search-status" class="mt-2" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <!-- Header Photo Results Panel -->
+                <div class="panel photo-results-panel" id="header-photo-results-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-images"></i> Search Results</h3>
+                        <span id="header-photo-results-count" class="badge badge-secondary">0 results</span>
+                    </div>
+                    <div class="panel-content">
+                        <div class="photo-results-grid-container">
+                            <p class="text-muted text-center" id="header-photo-results-empty-message">No search results yet. Use the search panel to find photos.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Header Photo Selection Panel -->
+                <div class="panel photo-selection-panel" id="header-photo-selection-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-check-circle"></i> Selected Header Image</h3>
+                    </div>
+                    <div class="panel-content">
+                        <div id="header-selected-photo-display" style="display: none;">
+                            <div class="selected-photo-preview">
+                                <img id="header-selected-photo-image" src="" alt="Selected photo" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
+                            </div>
+                            <div class="selected-photo-info">
+                                <p><strong>Provider:</strong> <span id="header-selected-photo-provider"></span></p>
+                                <p><strong>Photographer:</strong> <a id="header-selected-photo-photographer-link" href="" target="_blank"><span id="header-selected-photo-photographer"></span></a></p>
+                                <p><strong>Credits:</strong> <span id="header-selected-photo-credits"></span></p>
+                                <p><strong>Dimensions:</strong> <span id="header-selected-photo-dimensions"></span></p>
+                                <p><strong>Orientation:</strong> <span id="header-selected-photo-orientation"></span></p>
+                            </div>
+                            <button id="header-deselect-photo-btn" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-times"></i> Deselect
+                            </button>
+                        </div>
+                        <div id="header-no-selection-message" class="text-muted text-center">
+                            <p>No header image selected. Select a photo from the search results above.</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/header/accordion-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/header/header-workspace.js') }}"></script>
-<script>
-// Initialize LLM Prompts Panel for title-summary page
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof LLMPromptsPanel !== 'undefined') {
-        window.llmPromptsPanel = new LLMPromptsPanel({
-            postId: window.postId,
-            promptEndpoint: `/header/api/posts/${window.postId}/title-summary-prompt`,
-        });
-        
-        // Load the prompt
-        window.llmPromptsPanel.loadPromptFromAPI();
-    }
-});
-</script>
+{% if illustration_method and illustration_method == 'Photo-harvesting' %}
+<!-- Header Photo-harvesting functionality -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/photo-selection.css') }}">
+<script src="{{ url_for('static', filename='js/authoring/llm-prompts-panel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/header/header-photo-harvesting.js') }}"></script>
+{% endif %}
 {% endblock %}

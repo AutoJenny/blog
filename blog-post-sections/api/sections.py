@@ -62,7 +62,8 @@ def get_sections(post_id):
                     elif section.get('image_id'):
                         # Fallback to legacy image_id system
                         cur.execute("""
-                            SELECT * FROM image WHERE id = %s
+                            SELECT id, filename, file_path as path, alt_text, caption, image_prompt, width, height
+                            FROM images WHERE id = %s
                         """, (section['image_id'],))
                         image = cur.fetchone()
                         if image:
@@ -109,7 +110,8 @@ def get_section(section_id):
             with get_db_conn() as conn:
                 with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
                     cur.execute("""
-                        SELECT * FROM image WHERE id = %s
+                        SELECT id, filename, file_path as path, alt_text, caption, image_prompt, width, height
+                        FROM images WHERE id = %s
                     """, (section['image_id'],))
                     image = cur.fetchone()
                     if image:

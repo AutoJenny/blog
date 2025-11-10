@@ -1329,9 +1329,9 @@ def imaging_generate_image_flexible(post_id, section_id):
                         logger.info(f"Saving optimized image to database: {optimized_path_db}")
                         # Insert or update image record
                         cursor.execute("""
-                            INSERT INTO images (filename, file_path, alt_text, caption)
+                            INSERT INTO image (filename, path, alt_text, caption)
                             VALUES (%s, %s, %s, %s)
-                            ON CONFLICT (file_path) DO UPDATE 
+                            ON CONFLICT (path) DO UPDATE 
                             SET filename = EXCLUDED.filename, alt_text = EXCLUDED.alt_text, caption = EXCLUDED.caption
                             RETURNING id
                         """, (
@@ -1952,10 +1952,12 @@ def imaging_optimize_image(post_id, section_id):
                 # Get optimized image path
                 optimized_path = result['optimized_path'].lstrip('/')  # Remove leading /
                 
-                # Insert image record
+                # Insert or update image record
                 cursor.execute("""
-                    INSERT INTO images (filename, file_path, alt_text, caption)
+                    INSERT INTO image (filename, path, alt_text, caption)
                     VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (path) DO UPDATE 
+                    SET filename = EXCLUDED.filename, alt_text = EXCLUDED.alt_text, caption = EXCLUDED.caption
                     RETURNING id
                 """, (
                     f"{resolved_section_id}_optimized.jpg",

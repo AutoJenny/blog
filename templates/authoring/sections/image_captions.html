@@ -16,9 +16,8 @@
 {{ js_assets('authoring') }}
 <script>
     window.currentStage = 'authoring';
-    window.currentSubstage = 'image-captions';
-    window.postId = {{ post_id|default(0) }};
-    window.illustrationMethod = '{{ illustration_method|default("LLM-creation") }}';
+                window.currentSubstage = 'image-captions';
+  window.postId = {{ post_id|default(0) }};
   
     // SINGLE SOURCE OF TRUTH: URL query parameters only
     // Week context is read from URL via WeekContext module (no window vars needed)
@@ -89,12 +88,6 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="workspace-container">
         {% include 'shared/sections_panel.html' %}
         <div class="editor-panel">
-            <!-- Route Indicator -->
-            <div class="route-indicator {% if illustration_method == 'Photo-harvesting' %}photo-harvesting{% else %}llm-creation{% endif %}">
-                <i class="fas {% if illustration_method == 'Photo-harvesting' %}fa-camera{% else %}fa-magic{% endif %}"></i>
-                <span>Illustration Route: <strong>{{ illustration_method }}</strong></span>
-            </div>
-            
             <!-- LLM Settings Panel -->
             {% include 'authoring/includes/llm_settings_panel.html' %}
             

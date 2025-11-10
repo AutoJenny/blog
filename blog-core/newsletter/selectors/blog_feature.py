@@ -12,9 +12,9 @@ def select_feature_article() -> Optional[Dict[str, Any]]:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT p.id, p.title, p.slug, p.summary, i.path AS hero_image
+                SELECT p.id, p.title, p.slug, p.summary, i.file_path AS hero_image
                 FROM post p
-                JOIN image i ON p.header_image_id = i.id
+                JOIN images i ON p.header_image_id = i.id
                 WHERE p.status = 'published'
                 ORDER BY p.created_at DESC
                 LIMIT 1
