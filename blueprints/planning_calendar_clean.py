@@ -70,6 +70,9 @@ def planning_calendar_ideas(post_id):
         elif post_type == 'profile':
             # Redirect profile posts to authoring stage
             return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+        elif post_type == 'generated':
+            # Redirect generated posts to taxonomy (they start there, not at ideas)
+            return redirect(url_for('planning.planning_calendar_taxonomy', post_id=post_id))
         
         # SINGLE SOURCE OF TRUTH: Read ONLY from URL query parameters
         url_year = request.args.get('year', type=int)

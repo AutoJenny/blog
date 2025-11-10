@@ -116,6 +116,9 @@ def post_detail(post_id):
     elif post_type == 'profile':
         # Profile posts start at calendar week-view
         url = url_for('planning.planning_calendar_week_view', post_id=post_id)
+    elif post_type == 'generated':
+        # Generated posts start at taxonomy (with preset values)
+        url = url_for('planning.planning_calendar_taxonomy', post_id=post_id)
     else:
         # Themed posts start at calendar week-view
         url = url_for('planning.planning_calendar_week_view', post_id=post_id)

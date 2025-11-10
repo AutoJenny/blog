@@ -128,13 +128,13 @@ def get_category_prompt_name(base_name, illustration_method, content_type_name=N
 
 def get_post_type(post_id):
     """
-    Determine post type: recipe, profile, or themed.
+    Determine post type: recipe, profile, generated, or themed.
     
     Args:
         post_id (int): Post ID
     
     Returns:
-        str: Post type ('recipe', 'profile', 'themed')
+        str: Post type ('recipe', 'profile', 'generated', 'themed')
     """
     try:
         with db_manager.get_cursor() as cursor:
@@ -143,6 +143,7 @@ def get_post_type(post_id):
                     CASE 
                         WHEN p.recipe_id IS NOT NULL THEN 'recipe'
                         WHEN p.profile_category_id IS NOT NULL THEN 'profile'
+                        WHEN p.generated_source_type IS NOT NULL THEN 'generated'
                         ELSE 'themed'
                     END as post_type
                 FROM post p
