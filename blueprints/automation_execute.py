@@ -96,7 +96,7 @@ def execute_section_titling(post_id, data):
             topic_allocation = json.loads(topic_allocation)
         
         # Call the section titling API directly
-        from blueprints.planning_sections import api_sections_title
+        from blueprints.planning_titling import api_sections_title
         
         # Create mock request data
         class MockRequest:

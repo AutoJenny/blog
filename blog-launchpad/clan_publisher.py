@@ -922,13 +922,12 @@ class ClanPublisher:
                     # Update the database with the clan_post_id if this was a new post
                     if not is_update and clan_post_id:
                         try:
-                            from app import get_db_conn
-                            conn = get_db_conn()
-                            cursor = conn.cursor()
-                            cursor.execute('UPDATE post SET clan_post_id = %s WHERE id = %s', (clan_post_id, post['id']))
-                            conn.commit()
-                            cursor.close()
-                            conn.close()
+                            # Use database connection from publish module - NO dependency on app.py
+                            from publish.post_data_loader import get_db_connection
+                            with get_db_connection() as conn:
+                                cursor = conn.cursor()
+                                cursor.execute('UPDATE post SET clan_post_id = %s WHERE id = %s', (clan_post_id, post['id']))
+                                conn.commit()
                             logger.info(f"✅ Updated database: post {post['id']} now has clan_post_id {clan_post_id}")
                         except Exception as e:
                             logger.error(f"❌ Failed to update database with clan_post_id: {e}")
@@ -971,127 +970,28 @@ class ClanPublisher:
             logger.info("=== PUBLISH_TO_CLAN DEBUG START ===")
             logger.info(f"Post ID: {post.get('id')}")
             
-            # Step 0: Get full post data from database to determine if this is an update
-            from config.database import db_manager
+            # CRITICAL: Use the EXACT SAME post data as preview - NO database queries
+            # The post data passed in already has everything from prepare_post_data()
+            # This includes clan_post_id, author_name, and everything else
+            # This ensures the HTML is IDENTICAL to preview (only image URLs differ)
+            
             from config.paths import path_resolver
-            with db_manager.get_cursor() as cursor:
-                cursor.execute('SELECT * FROM post WHERE id = %s', (post['id'],))
-                post_row = cursor.fetchone()
-                
-                if not post_row:
-                    return {
-                        'success': False,
-                        'error': f'Post {post["id"]} not found in database'
-                    }
-                
-                # Get column names and convert to dict
-                column_names = [desc[0] for desc in cursor.description]
-                full_post_data = dict(zip(column_names, post_row))
-            
-            # Merge the passed post data with the database data (passed data takes precedence)
-            # CRITICAL: Preserve header_image from post data if it exists, as it was set by the Flask route
-            logger.info(f"=== CLAN_PUBLISHER MERGE DEBUG ===")
-            logger.info(f"post.get('header_image') BEFORE merge: {post.get('header_image')}")
-            logger.info(f"full_post_data.get('header_image') BEFORE merge: {full_post_data.get('header_image')}")
-            
-            header_image_from_post = post.get('header_image')
-            full_post_data.update(post)
-            
-            # If post had header_image, ensure it's preserved (update might have overwritten it)
-            if header_image_from_post:
-                full_post_data['header_image'] = header_image_from_post
-                logger.info(f"✅ Preserved header_image from post data: {header_image_from_post.get('path')}")
-            else:
-                logger.warning(f"⚠️ No header_image in post data to preserve")
-            
-            logger.info(f"full_post_data.get('header_image') AFTER merge: {full_post_data.get('header_image')}")
-            logger.info(f"full_post_data['header_image'].get('path') AFTER merge: {full_post_data.get('header_image', {}).get('path') if full_post_data.get('header_image') else 'None'}")
             
             # Check if this is an update (post already exists on clan.com)
-            is_update = bool(full_post_data.get('clan_post_id'))
-            logger.info(f"Is update: {is_update} (clan_post_id: {full_post_data.get('clan_post_id')})")
-            
-            logger.info(f"Post header_image_id: {full_post_data.get('header_image_id')}")
-            
-            # Use sections passed from the endpoint (already loaded with images)
-            sections_list = sections
-            logger.info(f"Using {len(sections_list)} sections passed from endpoint")
-            
-            # Step 0: Finding image paths from file system
-            logger.info("Step 0: Finding image paths from file system...")
-            
-            # CRITICAL: Ensure header_image is set BEFORE process_images is called
-            # Preserve header image from post data if it exists, otherwise look it up from database
-            if not full_post_data.get('header_image') or not full_post_data['header_image'].get('path'):
-                header_image_path = post.get('header_image', {}).get('path') if post.get('header_image') else None
-                logger.info(f"Looking up header image from post data: {header_image_path}")
-                
-                # If still not found, try to load from database using find_header_image
-                if not header_image_path:
-                    logger.warning("⚠️ No header_image in post data, attempting to load from database")
-                    try:
-                        # Define find_header_image locally to avoid import issues
-                        # CRITICAL: Use same logic as app.py find_header_image - check project_static first, then blog_images_static
-                        def find_header_image_local(post_id):
-                            """Find header image for a post - local definition to avoid import issues."""
-                            import urllib.parse
-                            
-                            # Get project root (same logic as app.py)
-                            current_dir = os.path.dirname(os.path.abspath(__file__))
-                            project_root = os.path.dirname(current_dir)  # Go up from blog-launchpad/ to project root
-                            
-                            # Try project static/ first (unified app location), then blog-images/static/ (legacy)
-                            project_static = os.path.join(project_root, 'static')
-                            blog_images_static = os.path.join(project_root, 'blog-images', 'static')
-                            
-                            image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
-                            image_types = ['optimized', 'watermarked', 'raw']  # Check optimized first
-                            
-                            # Check both static directories for each image type
-                            for image_type in image_types:
-                                for static_dir in [project_static, blog_images_static]:
-                                    header_path = os.path.join(static_dir, "content", "posts", str(post_id), "header", image_type)
-                                    if os.path.exists(header_path):
-                                        image_files = [f for f in os.listdir(header_path)
-                                                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
-                                        if image_files:
-                                            image_filename = image_files[0]
-                                            encoded_filename = urllib.parse.quote(image_filename)
-                                            return f"/static/content/posts/{post_id}/header/{image_type}/{encoded_filename}"
-                            return None
-                        
-                        header_image_path = find_header_image_local(full_post_data.get('id'))
-                        if header_image_path:
-                            logger.info(f"✅ Loaded header_image from database: {header_image_path}")
-                        else:
-                            logger.warning("❌ No header image found in database either")
-                    except Exception as e:
-                        logger.error(f"❌ Error loading header image from database: {str(e)}")
-                        import traceback
-                        logger.error(f"Traceback: {traceback.format_exc()}")
-                
-                if header_image_path:
-                    # Preserve existing header_image structure if it exists
-                    if not full_post_data.get('header_image'):
-                        full_post_data['header_image'] = {}
-                    full_post_data['header_image']['path'] = header_image_path
-                    logger.info(f"✅ Set header_image path in full_post_data: {header_image_path}")
-                    logger.info(f"✅ Set full_post_data['header_image']['path'] = '{header_image_path}'")
-                else:
-                    logger.warning("❌ No header image found anywhere")
-            else:
-                logger.info(f"✅ Preserving existing header image: {full_post_data['header_image'].get('path')}")
+            # clan_post_id is already in post dict from prepare_post_data()
+            is_update = bool(post.get('clan_post_id'))
+            logger.info(f"Is update: {is_update} (clan_post_id: {post.get('clan_post_id')})")
             
             # CRITICAL: Verify header_image is set before process_images
             logger.info(f"=== PRE-PROCESS_IMAGES HEADER IMAGE VERIFICATION ===")
-            logger.info(f"full_post_data.get('header_image'): {full_post_data.get('header_image')}")
-            if full_post_data.get('header_image'):
-                logger.info(f"full_post_data['header_image'].get('path'): {full_post_data['header_image'].get('path')}")
+            logger.info(f"post.get('header_image'): {post.get('header_image')}")
+            if post.get('header_image'):
+                logger.info(f"post['header_image'].get('path'): {post['header_image'].get('path')}")
             else:
-                logger.error(f"❌ ERROR: full_post_data['header_image'] is None/empty before process_images!")
+                logger.warning(f"⚠️ No header_image in post data")
             
             # Sections already have image paths structured in section['image']['path'] from endpoint
-            for i, section in enumerate(sections_list):
+            for i, section in enumerate(sections):
                 has_image = section.get('image') and section['image'].get('path') and not section['image'].get('placeholder')
                 logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}): has_image = {has_image}")
                 if has_image:
@@ -1100,7 +1000,8 @@ class ClanPublisher:
             # Step 1: Process and upload images (header + section images)
             logger.info("Step 1: Processing and uploading images...")
             try:
-                uploaded_images = self.process_images(full_post_data, sections_list)
+                # Use 'post' not 'full_post_data' - post has all data including author_name
+                uploaded_images = self.process_images(post, sections)
                 logger.info(f"✅ Image processing completed. Uploaded {len(uploaded_images)} images.")
                 logger.info(f"uploaded_images dictionary: {uploaded_images}")
                 
@@ -1108,12 +1009,12 @@ class ClanPublisher:
                 if not uploaded_images or len(uploaded_images) == 0:
                     logger.warning("⚠️ uploaded_images is empty. Forcing image uploads for header and sections...")
                     # Attempt header image upload
-                    header_image_path = full_post_data.get('header_image', {}).get('path')
+                    header_image_path = post.get('header_image', {}).get('path')
                     if header_image_path:
                         try:
                             fs_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
                             if os.path.exists(fs_path):
-                                filename = f"header_{full_post_data['id']}_{int(time.time())}.jpg"
+                                filename = f"header_{post['id']}_{int(time.time())}.jpg"
                                 uploaded_url = self.upload_image(fs_path, filename)
                                 if uploaded_url:
                                     uploaded_images[header_image_path] = uploaded_url
@@ -1123,7 +1024,7 @@ class ClanPublisher:
                         except Exception as e:
                             logger.error(f"❌ Forced upload error (header): {e}")
                     # Attempt each section image upload
-                    for i, section in enumerate(sections_list):
+                    for i, section in enumerate(sections):
                         try:
                                 section_img = section.get('image') or {}
                                 section_path = section_img.get('path')
@@ -1136,7 +1037,7 @@ class ClanPublisher:
                                         project_root = os.path.dirname(os.path.dirname(__file__))
                                         fs_path = os.path.join(project_root, section_path.lstrip('/'))
                                     if os.path.exists(fs_path):
-                                        filename = f"section_{full_post_data['id']}_{i+1}_{int(time.time())}.jpg"
+                                        filename = f"section_{post['id']}_{i+1}_{int(time.time())}.jpg"
                                         uploaded_url = self.upload_image(fs_path, filename)
                                         if uploaded_url:
                                             uploaded_images[section_path] = uploaded_url
@@ -1148,7 +1049,7 @@ class ClanPublisher:
                     logger.info(f"After forced uploads, uploaded_images: {uploaded_images}")
 
                 # Fix: Ensure header image is included in uploaded_images for HTML replacement
-                header_image_path = full_post_data.get('header_image', {}).get('path')
+                header_image_path = post.get('header_image', {}).get('path')
                 if header_image_path and header_image_path not in uploaded_images:
                     # Header image was processed but not added to uploaded_images
                     # We need to upload it separately and add to uploaded_images
@@ -1156,7 +1057,7 @@ class ClanPublisher:
                     try:
                         fs_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
                         if os.path.exists(fs_path):
-                            filename = f"header_{full_post_data['id']}_{int(time.time())}.jpg"
+                            filename = f"header_{post['id']}_{int(time.time())}.jpg"
                             uploaded_url = self.upload_image(fs_path, filename)
                             if uploaded_url:
                                 uploaded_images[header_image_path] = uploaded_url
@@ -1181,24 +1082,24 @@ class ClanPublisher:
             try:
                 cp_changed = False
                 # If missing, auto-select random IDs and default positions
-                if not (full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id')):
+                if not (post.get('cross_promotion_category_id') or post.get('cross_promotion_product_id')):
                     from config.database import db_manager
                     with db_manager.get_cursor() as cursor:
                         # Random category
                         cursor.execute("SELECT id, name FROM clan_categories ORDER BY RANDOM() LIMIT 1")
                         cat = cursor.fetchone()
                         if cat:
-                            full_post_data['cross_promotion_category_id'] = cat['id']
-                            full_post_data['cross_promotion_category_title'] = cat.get('name') or 'Related Department'
-                            full_post_data['cross_promotion_category_position'] = 2
+                            post['cross_promotion_category_id'] = cat['id']
+                            post['cross_promotion_category_title'] = cat.get('name') or 'Related Department'
+                            post['cross_promotion_category_position'] = 2
                             cp_changed = True
                         # Random product
                         cursor.execute("SELECT id, name FROM clan_products ORDER BY RANDOM() LIMIT 1")
                         prod = cursor.fetchone()
                         if prod:
-                            full_post_data['cross_promotion_product_id'] = prod['id']
-                            full_post_data['cross_promotion_product_title'] = prod.get('name') or 'Related Products'
-                            full_post_data['cross_promotion_product_position'] = 4
+                            post['cross_promotion_product_id'] = prod['id']
+                            post['cross_promotion_product_title'] = prod.get('name') or 'Related Products'
+                            post['cross_promotion_product_position'] = 4
                             cp_changed = True
                         if cp_changed:
                             cursor.execute("""
@@ -1212,36 +1113,38 @@ class ClanPublisher:
                                     updated_at = CURRENT_TIMESTAMP
                                 WHERE id = %s
                             """, (
-                                full_post_data.get('cross_promotion_category_id'),
-                                full_post_data.get('cross_promotion_category_title'),
-                                full_post_data.get('cross_promotion_product_id'),
-                                full_post_data.get('cross_promotion_product_title'),
-                                full_post_data.get('cross_promotion_category_position'),
-                                full_post_data.get('cross_promotion_product_position'),
-                                full_post_data['id']
+                                post.get('cross_promotion_category_id'),
+                                post.get('cross_promotion_category_title'),
+                                post.get('cross_promotion_product_id'),
+                                post.get('cross_promotion_product_title'),
+                                post.get('cross_promotion_category_position'),
+                                post.get('cross_promotion_product_position'),
+                                post['id']
                             ))
                             cursor.connection.commit()
                             logger.info("✅ Auto-selected random cross-promotion IDs and persisted to DB")
                 
                 # Build cross_promotion object
-                if full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id'):
-                    full_post_data['cross_promotion'] = {
-                        'category_id': full_post_data.get('cross_promotion_category_id'),
-                        'category_title': full_post_data.get('cross_promotion_category_title', ''),
-                        'product_id': full_post_data.get('cross_promotion_product_id'),
-                        'product_title': full_post_data.get('cross_promotion_product_title', ''),
-                        'category_position': full_post_data.get('cross_promotion_category_position'),
-                        'product_position': full_post_data.get('cross_promotion_product_position'),
-                        'category_widget_html': full_post_data.get('cross_promotion_category_widget_html'),
-                        'product_widget_html': full_post_data.get('cross_promotion_product_widget_html')
+                if post.get('cross_promotion_category_id') or post.get('cross_promotion_product_id'):
+                    post['cross_promotion'] = {
+                        'category_id': post.get('cross_promotion_category_id'),
+                        'category_title': post.get('cross_promotion_category_title', ''),
+                        'product_id': post.get('cross_promotion_product_id'),
+                        'product_title': post.get('cross_promotion_product_title', ''),
+                        'category_position': post.get('cross_promotion_category_position'),
+                        'product_position': post.get('cross_promotion_product_position'),
+                        'category_widget_html': post.get('cross_promotion_category_widget_html'),
+                        'product_widget_html': post.get('cross_promotion_product_widget_html')
                     }
                     # Auto-generate widget HTML if missing
                     widget_changed = False
-                    cp = full_post_data['cross_promotion']
+                    cp = post['cross_promotion']
                     if cp.get('category_id') and cp.get('category_position') and not cp.get('category_widget_html'):
+                        # Remove title parameter - we don't want headings on widgets
                         cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\"}}}}"
                         widget_changed = True
                     if cp.get('product_id') and cp.get('product_position') and not cp.get('product_widget_html'):
+                        # Remove title parameter - we don't want headings on widgets
                         cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\"}}}}"
                         widget_changed = True
                     if widget_changed:
@@ -1256,7 +1159,7 @@ class ClanPublisher:
                             """, (
                                 cp.get('category_widget_html'),
                                 cp.get('product_widget_html'),
-                                full_post_data['id']
+                                post['id']
                             ))
                             c2.connection.commit()
                             logger.info("✅ Auto-generated widget HTML and persisted to DB")
@@ -1266,21 +1169,88 @@ class ClanPublisher:
             except Exception as e:
                 logger.warning(f"Cross-promotion auto-selection/generation error: {e}")
             
-            # Step 3: Render HTML content
-            logger.info("Step 3: Rendering HTML content...")
+            # Step 3: Get HTML content from cached preview (NO database queries, NO re-rendering)
+            logger.info("Step 3: Loading cached preview HTML...")
             try:
-                # Use the clan_post.html template instead of generating HTML from scratch
-                html_content = self.get_preview_html_content(full_post_data, sections_list, uploaded_images)
+                import os
+                # Load the EXACT HTML that was rendered for preview (cached by preview route)
+                cache_dir = os.path.join(os.path.dirname(__file__), '..', 'cache', 'preview_html')
+                cache_file = os.path.join(cache_dir, f'post_{post["id"]}.html')
+                
+                # Auto-generate cache if it doesn't exist (no user visit required)
+                if not os.path.exists(cache_file):
+                    logger.info(f"Cache file not found, auto-generating preview HTML for post {post['id']}...")
+                    try:
+                        from publish.post_data_loader import prepare_post_data
+                        from publish.post_renderer import render_post_html
+                        
+                        # Use unified data preparation (same as preview route)
+                        unified_post, unified_sections = prepare_post_data(post["id"])
+                        if not unified_post or not unified_sections:
+                            return {
+                                'success': False,
+                                'error': f'Failed to prepare post data for preview generation'
+                            }
+                        
+                        # Render HTML using unified rendering function (no image replacements for preview)
+                        html_content = render_post_html(unified_post, unified_sections, image_replacements=None)
+                        
+                        # Cache the rendered HTML
+                        os.makedirs(cache_dir, exist_ok=True)
+                        with open(cache_file, 'w', encoding='utf-8') as f:
+                            f.write(html_content)
+                        logger.info(f"✅ Auto-generated and cached preview HTML to {cache_file} ({len(html_content)} chars)")
+                    except Exception as e:
+                        logger.error(f"Failed to auto-generate preview HTML: {e}")
+                        import traceback
+                        logger.error(f"Traceback: {traceback.format_exc()}")
+                        return {
+                            'success': False,
+                            'error': f'Failed to generate preview HTML: {str(e)}'
+                        }
+                else:
+                    # Load the EXACT HTML that was rendered for preview (NO database queries, NO re-rendering)
+                    with open(cache_file, 'r', encoding='utf-8') as f:
+                        html_content = f.read()
+                    logger.info(f"✅ Loaded cached preview HTML from {cache_file} ({len(html_content)} chars)")
+                
                 if not html_content:
                     return {
                         'success': False,
                         'error': 'Failed to get preview HTML content'
                     }
-                logger.info(f"✅ Preview HTML content retrieved. Content length: {len(html_content)}")
                 
-                # Add the header_image data that was set earlier
-                if full_post_data.get('header_image'):
-                    logger.info(f"✅ Header image data ready for clan.com API: {full_post_data['header_image']}")
+                # Apply image replacements to the cached HTML (ONLY modification allowed)
+                # Do NOT re-render - just replace image paths in the cached HTML
+                if uploaded_images:
+                    logger.info(f"Applying {len(uploaded_images)} image replacements to cached HTML...")
+                    import re
+                    replacements_made = 0
+                    for local_path, cdn_url in uploaded_images.items():
+                        # Replace src attributes
+                        if f'src="{local_path}"' in html_content:
+                            html_content = html_content.replace(f'src="{local_path}"', f'src="{cdn_url}"')
+                            replacements_made += 1
+                        # Replace href attributes
+                        if f'href="{local_path}"' in html_content:
+                            html_content = html_content.replace(f'href="{local_path}"', f'href="{cdn_url}"')
+                            replacements_made += 1
+                        # Replace any other occurrences
+                        if local_path in html_content and local_path not in cdn_url:
+                            before_count = html_content.count(local_path)
+                            html_content = html_content.replace(local_path, cdn_url)
+                            after_count = html_content.count(local_path)
+                            replacements_made += (before_count - after_count)
+                    logger.info(f"✅ Applied {replacements_made} image path replacements to cached HTML")
+                
+                # Verify inline styles are present (they should be from cache)
+                inline_style_count = html_content.count('style="font-family: \'Courier New\'')
+                if inline_style_count > 0:
+                    logger.info(f"✅ Verified {inline_style_count} elements with inline styles in HTML to be published")
+                else:
+                    logger.warning("⚠️  WARNING: No inline styles found in HTML to be published! Styles may not appear on live site.")
+                    logger.warning("   This could mean the cache was generated before inline styles were added.")
+                    logger.warning("   Consider regenerating the preview cache by visiting /preview/{}".format(post['id']))
                 
             except Exception as e:
                 logger.error(f"❌ Error getting preview HTML content: {str(e)}")
@@ -1293,15 +1263,16 @@ class ClanPublisher:
             
             # Step 4: Create or update post on clan.com
             logger.info("Step 4: Creating/updating post on clan.com...")
-            logger.info(f"Is update: {is_update} (clan_post_id: {full_post_data.get('clan_post_id')})")
+            logger.info(f"Is update: {is_update} (clan_post_id: {post.get('clan_post_id')})")
             
             try:
-                result = self.create_or_update_post(full_post_data, html_content, is_update, uploaded_images)
+                # Use 'post' not 'full_post_data' - post has all fields including author_name
+                result = self.create_or_update_post(post, html_content, is_update, uploaded_images)
                 if result['success']:
-                    logger.info(f"✅ Successfully published post {full_post_data['id']} to clan.com")
+                    logger.info(f"✅ Successfully published post {post['id']} to clan.com")
                     return result
                 else:
-                    logger.error(f"❌ Failed to publish post {full_post_data['id']}: {result.get('error', 'Unknown error')}")
+                    logger.error(f"❌ Failed to publish post {post['id']}: {result.get('error', 'Unknown error')}")
                     return result
             except Exception as e:
                 logger.error(f"❌ Error during post creation/update: {str(e)}")
@@ -1323,253 +1294,9 @@ class ClanPublisher:
         finally:
             logger.info("=== PUBLISH_TO_CLAN DEBUG END ===")
 
+    # DEPRECATED: get_preview_html_content() method has been removed
+    # Use publish.post_renderer.render_post_html() instead - this is the single source of truth
     def get_preview_html_content(self, post, sections, uploaded_images=None):
-        """Generate HTML using clan_post_raw.html template for clan.com upload.
-        This shows the ACTUAL HTML that gets uploaded, not placeholder widgets.
-        """
-        try:
-            from jinja2 import Environment, FileSystemLoader
-            import os
-            
-            # Get the template directory - find templates/launchpad/ relative to this file
-            # clan_publisher.py is in blog-launchpad/, go up one level to root, then to templates/launchpad/
-            current_dir = os.path.dirname(__file__)
-            templates_dir = os.path.join(current_dir, '..', 'templates', 'launchpad')
-            templates_abs = os.path.abspath(templates_dir)
-            
-            # Create Jinja2 environment with FileSystemLoader so it can find the template
-            env = Environment(loader=FileSystemLoader(templates_abs))
-            env.trim_blocks = True
-            env.lstrip_blocks = True
-            
-            def strip_html_doc(content):
-                """Strip HTML document tags and return just the content"""
-                if not content:
-                    return content
-                # Remove DOCTYPE, html, head, body tags but preserve their content
-                # CRITICAL: Only match if content starts with these tags (full document), not fragments
-                import re
-                content = re.sub(r'<!DOCTYPE[^>]*>', '', content)
-                # Only remove <html> wrapper if it's at the start (full document)
-                # Extract content between <html> and </html> if present
-                if content.strip().startswith('<html'):
-                    match = re.match(r'^<html[^>]*>(.*?)</html>', content, flags=re.DOTALL)
-                    if match:
-                        content = match.group(1)
-                # Only remove <head> if it's at the start
-                if content.strip().startswith('<head'):
-                    content = re.sub(r'^<head[^>]*>.*?</head>', '', content, flags=re.DOTALL)
-                # Only remove <body> wrapper but preserve content
-                if content.strip().startswith('<body'):
-                    match = re.match(r'^<body[^>]*>(.*?)</body>', content, flags=re.DOTALL)
-                    if match:
-                        content = match.group(1)
-                return content.strip()
-            
-            def strip_h2_headings(content):
-                """Strip H2 headings and their content from HTML."""
-                if not content:
-                    return content
-                import re
-                content = re.sub(r'<h2[^>]*>.*?</h2>', '', content, flags=re.IGNORECASE | re.DOTALL)
-                return content
-            
-            def is_recipe_section(value):
-                """Check if a section_type value indicates a recipe section."""
-                if not value:
-                    return False
-                return str(value).startswith('recipe_')
-            
-            env.filters['strip_html_doc'] = strip_html_doc
-            env.filters['strip_h2_headings'] = strip_h2_headings
-            env.tests['is_recipe_section'] = is_recipe_section
-            
-            # Load the template from the FileSystemLoader
-            template = env.get_template('clan_post_raw.html')
-            
-            # Use author_name from post dict (already loaded by get_post_with_development via JOIN with author table)
-            # DO NOT override - preview and publishing must use the same source
-            post_for_template = post.copy()
-            
-            # Validate author_name is set (should already be set by get_post_with_development)
-            if not post_for_template.get('author_name') or post_for_template.get('author_name') == 'author_name':
-                # Only fallback if missing - this should rarely happen if get_post_with_development is working
-                logger.warning(f"author_name missing or invalid in post dict: {repr(post_for_template.get('author_name'))}")
-                if post_for_template.get('author_id'):
-                    try:
-                        from config.database import db_manager
-                        with db_manager.get_cursor() as cursor:
-                            cursor.execute("SELECT name FROM author WHERE id = %s", (post_for_template['author_id'],))
-                            author_row = cursor.fetchone()
-                            if author_row and author_row.get('name'):
-                                post_for_template['author_name'] = author_row['name']
-                                logger.info(f"Loaded author_name from author table as fallback: {author_row['name']}")
-                    except Exception as e:
-                        logger.warning(f"Could not load author_name from author table: {e}")
-                
-                # Final fallback
-                if not post_for_template.get('author_name') or post_for_template.get('author_name') == 'author_name':
-                    post_for_template['author_name'] = 'Caitrin Stewart'
-                    logger.info(f"Using default author_name: 'Caitrin Stewart'")
-            
-            logger.info(f"Using author_name from post dict: {repr(post_for_template.get('author_name'))}")
-            
-            # Exclude header image from HTML content (Clan.com adds it as featured image automatically)
-            post_for_template['exclude_header_image'] = True
-            
-            # Ensure header_image is set for template
-            if not post_for_template.get('header_image') or not post_for_template['header_image'].get('path'):
-                logger.warning("⚠️ No header_image in post data, attempting to load from database")
-                try:
-                    from config.database import db_manager
-                    with db_manager.get_cursor() as cursor:
-                        cursor.execute('SELECT header_image_id FROM post WHERE id = %s', (post.get('id'),))
-                        row = cursor.fetchone()
-                        if row and row.get('header_image_id'):
-                            # Load header image data from database
-                            cursor.execute("""
-                                SELECT id, filename, file_path as path, alt_text, caption
-                                FROM images WHERE id = %s
-                            """, (row['header_image_id'],))
-                            img_row = cursor.fetchone()
-                            if img_row and img_row.get('path'):
-                                # Use optimized path
-                                optimized_path = img_row['path'].replace('/raw/', '/optimized/').replace('.png', '.jpg')
-                                post_for_template['header_image'] = {
-                                    'path': optimized_path,
-                                    'alt_text': img_row.get('alt_text'),
-                                    'title': img_row.get('filename'),
-                                    'caption': img_row.get('caption')
-                                }
-                                logger.info(f"✅ Loaded header_image from database: {optimized_path}")
-                except Exception as e:
-                    logger.error(f"Failed to load header_image from database: {e}")
-            
-            # Render using the same data used for preview to ensure exact match
-            html_content = template.render(post=post_for_template, sections=sections)
-            
-            # Merge uploaded_images with DB mappings from section_image_mappings
-            merged_uploaded_images = uploaded_images.copy() if uploaded_images else {}
-            try:
-                from config.database import db_manager
-                with db_manager.get_cursor() as cursor:
-                    cursor.execute("""
-                        SELECT local_image_path, clan_uploaded_url 
-                        FROM section_image_mappings 
-                        WHERE post_id = %s AND local_image_path IS NOT NULL
-                    """, (post.get('id'),))
-                    db_mappings = cursor.fetchall()
-                    for row in db_mappings:
-                        if row.get('local_image_path') and row.get('clan_uploaded_url'):
-                            merged_uploaded_images[row['local_image_path']] = row['clan_uploaded_url']
-                            logger.info(f"Merged DB mapping: {row['local_image_path']} -> {row['clan_uploaded_url']}")
-            except Exception as e:
-                logger.warning(f"Could not load DB image mappings: {e}")
-            
-            logger.info(f'Final merged_uploaded_images: {merged_uploaded_images}')
-            logger.info(f'uploaded_images keys: {list(merged_uploaded_images.keys()) if merged_uploaded_images else "None"}')
-            
-            # Translate local image/file paths to uploaded clan.com URLs
-            if merged_uploaded_images:
-                logger.info('Translating image paths to clan.com URLs...')
-                logger.info(f'Uploaded images mapping: {uploaded_images}')
-                
-                # Create a comprehensive path mapping
-                path_mapping = {}
-                for local_path, clan_url in merged_uploaded_images.items():
-                    # Add the exact path as found in uploaded_images
-                    path_mapping[local_path] = clan_url
-                    
-                    # Also add variations that might appear in the HTML
-                    if local_path.startswith('/static/'):
-                        # Keep the original path
-                        path_mapping[local_path] = clan_url
-                        
-                        # Add the path without /static/ prefix (in case HTML uses relative paths)
-                        relative_path = local_path[7:]  # Remove '/static/' prefix
-                        path_mapping[relative_path] = clan_url
-                        logger.info(f"Added relative path mapping: {relative_path} -> {clan_url}")
-                
-                logger.info(f'Final path mapping: {path_mapping}')
-                
-                # Replace all paths in the HTML content
-                # Note: Photo-harvesting URLs that were uploaded to clan.com CDN should be replaced
-                replacements_made = 0
-                for local_path, clan_url in path_mapping.items():
-                    # If this is a Photo-harvesting URL that we uploaded, replace it with clan.com URL
-                    # If it's NOT in our mapping, it means upload failed, so we'll leave it as-is
-                    if local_path.startswith(('http://', 'https://')):
-                        logger.info(f"🔄 Replacing Photo-harvesting URL (uploaded to CDN): {local_path} -> {clan_url}")
-                        # Continue to replacement logic below
-                    
-                    # For Photo-harvesting URLs, we need to match the base URL without query params
-                    # because the template might use a different sized URL than what we uploaded with
-                    if local_path.startswith(('http://', 'https://')):
-                        # Extract base URL (without query parameters) for matching
-                        from urllib.parse import urlparse
-                        base_url = urlparse(local_path).scheme + '://' + urlparse(local_path).netloc + urlparse(local_path).path
-                        
-                        # Find all src attributes with this base URL (with any query params)
-                        import re
-                        pattern = re.compile(r'src="(' + re.escape(base_url) + r'[^"]*)"')
-                        matches = pattern.findall(html_content)
-                        if matches:
-                            for match in set(matches):  # Use set to avoid duplicate replacements
-                                html_content = html_content.replace(f'src="{match}"', f'src="{clan_url}"')
-                                replacements_made += 1
-                                logger.info(f"Replaced Photo-harvesting src (base URL match): {match[:80]}... -> {clan_url}")
-                    else:
-                        # For local paths, use exact matching
-                        # Replace src attributes
-                        if f'src="{local_path}"' in html_content:
-                            html_content = html_content.replace(f'src="{local_path}"', f'src="{clan_url}"')
-                            replacements_made += 1
-                            logger.info(f"Replaced src: {local_path} -> {clan_url}")
-                        # Replace href attributes  
-                        if f'href="{local_path}"' in html_content:
-                            html_content = html_content.replace(f'href="{local_path}"', f'href="{clan_url}"')
-                            replacements_made += 1
-                            logger.info(f"Replaced href: {local_path} -> {clan_url}")
-                        # Replace any other occurrences (but count them)
-                        if local_path in html_content and local_path not in clan_url:
-                            before_count = html_content.count(local_path)
-                            html_content = html_content.replace(local_path, clan_url)
-                            after_count = html_content.count(local_path)
-                            if after_count < before_count:
-                                replacements_made += (before_count - after_count)
-                                logger.info(f"Replaced {before_count - after_count} occurrences: {local_path} -> {clan_url}")
-                
-                # Diagnostic: Check if any /static/ paths remain
-                import re
-                remaining_static = re.findall(r'/static/content/posts/\d+/sections/\d+/optimized/\d+\.jpg', html_content)
-                if remaining_static:
-                    logger.warning(f"⚠️ After replacement, {len(remaining_static)} /static/ paths remain in HTML:")
-                    for path in set(remaining_static):
-                        logger.warning(f"  Remaining path: {path}")
-                    logger.warning(f"  Available mapping keys: {list(path_mapping.keys())}")
-                else:
-                    logger.info(f"✅ All image paths replaced successfully. Made {replacements_made} replacements.")
-            
-            # Remove localhost refs that may linger
-            import re
-            html_content = re.sub(r'http://localhost:\d+', '', html_content)
-            
-            # Remove title parameters from widget tags (headings should not be included)
-            # Pattern matches: {{widget ... title="..." ...}} or {{widget ... title='...' ...}}
-            # Removes the title parameter and its value
-            html_content = re.sub(r'\s+title=["\'][^"\']*["\']', '', html_content)
-            logger.info("✅ Removed title parameters from widget tags")
-            
-            # Save the HTML file for inspection
-            debug_file = f'/tmp/upload_html_post_{post["id"]}_{int(time.time())}.html'
-            with open(debug_file, 'w', encoding='utf-8') as f:
-                f.write(html_content)
-            logger.info(f"Upload HTML saved to: {debug_file}")
-            
-            logger.info(f"Final HTML content length: {len(html_content)}")
-            return html_content
-        except Exception as e:
-            logger.error(f"Error generating HTML content: {str(e)}")
-            import traceback
-            logger.error(f"Traceback: {traceback.format_exc()}")
-            return None
+        """DEPRECATED: This method has been removed. Use publish.post_renderer.render_post_html() instead."""
+        from publish.post_renderer import render_post_html
+        return render_post_html(post, sections, image_replacements=uploaded_images)

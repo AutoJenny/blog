@@ -72,7 +72,9 @@ def publish_post_to_clan(post_id):
         
         # Step 5: Generate HTML content
         logger.info("Step 6: Generating HTML content...")
-        html_content = publisher.get_preview_html_content(post, sections, uploaded_images)
+        # Use unified rendering function - SAME as preview route
+        from .post_renderer import render_post_html
+        html_content = render_post_html(post, sections, image_replacements=uploaded_images)
         logger.info(f"✅ Generated HTML content ({len(html_content)} chars)")
         
         # Step 6: Determine if this is an update or new post

@@ -9,6 +9,160 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe-sections.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Inline styles matching clan_post_raw.html template (what gets published to clan.com) -->
+    <style>
+    /* Recipe Section Styling for Clan.com */
+    .recipe-section {
+        margin: 2rem 0;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .recipe-section:last-child {
+        border-bottom: none;
+    }
+    /* Recipe sections now use H2 headings from section_heading field (single source of truth) */
+    /* No special CSS needed - H2s are rendered consistently for all section types */
+    .recipe-meta {
+        margin-bottom: 0.75rem;
+        padding: 0.25rem 0;
+        font-size: 0.95rem;
+        color: #4b5563;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .recipe-meta strong {
+        color: #1f2937;
+        margin-right: 0.5rem;
+    }
+    .recipe-ingredients {
+        margin-bottom: 1.5rem;
+    }
+    .recipe-ingredients h3 {
+        font-size: 1.5rem;
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        color: #1f2937;
+        font-weight: 600;
+        font-family: Georgia, serif;
+    }
+    /* Prevent clan.com CSS from styling recipe H3s as H2s */
+    .recipe-section h3 {
+        display: block;
+        font-size: 1.5rem !important;
+        font-weight: 600 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .ingredients-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .ingredients-list .ingredient-item {
+        padding: 0.25rem 0;
+        margin-bottom: 0;
+        border-bottom: 1px dotted #d1d5db;
+    }
+    .ingredients-list .ingredient-item:last-child {
+        border-bottom: none;
+    }
+    .ingredient-item-name {
+        color: #374151;
+        font-weight: 500;
+    }
+    .ingredient-amount {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        color: #6b7280;
+        font-weight: 400;
+        font-style: italic;
+    }
+    .ingredient-notes {
+        color: #6b7280;
+        font-style: italic;
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+    }
+    .recipe-method {
+        margin-bottom: 1.5rem;
+    }
+    .recipe-method h3 {
+        font-size: 1.5rem;
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        color: #1f2937;
+        font-weight: 600;
+        font-family: Georgia, serif;
+    }
+    .method-steps {
+        list-style: decimal;
+        padding-left: 2rem;
+        margin: 0;
+    }
+    .method-steps .method-step {
+        padding: 0.5rem 0;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .method-steps .method-step:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    .step-instruction {
+        color: #374151;
+        line-height: 1.7;
+        margin-bottom: 0.5rem;
+    }
+    .step-meta {
+        margin-top: 0.25rem;
+        font-size: 0.85rem;
+        color: #6b7280;
+        font-style: italic;
+    }
+    .recipe-variants, .recipe-serving {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: #f9fafb;
+        border-left: 3px solid #d97706;
+    }
+    .recipe-variants h3, .recipe-serving h3 {
+        font-size: 1.25rem;
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        color: #1f2937;
+        font-weight: 600;
+    }
+    .recipe-further-reading {
+        margin: 1.5rem 0;
+    }
+    .recipe-further-reading h3 {
+        font-size: 1.25rem;
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        color: #1f2937;
+        font-weight: 600;
+    }
+    .further-reading-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .further-reading-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .further-reading-list li:last-child {
+        border-bottom: none;
+    }
+    .further-reading-link {
+        color: #d97706;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .further-reading-link:hover {
+        text-decoration: underline;
+    }
+    </style>
 </head>
 <body>
     <!-- Site Header -->
@@ -77,7 +231,11 @@
         {% if sections %}
         <div class="blog-sections">
             {% for section in sections %}
-            <section class="blog-section" id="section-{{ section.id }}">
+            <section class="blog-section{% if section.section_type and section.section_type.startswith('recipe_') %} recipe-section recipe-{{ section.section_type }}{% endif %}" id="section-{{ section.id }}">
+                {# Always add H2 from section_heading if it exists - this is the single source of truth #}
+                {% if section.section_heading %}
+                    <h2>{{ section.section_heading }}</h2>
+                {% endif %}
                 <div class="section-text">
                     {% if section.content %}
                         {{ section.content|safe }}

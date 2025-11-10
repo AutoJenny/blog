@@ -199,18 +199,18 @@ def render_ingredients(data: dict) -> str:
             if notes:
                 parts.append(f'<span class="ingredient-notes">({notes})</span>')
             
-            # Weights after, in distinct font
+            # Weights after, in distinct font with inline styles to survive upload
             if amount_metric:
                 if amount_imperial and amount_imperial != amount_metric:
                     # Ensure imperial doesn't contain "(approx.)" or similar
                     amount_imperial = re.sub(r'\s*\(?approx\.?\)?\s*', '', amount_imperial, flags=re.IGNORECASE)
-                    parts.append(f'<span class="ingredient-amount"> — {amount_metric} / {amount_imperial}</span>')
+                    parts.append(f'<span class="ingredient-amount" style="font-family: \'Courier New\', monospace; font-size: 0.9em; color: #6b7280; font-weight: 400; font-style: italic;"> — {amount_metric} / {amount_imperial}</span>')
                 else:
-                    parts.append(f'<span class="ingredient-amount"> — {amount_metric}</span>')
+                    parts.append(f'<span class="ingredient-amount" style="font-family: \'Courier New\', monospace; font-size: 0.9em; color: #6b7280; font-weight: 400; font-style: italic;"> — {amount_metric}</span>')
             elif amount_imperial:
                 # Clean imperial before displaying
                 amount_imperial = re.sub(r'\s*\(?approx\.?\)?\s*', '', amount_imperial, flags=re.IGNORECASE)
-                parts.append(f'<span class="ingredient-amount"> — {amount_imperial}</span>')
+                parts.append(f'<span class="ingredient-amount" style="font-family: \'Courier New\', monospace; font-size: 0.9em; color: #6b7280; font-weight: 400; font-style: italic;"> — {amount_imperial}</span>')
             
             html.append(f'<li class="ingredient-item">{" ".join(parts)}</li>')
         
@@ -238,15 +238,19 @@ def render_method(data: dict) -> str:
             step_html.append(f'<li class="method-step">')
             step_html.append(f'<div class="step-instruction">{instruction}</div>')
             
-            # Add time and temperature if available
+            # Add time and temperature if available (with inline styles to survive upload)
+            # Note: Font Awesome icons removed as they're not available on clan.com
             meta = []
             if time:
-                meta.append(f'<span class="step-time"><i class="fas fa-clock"></i> {time}</span>')
+                meta.append(f'<span class="step-time" style="font-family: \'Courier New\', monospace; font-size: 0.9em; color: #6b7280; font-weight: 400; font-style: italic; margin-right: 0.75rem;">{time}</span>')
             if temperature:
-                meta.append(f'<span class="step-temperature"><i class="fas fa-thermometer-half"></i> {temperature}</span>')
+                meta.append(f'<span class="step-temperature" style="font-family: \'Courier New\', monospace; font-size: 0.9em; color: #6b7280; font-weight: 400; font-style: italic;">{temperature}</span>')
             
             if meta:
-                step_html.append(f'<div class="step-meta">{" ".join(meta)}</div>')
+                # Add spacing between instruction and meta, and between time and temperature
+                # Use a separator with proper spacing
+                separator = ' <span style="margin: 0 0.75rem; color: #9ca3af;">|</span> '
+                step_html.append(f'<div class="step-meta" style="margin-top: 0.5rem;">{separator.join(meta)}</div>')
             
             step_html.append('</li>')
             html.append(''.join(step_html))
@@ -264,16 +268,27 @@ def render_variants(data: dict) -> str:
     if data.get('variants'):
         html.append('<div class="recipe-variants">')
         
-        for variant in data['variants']:
+        # Background colors for alternating variants (more distinct)
+        variant_backgrounds = [
+            '#fef3c7',  # Light yellow
+            '#fde68a',  # Medium yellow
+            '#fcd34d',  # Darker yellow
+        ]
+        
+        for idx, variant in enumerate(data['variants']):
             name = variant.get('name', '')
             description = variant.get('description', '')
             changes = variant.get('changes', [])
             
-            html.append('<div class="variant-item">')
+            # Use alternating background colors
+            bg_color = variant_backgrounds[idx % len(variant_backgrounds)]
+            
+            html.append(f'<div class="variant-item" style="background: {bg_color}; padding: 1rem; margin-bottom: 0.75rem; border-radius: 6px; border-left: 3px solid #f59e0b;">')
             if name:
                 html.append(f'<h4 class="variant-name">{name}</h4>')
             if description:
-                html.append(f'<p class="variant-description">{description}</p>')
+                # Use same small italic styling as ingredient amounts
+                html.append(f'<p class="variant-description" style="font-family: \'Courier New\', monospace; font-size: 0.9em; color: #6b7280; font-weight: 400; font-style: italic; margin-bottom: 0.5rem;">{description}</p>')
             if changes:
                 html.append('<ul class="variant-changes">')
                 for change in changes:
@@ -293,16 +308,27 @@ def render_serving(data: dict) -> str:
     if data.get('serving_suggestions'):
         html.append('<div class="recipe-serving">')
         
-        for suggestion in data['serving_suggestions']:
+        # Background colors for alternating serving suggestions (more distinct)
+        serving_backgrounds = [
+            '#ecfdf5',  # Light green
+            '#d1fae5',  # Medium green
+            '#a7f3d0',  # Darker green
+        ]
+        
+        for idx, suggestion in enumerate(data['serving_suggestions']):
             suggestion_type = suggestion.get('type', '')
             description = suggestion.get('description', '')
             accompaniments = suggestion.get('accompaniments', [])
             
-            html.append('<div class="serving-suggestion">')
+            # Use alternating background colors
+            bg_color = serving_backgrounds[idx % len(serving_backgrounds)]
+            
+            html.append(f'<div class="serving-suggestion" style="background: {bg_color}; padding: 1rem; margin-bottom: 0.75rem; border-radius: 6px; border-left: 3px solid #10b981;">')
             if suggestion_type:
                 html.append(f'<h4 class="serving-type">{suggestion_type.title()}</h4>')
             if description:
-                html.append(f'<p class="serving-description">{description}</p>')
+                # Use same small italic styling as ingredient amounts and variant descriptions
+                html.append(f'<p class="serving-description" style="font-family: \'Courier New\', monospace; font-size: 0.9em; color: #6b7280; font-weight: 400; font-style: italic; margin-bottom: 0.5rem;">{description}</p>')
             if accompaniments:
                 html.append('<ul class="serving-accompaniments">')
                 for acc in accompaniments:

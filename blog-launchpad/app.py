@@ -7,6 +7,11 @@ from datetime import datetime
 import pytz
 from humanize import naturaltime
 import psycopg.rows
+from publish.post_data_loader import get_post_with_development, get_post_sections_with_images
+from publish.header_image_finder import get_header_image
+from publish.cross_promotion_loader import load_cross_promotion_data
+from publish.preview_handler import preview_post, clan_post_html
+from publish.publish_endpoint import publish_post_to_clan_handler, clan_api_data_handler
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -99,6 +104,24 @@ def strip_h2_headings(content):
     # Remove H2 tags and their content (including attributes)
     content = re.sub(r'<h2[^>]*>.*?</h2>', '', content, flags=re.IGNORECASE | re.DOTALL)
     return content
+
+# Custom Jinja2 test to check if a section is a recipe section
+def is_recipe_section_test(value):
+    """Check if a section_type value indicates a recipe section."""
+    if not value:
+        return False
+    return str(value).startswith('recipe_')
+
+# Register the test directly with Jinja2 environment
+# CRITICAL: Must register after app creation but before first template render
+app.jinja_env.tests['is_recipe_section'] = is_recipe_section_test
+
+# Verify registration (for debugging)
+if 'is_recipe_section' not in app.jinja_env.tests:
+    logger.error("CRITICAL: Failed to register is_recipe_section test!")
+    raise RuntimeError("Failed to register is_recipe_section test in Jinja2 environment")
+else:
+    logger.info(f"✅ Successfully registered is_recipe_section test at app startup. Test count: {len(app.jinja_env.tests)}")
 
 # Add route to serve blog-images static files
 @app.route('/static/content/posts/<int:post_id>/sections/<int:section_id>/<directory>/<filename>')
@@ -2016,210 +2039,19 @@ def health():
 
 @app.route('/preview/<int:post_id>')
 @app.route('/preview/<int:post_id>/')
-def preview_post(post_id):
+def preview_post_route(post_id):
     """Preview a specific post."""
-    # Get post data from database
-    post = get_post_with_development(post_id)
-    if not post:
-        return "Post not found", 404
-    
-    sections = get_post_sections_with_images(post_id)
-    
-    # Find header image
-    header_image_path = find_header_image(post_id)
-    if header_image_path:
-        # Get header image caption from database
-        with get_db_connection() as conn:
-            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-            cur.execute("""
-                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                       cross_promotion_category_id, cross_promotion_category_title,
-                       cross_promotion_product_id, cross_promotion_product_title
-                FROM post WHERE id = %s
-            """, (post_id,))
-            header_data = cur.fetchone()
-            header_caption = header_data['header_image_caption'] if header_data and header_data['header_image_caption'] else None
-        
-        post['header_image'] = {
-            'path': header_image_path,
-            'alt_text': f"Header image for {post.get('title', 'this post')}",
-            'caption': header_caption,
-            'title': header_data['header_image_title'] if header_data and header_data['header_image_title'] else None,
-            'width': header_data['header_image_width'] if header_data and header_data['header_image_width'] else None,
-            'height': header_data['header_image_height'] if header_data and header_data['header_image_height'] else None
-        }
-        
-        # Add cross-promotion data
-        post['cross_promotion'] = {
-            'category_id': header_data['cross_promotion_category_id'] if header_data and header_data['cross_promotion_category_id'] else None,
-            'category_title': header_data['cross_promotion_category_title'] if header_data and header_data['cross_promotion_category_title'] else None,
-            'product_id': header_data['cross_promotion_product_id'] if header_data and header_data['cross_promotion_product_id'] else None,
-            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_title'] else None,
-            'category_position': header_data.get('cross_promotion_category_position'),
-            'product_position': header_data.get('cross_promotion_product_position')
-        }
-    
-    return render_template('post_preview.html', post=post, sections=sections)
+    return preview_post(post_id)
 
 @app.route('/clan-post-html/<int:post_id>')
-def clan_post_html(post_id):
+def clan_post_html_route(post_id):
     """View the clan_post HTML that will be uploaded to Clan.com."""
-    # Get view type parameter (default to 'local')
-    view_type = request.args.get('view', 'local')
-    
-    # Get post data from database
-    post = get_post_with_development(post_id)
-    if not post:
-        return "Post not found", 404
-    
-    sections = get_post_sections_with_images(post_id)
-    
-    # Find header image
-    header_image_path = find_header_image(post_id)
-    if header_image_path:
-        # Get header image caption from database
-        with get_db_connection() as conn:
-            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-            cur.execute("""
-                SELECT header_image_caption, header_image_title, header_image_width, header_image_height
-                FROM post WHERE id = %s
-            """, (post_id,))
-            header_data = cur.fetchone()
-            header_caption = header_data['header_image_caption'] if header_data and header_data['header_image_caption'] else None
-        
-        post['header_image'] = {
-            'path': header_image_path,
-            'alt_text': f"Header image for {post.get('title', 'this post')}",
-            'caption': header_caption,
-            'title': header_data['header_image_title'] if header_data and header_data['header_image_title'] else None,
-            'width': header_data['header_image_width'] if header_data and header_data['header_image_width'] else None,
-            'height': header_data['header_image_height'] if header_data and header_data['header_image_height'] else None
-        }
-    
-    if view_type == 'local':
-        # Return raw HTML with local paths (for development/debugging)
-        raw_html = render_template('clan_post_raw.html', post=post, sections=sections)
-        return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
-    else:
-        # Return processed HTML with CDN URLs (what gets sent to Clan.com)
-        from clan_publisher import ClanPublisher
-        publisher = ClanPublisher()
-        
-        # Get uploaded images mapping from database
-        uploaded_images = {}
-        try:
-            with get_db_connection() as conn:
-                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-                cur.execute("""
-                    SELECT local_image_path, clan_uploaded_url 
-                    FROM section_image_mappings 
-                    WHERE post_id = %s
-                """, (post_id,))
-                
-                for row in cur.fetchall():
-                    uploaded_images[row['local_image_path']] = row['clan_uploaded_url']
-                    
-                # Also get header image mapping if it exists
-                cur.execute("""
-                    SELECT local_image_path, clan_uploaded_url 
-                    FROM section_image_mappings 
-                    WHERE post_id = %s AND section_id IS NULL
-                """, (post_id,))
-                
-                for row in cur.fetchall():
-                    uploaded_images[row['local_image_path']] = row['clan_uploaded_url']
-                    
-        except Exception as e:
-            print(f"Warning: Could not load image mappings: {e}")
-        
-        # Get the exact same HTML that gets uploaded
-        upload_html = publisher.get_preview_html_content(post, sections, uploaded_images)
-        
-        if upload_html:
-            # Return the actual upload HTML as raw text - NO RENDERING
-            # Set content type to text/plain so browser shows source code
-            return upload_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
-        else:
-            # Fallback to raw template if preview HTML fails
-            raw_html = render_template('clan_post_raw.html', post=post, sections=sections)
-            return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    return clan_post_html(post_id)
 
 @app.route('/clan-api-data/<int:post_id>')
 def clan_api_data(post_id):
     """View the actual API request data that was/will be sent to Clan.com."""
-    # Get post data from database
-    post = get_post_with_development(post_id)
-    if not post:
-        return jsonify({'error': 'Post not found'}), 404
-    
-    sections = get_post_sections_with_images(post_id)
-    
-    # Fix field mapping - ensure post has the fields our function expects
-    if post.get('post_id') and not post.get('id'):
-        post['id'] = post['post_id']
-    
-    # Ensure summary field exists and has content
-    if not post.get('summary'):
-        post['summary'] = post.get('intro_blurb')
-        if not post['summary']:
-            raise ValueError("Post must have either summary or intro_blurb")
-    
-    # Ensure created_at is handled properly
-    if post.get('created_at') and not isinstance(post['created_at'], str):
-        post['created_at'] = post['created_at'].isoformat() if hasattr(post['created_at'], 'isoformat') else str(post['created_at'])
-    
-    # Add header image if exists
-    header_image_path = find_header_image(post_id)
-    if header_image_path:
-        with get_db_connection() as conn:
-            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-            cur.execute("""
-                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                       cross_promotion_category_id, cross_promotion_category_title,
-                       cross_promotion_product_id, cross_promotion_product_title,
-                       cross_promotion_category_position, cross_promotion_product_position,
-                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
-                FROM post WHERE id = %s
-            """, (post_id,))
-            header_data = cur.fetchone()
-            
-            post['header_image'] = {
-                'path': header_image_path,
-                'alt_text': f"Header image for {post.get('title', 'this post')}",
-                'caption': header_data['header_image_caption'] if header_data else None,
-                'title': header_data['header_image_title'] if header_data else None,
-                'width': header_data['header_image_width'] if header_data else None,
-                'height': header_data['header_image_height'] if header_data else None
-            }
-            
-            post['cross_promotion'] = {
-                'category_id': header_data['cross_promotion_category_id'] if header_data else None,
-                'category_title': header_data['cross_promotion_category_title'] if header_data else None,
-                'product_id': header_data['cross_promotion_product_id'] if header_data else None,
-                'product_title': header_data['cross_promotion_product_title'] if header_data else None,
-                'category_position': header_data.get('cross_promotion_category_position'),
-                'product_position': header_data.get('cross_promotion_product_position'),
-                'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
-                'product_widget_html': header_data.get('cross_promotion_product_widget_html')
-            }
-    
-    # Import publishing class to get the actual API data
-    from clan_publisher import ClanPublisher
-    publisher = ClanPublisher()
-    
-    # Get the actual API request data that would be sent to Clan.com
-    try:
-        # This will generate the same data structure that gets sent to Clan.com
-        logger.info(f"Calling _prepare_api_data for post {post_id}")
-        logger.info(f"Post data keys: {list(post.keys()) if post else 'NO POST'}")
-        logger.info(f"Post summary: {post.get('summary')}")
-        logger.info(f"Post subtitle: {post.get('subtitle')}")
-        api_data = publisher._prepare_api_data(post, sections)
-        logger.info(f"API data returned: {api_data}")
-        return jsonify(api_data)
-    except Exception as e:
-        logger.error(f"Error preparing API data for post {post_id}: {e}")
-        return jsonify({'error': f'Failed to prepare API data: {str(e)}'}), 500
+    return clan_api_data_handler(post_id)
 
 @app.route('/api/syndication/resize-image', methods=['POST'])
 def resize_image_for_facebook():
@@ -2308,136 +2140,6 @@ def get_section_image_mappings(post_id):
             'message': str(e)
         }), 500
 
-def get_post_with_development(post_id):
-    """Fetch post with development data."""
-    with get_db_connection() as conn:
-        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-        
-        # Get post data, alias post.id as post_id
-        cur.execute("""
-            SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
-                   p.clan_post_id, p.clan_uploaded_url, p.author_id,
-                   a.name as author_name,
-                   pd.idea_seed, pd.intro_blurb, pd.main_title,
-                   p.cross_promotion_category_id, p.cross_promotion_category_title,
-                   p.cross_promotion_product_id, p.cross_promotion_product_title,
-                   p.cross_promotion_category_position, p.cross_promotion_product_position,
-                   p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html
-            FROM post p
-            LEFT JOIN author a ON p.author_id = a.id
-            LEFT JOIN post_development pd ON pd.post_id = p.id
-            WHERE p.id = %s
-        """, (post_id,))
-        
-        post = cur.fetchone()
-        if not post:
-            return None
-            
-        # Get header image - use post_images -> images table (plural) - foreign keys point to image_archive but data is in images
-        cur.execute("""
-            SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
-            FROM post_images pi
-            JOIN images i ON pi.image_id = i.id
-            WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
-            ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
-                          WHEN pi.image_type = 'header_watermarked' THEN 2
-                          ELSE 3 END
-            LIMIT 1
-        """, (post_id,))
-        img_row = cur.fetchone()
-        if img_row and img_row.get('path'):
-            header_path = img_row['path']
-            # CRITICAL: Normalize path to ALWAYS be /static/content/posts/... format
-            # Remove any leading slashes, then ensure it starts with /static/
-            header_path = header_path.lstrip('/')
-            if not header_path.startswith('static/'):
-                header_path = 'static/' + header_path.lstrip('/')
-            header_path = '/' + header_path  # Add leading slash
-            post['header_image'] = {
-                'path': header_path,
-                'alt_text': img_row.get('alt_text'),
-                'title': img_row.get('filename'),
-                'caption': img_row.get('caption'),
-                'width': img_row.get('width'),
-                'height': img_row.get('height')
-            }
-        
-        # Final fallback to legacy post.header_image_id -> images table (if no post_images record)
-        if not post.get('header_image') and post.get('header_image_id'):
-            # Fallback to legacy images table (should not be needed, but handle gracefully)
-            cur.execute("""
-                SELECT id, filename, file_path as path, alt_text, caption FROM images WHERE id = %s
-            """, (post['header_image_id'],))
-            header_image = cur.fetchone()
-            if header_image:
-                header_img_dict = dict(header_image)
-                # Normalize path to always use /static/ format
-                if header_img_dict.get('path'):
-                    path = header_img_dict['path']
-                    if not path.startswith('/static/'):
-                        path = '/static/' + path.lstrip('/')
-                    header_img_dict['path'] = path
-                    post['header_image'] = header_img_dict
-        
-        post_dict = dict(post)
-        # Always use post_id for the edit link
-        post_dict['id'] = post_dict['post_id']
-        
-        # Add cross-promotion data structure
-        post_dict['cross_promotion'] = {
-            'category_id': post_dict.get('cross_promotion_category_id'),
-            'category_title': post_dict.get('cross_promotion_category_title'),
-            'product_id': post_dict.get('cross_promotion_product_id'),
-            'product_title': post_dict.get('cross_promotion_product_title'),
-            'category_position': post_dict.get('cross_promotion_category_position'),
-            'product_position': post_dict.get('cross_promotion_product_position'),
-            'category_widget_html': post_dict.get('cross_promotion_category_widget_html'),
-            'product_widget_html': post_dict.get('cross_promotion_product_widget_html')
-        }
-        
-        return post_dict
-
-def find_header_image(post_id):
-    """
-    Find the first available header image for a post in the new directory structure.
-    Returns the image path or None if no image found.
-    """
-    import urllib.parse
-    import os
-    
-    # Get project root (this file is in blog-launchpad/, go up one level)
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(current_dir)  # Go up from blog-launchpad/ to project root
-    
-    # ALL images are in project_root/static/ - NO FALLBACKS
-    project_static = os.path.join(project_root, 'static')
-    
-    image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
-
-    # 1. Look for images in the header's optimized directory (project_static only - NO FALLBACKS)
-    for static_dir in [project_static]:
-        header_optimized_path = os.path.join(static_dir, "content", "posts", str(post_id), "header", "optimized")
-        if os.path.exists(header_optimized_path):
-            image_files = [f for f in os.listdir(header_optimized_path)
-                          if f.lower().endswith(image_extensions) and not f.startswith('.')]
-            if image_files:
-                image_filename = image_files[0]
-                # DO NOT URL-encode - use filename as-is for consistency with database paths
-                return f"/static/content/posts/{post_id}/header/optimized/{image_filename}"
-
-    # 2. Fall back to raw directory if optimized is empty (project_static only - NO FALLBACKS)
-    for static_dir in [project_static]:
-        header_raw_path = os.path.join(static_dir, "content", "posts", str(post_id), "header", "raw")
-        if os.path.exists(header_raw_path):
-            image_files = [f for f in os.listdir(header_raw_path)
-                          if f.lower().endswith(image_extensions) and not f.startswith('.')]
-            if image_files:
-                image_filename = image_files[0]
-                # DO NOT URL-encode - use filename as-is for consistency with database paths
-                return f"/static/content/posts/{post_id}/header/raw/{image_filename}"
-
-    return None
-
 def find_section_image(post_id, section_id):
     """
     Find the first available image for a section in the new directory structure.
@@ -2474,112 +2176,6 @@ def find_section_image(post_id, section_id):
             return f"http://localhost:5005/static/content/posts/{post_id}/sections/{section_id}/raw/{encoded_filename}"
 
     return None
-
-def get_post_sections_with_images(post_id):
-    """Fetch sections with complete image metadata."""
-    with get_db_connection() as conn:
-        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-        
-        # Get all sections for the post, including recipe section data
-        # Exclude recipe_image_style section (internal use only, not for publishing)
-        cur.execute("""
-            SELECT 
-                id, post_id, section_order, 
-                section_heading,
-                section_description, ideas_to_include, facts_to_include,
-                draft, polished, highlighting, image_concepts,
-                image_prompts,
-                image_captions, status,
-                image_title, image_width, image_height,
-                section_type, post_section_elements
-            FROM post_section 
-            WHERE post_id = %s 
-            AND (section_type IS NULL OR section_type != 'recipe_image_style')
-            ORDER BY section_order
-        """, (post_id,))
-        
-        raw_sections = cur.fetchall()
-        sections = []
-        
-        for section in raw_sections:
-            section_dict = dict(section)
-            
-            # IMPORTANT: Use polished field directly - no transformations here!
-            # Recipe sections should have HTML already rendered and saved to polished during content generation
-            # Only safety check: filter out raw JSON if somehow it got into polished/draft
-            polished = section.get('polished') or section.get('draft') or ''
-            if polished:
-                polished_stripped = polished.strip()
-                if polished_stripped.startswith('{') or polished_stripped.startswith('[') or '```json' in polished_stripped.lower():
-                    logger.warning(f"Section {section['id']} contains raw JSON in polished/draft - this should not happen!")
-                    section_dict['polished'] = '<p><em>No content available for this section.</em></p>'
-                else:
-                    # For recipe sections, ALWAYS strip H2 headings to prevent duplicates
-                    # The template will also skip adding H2 from section_heading for recipe sections
-                    is_recipe_section = section.get('section_type') and section['section_type'].startswith('recipe_')
-                    
-                    if is_recipe_section:
-                        import re
-                        original_polished = polished
-                        polished = re.sub(r'<h2[^>]*>.*?</h2>', '', polished, flags=re.IGNORECASE | re.DOTALL)
-                        if original_polished != polished:
-                            logger.info(f"✅ Stripped H2 from recipe section {section['id']} ({section.get('section_type')}) - removed {len(original_polished) - len(polished)} chars")
-                        else:
-                            logger.debug(f"No H2 found in recipe section {section['id']} ({section.get('section_type')})")
-                    section_dict['polished'] = polished
-            else:
-                section_dict['polished'] = '<p><em>No content available for this section.</em></p>'
-            
-            # Clear draft to ensure we only use polished
-            section_dict['draft'] = None
-            
-            # Ensure section_type is in the dict for template filtering
-            if 'section_type' not in section_dict:
-                section_dict['section_type'] = section.get('section_type')
-            
-            # Priority 1: Check post_images table (approved optimized images)
-            image_path = None
-            caption_text = section.get('image_captions') or ''
-            alt_text = f"Image for {section.get('section_heading', 'section')}"
-            
-            # ONLY use post_images table - NO FALLBACKS
-            cur.execute("""
-                SELECT i.file_path as path, i.filename, i.alt_text, i.caption
-                FROM post_images pi
-                JOIN images i ON pi.image_id = i.id
-                WHERE pi.section_id = %s AND pi.image_type = 'section_optimized'
-                LIMIT 1
-            """, (section['id'],))
-            db_image = cur.fetchone()
-            if db_image and db_image.get('path'):
-                image_path = db_image['path']
-                if db_image.get('caption'):
-                    caption_text = db_image['caption']
-                if db_image.get('alt_text'):
-                    alt_text = db_image['alt_text']
-            
-            if image_path:
-                # Found image in post_images table
-                section_dict['image'] = {
-                    'path': image_path,
-                    'alt_text': alt_text,
-                    'title': section.get('image_title'),
-                    'width': section.get('image_width'),
-                    'height': section.get('image_height')
-                }
-                # Also set the caption directly on the section for template compatibility
-                section_dict['image_captions'] = caption_text
-            else:
-                # No image in post_images table - NO FALLBACKS
-                section_dict['image'] = {
-                    'path': None,
-                    'alt_text': f"No image available for {section.get('section_heading', 'this section')}",
-                    'placeholder': True
-                }
-            
-            sections.append(section_dict)
-        
-        return sections
 
 @app.route('/api/posts')
 def get_posts():
@@ -2804,204 +2400,9 @@ def save_individual_product():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/publish/<int:post_id>', methods=['POST'])
-def publish_post_to_clan(post_id):
+def publish_post_to_clan_route(post_id):
     """Publish a post to clan.com"""
-    try:
-        # Get post data
-        post = get_post_with_development(post_id)
-        if not post:
-            return jsonify({'success': False, 'error': 'Post not found'}), 404
-        
-        sections = get_post_sections_with_images(post_id)
-        
-        # Fix field mapping - ensure post has the fields our function expects
-        if post.get('post_id') and not post.get('id'):
-            post['id'] = post['post_id']
-        
-        # Ensure summary field exists and has content
-        if not post.get('summary'):
-            post['summary'] = post.get('intro_blurb')
-            if not post['summary']:
-                raise ValueError("Post must have either summary or intro_blurb")
-        
-        # Ensure created_at is handled properly
-        if post.get('created_at') and not isinstance(post['created_at'], str):
-            post['created_at'] = post['created_at'].isoformat() if hasattr(post['created_at'], 'isoformat') else str(post['created_at'])
-        
-        # Add header image if exists - prefer from new post_images schema, then filesystem
-        logger.info(f"=== HEADER IMAGE CHECK FOR POST {post_id} ===")
-        logger.info(f"Post has header_image: {post.get('header_image')}")
-        logger.info(f"Post header_image path: {post.get('header_image', {}).get('path') if post.get('header_image') else 'N/A'}")
-        
-        if not post.get('header_image') or not post['header_image'].get('path'):
-            logger.info("Header image not set, attempting to find it...")
-            # Use post_images -> images table (plural) - foreign keys point to image_archive but data is in images
-            with get_db_connection() as conn:
-                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-                # Use images table (plural) - foreign keys point to image_archive but data is in images
-                cur.execute("""
-                    SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
-                    FROM post_images pi
-                    JOIN images i ON pi.image_id = i.id
-                    WHERE pi.post_id = %s AND pi.image_type LIKE 'header%'
-                    ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 ELSE 2 END
-                    LIMIT 1
-                """, (post_id,))
-                img_row = cur.fetchone()
-                
-                if img_row and img_row.get('path'):
-                    # Use optimized path if available, otherwise raw
-                    header_path = img_row['path']
-                    # Ensure path starts with /static/ for web access
-                    if not header_path.startswith('/static/'):
-                        header_path = '/static/' + header_path.lstrip('/')
-                    if not post.get('header_image'):
-                        post['header_image'] = {}
-                    post['header_image']['path'] = header_path
-                    post['header_image']['alt_text'] = img_row.get('alt_text')
-                    post['header_image']['title'] = img_row.get('filename')
-                    post['header_image']['caption'] = img_row.get('caption')
-                    post['header_image']['width'] = img_row.get('width')
-                    post['header_image']['height'] = img_row.get('height')
-                    logger.info(f"✅ Loaded header_image from database: {header_path}")
-                else:
-                    logger.info("No header image found in post_images table")
-            
-            # Fallback to filesystem if not in database
-            if not post.get('header_image') or not post['header_image'].get('path'):
-                logger.info("Falling back to filesystem search...")
-                header_image_path = find_header_image(post_id)
-                logger.info(f"find_header_image returned: {header_image_path}")
-                if header_image_path:
-                    if not post.get('header_image'):
-                        post['header_image'] = {}
-                    post['header_image']['path'] = header_image_path
-                    logger.info(f"✅ Set header_image path from filesystem: {header_image_path}")
-                    logger.info(f"Final header_image dict: {post['header_image']}")
-                else:
-                    logger.warning(f"❌ find_header_image returned None for post {post_id}")
-        else:
-            logger.info(f"✅ Header image already set: {post['header_image'].get('path')}")
-        
-        # Get header image metadata from database if not already set
-        if post.get('header_image') and post['header_image'].get('path'):
-            with get_db_connection() as conn:
-                cur = conn.cursor(row_factory=psycopg.rows.dict_row)
-                cur.execute("""
-                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                           cross_promotion_category_id, cross_promotion_category_title,
-                           cross_promotion_product_id, cross_promotion_product_title,
-                           cross_promotion_category_position, cross_promotion_product_position,
-                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
-                    FROM post WHERE id = %s
-                """, (post_id,))
-                header_data = cur.fetchone()
-                
-                if header_data:
-                    if not post['header_image'].get('caption'):
-                        post['header_image']['caption'] = header_data['header_image_caption']
-                    if not post['header_image'].get('title'):
-                        post['header_image']['title'] = header_data['header_image_title']
-                    if not post['header_image'].get('width'):
-                        post['header_image']['width'] = header_data['header_image_width']
-                    if not post['header_image'].get('height'):
-                        post['header_image']['height'] = header_data['header_image_height']
-                
-                post['cross_promotion'] = {
-                    'category_id': header_data['cross_promotion_category_id'] if header_data else None,
-                    'category_title': header_data['cross_promotion_category_title'] if header_data else None,
-                    'product_id': header_data['cross_promotion_product_id'] if header_data else None,
-                    'product_title': header_data['cross_promotion_product_title'] if header_data else None,
-                    'category_position': header_data.get('cross_promotion_category_position'),
-                    'product_position': header_data.get('cross_promotion_product_position'),
-                    'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
-                    'product_widget_html': header_data.get('cross_promotion_product_widget_html')
-                }
-        
-        # Import publishing class
-        from clan_publisher import ClanPublisher
-        
-        # Debug: Log what we're about to send
-        logger.info(f"=== FLASK ENDPOINT DEBUG ===")
-        logger.info(f"Post data keys: {list(post.keys()) if post else 'NO POST'}")
-        logger.info(f"Post title: {post.get('title', 'NO TITLE') if post else 'NO POST'}")
-        logger.info(f"Number of sections: {len(sections) if sections else 0}")
-        if sections:
-            logger.info(f"Section IDs: {[s.get('id') for s in sections]}")
-        
-        # CRITICAL: Verify header_image is set before publishing
-        logger.info(f"=== PRE-PUBLISH HEADER IMAGE VERIFICATION ===")
-        logger.info(f"post.get('header_image'): {post.get('header_image')}")
-        if post.get('header_image'):
-            logger.info(f"post['header_image'].get('path'): {post['header_image'].get('path')}")
-        else:
-            logger.warning(f"⚠️ WARNING: post['header_image'] is None/empty before calling publish_to_clan!")
-        
-        # Create publisher instance and attempt to publish
-        publisher = ClanPublisher()
-        result = publisher.publish_to_clan(post, sections)
-        
-        # Debug: Log the result
-        logger.info(f"Publishing result: {result}")
-        
-        if result['success']:
-            # Update database with clan post details
-            with get_db_connection() as conn:
-                cur = conn.cursor()
-                cur.execute("""
-                    UPDATE post SET 
-                        clan_post_id = %s,
-                        status = 'published',
-                        clan_last_attempt = CURRENT_TIMESTAMP,
-                        clan_error = NULL,
-                        clan_uploaded_url = %s
-                    WHERE id = %s
-                """, (result.get('clan_post_id'), result.get('url'), post_id))
-                conn.commit()
-            
-            return jsonify({
-                'success': True, 
-                'message': 'Post published successfully to clan.com',
-                'clan_post_id': result.get('clan_post_id'),
-                'url': result.get('url')
-            })
-        else:
-            # Update database with error
-            with get_db_connection() as conn:
-                cur = conn.cursor()
-                cur.execute("""
-                    UPDATE post SET 
-                        status = 'error',
-                        clan_last_attempt = CURRENT_TIMESTAMP,
-                        clan_error = %s
-                    WHERE id = %s
-                """, (result.get('error'), post_id))
-                conn.commit()
-            
-                    # Check if it's a network connectivity issue
-        error_msg = result.get('error', 'Unknown error occurred')
-        if 'timeout' in error_msg.lower() or 'connection' in error_msg.lower():
-            error_msg = f"Network Error: Cannot connect to clan.com. Please check your internet connection and try again. (Details: {error_msg})"
-        
-        return jsonify({
-            'success': False, 
-            'error': error_msg
-        }), 500
-        
-    except Exception as e:
-        # Update database with error
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            cur.execute("""
-                UPDATE post SET 
-                    status = 'error',
-                    clan_last_attempt = CURRENT_TIMESTAMP,
-                    clan_error = %s
-                WHERE id = %s
-            """, (str(e), post_id))
-            conn.commit()
-        
-        return jsonify({'success': False, 'error': str(e)}), 500
+    return publish_post_to_clan_handler(post_id)
 
 @app.route('/api/clan/catalog/download', methods=['POST'])
 def download_catalog():

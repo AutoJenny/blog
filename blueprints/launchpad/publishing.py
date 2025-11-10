@@ -314,9 +314,11 @@ def publish_post_to_clan(post_id):
                 cp = post['cross_promotion']
                 needs_update = False
                 if cp.get('category_id') and cp.get('category_position') and not cp.get('category_widget_html'):
+                    # Remove title parameter - we don't want headings on widgets
                     cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\"}}}}"
                     needs_update = True
                 if cp.get('product_id') and cp.get('product_position') and not cp.get('product_widget_html'):
+                    # Remove title parameter - we don't want headings on widgets
                     cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\"}}}}"
                     needs_update = True
                 if needs_update:

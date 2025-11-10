@@ -33,14 +33,9 @@ def api_get_sections(post_id):
                 
                 if section_count == 0:
                     # Auto-create default recipe sections with detailed descriptions
-                    recipe_sections = [
-                        ('recipe_background', 'Background', 'The historic and cultural background of this recipe. Write 2-3 paragraphs (150-200 words) covering the origin story, regional associations, and occasions when traditionally eaten. Use a warm, storytelling voice that evokes place, people, and time.'),
-                        ('recipe_ingredients', 'Ingredients', 'List of ingredients needed for this recipe. Format clearly for home cooks, with amounts and any preparation notes. May include regional variations or historical notes.'),
-                        ('recipe_method', 'Method', 'Step-by-step cooking instructions. Use numbered steps with clear instructions. Aimed at home cooks, not professional chefs.'),
-                        ('recipe_variants', 'Variations', 'Optional twists and regional variations (e.g., "Hebridean version uses smoked haddock only", "Modern twist: add whisky cream"). Not every recipe needs variants - this section is optional.'),
-                        ('recipe_serving', 'Serving Suggestions', 'How Scots traditionally serve this dish. Include drinks, sides, or traditional accompaniments. Optional mention of related products available on clan.com.'),
-                        ('recipe_further_reading', 'Further Reading', 'Search for 2-5 authoritative sources for background information about this recipe. Focus on: cultural/heritage sites, Wikipedia articles, historical sources, ingredient provenance sites, and tourism/heritage organizations. AVOID competing recipe sites or cooking blogs. For each source, provide: Title & Link, Why It\'s Good (brief explanation of the source\'s value), and Use Case in Your Content (how to reference this source in the recipe sections above). Sources should support the Background, Ingredients, Variations, and Serving Suggestions sections.')
-                    ]
+                    # Use standard recipe sections from utility module
+                    from utils.section_headings import get_standard_recipe_sections
+                    recipe_sections = get_standard_recipe_sections()
                     
                     for section_order, (section_type, section_heading, section_description) in enumerate(recipe_sections, start=1):
                         # Check if section already exists at this order
@@ -61,14 +56,15 @@ def api_get_sections(post_id):
                                 VALUES (%s, %s, %s, %s, %s, 'draft')
                             """, (post_id, section_order, section_type, section_heading, section_description))
                         else:
-                            # Update existing section with section_type if missing
+                            # Update existing section with section_type if missing, and ensure heading is set
+                            # Use COALESCE to handle NULL values properly
                             cursor.execute("""
                                 UPDATE post_section
-                                SET section_type = %s,
+                                SET section_type = COALESCE(NULLIF(section_type, ''), %s),
                                     section_heading = COALESCE(NULLIF(section_heading, ''), %s),
                                     section_description = COALESCE(NULLIF(section_description, ''), %s)
                                 WHERE post_id = %s AND section_order = %s
-                                  AND (section_type IS NULL OR section_type = '')
+                                  AND (section_type IS NULL OR section_type = '' OR section_heading IS NULL OR section_heading = '')
                             """, (section_type, section_heading, section_description, post_id, section_order))
                     
                     cursor.connection.commit()
@@ -140,6 +136,36 @@ def api_get_sections(post_id):
                     ORDER BY section_order
                 """, (post_id,))
             sections = cursor.fetchall()
+            
+            # CRITICAL: Auto-populate missing section headings for recipe sections
+            # This ensures headings are always present, even if they were lost or never set
+            if post_type == 'recipe' and sections:
+                from utils.section_headings import ensure_section_heading, is_recipe_section_type
+                headings_updated = False
+                
+                for section in sections:
+                    section_type = section.get('section_type')
+                    current_heading = section.get('section_heading')
+                    section_id = section.get('id')
+                    
+                    # Check if this is a recipe section with missing heading
+                    if is_recipe_section_type(section_type) and (not current_heading or not current_heading.strip()):
+                        standard_heading = ensure_section_heading(section_type, current_heading)
+                        if standard_heading:
+                            # Update the section in database
+                            cursor.execute("""
+                                UPDATE post_section
+                                SET section_heading = %s
+                                WHERE id = %s
+                            """, (standard_heading, section_id))
+                            # Update the section dict for immediate use
+                            section['section_heading'] = standard_heading
+                            headings_updated = True
+                            logger.info(f"Auto-populated heading '{standard_heading}' for recipe section {section_id} (type: {section_type})")
+                
+                if headings_updated:
+                    cursor.connection.commit()
+                    logger.info(f"Updated missing headings for recipe post {post_id}")
             
             # If no sections found in post_section table, check post_development.sections
             if not sections:
