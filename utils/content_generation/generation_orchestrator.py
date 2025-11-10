@@ -109,7 +109,8 @@ class GenerationOrchestrator:
     def generate_content(self, source_type: str, source_id: int,
                         generation_type: str = 'deep_dive',
                         tone: str = 'warm',
-                        length: str = 'medium') -> Dict:
+                        length: str = 'medium',
+                        post_id: int = None) -> Dict:
         """
         Generate blog post content.
         
@@ -176,10 +177,15 @@ class GenerationOrchestrator:
             {'role': 'user', 'content': formatted_prompt}
         ]
         
-        # Generate content (using a dummy post_id for intercept context)
-        # In production, you'd create the post first or use a temporary ID
+        # Generate content (post_id should be provided for intercept context)
+        if not post_id:
+            return {
+                'success': False,
+                'error': 'post_id is required for LLM intercept_context'
+            }
+        
         intercept_context = {
-            'post_id': 0,  # Temporary - will be updated when post is created
+            'post_id': post_id,
             'section_id': None
         }
         
@@ -200,21 +206,145 @@ class GenerationOrchestrator:
         # Parse JSON response
         generated_text = llm_response.get('content', '').strip()
         
+        def clean_json_text(text):
+            """Clean text to extract valid JSON."""
+            # Remove markdown code blocks
+            text = re.sub(r'```json\s*', '', text, flags=re.IGNORECASE)
+            text = re.sub(r'```\s*', '', text)
+            text = text.strip()
+            
+            # Find the JSON object boundaries
+            brace_start = text.find('{')
+            if brace_start == -1:
+                return None
+            
+            # Find matching closing brace
+            brace_count = 0
+            brace_end = -1
+            for i in range(brace_start, len(text)):
+                if text[i] == '{':
+                    brace_count += 1
+                elif text[i] == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        brace_end = i
+                        break
+            
+            if brace_end == -1:
+                return None
+            
+            # Extract JSON portion
+            json_text = text[brace_start:brace_end + 1]
+            
+            # Escape control characters in JSON string values using regex
+            # This finds content between quotes (string values) and escapes control chars
+            import string
+            
+            def escape_control_chars_in_strings(json_str):
+                """Escape control characters within JSON string values."""
+                # Use regex to find string values and escape control chars within them
+                # Pattern: "..." where ... can contain escaped quotes
+                def replace_control_in_match(match):
+                    """Replace control chars in a matched string value."""
+                    full_match = match.group(0)
+                    # Extract the content between quotes
+                    content = match.group(1)
+                    
+                    # Replace control characters (except \n, \r, \t) with their unicode escape
+                    cleaned_content = ''
+                    for char in content:
+                        if ord(char) < 32 and char not in '\n\r\t':
+                            # Escape as unicode
+                            cleaned_content += '\\u{:04x}'.format(ord(char))
+                        else:
+                            cleaned_content += char
+                    
+                    return '"' + cleaned_content + '"'
+                
+                # Match string values: "..." handling escaped quotes and backslashes
+                # This is tricky because we need to handle escaped characters
+                # Simpler approach: iterate character by character
+                result = []
+                i = 0
+                in_string = False
+                escape_next = False
+                
+                while i < len(json_str):
+                    char = json_str[i]
+                    
+                    if escape_next:
+                        result.append(char)
+                        escape_next = False
+                        i += 1
+                        continue
+                    
+                    if char == '\\':
+                        result.append(char)
+                        escape_next = True
+                        i += 1
+                        continue
+                    
+                    if char == '"':
+                        in_string = not in_string
+                        result.append(char)
+                        i += 1
+                        continue
+                    
+                    if in_string:
+                        # Inside string: escape control chars
+                        if ord(char) < 32 and char not in '\n\r\t':
+                            result.append('\\u{:04x}'.format(ord(char)))
+                        else:
+                            result.append(char)
+                    else:
+                        result.append(char)
+                    
+                    i += 1
+                
+                return ''.join(result)
+            
+            # Clean control characters
+            cleaned_json = escape_control_chars_in_strings(json_text)
+            
+            return cleaned_json
+        
         try:
-            # Extract JSON from response
-            json_match = re.search(r'\{.*\}', generated_text, re.DOTALL)
-            if json_match:
-                content_data = json.loads(json_match.group(0))
-            else:
-                # Try parsing entire response as JSON
+            # Strategy 1: Try parsing the entire response as JSON
+            try:
                 content_data = json.loads(generated_text)
-        except (json.JSONDecodeError, AttributeError) as e:
+            except json.JSONDecodeError:
+                # Strategy 2: Clean and extract JSON
+                cleaned_json = clean_json_text(generated_text)
+                if not cleaned_json:
+                    raise ValueError("Could not extract JSON from response")
+                
+                content_data = json.loads(cleaned_json)
+                
+        except (json.JSONDecodeError, ValueError, AttributeError) as e:
             logger.error(f"Failed to parse LLM response as JSON: {e}")
-            logger.error(f"Raw response: {generated_text[:500]}")
-            return {
-                'success': False,
-                'error': f'Failed to parse LLM response: {str(e)}'
-            }
+            logger.error(f"Raw response (first 1000 chars): {generated_text[:1000]}")
+            
+            # Final attempt: more aggressive cleaning
+            try:
+                # Remove all markdown formatting
+                cleaned = re.sub(r'```[a-z]*\s*', '', generated_text, flags=re.IGNORECASE)
+                cleaned = cleaned.strip()
+                
+                # Extract JSON with balanced braces
+                cleaned_json = clean_json_text(cleaned)
+                if cleaned_json:
+                    content_data = json.loads(cleaned_json)
+                else:
+                    raise ValueError("Could not extract JSON after aggressive cleaning")
+            except Exception as e2:
+                logger.error(f"Failed to parse even after aggressive cleaning: {e2}")
+                # Log more of the response for debugging
+                logger.error(f"Full response length: {len(generated_text)}")
+                logger.error(f"Response preview: {generated_text[:1500]}")
+                return {
+                    'success': False,
+                    'error': f'Failed to parse LLM response: {str(e)}. The response may contain invalid JSON or control characters.'
+                }
         
         return {
             'success': True,

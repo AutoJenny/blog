@@ -52,9 +52,9 @@
             <label class="filter-pill filter-annual-events active"><input type="checkbox" id="toggle-annual-events" checked> Annual Events</label>
             <label class="filter-pill filter-special-events active"><input type="checkbox" id="toggle-special-events" checked> Special Events</label>
             <label class="filter-pill filter-ideas active"><input type="checkbox" id="toggle-ideas" checked> Ideas</label>
-            <label class="filter-pill filter-weekly-words active"><input type="checkbox" id="toggle-weekly-words" checked> Weekly Words</label>
             <label class="filter-pill filter-syndication active"><input type="checkbox" id="toggle-syndication" checked> Syndication</label>
             <label class="filter-pill filter-profiles active"><input type="checkbox" id="toggle-profiles" checked> Profiles</label>
+            <label class="filter-pill filter-content-generator active"><input type="checkbox" id="toggle-content-generator" checked> Content Generator</label>
             <label class="filter-pill filter-recipes active"><input type="checkbox" id="toggle-recipes" checked> Recipes</label>
         </div>
 
@@ -132,14 +132,6 @@
                 <div class="row-grid" id="ideas-row"></div>
             </div>
 
-            <!-- Weekly Words row: header + 7 aligned cells -->
-            <div class="row-section" data-filter="weekly-words">
-                <div class="row-header">
-                    <span>Weekly Words</span>
-                </div>
-                <div class="row-grid" id="weekly-words-row"></div>
-            </div>
-
             <!-- Syndication row: header + 7 aligned cells -->
             <div class="row-section" data-filter="syndication">
                 <div class="row-header">Syndication</div>
@@ -155,6 +147,17 @@
                     </button>
                 </div>
                 <div class="row-grid" id="profiles-row"></div>
+            </div>
+
+            <!-- Content Generator row: header + 7 aligned cells -->
+            <div class="row-section" data-filter="content-generator">
+                <div class="row-header">
+                    <span>Content Generator</span>
+                    <button class="row-add-btn" onclick="getContentGeneratorModal().openNew()" title="Generate New Post">
+                        <i class="fas fa-plus"></i> Generate Post
+                    </button>
+                </div>
+                <div class="row-grid" id="content-generator-row"></div>
             </div>
 
             <!-- Recipes row: header + 7 aligned cells -->
@@ -213,6 +216,9 @@
 /* Profiles: teal/cyan background */
 .filter-profiles { background:#0d9488; border-color:#14b8a6; color:#fff; }
 .filter-profiles.active { background:#14b8a6; border-color:#2dd4bf; color:#fff; }
+/* Content Generator: purple/violet background */
+.filter-content-generator { background:#6d28d9; border-color:#7c3aed; color:#fff; }
+.filter-content-generator.active { background:#8b5cf6; border-color:#a78bfa; color:#fff; }
 /* Recipes: warm orange/brown background (Scottish cooking theme) */
 .filter-recipes { background:#92400e; border-color:#b45309; color:#fff; }
 .filter-recipes.active { background:#d97706; border-color:#f59e0b; color:#fff; }
@@ -281,6 +287,9 @@
 /* Profiles: teal background */
 .item.profile { background:#0d9488; color:#fff; cursor:pointer; border:1px solid #14b8a6; }
 .item.profile:hover { background:#14b8a6; border-color:#2dd4bf; }
+/* Content Generator: purple background */
+.item.content-generator { background:#6d28d9; color:#fff; cursor:pointer; border:1px solid #7c3aed; }
+.item.content-generator:hover { background:#8b5cf6; border-color:#a78bfa; }
 /* Recipes: warm orange/brown background */
 .item.recipe { background:#92400e; color:#fff; cursor:pointer; border:1px solid #b45309; }
 .item.recipe:hover { background:#d97706; border-color:#f59e0b; }
@@ -339,6 +348,7 @@
 <!-- Idea Modal Component Styles -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/planning/idea-modal.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/planning/profile-modal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/content-generator-modal.css') }}">
 
 <script>
 window.postId = {{ post_id }};
@@ -352,6 +362,7 @@ window.currentSubstage = 'week-view';
 <script src="{{ url_for('static', filename='js/planning/idea-modal-conversions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-core.js') }}"></script>
 <script src="{{ url_for('static', filename='js/planning/profile-modal-core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/content-generator-modal-core.js') }}"></script>
 
 <script>
 // Utility function for escaping HTML
@@ -368,6 +379,7 @@ function escapeHtml(text) {
 <!-- Include the social focus modal component -->
 {% include 'planning/calendar/social_focus_modal.html' %}
 {% include 'planning/calendar/profile_modal.html' %}
+{% include 'planning/calendar/content_generator_modal.html' %}
 
 <script>
     // Initialize idea modal and hook up click handlers after DOM loads
