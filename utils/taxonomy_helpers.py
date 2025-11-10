@@ -239,3 +239,40 @@ def get_illustration_method_with_post(post_id, year=None, week=None, default='LL
     illustration_method = get_illustration_method(target_post_id, default)
     return target_post_id, illustration_method
 
+
+def get_default_image_style(post_id):
+    """
+    Get default image style for a post from taxonomy.
+    
+    Returns the default_image_style from the post's content_type taxonomy item.
+    If no style is defined in taxonomy, returns None.
+    
+    Args:
+        post_id (int): The post ID to look up
+    
+    Returns:
+        dict or None: Default image style dict with 'name' and 'style_json' keys, or None
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT content_type.default_image_style
+                FROM post p
+                LEFT JOIN taxonomy_item content_type ON p.content_type_id = content_type.id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            result = cursor.fetchone()
+            if result and result.get('default_image_style'):
+                style = result['default_image_style']
+                # Ensure it's a dict (JSONB might be stored as string in some cases)
+                if isinstance(style, str):
+                    import json
+                    style = json.loads(style)
+                return style
+            
+            return None
+    except Exception as e:
+        logger.error(f"Error retrieving default_image_style for post {post_id}: {e}")
+        return None
+
