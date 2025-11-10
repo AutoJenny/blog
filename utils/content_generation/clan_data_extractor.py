@@ -194,9 +194,12 @@ class ClanDataExtractor:
                 needs_llm_supplement['heritage_data'][key] = heritage_word_counts[key] < self.llm_threshold
         
         # Calculate completeness scores
-        core_fields = ['name', 'description', 'supplier_name']
-        core_complete = sum(1 for field in core_fields if product_data.get(f'has_{field}' if field != 'description' else 'has_description'))
-        core_completeness = core_complete / len(core_fields)
+        core_fields_complete = sum([
+            1 if product_data.get('has_name') else 0,
+            1 if product_data.get('has_description') else 0,
+            1 if product_data.get('has_supplier') else 0
+        ])
+        core_completeness = core_fields_complete / 3.0
         
         optional_fields = ['heritage_data', 'specifications', 'configurable_options']
         optional_complete = sum(1 for field in optional_fields if product_data.get(f'has_{field}'))
