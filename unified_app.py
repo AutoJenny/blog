@@ -104,8 +104,7 @@ def create_app(config_name=None):
     app.register_blueprint(content_search_bp)
     
     # Register content generation API blueprint
-    from blueprints.content_generation_api import bp as content_generation_bp, register_routes
-    register_routes(content_generation_bp)
+    from blueprints.content_generation_api import bp as content_generation_bp
     app.register_blueprint(content_generation_bp)
     
     # Register post type pipeline blueprint

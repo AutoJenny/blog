@@ -79,19 +79,23 @@ def api_get_active_style(post_id):
             styles = imaging.get('styles', [])
             active_index = imaging.get('activeIndex', 0)
             
+            active_style = None
             if styles and 0 <= active_index < len(styles):
                 active_style = styles[active_index]
-                return jsonify({
-                    'success': True,
-                    'active_style': active_style,
-                    'active_index': active_index
-                })
-            else:
-                return jsonify({
-                    'success': True,
-                    'active_style': None,
-                    'active_index': -1
-                })
+            
+            # If no saved styles, check taxonomy default
+            if not active_style:
+                from utils.taxonomy_helpers import get_default_image_style
+                taxonomy_style = get_default_image_style(post_id)
+                if taxonomy_style:
+                    active_style = taxonomy_style
+                    logger.info(f"Using taxonomy default image style for active: {taxonomy_style.get('name', 'Unknown')}")
+            
+            return jsonify({
+                'success': True,
+                'active_style': active_style,
+                'active_index': active_index if active_style else -1
+            })
     except Exception as e:
         logger.error(f"Error getting active style: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
