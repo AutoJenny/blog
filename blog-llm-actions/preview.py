@@ -68,7 +68,8 @@ def get_post_with_development(post_id):
         # Get header image if exists
         if post.get('header_image_id'):
             cur.execute("""
-                SELECT * FROM image WHERE id = %s
+                SELECT id, filename, file_path as path, alt_text, caption, image_prompt, width, height
+                FROM images WHERE id = %s
             """, (post['header_image_id'],))
             header_image = cur.fetchone()
             if header_image:

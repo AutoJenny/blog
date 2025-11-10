@@ -381,14 +381,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize LLM Prompts Panel for drafting, LLM-creation, or image-prompts page
+    // Initialize LLM Prompts Panel for LLM-creation OR for image-prompts page (both routes)
     // image-prompts page template includes llm-prompts-panel.html, so we MUST initialize it
-    const isDraftingPage = window.currentSubstage === 'drafting';
-    if (illustrationMethod === 'LLM-creation' || isImagePromptsPage || isDraftingPage) {
+    if (illustrationMethod === 'LLM-creation' || isImagePromptsPage) {
         let llmPromptsPanel = null;
         try {
             if (typeof LLMPromptsPanel !== 'undefined') {
-                const panelOptions = {
+                llmPromptsPanel = new LLMPromptsPanel({
                     postId: window.postId,
                     onPromptChange: (prompt) => {
                         console.log('[LLM Prompts] Prompt changed:', prompt);
@@ -399,23 +398,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     onPromptSave: (promptData) => {
                         console.log('[LLM Prompts] Prompt saved:', promptData);
                     }
-                };
-                
-                // Add selection endpoints for drafting page
-                if (isDraftingPage) {
-                    panelOptions.promptEndpoint = `/authoring/api/posts/${window.postId}/section-drafting-prompt`;
-                    panelOptions.promptSelectionEndpoint = `/authoring/api/posts/${window.postId}/section-drafting-prompt-selection`;
-                }
-                
-                llmPromptsPanel = new LLMPromptsPanel(panelOptions);
+                });
                 window.llmPromptsPanel = llmPromptsPanel;
-                
-                // Load prompt selection from database for drafting page
-                if (isDraftingPage && llmPromptsPanel.loadPromptSelection) {
-                    llmPromptsPanel.loadPromptSelection().then(() => {
-                        llmPromptsPanel.loadPromptFromAPI();
-                    });
-                }
             } else {
                 console.warn('[Authoring Workspace] LLMPromptsPanel not available');
             }

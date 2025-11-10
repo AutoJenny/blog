@@ -957,6 +957,7 @@
             const orig = publishBtnText.textContent;
             publishBtnText.textContent = 'Publishing...';
             try {
+                // Use launchpad route (from launchpad_old blueprint) - this is the active route
                 const res = await fetch(`/launchpad/api/publish/${postId}`, { method: 'POST', headers: {'Content-Type':'application/json'} });
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.error || 'Publish failed');

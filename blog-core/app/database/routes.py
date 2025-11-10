@@ -40,7 +40,7 @@ def index():
                 cur.execute("""
                     SELECT 
                         (SELECT COUNT(*) FROM post) as post_count,
-                        (SELECT COUNT(*) FROM image) as image_count,
+                        (SELECT COUNT(*) FROM images) as image_count,
                         (SELECT COUNT(*) FROM workflow) as workflow_count,
                         (SELECT COUNT(*) FROM llm_interaction) as llm_count
                 """)

@@ -10,18 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Uber Generate button
     initUberGenerate();
     
-    // Update button text if content already exists (after a delay to allow panels to load)
-    setTimeout(() => {
-        const uberBtn = document.getElementById('uber-generate-btn');
-        if (uberBtn) {
-            const hasContent = document.getElementById('title-options')?.children.length > 0 || 
-                             document.getElementById('summary-textarea')?.value.trim().length > 0;
-            if (hasContent) {
-                uberBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate All (Title, Subtitle, Summary, Slug)';
-            }
-        }
-    }, 1000); // Wait for panels to load content
-    
     // Initialize all panels
     // Panel initialization will be added as panels are developed
     
@@ -87,7 +75,7 @@ function initUberGenerate() {
                 // Show success message
                 uberBtn.innerHTML = '<i class="fas fa-check"></i> Generated Successfully!';
                 setTimeout(() => {
-                    uberBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate All (Title, Subtitle, Summary, Slug)';
+                    uberBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)';
                 }, 2000);
                 
                 // Notify opener (launchpad) that header title & summary completed
@@ -97,17 +85,11 @@ function initUberGenerate() {
                 throw new Error(data.error || 'Generation failed');
             }
             
-            } catch (error) {
+        } catch (error) {
             console.error('[Uber Generate] Error:', error);
             uberBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Generation Failed';
             setTimeout(() => {
-                // Check if content exists to determine button text
-                const hasContent = document.getElementById('title-options')?.children.length > 0 || 
-                                 document.getElementById('summary-textarea')?.value.trim().length > 0;
-                const buttonText = hasContent ? 
-                    '<i class="fas fa-redo"></i> Regenerate All (Title, Subtitle, Summary, Slug)' :
-                    '<i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)';
-                uberBtn.innerHTML = buttonText;
+                uberBtn.innerHTML = '<i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)';
             }, 3000);
         } finally {
             uberBtn.disabled = false;

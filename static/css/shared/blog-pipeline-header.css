@@ -266,54 +266,6 @@
     display: block;
 }
 
-/* Route Indicator Banner (Category/Illustration Method) */
-.route-indicator {
-    background: #059669;
-    color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    margin: 1rem auto;
-    margin-bottom: 1.5rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    max-width: 1400px;
-    position: relative;
-    z-index: 1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.route-indicator i {
-    font-size: 1.1rem;
-}
-
-.route-indicator span:last-child {
-    margin-left: auto;
-    font-weight: 500;
-    opacity: 0.85;
-}
-
-/* Route Indicator Color Variants */
-.route-indicator.photo-harvesting {
-    background: #1e40af;
-}
-
-.route-indicator.llm-creation {
-    background: #7c3aed;
-}
-
-.route-indicator.header-page {
-    background: #1e40af;
-}
-
-/* Ensure route indicator doesn't overlap with header */
-.container > .route-indicator,
-.ideas-main > .route-indicator,
-.authoring-workspace > .route-indicator {
-    margin-top: 1.5rem;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .post-details-line {
@@ -331,16 +283,6 @@
     .sub-stages { justify-content: center; }
     .subtitle { min-width: auto; margin: 0.5rem 0; }
     .tab-buttons { justify-content: center; }
-    
-    .route-indicator {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .route-indicator span:last-child {
-        margin-left: 0;
-    }
 }
 
 

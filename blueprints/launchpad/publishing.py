@@ -39,9 +39,9 @@ def get_post_with_development(post_id):
         # Try to get optimized header via post_images link first
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT i.file_path as path, i.alt_text, i.caption, i.filename
+                SELECT i.path, i.alt_text, i.caption, i.filename
                 FROM post_images pi
-                JOIN images i ON pi.image_id = i.id
+                JOIN image i ON pi.image_id = i.id
                 WHERE pi.section_id IS NULL 
                   AND pi.image_type = 'header_optimized'
                   AND pi.post_id = %s
@@ -89,12 +89,12 @@ def get_post_sections_with_images(post_id):
                 ps.image_alt_text, ps.image_captions, ps.status,
                 i.id AS image_id,
                 i.filename,
-                i.file_path AS image_path,
+                i.path AS image_path,
                 i.alt_text AS image_alt_text,
                 i.caption AS image_caption
             FROM post_section ps
             LEFT JOIN post_images pi ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
-            LEFT JOIN images i ON pi.image_id = i.id
+            LEFT JOIN image i ON pi.image_id = i.id
             WHERE ps.post_id = %s
             ORDER BY ps.section_order
         """, (post_id,))
@@ -105,15 +105,36 @@ def get_post_sections_with_images(post_id):
         for section in raw_sections:
             section_dict = dict(section)
             
-            # Priority 1: Database link (post_images)
+            # Priority 1: Check Photo-harvesting route (selected_landscape.json)
             image_path = None
             caption_text = section_dict.get('image_captions') or ''
             alt_text = section_dict.get('image_alt_text') or ''
             
-            image_path = section_dict.get('image_path')
+            try:
+                import os
+                import json
+                photo_json_path = f"static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/selected_landscape.json"
+                if os.path.exists(photo_json_path):
+                    with open(photo_json_path, 'r') as f:
+                        photo_data = json.load(f)
+                        photo = photo_data.get('photo', {})
+                        if photo.get('url'):
+                            # Use hotlinked provider URL (Pexels/Unsplash)
+                            image_path = photo['url']
+                            # Extract caption/alt from photo metadata if not already set
+                            if not caption_text and photo.get('credits'):
+                                caption_text = photo['credits']
+                            if not alt_text and photo.get('photographer'):
+                                alt_text = f"Photo by {photo['photographer']}"
+            except Exception as e:
+                logger.debug(f"Could not load Photo-harvesting JSON for section {section_dict['id']}: {e}")
+            
+            # Priority 2: Database link (post_images)
+            if not image_path:
+                image_path = section_dict.get('image_path')
             
             if image_path:
-                # Image exists (from post_images linking table)
+                # Image exists (Photo-harvesting or post_images linking table)
                 section_dict['image'] = {
                     'path': image_path,
                     'caption': caption_text,
@@ -121,7 +142,7 @@ def get_post_sections_with_images(post_id):
                     'placeholder': False
                 }
             else:
-                # Priority 2: Fallback: check filesystem for conventional optimized path
+                # Priority 3: Fallback: check filesystem for conventional optimized path
                 try:
                     import os
                     candidate = f"/static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/{section_dict['id']}.jpg"
@@ -314,12 +335,10 @@ def publish_post_to_clan(post_id):
                 cp = post['cross_promotion']
                 needs_update = False
                 if cp.get('category_id') and cp.get('category_position') and not cp.get('category_widget_html'):
-                    # Remove title parameter - we don't want headings on widgets
-                    cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\"}}}}"
+                    cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\" title=\"{cp.get('category_title') or 'Related Department'}\"}}}}"
                     needs_update = True
                 if cp.get('product_id') and cp.get('product_position') and not cp.get('product_widget_html'):
-                    # Remove title parameter - we don't want headings on widgets
-                    cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\"}}}}"
+                    cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\" title=\"{cp.get('product_title') or 'Related Products'}\"}}}}"
                     needs_update = True
                 if needs_update:
                     with db_manager.get_cursor() as cursor2:
@@ -608,151 +627,6 @@ def clan_post_html(post_id):
         logger.error(f"Error in clan_post_html for post {post_id}: {e}")
         return f"Error: {str(e)}", 500
 
-@bp.route('/api/publishing/test-html/<int:post_id>')
-def test_publish_html(post_id):
-    """Test endpoint that generates the HTML for publishing without sending to API.
-    Saves to a temporary file and returns the file path."""
-    try:
-        import time
-        import re
-        
-        # Get post data
-        post = get_post_with_development(post_id)
-        if not post:
-            return jsonify({'success': False, 'error': 'Post not found'}), 404
-        
-        sections = get_post_sections_with_images(post_id)
-        
-        # Fix field mapping - ensure post has the fields our function expects
-        if post.get('post_id') and not post.get('id'):
-            post['id'] = post['post_id']
-        
-        # Ensure summary field exists and has content
-        if not post.get('summary'):
-            post['summary'] = post.get('intro_blurb')
-            if not post['summary']:
-                raise ValueError("Post must have either summary or intro_blurb")
-        
-        # Ensure created_at is handled properly - convert to datetime object for template
-        if post.get('created_at'):
-            from datetime import datetime
-            if isinstance(post['created_at'], str):
-                try:
-                    post['created_at'] = datetime.fromisoformat(post['created_at'].replace('Z', '+00:00'))
-                except Exception:
-                    try:
-                        post['created_at'] = datetime.strptime(post['created_at'], '%a, %d %b %Y %H:%M:%S %Z')
-                    except Exception:
-                        post['created_at'] = None
-            elif not hasattr(post['created_at'], 'isoformat'):
-                post['created_at'] = None
-        
-        # Get cross-promotion data
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                       cross_promotion_category_id, cross_promotion_category_title,
-                       cross_promotion_product_id, cross_promotion_product_title,
-                       cross_promotion_category_position, cross_promotion_product_position,
-                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
-                FROM post WHERE id = %s
-            """, (post_id,))
-            header_data = cursor.fetchone()
-        
-        # Add header image if exists
-        header_image_path = find_header_image(post_id)
-        if header_image_path:
-            post['header_image'] = {
-                'path': header_image_path,
-                'alt_text': f"Header image for {post.get('title', 'this post')}",
-                'caption': header_data['header_image_caption'] if header_data else None,
-                'title': header_data['header_image_title'] if header_data else None,
-                'width': header_data['header_image_width'] if header_data else None,
-                'height': header_data['header_image_height'] if header_data else None
-            }
-        
-        # Map cross-promotion
-        if header_data:
-            post['cross_promotion'] = {
-                'category_id': header_data['cross_promotion_category_id'],
-                'category_title': header_data['cross_promotion_category_title'],
-                'product_id': header_data['cross_promotion_product_id'],
-                'product_title': header_data['cross_promotion_product_title'],
-                'category_position': header_data.get('cross_promotion_category_position'),
-                'product_position': header_data.get('cross_promotion_product_position'),
-                'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
-                'product_widget_html': header_data.get('cross_promotion_product_widget_html')
-            }
-        
-        # Import publishing class
-        import sys
-        sys.path.append('/Users/autojenny/Documents/projects/blog/blog-launchpad')
-        from clan_publisher import ClanPublisher
-        
-        # Create publisher instance
-        publisher = ClanPublisher()
-        
-        # Run image processing (but don't actually upload - just simulate)
-        logger.info(f"=== TEST HTML GENERATION FOR POST {post_id} ===")
-        logger.info(f"Processing {len(sections)} sections...")
-        
-        # Log section image information
-        for i, section in enumerate(sections):
-            has_image = section.get('image') and section['image'].get('path')
-            logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}):")
-            if has_image:
-                img_path = section['image']['path']
-                is_photo_harvesting = img_path.startswith(('http://', 'https://'))
-                logger.info(f"  Image path: {img_path}")
-                logger.info(f"  Photo-harvesting: {is_photo_harvesting}")
-            else:
-                logger.info(f"  No image")
-        
-        # Process images (this will skip Photo-harvesting URLs)
-        uploaded_images = publisher.process_images(post, sections)
-        logger.info(f"Processed images. Uploaded images count: {len(uploaded_images)}")
-        logger.info(f"Uploaded images keys: {list(uploaded_images.keys())}")
-        
-        # Generate HTML content (this is what gets sent to clan.com)
-        html_content = publisher.get_preview_html_content(post, sections, uploaded_images)
-        
-        if not html_content:
-            return jsonify({'success': False, 'error': 'Failed to generate HTML content'}), 500
-        
-        # Save to temporary file
-        timestamp = int(time.time())
-        test_file = f'/tmp/test_publish_html_post_{post_id}_{timestamp}.html'
-        
-        with open(test_file, 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        
-        # Analyze the HTML for Photo-harvesting URLs
-        photo_harvesting_urls = re.findall(r'src="(https?://[^"]+)"', html_content)
-        pexels_urls = [url for url in photo_harvesting_urls if 'pexels' in url.lower()]
-        unsplash_urls = [url for url in photo_harvesting_urls if 'unsplash' in url.lower()]
-        
-        logger.info(f"✅ HTML saved to: {test_file}")
-        logger.info(f"Found {len(photo_harvesting_urls)} Photo-harvesting URLs in HTML:")
-        logger.info(f"  Pexels URLs: {len(pexels_urls)}")
-        logger.info(f"  Unsplash URLs: {len(unsplash_urls)}")
-        
-        return jsonify({
-            'success': True,
-            'file_path': test_file,
-            'html_length': len(html_content),
-            'photo_harvesting_urls_count': len(photo_harvesting_urls),
-            'pexels_urls_count': len(pexels_urls),
-            'unsplash_urls_count': len(unsplash_urls),
-            'photo_harvesting_urls': photo_harvesting_urls[:10],  # First 10 for inspection
-            'message': f'HTML generated and saved to {test_file}'
-        })
-        
-    except Exception as e:
-        logger.error(f"Error in test_publish_html for post {post_id}: {e}")
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
 def validate_publish_data(post_id):
     """Validate publish data consistency and completeness."""
     try:
@@ -906,10 +780,10 @@ def validate_publish_data(post_id):
                 # Ensure widget HTML exists for preview/publish consistency
                 widget_changed = False
                 if post['cross_promotion'].get('category_id') and post['cross_promotion'].get('category_position') and not post['cross_promotion'].get('category_widget_html'):
-                    post['cross_promotion']['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{post['cross_promotion'].get('category_id')}\"}}}}"
+                    post['cross_promotion']['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{post['cross_promotion'].get('category_id')}\" title=\"{post['cross_promotion'].get('category_title') or 'Related Department'}\"}}}}"
                     widget_changed = True
                 if post['cross_promotion'].get('product_id') and post['cross_promotion'].get('product_position') and not post['cross_promotion'].get('product_widget_html'):
-                    post['cross_promotion']['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{post['cross_promotion'].get('product_id')}\"}}}}"
+                    post['cross_promotion']['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{post['cross_promotion'].get('product_id')}\" title=\"{post['cross_promotion'].get('product_title') or 'Related Products'}\"}}}}"
                     widget_changed = True
                 if widget_changed:
                     with db_manager.get_cursor() as c2:
