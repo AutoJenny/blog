@@ -214,7 +214,9 @@ class ClanDataExtractor:
             'needs_llm_supplement': needs_llm_supplement,
             'missing_fields': [
                 field for field in ['name', 'description', 'supplier_name']
-                if not product_data.get(f'has_{field}' if field != 'description' else 'has_description')
+                if (field == 'name' and not product_data.get('has_name')) or
+                   (field == 'description' and not product_data.get('has_description')) or
+                   (field == 'supplier_name' and not product_data.get('has_supplier'))
             ],
             'threshold': self.llm_threshold
         }
