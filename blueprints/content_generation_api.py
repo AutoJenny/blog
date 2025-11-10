@@ -78,14 +78,15 @@ def api_generate_content():
                     source_name = metadata.get(f'{source_type}_name') or metadata.get('name', source_name)
                     break
         
-        # Create placeholder post
+        # Create placeholder post with generated_source_type and preset taxonomy
         placeholder_title = f"Generating content for {source_name}..."
         idea_seed = f"Generated from {source_type}: {source_name}"
         post_id = post_creator.create_post(
             title=placeholder_title,
             standfirst='',
             idea_seed=idea_seed,
-            expanded_idea=''
+            expanded_idea='',
+            generated_source_type=source_type  # Set source type: 'product' or 'category'
         )
         
         # Generate content (now we have a valid post_id)

@@ -84,25 +84,32 @@ def get_pipeline_for_post(post_id):
         post_type = get_post_type(post_id)
         steps = get_pipeline_steps(post_type)
         
-        # Get post title for display
+        # Get post title and content_type for display
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT title FROM post WHERE id = %s
+                SELECT p.title, p.content_type_id, ti.slug as content_type_slug
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
             """, (post_id,))
             
             post_result = cursor.fetchone()
             post_title = None
+            content_type_slug = None
             if post_result:
                 if isinstance(post_result, dict):
                     post_title = post_result.get('title')
+                    content_type_slug = post_result.get('content_type_slug')
                 else:
                     post_title = post_result[0] if post_result else None
+                    content_type_slug = post_result[2] if len(post_result) > 2 else None
         
         return jsonify({
             'success': True,
             'post_id': post_id,
             'post_type': post_type,
             'post_title': post_title,
+            'content_type_slug': content_type_slug,
             'steps': steps
         })
         

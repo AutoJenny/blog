@@ -13,6 +13,7 @@ Welcome to the BlogForge CMS documentation. This directory contains comprehensiv
 - **[Planning Area Roadmap](planning_area_roadmap.md)** - New collaborative planning system roadmap
 - **[Auto-Replenish System](auto-replenish-system.md)** - Automated queue management system
 - **[Image Storage Migration](image_storage_migration_summary.md)** - Image system migration details
+- **[Data Intelligence System](data_intelligence/README.md)** - Product/Category Profiles & Content Generation using LLMs and vector search
 
 ### Architecture Documentation (Legacy)
 The `temp/` directory contains detailed architecture documentation from the migration process:

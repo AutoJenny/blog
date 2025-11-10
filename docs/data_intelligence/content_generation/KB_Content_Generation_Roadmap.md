@@ -3,6 +3,8 @@
 **Purpose:** Social Media & Blog Content Generation from Products, Categories, and Knowledge Base  
 **Scope:** LLM-driven blog post creation using vector search and semantic retrieval
 
+> **Note:** This roadmap is part of the [Data Intelligence System](../README.md). See [Content Generator Status](./CONTENT_GENERATOR_STATUS.md) for current implementation status.
+
 ---
 
 ## Overview

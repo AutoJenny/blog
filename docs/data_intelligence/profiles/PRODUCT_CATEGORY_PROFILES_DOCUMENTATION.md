@@ -1,5 +1,7 @@
 # Product & Category Profiles - Complete Technical Documentation
 
+> **Note:** This documentation is part of the [Data Intelligence System](../README.md), which includes both Product & Category Profiles and the Content Generation System.
+
 ## Overview
 
 Product & Category Profiles are editorial-first, commerce-linked blog features that explore Scottish heritage, craftsmanship, and culture. They are weekly blog features (not daily) that provide in-depth stories about products and product categories.

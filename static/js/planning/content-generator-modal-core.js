@@ -613,16 +613,13 @@ class ContentGeneratorModal {
                 })
             });
             
-            // Close modal and refresh calendar
+            // Close modal and navigate to taxonomy page
             this.close();
             window.dispatchEvent(new CustomEvent('content-generated', { detail: { post_id: this.generatedContent.post_id } }));
             
-            // Reload week view
-            if (typeof loadWeek === 'function') {
-                loadWeek(year, weekNumber);
-            } else {
-                location.reload();
-            }
+            // Navigate to taxonomy page (generated posts start there)
+            const taxonomyUrl = `/planning/posts/${this.generatedContent.post_id}/calendar/taxonomy`;
+            window.location.href = taxonomyUrl;
         } catch (error) {
             console.error('Error scheduling post:', error);
             this.showError('Post created but failed to schedule in calendar');

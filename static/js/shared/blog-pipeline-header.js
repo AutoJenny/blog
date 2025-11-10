@@ -619,6 +619,17 @@ class BlogPipelineHeader {
                         }
                         return; // Don't continue with theme lookup
                     }
+                    if (postTypeData.success && postTypeData.post_type === 'generated') {
+                        // For generated posts with "Products & Producers" content type, show post title instead of theme
+                        if (postTypeData.content_type_slug === 'products-producers') {
+                            const generatedTitle = postTypeData.post_title || 'Generated Post';
+                            if (themeEl) {
+                                themeEl.textContent = generatedTitle;
+                            }
+                            return; // Don't continue with theme lookup
+                        }
+                        // For other generated posts, fall through to theme lookup
+                    }
                 }
             } catch (e) {
                 console.warn('[Blog Pipeline Header] Error checking post type:', e);

@@ -49,7 +49,8 @@ class PostCreator:
         return slug
     
     def create_post(self, title: str, standfirst: str, 
-                    idea_seed: str, expanded_idea: Optional[str] = None) -> int:
+                    idea_seed: str, expanded_idea: Optional[str] = None,
+                    generated_source_type: Optional[str] = None) -> int:
         """
         Create a new post record.
         
@@ -58,6 +59,7 @@ class PostCreator:
             standfirst: Post summary/standfirst
             idea_seed: Idea seed text
             expanded_idea: Optional expanded idea/outline
+            generated_source_type: Optional source type for generated posts ('product', 'category', 'kb')
             
         Returns:
             Post ID
@@ -65,12 +67,44 @@ class PostCreator:
         slug = self.generate_slug(title)
         
         with db_manager.get_cursor() as cursor:
+            # Get default taxonomy values for generated posts
+            # Theme: Culture & Life (id: 2)
+            # Content Type: Products & Producers (id: 8)
+            # Format: Article (id: 11)
+            theme_id = None
+            content_type_id = None
+            format_id = None
+            
+            if generated_source_type:
+                # Set default taxonomy for generated posts
+                cursor.execute("""
+                    SELECT id FROM taxonomy_item WHERE slug = 'culture_life'
+                """)
+                theme_result = cursor.fetchone()
+                if theme_result:
+                    theme_id = theme_result['id']
+                
+                cursor.execute("""
+                    SELECT id FROM taxonomy_item WHERE slug = 'products-producers'
+                """)
+                content_type_result = cursor.fetchone()
+                if content_type_result:
+                    content_type_id = content_type_result['id']
+                
+                cursor.execute("""
+                    SELECT id FROM taxonomy_item WHERE slug = 'article'
+                """)
+                format_result = cursor.fetchone()
+                if format_result:
+                    format_id = format_result['id']
+            
             # Create post record
             cursor.execute("""
-                INSERT INTO post (title, slug, summary, status, created_at, updated_at)
-                VALUES (%s, %s, %s, 'draft', NOW(), NOW())
+                INSERT INTO post (title, slug, summary, status, generated_source_type, 
+                                theme_id, content_type_id, format_id, created_at, updated_at)
+                VALUES (%s, %s, %s, 'draft', %s, %s, %s, %s, NOW(), NOW())
                 RETURNING id
-            """, (title, slug, standfirst))
+            """, (title, slug, standfirst, generated_source_type, theme_id, content_type_id, format_id))
             
             post_id = cursor.fetchone()['id']
             
@@ -80,7 +114,7 @@ class PostCreator:
                 VALUES (%s, %s, %s)
             """, (post_id, idea_seed, expanded_idea or ''))
             
-            logger.info(f"Created post {post_id}: {title}")
+            logger.info(f"Created post {post_id}: {title} (generated_source_type: {generated_source_type})")
             
             return post_id
     
