@@ -34,18 +34,28 @@ def api_list_post_styles(post_id):
             
             # If no styles found for the post, return a permanent system default (do NOT persist per-post)
             if not styles:
-                styles = [{
-                    'name': 'Watercolour and Pen & Ink',
-                    'style_json': {
-                        'medium': 'watercolour and pen and ink',
-                        'technique': 'brushstrokes fading out by ending towards the edges of the image',
-                        'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
-                        'composition': 'rule-of-thirds with negative space',
-                        'lighting': 'soft, ethereal, golden hour',
-                        'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
-                        'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
-                    }
-                }]
+                # Try to get default style from taxonomy first
+                from utils.taxonomy_helpers import get_default_image_style
+                taxonomy_style = get_default_image_style(post_id)
+                
+                if taxonomy_style:
+                    styles = [taxonomy_style]
+                    logger.info(f"Using taxonomy default image style: {taxonomy_style.get('name', 'Unknown')}")
+                else:
+                    # Fallback to permanent system default (Watercolour and Pen & Ink)
+                    styles = [{
+                        'name': 'Watercolour and Pen & Ink',
+                        'style_json': {
+                            'medium': 'watercolour and pen and ink',
+                            'technique': 'brushstrokes fading out by ending towards the edges of the image',
+                            'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
+                            'composition': 'rule-of-thirds with negative space',
+                            'lighting': 'soft, ethereal, golden hour',
+                            'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
+                            'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
+                        }
+                    }]
+                    logger.info("Using system default image style (no taxonomy default found)")
                 active_index = 0
             
             return jsonify({

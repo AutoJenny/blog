@@ -237,7 +237,9 @@ def api_generate_image_prompt_from_builder():
             
             section = None
             # First try direct ID match (if section_id is numeric)
-            if section_id.isdigit():
+            # Convert section_id to string for isdigit() check
+            section_id_str = str(section_id)
+            if section_id_str.isdigit():
                 cursor.execute("""
                     SELECT id, section_order, section_heading, section_description, 
                            status, draft, polished, ideas_to_include, facts_to_include,
@@ -245,11 +247,11 @@ def api_generate_image_prompt_from_builder():
                            image_alt_text, selected_image_concept
                     FROM post_section
                     WHERE post_id = %s AND id = %s
-                """, (target_post_id, int(section_id)))
+                """, (target_post_id, int(section_id_str)))
                 section = cursor.fetchone()
             
             # If not found by ID, try by section_order (section_id might be order-based)
-            if not section and section_id.isdigit():
+            if not section and section_id_str.isdigit():
                 cursor.execute("""
                     SELECT id, section_order, section_heading, section_description, 
                            status, draft, polished, ideas_to_include, facts_to_include,
@@ -257,7 +259,7 @@ def api_generate_image_prompt_from_builder():
                            image_alt_text, selected_image_concept
                     FROM post_section
                     WHERE post_id = %s AND section_order = %s
-                """, (target_post_id, int(section_id)))
+                """, (target_post_id, int(section_id_str)))
                 section = cursor.fetchone()
             
             # If still not found, try matching via post_development.sections
@@ -285,9 +287,9 @@ def api_generate_image_prompt_from_builder():
                             
                             # Try multiple matching strategies
                             section_matches = False
-                            if str(section_id_from_data) == str(section_id):
+                            if str(section_id_from_data) == section_id_str:
                                 section_matches = True
-                            elif section_id.isdigit() and int(section_order_from_data) == int(section_id):
+                            elif section_id_str.isdigit() and int(section_order_from_data) == int(section_id_str):
                                 section_matches = True
                             
                             if section_matches:
@@ -309,8 +311,8 @@ def api_generate_image_prompt_from_builder():
                         logger.warning(f"Failed to parse sections from post_development: {e}")
             
             if not section:
-                logger.error(f"[IMAGE_PROMPTS] Section not found: post_id={target_post_id}, section_id={section_id}")
-                return jsonify({'error': f'Section {section_id} not found for post {target_post_id}'}), 404
+                logger.error(f"[IMAGE_PROMPTS] Section not found: post_id={target_post_id}, section_id={section_id_str}")
+                return jsonify({'error': f'Section {section_id_str} not found for post {target_post_id}'}), 404
             
             logger.info(f"[IMAGE_PROMPTS] Found section: id={section.get('id')}, order={section.get('section_order')}, heading='{section.get('section_heading', '')[:50]}'")
             
@@ -336,20 +338,30 @@ def api_generate_image_prompt_from_builder():
                     if styles and 0 <= active_index < len(styles):
                         active_style = styles[active_index]
 
-                # If still no active style, use the permanent system default (do NOT persist)
+                # If still no active style, use taxonomy default or system default (do NOT persist)
                 if not active_style:
-                    active_style = {
-                        'name': 'Watercolour and Pen & Ink',
-                        'style_json': {
-                            'medium': 'watercolour and pen and ink',
-                            'technique': 'brushstrokes fading out by ending towards the edges of the image',
-                            'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
-                            'composition': 'rule-of-thirds with negative space',
-                            'lighting': 'soft, ethereal, golden hour',
-                            'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
-                            'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
+                    # Try to get default style from taxonomy first
+                    from utils.taxonomy_helpers import get_default_image_style
+                    taxonomy_style = get_default_image_style(target_post_id)
+                    
+                    if taxonomy_style:
+                        active_style = taxonomy_style
+                        logger.info(f"[DEBUG] Using taxonomy default image style: {active_style.get('name', 'Unknown')}")
+                    else:
+                        # Fallback to permanent system default (Watercolour and Pen & Ink)
+                        active_style = {
+                            'name': 'Watercolour and Pen & Ink',
+                            'style_json': {
+                                'medium': 'watercolour and pen and ink',
+                                'technique': 'brushstrokes fading out by ending towards the edges of the image',
+                                'palette': ['ochres', 'siennas', 'umbers', 'celestial blues', 'golds'],
+                                'composition': 'rule-of-thirds with negative space',
+                                'lighting': 'soft, ethereal, golden hour',
+                                'constraints': ['no text', 'no watermark in frame', 'edges fade to white'],
+                                'negatives': ['hyperrealism', 'sharp edges', 'solid borders']
+                            }
                         }
-                    }
+                        logger.info(f"[DEBUG] Using system default image style (no taxonomy default found)")
                 
                 logger.info(f"[DEBUG] Active style: {active_style['name'] if active_style else 'None'}")
             else:
@@ -568,9 +580,9 @@ def api_generate_image_prompt_from_builder():
                             
                             # Try multiple matching strategies
                             matches = False
-                            if str(dev_section_id) == str(section_id):
+                            if str(dev_section_id) == section_id_str:
                                 matches = True
-                            elif section_id.isdigit() and int(dev_section_order) == int(section_id):
+                            elif section_id_str.isdigit() and int(dev_section_order) == int(section_id_str):
                                 matches = True
                             elif section_order_for_matching and int(dev_section_order) == int(section_order_for_matching):
                                 matches = True
