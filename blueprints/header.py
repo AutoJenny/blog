@@ -1,7 +1,7 @@
 # Header Blueprint - Blog post header and metadata generation
 from flask import Blueprint, render_template, jsonify, request
 from config.database import db_manager
-from blueprints.imaging import imaging_generate_dalle_image, imaging_generate_gpt_image_1, imaging_generate_sdxl_image
+from blueprints.imaging_generators import imaging_generate_dalle_image, imaging_generate_gpt_image_1, imaging_generate_sdxl_image
 import logging
 import json
 import re
@@ -2556,8 +2556,8 @@ def header_get_model_specs():
     """Get model specifications for header imaging (shared with imaging blueprint)"""
     try:
         # Reuse the imaging blueprint's model specs endpoint
-        from blueprints.imaging import imaging_get_model_specs
-        return imaging_get_model_specs()
+        from blueprints.imaging_api_config import imaging_get_model_specs_handler
+        return imaging_get_model_specs_handler()
     except Exception as e:
         logger.error(f"Error getting model specs: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -2567,8 +2567,8 @@ def header_model_selection():
     """Get or save model selection configuration (shared with imaging blueprint)"""
     try:
         # Reuse the imaging blueprint's model selection endpoint
-        from blueprints.imaging import imaging_model_selection
-        return imaging_model_selection()
+        from blueprints.imaging_api_config import imaging_model_selection_handler
+        return imaging_model_selection_handler()
     except Exception as e:
         logger.error(f"Error with model selection: {e}")
         return jsonify({'error': str(e)}), 500
@@ -2618,7 +2618,8 @@ def api_generate_header_image(post_id):
             return jsonify({'error': 'No image prompt provided'}), 400
         
         # Import imaging functions
-        from blueprints.imaging import imaging_generate_dalle_image, imaging_generate_sdxl_image, optimize_image_with_watermark
+        from blueprints.imaging_generators import imaging_generate_dalle_image, imaging_generate_sdxl_image
+        from blueprints.imaging_optimization import optimize_image_with_watermark
         
         # Set custom dimensions and style for header image
         # For Photo-harvesting route, use photorealistic settings
@@ -2986,7 +2987,7 @@ def api_optimize_header_image(post_id):
     """Optimize header image with watermark"""
     try:
         # Import the optimization function
-        from blueprints.imaging import optimize_image_with_watermark
+        from blueprints.imaging_optimization import optimize_image_with_watermark
         
         # Get parameters from request (optional)
         params = request.get_json() or {}

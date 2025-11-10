@@ -276,13 +276,15 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         landscape_path = f"{landscape_dir}/{landscape_filename}"
         
         # GPT-Image-1 API endpoint
+        # NOTE: GPT-Image-1 does NOT support 'style' or 'response_format' parameters (only DALL-E does)
+        # GPT-Image-1 always returns URLs by default
         landscape_data = {
             'model': 'gpt-image-1',
             'prompt': image_prompt,
             'n': 1,
             'size': landscape_size,
-            'quality': quality,
-            'style': style
+            'quality': quality
+            # 'style' and 'response_format' parameters removed - GPT-Image-1 doesn't support them
         }
         
         logger.info(f"GPT-Image-1 landscape API request: {landscape_data}")
@@ -296,8 +298,18 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         if 'data' not in landscape_result or not landscape_result['data']:
             return {'success': False, 'error': 'No image data returned from GPT-Image-1 landscape'}
         
+        # Check response structure - GPT-Image-1 may return different format
+        first_item = landscape_result['data'][0]
+        if 'url' not in first_item:
+            # Log the actual response structure for debugging
+            logger.error(f"GPT-Image-1 response missing 'url' key. Response structure: {landscape_result}")
+            # Check if it's b64_json instead
+            if 'b64_json' in first_item:
+                return {'success': False, 'error': 'GPT-Image-1 returned b64_json instead of url. Please set response_format to "url" in parameters.'}
+            return {'success': False, 'error': f"GPT-Image-1 response missing 'url' key. Response: {landscape_result}"}
+        
         # Download landscape image
-        landscape_url = landscape_result['data'][0]['url']
+        landscape_url = first_item['url']
         landscape_image_response = requests.get(landscape_url, timeout=30)
         if landscape_image_response.status_code != 200:
             return {'success': False, 'error': f'Failed to download landscape image: {landscape_image_response.status_code}'}
@@ -308,13 +320,15 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         logger.info(f"Generated and saved landscape image: {landscape_path} (overwrote existing if present)")
         
         # Generate portrait version
+        # NOTE: GPT-Image-1 does NOT support 'style' or 'response_format' parameters (only DALL-E does)
+        # GPT-Image-1 always returns URLs by default
         portrait_data = {
             'model': 'gpt-image-1',
             'prompt': image_prompt,
             'n': 1,
             'size': portrait_size,
-            'quality': quality,
-            'style': style
+            'quality': quality
+            # 'style' and 'response_format' parameters removed - GPT-Image-1 doesn't support them
         }
         
         logger.info(f"GPT-Image-1 portrait API request: {portrait_data}")
@@ -326,14 +340,23 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         if portrait_response.status_code == 200:
             portrait_result = portrait_response.json()
             if 'data' in portrait_result and portrait_result['data']:
-                portrait_url = portrait_result['data'][0]['url']
-                portrait_image_response = requests.get(portrait_url, timeout=30)
-                if portrait_image_response.status_code == 200:
-                    portrait_path = f"{portrait_dir}/{portrait_filename}"
-                    with open(portrait_path, 'wb') as f:
-                        f.write(portrait_image_response.content)
-                    portrait_success = True
-                    logger.info(f"Successfully generated portrait: {portrait_path}")
+                first_item = portrait_result['data'][0]
+                if 'url' not in first_item:
+                    logger.error(f"GPT-Image-1 portrait response missing 'url' key. Response structure: {portrait_result}")
+                    # Continue without portrait - landscape is the main image
+                    portrait_success = False
+                else:
+                    portrait_url = first_item['url']
+                    portrait_image_response = requests.get(portrait_url, timeout=30)
+                    if portrait_image_response.status_code == 200:
+                        portrait_path = f"{portrait_dir}/{portrait_filename}"
+                        with open(portrait_path, 'wb') as f:
+                            f.write(portrait_image_response.content)
+                        portrait_success = True
+                        logger.info(f"Successfully generated portrait: {portrait_path}")
+                    else:
+                        logger.warning(f"Failed to download portrait image: {portrait_image_response.status_code}")
+                        portrait_success = False
         
         return {
             'success': True,
