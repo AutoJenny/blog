@@ -435,8 +435,21 @@
 
             </div>
         </header>
-        {% if sections %}
+        {% if rendered_content %}
         <div class="blog-sections">
+            <!-- CRITICAL: Use the EXACT rendered_content from cache - DO NOT re-render sections -->
+            <!-- This ensures preview matches published version exactly -->
+            {{ rendered_content|safe }}
+        </div>
+        {% else %}
+        <div class="blog-sections">
+            <p style="color: red; font-weight: bold;">ERROR: rendered_content is missing. Preview cannot be displayed.</p>
+        </div>
+        {% endif %}
+        
+        {% if False and sections %}
+        <div class="blog-sections">
+            <!-- Fallback: Only render sections if rendered_content is not available -->
             <!-- Cross-promotion error handling -->
             {% if not post.cross_promotion %}
                 <div class="cross-promotion-error" style="background-color: #ffebee; border: 2px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 8px; color: #c62828;">

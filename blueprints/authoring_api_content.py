@@ -209,6 +209,24 @@ def api_generate_section_draft(post_id, section_id):
             prompt_text = prompt_data['prompt_text']
             system_prompt = prompt_data['system_prompt']
             
+            # CRITICAL: Enforce UK British English spelling in ALL content generation
+            # This must be added to both system prompt and user prompt to ensure strict compliance
+            uk_english_guidance = (
+                "CRITICAL: Use UK British English spelling and style throughout. "
+                "Common American spellings to avoid: flavor (use flavour), color (use colour), "
+                "center (use centre), organize/organization (use organise/organisation), "
+                "defense (use defence), jewelry (use jewellery), authorized (use authorised), "
+                "recognize (use recognise), analyze (use analyse), optimize (use optimise), "
+                "specialize (use specialise), finalize (use finalise), prioritize (use prioritise). "
+                "Check ALL text including descriptions, notes, and secondary content for American spellings."
+            )
+            
+            # Add to system prompt if it exists, otherwise add to user prompt
+            if system_prompt:
+                system_prompt = f"{system_prompt}\n\n{uk_english_guidance}"
+            else:
+                prompt_text = f"{uk_english_guidance}\n\n{prompt_text}"
+            
             # For recipe posts, use simpler data extraction
             if is_recipe_post:
                 # Get recipe data from calendar_recipes using recipe_id (unique recipe definition ID)

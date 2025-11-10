@@ -208,8 +208,25 @@ def create_app(config_name=None):
         from publish import register_blueprint as register_publish_blueprint
         register_publish_blueprint(app)
         logging.getLogger(__name__).info("✅ Registered publish blueprint")
+        
+        # Register preview route (unified preview endpoint)
+        from publish.preview_handler import preview_post, clan_post_html
+        @app.route('/preview/<int:post_id>')
+        @app.route('/preview/<int:post_id>/')
+        def preview_post_route(post_id):
+            """Preview a specific post."""
+            return preview_post(post_id)
+        
+        @app.route('/clan-post-html/<int:post_id>')
+        def clan_post_html_route(post_id):
+            """View the clan_post HTML that will be uploaded to Clan.com."""
+            return clan_post_html(post_id)
+        
+        logging.getLogger(__name__).info("✅ Registered preview routes")
     except Exception as e:
         logging.getLogger(__name__).warning(f"Could not register publish blueprint: {e}")
+        import traceback
+        logging.getLogger(__name__).error(f"Traceback: {traceback.format_exc()}")
 
     # Additional blueprints will be added in Phase 2
     from blueprints.database import bp as database_bp

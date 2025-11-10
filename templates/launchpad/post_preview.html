@@ -306,7 +306,174 @@
             color: #666;
         }
         
-
+        /* Recipe Section Styling - matches clan_post_raw.html */
+        .recipe-section {
+            margin: 2rem 0;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .recipe-section:last-child {
+            border-bottom: none;
+        }
+        .recipe-meta {
+            margin-bottom: 0.75rem;
+            padding: 0.25rem 0;
+            font-size: 0.95rem;
+            color: #4b5563;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .recipe-meta strong {
+            color: #1f2937;
+            margin-right: 0.5rem;
+        }
+        .recipe-ingredients {
+            margin-bottom: 1.5rem;
+        }
+        .ingredients-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .ingredients-list .ingredient-item {
+            padding: 0.25rem 0;
+            margin-bottom: 0;
+            border-bottom: 1px dotted #d1d5db;
+        }
+        .ingredients-list .ingredient-item:last-child {
+            border-bottom: none;
+        }
+        .ingredient-item-name {
+            color: #374151;
+            font-weight: 500;
+        }
+        .ingredient-amount {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #6b7280;
+            font-weight: 400;
+            font-style: italic;
+        }
+        .ingredient-notes {
+            color: #6b7280;
+            font-style: italic;
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+        }
+        .recipe-method {
+            margin-bottom: 1.5rem;
+        }
+        .method-steps {
+            list-style: decimal;
+            padding-left: 2rem;
+            margin: 0;
+        }
+        .method-steps .method-step {
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .method-steps .method-step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .step-instruction {
+            color: #374151;
+            line-height: 1.7;
+            margin-bottom: 0.5rem;
+        }
+        .step-meta {
+            margin-top: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+        .step-time, .step-temperature {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #6b7280;
+            font-weight: 400;
+            font-style: italic;
+        }
+        .step-time {
+            margin-right: 0.75rem;
+        }
+        
+        /* Recipe Variants Styling */
+        .recipe-variants {
+            margin: 1.5rem 0;
+            padding: 0;
+        }
+        .variant-item {
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 6px;
+            border-left: 3px solid #f59e0b;
+        }
+        .variant-item:last-child {
+            margin-bottom: 0;
+        }
+        .variant-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            font-family: Georgia, serif;
+        }
+        .variant-description {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #6b7280;
+            font-weight: 400;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+        .variant-changes {
+            list-style: disc;
+            padding-left: 1.5rem;
+            margin: 0;
+        }
+        .variant-changes li {
+            padding: 0.25rem 0;
+            color: #374151;
+        }
+        
+        /* Recipe Serving Suggestions Styling */
+        .recipe-serving {
+            margin: 1.5rem 0;
+            padding: 0;
+        }
+        .serving-suggestion {
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 6px;
+            border-left: 3px solid #10b981;
+        }
+        .serving-suggestion:last-child {
+            margin-bottom: 0;
+        }
+        .serving-type {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            font-family: Georgia, serif;
+            text-transform: capitalize;
+        }
+        .serving-description {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #6b7280;
+            font-weight: 400;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+        .serving-accompaniments {
+            list-style: disc;
+            padding-left: 1.5rem;
+            margin: 0;
+        }
+        .serving-accompaniments li {
+            padding: 0.25rem 0;
+            color: #374151;
+        }
         
         /* Product styling moved to clan_blog.css */
     </style>
@@ -314,9 +481,15 @@
 <body>
     <!-- Edit and Meta Buttons - Top Right -->
     <div class="edit-button-container">
-        <a href="http://localhost:5000/workflow/posts/{{ post.id }}/planning/idea/initial_concept" class="edit-button">
+        {% if post.year and post.week_number %}
+        <a href="/header/posts/{{ post.id }}/title-summary?year={{ post.year }}&week={{ post.week_number }}" class="edit-button">
             <i class="fas fa-edit"></i> Edit Post
         </a>
+        {% else %}
+        <a href="/planning/posts/{{ post.id }}/calendar/ideas" class="edit-button">
+            <i class="fas fa-edit"></i> Edit Post
+        </a>
+        {% endif %}
         <button class="meta-button" onclick="toggleMetaDisplay()">
             <i class="fas fa-info-circle"></i> View Meta
         </button>
@@ -328,6 +501,17 @@
     </div>
     
     <div class="preview-container">
+        <!-- Top toolbar: Publish/Update + View Live -->
+        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
+            <button id="publish-btn" style="padding:10px 16px; border-radius:8px; background:#10b981; color:#ffffff; border:none; font-weight:700; cursor:pointer;">
+                <i class="fas fa-upload" style="margin-right:6px;"></i>
+                <span id="publish-btn-text">{{ 'Update' if (post.status=='published' or post.clan_post_id) else 'Publish' }}</span>
+            </button>
+            <a id="view-live-btn" href="{{ post.clan_uploaded_url or '#' }}" target="_blank" style="padding:10px 14px; border-radius:8px; border:1px solid #10b981; color:#10b981; text-decoration:none; font-weight:700; {% if not post.clan_uploaded_url %}display:none;{% endif %}">
+                <i class="fas fa-external-link-alt" style="margin-right:6px;"></i>View Live
+            </a>
+        </div>
+        
         <!-- Breadcrumb Navigation -->
         <nav class="breadcrumb-nav" aria-label="Breadcrumb">
             <ol class="breadcrumb">
@@ -381,7 +565,7 @@
             
             <div class="post-meta">
                 <span class="post-meta__author">
-                    By Caitrin Stewart
+                    By {{ post.author_name or 'Clan.com' }}
                 </span>
                 <span class="post-meta__separator"> | </span>
                 <span class="post-meta__date">
@@ -414,7 +598,7 @@
                     <strong>Updated:</strong> {{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Not set' }}
                 </div>
                 <div class="meta-item">
-                    <strong>Author:</strong> Caitrin Stewart
+                    <strong>Author:</strong> {{ post.author_name or 'Clan.com' }}
                 </div>
                 <div class="meta-item">
                     <strong>Word Count:</strong> {{ word_count|round(0, 'ceil')|int }} words
@@ -505,10 +689,6 @@
             {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
                 {% if post.cross_promotion.category_id %}
                     <div class="cross-promotion-widget category-widget" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                        <h3 style="color: #1976d2; margin: 0 0 10px 0;">
-                            <i class="fas fa-tags"></i> 
-                            {{ post.cross_promotion.category_title or 'Related Department' }}
-                        </h3>
                         <p style="margin: 0; color: #1565c0;">
                             <strong>Category Widget:</strong> Will display category ID {{ post.cross_promotion.category_id }}
                         </p>
@@ -520,10 +700,6 @@
             {% if post.cross_promotion and post.cross_promotion.product_position == loop.index %}
                 {% if post.cross_promotion.product_id %}
                     <div class="cross-promotion-widget product-widget" style="background-color: #f3e5f5; border: 2px solid #9c27b0; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                        <h3 style="color: #7b1fa2; margin: 0 0 10px 0;">
-                            <i class="fas fa-shopping-bag"></i> 
-                            {{ post.cross_promotion.product_title or 'Related Products' }}
-                        </h3>
                         <p style="margin: 0; color: #6a1b9a;">
                             <strong>Product Widget:</strong> Will display product ID {{ post.cross_promotion.product_id }}
                         </p>
@@ -538,10 +714,6 @@
             {% if post.cross_promotion %}
                 {% if post.cross_promotion.category_position == sections|length + 1 and post.cross_promotion.category_id %}
                     <div class="cross-promotion-widget category-widget" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                        <h3 style="color: #1976d2; margin: 0 0 10px 0;">
-                            <i class="fas fa-tags"></i> 
-                            {{ post.cross_promotion.category_title or 'Related Department' }}
-                        </h3>
                         <p style="margin: 0; color: #1565c0;">
                             <strong>Category Widget:</strong> Will display category ID {{ post.cross_promotion.category_id }}
                         </p>
@@ -551,10 +723,6 @@
                 
                 {% if post.cross_promotion.product_position == sections|length + 1 and post.cross_promotion.product_id %}
                     <div class="cross-promotion-widget product-widget" style="background-color: #f3e5f5; border: 2px solid #9c27b0; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                        <h3 style="color: #7b1fa2; margin: 0 0 10px 0;">
-                            <i class="fas fa-shopping-bag"></i> 
-                            {{ post.cross_promotion.product_title or 'Related Products' }}
-                        </h3>
                         <p style="margin: 0; color: #6a1b9a;">
                             <strong>Product Widget:</strong> Will display product ID {{ post.cross_promotion.product_id }}
                         </p>
@@ -770,6 +938,56 @@
                 `;
             }
         }
+    </script>
+    
+    <!-- Publish/Update and View Live button functionality -->
+    <script>
+    (function(){
+        const publishBtn = document.getElementById('publish-btn');
+        const publishBtnText = document.getElementById('publish-btn-text');
+        const viewLiveBtn = document.getElementById('view-live-btn');
+        const postId = {{ post.id }};
+
+        async function validate() {
+            const res = await fetch(`/launchpad/api/validate-publish/${postId}`);
+            return await res.json();
+        }
+        async function doPublish() {
+            publishBtn.disabled = true;
+            const orig = publishBtnText.textContent;
+            publishBtnText.textContent = 'Publishing...';
+            try {
+                const res = await fetch(`/launchpad/api/publish/${postId}`, { method: 'POST', headers: {'Content-Type':'application/json'} });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Publish failed');
+                publishBtnText.textContent = 'Update';
+                if (data.url) {
+                    viewLiveBtn.href = data.url;
+                    viewLiveBtn.style.display = '';
+                }
+                alert(`Published successfully${data.url ? `\n${data.url}` : ''}`);
+            } catch (e) {
+                alert(`Publish error: ${e.message}`);
+                publishBtnText.textContent = orig;
+            } finally {
+                publishBtn.disabled = false;
+            }
+        }
+        if (publishBtn) {
+            publishBtn.addEventListener('click', async () => {
+                try {
+                    const v = await validate();
+                    if (!v.valid) {
+                        const lines = (v.issues||[]).map(i => `- ${i.type}${i.field?': '+i.field:''}${i.message?' - '+i.message:''}`);
+                        if (!confirm(`Validation found issues:\n\n${lines.join('\n')}\n\nProceed anyway?`)) return;
+                    }
+                    await doPublish();
+                } catch (err) {
+                    alert(`Validation error: ${err.message}`);
+                }
+            });
+        }
+    })();
     </script>
 </body>
 </html> 
