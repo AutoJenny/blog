@@ -52,6 +52,17 @@ class ImagePromptsOutputPanel {
         window.addEventListener('sections:batch-generate', (event) => {
             this.onBatchGenerate(event.detail.ids);
         });
+
+        // Listen for changes to the compiled prompt in Prompt Builder Panel
+        const compiledPromptTextarea = document.getElementById('compiled-prompt-textarea');
+        if (compiledPromptTextarea) {
+            compiledPromptTextarea.addEventListener('input', () => {
+                // Update output panel when compiled prompt changes
+                if (this.currentSection) {
+                    this.loadExistingPrompt(this.currentSection);
+                }
+            });
+        }
     }
 
     setupAccordion() {
@@ -87,7 +98,19 @@ class ImagePromptsOutputPanel {
         
         if (!textarea || !charCount) return;
 
-        // Check if section has existing image prompts
+        // PRIORITY 1: Use compiled prompt from Prompt Builder Panel (approved words)
+        const compiledPromptTextarea = document.getElementById('compiled-prompt-textarea');
+        if (compiledPromptTextarea && compiledPromptTextarea.value.trim()) {
+            const compiledPrompt = compiledPromptTextarea.value.trim();
+            textarea.value = compiledPrompt;
+            charCount.textContent = `${compiledPrompt.length} chars`;
+            this.currentPrompt = compiledPrompt;
+            console.log('[ImagePromptsOutputPanel] Loaded compiled prompt from Prompt Builder Panel');
+            this.updateButtonStates();
+            return;
+        }
+
+        // PRIORITY 2: Check if section has existing saved image prompts
         if (section.image_prompts) {
             let promptText = '';
             
@@ -102,12 +125,22 @@ class ImagePromptsOutputPanel {
                 promptText = section.image_prompts.image_prompt || section.image_prompts.prompt || '';
             }
             
-            textarea.value = promptText;
-            charCount.textContent = `${promptText.length} chars`;
-            
-            // Update metadata if available
-            this.updateMetadata(section.image_prompts);
-            
+            // Only use stored prompt if it's not a raw concept description
+            // Raw concepts often start with action words like "cyclist pedaling"
+            if (promptText && !promptText.toLowerCase().startsWith('cyclist') && 
+                !promptText.toLowerCase().match(/^(pedaling|walking|running|riding|swimming)/)) {
+                textarea.value = promptText;
+                charCount.textContent = `${promptText.length} chars`;
+                this.currentPrompt = promptText;
+                
+                // Update metadata if available
+                this.updateMetadata(section.image_prompts);
+            } else {
+                // Stored prompt looks like a raw concept, clear it
+                textarea.value = '';
+                charCount.textContent = '0 chars';
+                this.clearMetadata();
+            }
         } else {
             textarea.value = '';
             charCount.textContent = '0 chars';

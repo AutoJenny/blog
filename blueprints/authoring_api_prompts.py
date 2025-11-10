@@ -772,32 +772,7 @@ def api_generate_image_prompt_from_builder():
             if not generated_prompt:
                 return jsonify({'error': 'Failed to generate prompt after retries'}), 500
             
-            # Prepend Selected Idea (theme name) to the generated prompt
-            # Use theme_name that was already retrieved earlier (from theme_data processing)
-            selected_idea = None
-            if url_year and url_week:
-                # Get theme name from calendar_week_selection (reuse logic from theme_data section)
-                cursor.execute("""
-                    SELECT ct.theme_title
-                    FROM calendar_week_selection cws
-                    JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
-                    WHERE cws.year = %s AND cws.week_number = %s
-                """, (url_year, url_week))
-                theme_result = cursor.fetchone()
-                if theme_result:
-                    selected_idea = theme_result.get('theme_title')
-            
-            # If no theme from week context, try to get from post title
-            if not selected_idea:
-                if post_data and post_data.get('title'):
-                    selected_idea = post_data['title']
-            
-            # Prepend Selected Idea if available
-            if selected_idea:
-                generated_prompt = f"{selected_idea}: {generated_prompt}"
-                logger.info(f"[IMAGE_PROMPTS] Prepended Selected Idea '{selected_idea}' to generated prompt")
-            
-            # Log the generation step
+            # Log the generation step (before prepending Selected Idea)
             pipeline_steps.append({
                 'step': 'initial_generation',
                 'input': prompt_text,
@@ -842,19 +817,56 @@ def api_generate_image_prompt_from_builder():
             
             # imaging_limit already calculated above
             
-            # Append style name to the final generated prompt (for display and use)
-            final_prompt_with_style = generated_prompt
+            # Get Selected Idea (theme name) to prepend to final output
+            selected_idea = None
+            if url_year and url_week:
+                # Try calendar_week_selection first (V2 architecture), then fallback to calendar_schedule (legacy)
+                try:
+                    cursor.execute("""
+                        SELECT ct.theme_title
+                        FROM calendar_week_selection cws
+                        JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                        WHERE cws.year = %s AND cws.week_number = %s
+                    """, (url_year, url_week))
+                    theme_result = cursor.fetchone()
+                    if theme_result:
+                        selected_idea = theme_result.get('theme_title')
+                except Exception:
+                    # Fallback to legacy calendar_schedule table
+                    try:
+                        cursor.execute("""
+                            SELECT ct.theme_title
+                            FROM calendar_schedule cs
+                            JOIN calendar_themes ct ON cs.theme_id = ct.id
+                            WHERE cs.year = %s AND cs.week_number = %s
+                            LIMIT 1
+                        """, (url_year, url_week))
+                        theme_result = cursor.fetchone()
+                        if theme_result:
+                            selected_idea = theme_result.get('theme_title')
+                    except Exception:
+                        pass
+            
+            # Build final prompt: prepend Selected Idea, then generated prompt, then style
+            final_prompt = generated_prompt
+            
+            # Prepend Selected Idea if available
+            if selected_idea:
+                final_prompt = f"{selected_idea}: {final_prompt}"
+                logger.info(f"[IMAGE_PROMPTS] Prepended Selected Idea '{selected_idea}' to final output")
+            
+            # Append style name to the final prompt (for display and use)
             if illustration_method != 'Photo-harvesting' and active_style:
                 style_name = active_style.get('name', '')
                 if style_name:
-                    final_prompt_with_style = f"{generated_prompt}, style: {style_name}"
-                    logger.info(f"[IMAGE_PROMPTS] Appended style '{style_name}' to final prompt")
+                    final_prompt = f"{final_prompt}, style: {style_name}"
+                    logger.info(f"[IMAGE_PROMPTS] Appended style '{style_name}' to final output")
             
-            # Save to database (save the version WITH style for consistency)
+            # Save to database (save the version WITH Selected Idea and style)
             try:
                 # Update the post_section table with the generated prompt
                 image_prompts_json = json.dumps({
-                    'image_prompt': final_prompt_with_style,
+                    'image_prompt': final_prompt,
                     'base_concept': compiled_prompt
                 })
                 
@@ -870,16 +882,16 @@ def api_generate_image_prompt_from_builder():
             
             cursor.connection.commit()
             
-            logger.info(f"[DEBUG] Generated prompt: {final_prompt_with_style[:100]}...")
+            logger.info(f"[DEBUG] Final output prompt: {final_prompt[:100]}...")
             logger.info(f"[DEBUG] Saved to database for post {post_id}, section {section_id}")
             
-            # Return detailed pipeline information (return the version WITH style)
+            # Return detailed pipeline information (return the version WITH Selected Idea and style)
             return jsonify({
                 'success': True,
-                'image_prompt': final_prompt_with_style,
+                'image_prompt': final_prompt,
                 'message': 'Image prompt generated and saved successfully',
                 'pipeline_steps': pipeline_steps,
-                'final_length': len(final_prompt_with_style),
+                'final_length': len(final_prompt),
                 'character_limit': imaging_limit,
                 'compression_used': compression_used,
                 'expansion_used': expansion_used,
