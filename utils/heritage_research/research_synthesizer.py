@@ -58,22 +58,18 @@ class ResearchSynthesizer:
                 {'role': 'user', 'content': prompt}
             ]
             
-            import os
-            # Try OpenAI first, fallback to Ollama
+            # Use Ollama first for heritage research (free, local)
+            # Only use OpenAI if explicitly needed for high-priority tasks
             result = self.llm_service.execute_llm_request(
-                provider='openai',
-                model='gpt-4',
-                messages=messages,
-                api_key=os.getenv('OPENAI_API_KEY')
+                provider='ollama',
+                model='llama3.2',
+                messages=messages
             )
             
             if result and 'error' in result:
-                # Try Ollama as fallback
-                result = self.llm_service.execute_llm_request(
-                    provider='ollama',
-                    model='llama3.2',
-                    messages=messages
-                )
+                # Log error but don't fallback to OpenAI for bulk/automated research
+                logger.warning(f"Ollama synthesis failed: {result.get('error')}, using simple synthesis fallback")
+                return self._simple_synthesis(dimension, sources)
             
             if result and 'error' in result:
                 logger.error(f"LLM synthesis failed: {result['error']}")

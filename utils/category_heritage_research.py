@@ -215,22 +215,18 @@ Return only valid JSON, no markdown formatting."""
                 {'role': 'user', 'content': prompt}
             ]
             
-            import os
-            # Try OpenAI first, fallback to Ollama
+            # Use Ollama first for category heritage research (free, local)
+            # Only use OpenAI if explicitly needed for high-priority tasks
             result = self.llm_service.execute_llm_request(
-                provider='openai',
-                model='gpt-4',
-                messages=messages,
-                api_key=os.getenv('OPENAI_API_KEY')
+                provider='ollama',
+                model='llama3.2',
+                messages=messages
             )
             
             if result and 'error' in result:
-                # Try Ollama as fallback
-                result = self.llm_service.execute_llm_request(
-                    provider='ollama',
-                    model='llama3.1:70b',
-                    messages=messages
-                )
+                # Log error but don't fallback to OpenAI for bulk/automated research
+                logger.warning(f"Ollama category analysis failed: {result.get('error')}")
+                return None
             
             if 'error' in result:
                 logger.error(f"LLM analysis failed: {result['error']}")
