@@ -2319,3 +2319,14 @@ NotImplementedError: Cannot copy out of meta tensor; no data! Please use torch.n
 2025-11-11 14:34:24,983 - __main__ - INFO - ✅ Registered preview routes
 2025-11-11 14:34:25,002 - werkzeug - WARNING -  * Debugger is active!
 2025-11-11 14:34:25,012 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 14:35:27,595 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/planning_concept_section_content_mapping.py', reloading
+2025-11-11 14:35:27,860 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 14:35:28,182 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 14:35:28,202 - config.database - INFO - Database connection established
+2025-11-11 14:35:28,206 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 14:35:28,207 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 14:35:28,207 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 14:35:28,207 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 14:35:28,207 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 14:35:28,207 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 14:35:28,207 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
