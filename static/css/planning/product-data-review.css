@@ -804,6 +804,46 @@ body {
     margin-left: 0.5rem;
 }
 
+/* Product Type Identifiers - Grouped Layout */
+.identifier-group {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.identifier-group:last-child {
+    margin-bottom: 0;
+}
+
+.identifier-group-title {
+    margin: 0 0 1rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.identifier-group-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.identifier-group-content .data-item {
+    margin-bottom: 0;
+}
+
+.identifier-group-content .data-item label {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+}
+
 /* Product Type Identifiers Footer */
 .type-identifiers-footer {
     margin-top: 1rem;
