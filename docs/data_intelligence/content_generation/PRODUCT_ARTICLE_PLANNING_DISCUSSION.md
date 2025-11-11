@@ -128,11 +128,11 @@ Based on `config/post_type_pipeline_configs.py`, themed posts have these plannin
 
 1. **Keep `taxonomy`** (already preset, but allow refinement)
 2. **Add `product-data-review`** - Review and validate CLAN product data
-3. **Add `topic-brainstorming`** - Generate topics based on product data + standard sections
-4. **Add `section-structure-design`** - Design structure (can use standard template)
-5. **Add `section-ideas`** - Generate section-specific ideas
-6. **Add `section-titling`** - Finalize section titles
-7. **Continue to `drafting`** - Author drafts
+3. **Add `section-content-mapping`** - NEW: Visual mapping of which data goes to which section (replaces topic-brainstorming)
+4. **Add `section-titling`** - Finalize section titles (optional refinement)
+5. **Continue to `drafting`** - Author drafts
+
+**Note:** `topic-brainstorming` and `section-structure-design` are removed as they're redundant for structured product data. Structure is fixed (7 sections), and data mapping is more useful than topic brainstorming.
 
 ### Modified Pipeline Configuration
 
@@ -141,11 +141,9 @@ Based on `config/post_type_pipeline_configs.py`, themed posts have these plannin
     'active': True,
     'steps': [
         'taxonomy',                    # Already preset, allow refinement
-        'product-data-review',        # NEW: Review CLAN product data
-        'topic-brainstorming',        # Generate topics from CLAN data + standard sections
-        'section-structure-design',   # Design structure (template-based)
-        'section-ideas',              # Section-specific ideas
-        'section-titling',            # Finalize section titles
+        'product-data-review',        # Review CLAN product data
+        'section-content-mapping',    # NEW: Visual data-to-section mapping
+        'section-titling',            # Finalize section titles (optional)
         'drafting',                   # Author drafts
         'image-concepts',             # Image concepts
         'image-prompts',              # Image prompts
@@ -362,20 +360,21 @@ class ClanDataExtractor:
 
 Update `llm_prompt` table with CLAN-first templates:
 
-- `product_article_topic_brainstorming` - Generate topics from CLAN data + standard sections
-- `product_article_section_structure` - Design structure (template-based, CLAN data prioritized)
-- `product_article_section_ideas` - Section-specific ideas (CLAN data first)
+- `product_article_section_content_mapping` - Map CLAN data to sections (visual mapping, no LLM needed)
 - `product_article_section_titling` - Finalize titles (CLAN terminology preferred)
+- `product_article_drafting` - Generate content using mapped data sources (CLAN-first)
+
+**Note:** Topic brainstorming and section structure design are not needed - structure is fixed (7 sections) and data mapping replaces topic ideas.
 
 ### 3. Planning Stage UI Components
 
 Create new planning stages for generated posts:
 
-- `templates/planning/concept/product_data_review.html` - Review CLAN data
-- `templates/planning/concept/product_topic_brainstorming.html` - Generate topics
-- `templates/planning/concept/product_section_structure.html` - Design structure
-- `templates/planning/concept/product_section_ideas.html` - Section ideas
-- `templates/planning/concept/product_section_titling.html` - Section titles
+- `templates/planning/calendar/product_data_review.html` - Review CLAN data (already exists)
+- `templates/planning/concept/section_content_mapping.html` - Visual data-to-section mapping (NEW)
+- `templates/planning/concept/section_titling.html` - Section titles (already exists, reuse)
+
+**Note:** Topic brainstorming and section structure design are removed - replaced with data mapping.
 
 ### 4. Data Source Tracking
 
@@ -514,16 +513,15 @@ Based on discussion, the following decisions have been finalized:
 
 ### Phase 2: Planning Stages UI
 3. **Create planning stage templates**
-   - `product_data_review.html` - Review CLAN data with completeness indicators
-   - `product_topic_brainstorming.html` - Generate topics from CLAN data + 7-section template
-   - `product_section_structure.html` - Display rigid 7-section structure (read-only initially)
-   - `product_section_ideas.html` - Generate section-specific ideas
-   - `product_section_titling.html` - Finalize section titles
+   - `product_data_review.html` - Review CLAN data with completeness indicators (already exists)
+   - `section_content_mapping.html` - Visual data-to-section mapping (NEW - replaces topic brainstorming, structure design, section ideas)
+   - `section_titling.html` - Finalize section titles (already exists, reuse)
 
 4. **Update pipeline configuration**
-   - Add `generated` post type to `config/post_type_pipeline_configs.py`
-   - Include all planning stages in pipeline
-   - Update navigation to show planning stages for generated posts
+   - Update `generated` post type in `config/post_type_pipeline_configs.py`
+   - Remove redundant stages: `topic-brainstorming`, `section-structure-design`, `section-ideas`
+   - Add new stage: `section-content-mapping`
+   - Update navigation to show simplified planning stages
 
 ### Phase 3: Prompt Templates & Generation
 5. **Create CLAN-first prompt templates**
