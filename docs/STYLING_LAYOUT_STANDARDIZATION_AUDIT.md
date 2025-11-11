@@ -499,3 +499,4 @@ After standardization:
 - `docs/NAVBAR_UNIFICATION_REFACTORING.md` - Original navbar refactoring plan
 - `static/css/shared/dark-theme.css` - Dark theme foundation
 
+

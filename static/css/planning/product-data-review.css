@@ -284,6 +284,66 @@
     margin-bottom: 0;
 }
 
+.description-specifications {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #f5f3ff;
+    border-left: 4px solid #8b5cf6;
+    border-radius: 6px;
+}
+
+.description-specifications h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #6b21a8;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.description-specifications .data-value {
+    background: white;
+    border: 1px solid #c4b5fd;
+}
+
+.description-additional-data {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #f0fdfa;
+    border-left: 4px solid #14b8a6;
+    border-radius: 6px;
+}
+
+.description-additional-data h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #0f766e;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.description-additional-data h4:not(:first-child) {
+    margin-top: 1.5rem;
+}
+
+.description-additional-data .data-value {
+    background: white;
+    border: 1px solid #5eead4;
+}
+
+.description-additional-data .specifications-list dt {
+    color: #0f766e;
+}
+
+.description-additional-data .specifications-list dd {
+    color: #1f2937;
+}
+
+.data-code {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
 .word-count {
     font-size: 0.875rem;
     color: #6b7280;

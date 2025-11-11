@@ -116,6 +116,14 @@ class ClanCache:
                 ADD COLUMN IF NOT EXISTS product_content_hash TEXT
             ''')
             cursor.execute('''
+                ALTER TABLE clan_products
+                ADD COLUMN IF NOT EXISTS additional_data JSONB
+            ''')
+            cursor.execute('''
+                ALTER TABLE clan_products
+                ADD COLUMN IF NOT EXISTS dimensions TEXT
+            ''')
+            cursor.execute('''
                 DO $$ BEGIN
                     BEGIN
                         ALTER TABLE clan_products ALTER COLUMN price TYPE DECIMAL(10,2) USING NULLIF(price,'')::numeric;
@@ -195,6 +203,9 @@ class ClanCache:
                 category_ids = json.dumps(product.get('category_ids', []))
                 configurable_options = json.dumps(product.get('configurable_options', None))
 
+                additional_data = json.dumps(product.get('additional_data', None)) if product.get('additional_data') else None
+                dimensions = product.get('dimensions', '')
+                
                 # Build hash over meaningful fields
                 content_fields = {
                     'name': name,
@@ -207,12 +218,14 @@ class ClanCache:
                     'supplier_name': supplier_name,
                     'supplier_description': supplier_description,
                     'configurable_options': product.get('configurable_options', None),
+                    'additional_data': product.get('additional_data', None),
+                    'dimensions': dimensions,
                 }
                 product_hash = self._build_product_hash(content_fields)
 
                 cursor.execute('''
-                    INSERT INTO clan_products (id, name, sku, price, image_url, url, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, product_content_hash, category_ids)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO clan_products (id, name, sku, price, image_url, url, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_content_hash, category_ids)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO UPDATE SET
                         name = EXCLUDED.name,
                         sku = EXCLUDED.sku,
@@ -226,6 +239,8 @@ class ClanCache:
                         clan_created_at = COALESCE(clan_products.clan_created_at, EXCLUDED.clan_created_at),
                         clan_updated_at = COALESCE(EXCLUDED.clan_updated_at, clan_products.clan_updated_at),
                         configurable_options = EXCLUDED.configurable_options,
+                        additional_data = EXCLUDED.additional_data,
+                        dimensions = EXCLUDED.dimensions,
                         product_content_hash = EXCLUDED.product_content_hash,
                         category_ids = EXCLUDED.category_ids,
                         last_updated = CURRENT_TIMESTAMP
@@ -243,6 +258,8 @@ class ClanCache:
                     clan_created_at,
                     clan_updated_at,
                     configurable_options,
+                    additional_data,
+                    dimensions,
                     product_hash,
                     category_ids
                 ))
@@ -561,6 +578,8 @@ class ClanCache:
             clan_created_at = product_data.get('created_at') or product_data.get('clan_created_at')
             clan_updated_at = product_data.get('updated_at') or product_data.get('clan_updated_at')
             configurable_options = json.dumps(product_data.get('configurable_options', None))
+            additional_data = json.dumps(product_data.get('additional_data', None)) if product_data.get('additional_data') else None
+            dimensions = product_data.get('dimensions', '')
             has_detailed_data = product_data.get('has_detailed_data', True)  # Default to True for backward compatibility
 
             # Ensure hashable, JSON-serializable fields
@@ -576,13 +595,15 @@ class ClanCache:
                 'supplier_name': supplier_name,
                 'supplier_description': supplier_description,
                 'configurable_options': product_data.get('configurable_options', None),
+                'additional_data': product_data.get('additional_data', None),
+                'dimensions': dimensions,
             }
             product_hash = self._build_product_hash(content_fields)
             
             # Insert or update the product
             cursor.execute("""
-                INSERT INTO clan_products (id, name, sku, url, image_url, price, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, product_content_hash, has_detailed_data)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO clan_products (id, name, sku, url, image_url, price, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_content_hash, has_detailed_data)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (id) DO UPDATE SET
                     name = EXCLUDED.name,
                     sku = EXCLUDED.sku,
@@ -596,10 +617,12 @@ class ClanCache:
                     clan_created_at = COALESCE(clan_products.clan_created_at, EXCLUDED.clan_created_at),
                     clan_updated_at = COALESCE(EXCLUDED.clan_updated_at, clan_products.clan_updated_at),
                     configurable_options = EXCLUDED.configurable_options,
+                    additional_data = EXCLUDED.additional_data,
+                    dimensions = EXCLUDED.dimensions,
                     product_content_hash = EXCLUDED.product_content_hash,
                     has_detailed_data = EXCLUDED.has_detailed_data,
                     last_updated = CURRENT_TIMESTAMP
-            """, (product_id, name, sku, url, image_url, price, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, product_hash, has_detailed_data))
+            """, (product_id, name, sku, url, image_url, price, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_hash, has_detailed_data))
             
             conn.commit()
             cursor.close()

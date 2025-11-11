@@ -57,7 +57,8 @@ class ClanDataExtractor:
                     supplier_name, supplier_description,
                     configurable_options, category_ids,
                     clan_created_at, clan_updated_at,
-                    specifications, producer_id
+                    specifications, producer_id,
+                    additional_data, dimensions
                 FROM clan_products
                 WHERE id = %s
             """, (product_id,))
@@ -136,6 +137,8 @@ class ClanDataExtractor:
                 # Options and specifications
                 'configurable_options': product.get('configurable_options'),
                 'specifications': product.get('specifications'),
+                'additional_data': product.get('additional_data'),
+                'dimensions': product.get('dimensions'),
                 
                 # Categories
                 'category_ids': product.get('category_ids', []),

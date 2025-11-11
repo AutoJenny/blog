@@ -84,6 +84,12 @@ def transform_product_for_ui(product: Dict) -> Dict:
             'image_url': image_url,
             'url': product.get('product_url', ''),
             'description': product.get('description', ''),
+            'short_description': product.get('short_description', ''),
+            'supplier_name': product.get('supplier_name', ''),
+            'supplier_description': product.get('supplier_description', ''),
+            'configurable_options': product.get('configurable_options', None),
+            'additional_data': product.get('additional_data', None),
+            'dimensions': product.get('dimensions', ''),
             'category_ids': []
         }
 
