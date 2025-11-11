@@ -153,6 +153,60 @@
     margin-top: 0.5rem;
 }
 
+.section-product-level {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #334155;
+}
+
+.section-product-level label {
+    display: block;
+    font-weight: 600;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.section-product-level .product-level-badges {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.section-product-level .product-level-badge {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 2px solid #334155;
+    background: #0f172a;
+    text-align: center;
+    transition: all 0.2s;
+    cursor: default;
+}
+
+.section-product-level .product-level-badge.active {
+    background: #1e3a8a;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.section-product-level .product-level-badge.inactive {
+    opacity: 0.4;
+    background: #0f172a;
+    border-color: #334155;
+}
+
+.section-product-level .product-level-badge .level-name {
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.section-product-level .product-level-badge.active .level-name {
+    color: #93c5fd;
+    font-weight: 700;
+}
+
 .mapping-actions {
     display: flex;
     justify-content: space-between;
@@ -294,6 +348,28 @@
                     {% if section_data.llm_needed %}
                     <div class="llm-role-badge">
                         LLM Role: {{ section_data.llm_role }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Product Level (for sections 1, 3, 5, 7) -->
+                    {% if loop.index in [1, 3, 5, 7] and section_data.get('product_level') %}
+                    {% set section_level = section_data.get('product_level', 'classic') %}
+                    <div class="section-product-level">
+                        <label>Product Level:</label>
+                        <div class="product-level-badges">
+                            <div class="product-level-badge {% if section_level == 'classic' %}active{% else %}inactive{% endif %}" 
+                                 title="Standard quality products made to traditional standards">
+                                <span class="level-name">Classic</span>
+                            </div>
+                            <div class="product-level-badge {% if section_level == 'luxury' %}active{% else %}inactive{% endif %}" 
+                                 title="Premium quality products with enhanced features and materials">
+                                <span class="level-name">Luxury</span>
+                            </div>
+                            <div class="product-level-badge {% if section_level == 'essential' %}active{% else %}inactive{% endif %}" 
+                                 title="Budget-friendly options made to proper traditional standards, may have limited choices">
+                                <span class="level-name">Essential</span>
+                            </div>
+                        </div>
                     </div>
                     {% endif %}
                 </div>
