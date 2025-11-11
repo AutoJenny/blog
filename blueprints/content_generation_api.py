@@ -78,6 +78,32 @@ def api_generate_content():
                     source_name = metadata.get(f'{source_type}_name') or metadata.get('name', source_name)
                     break
         
+        # Pre-generation validation for products
+        if source_type == 'product':
+            from utils.content_generation.clan_data_extractor import ClanDataExtractor
+            from utils.content_generation.data_source_tracker import DataSourceTracker
+            
+            extractor = ClanDataExtractor()
+            tracker = DataSourceTracker()
+            
+            # Extract and validate product data
+            product_data = extractor.extract_product_data(source_id)
+            if not product_data:
+                return jsonify({
+                    'success': False,
+                    'error': f'Product {source_id} not found'
+                }), 404
+            
+            validation_report = extractor.validate_data_completeness(product_data)
+            pre_validation = tracker.validate_pre_generation(product_data, validation_report)
+            
+            if not pre_validation.get('can_proceed'):
+                return jsonify({
+                    'success': False,
+                    'error': 'Product does not meet minimum requirements for generation',
+                    'validation': pre_validation
+                }), 400
+        
         # Create placeholder post with generated_source_type and preset taxonomy
         placeholder_title = f"Generating content for {source_name}..."
         idea_seed = f"Generated from {source_type}: {source_name} (ID: {source_id})"
@@ -88,6 +114,11 @@ def api_generate_content():
             expanded_idea='',
             generated_source_type=source_type  # Set source type: 'product' or 'category'
         )
+        
+        # Initialize tracking for products
+        if source_type == 'product':
+            tracking_data = tracker.create_tracking_structure(post_id, source_id, validation_report)
+            tracker.save_tracking_data(post_id, tracking_data)
         
         # Generate content (now we have a valid post_id)
         orchestrator = GenerationOrchestrator()
