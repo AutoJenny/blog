@@ -66,6 +66,30 @@ POST_TYPE_PIPELINE_CONFIGS = {
             'header-seo-meta',      # SEO metadata
             'final-review'          # Final review
         ]
+    },
+    'generated': {
+        'active': True,
+        'steps': [
+            'taxonomy',                    # Already preset, allow refinement
+            'product-data-review',        # NEW: Review CLAN product data
+            'topic-brainstorming',        # Generate topics from CLAN data + standard sections
+            'section-structure-design',   # Design structure (template-based)
+            'section-ideas',              # Section-specific ideas
+            'section-titling',            # Finalize section titles
+            'drafting',                   # Author drafts
+            'image-concepts',             # Image concepts
+            'image-prompts',              # Image prompts
+            'image-captions',             # Image captions
+            'image-generation',           # Generate images
+            'optimise',                   # Optimize images
+            'header-title-summary',       # Header title/summary
+            'header-image-prompt',        # Header image prompt
+            'header-image-details',       # Header image details
+            'header-image-generate',      # Header image generation
+            'header-image-optimise',      # Header image optimization
+            'header-seo-meta',            # SEO metadata
+            'final-review'               # Final review
+        ]
     }
 }
 
@@ -124,6 +148,27 @@ STEP_FUNCTION_MAPPINGS = {
         'header-image-optimise': 'runHeaderImageOptimize',
         'header-seo-meta': 'runHeaderSeoMeta',
         'final-review': 'runFinalReview'
+    },
+    'generated': {
+        'taxonomy': 'runTaxonomy',
+        'product-data-review': 'runProductDataReview',
+        'topic-brainstorming': 'runTopicBrainstorming',
+        'section-structure-design': 'runSectionStructure',
+        'section-ideas': 'runSectionIdeas',
+        'section-titling': 'runSectionTitling',
+        'drafting': 'runDrafting',
+        'image-concepts': 'runImageConcepts',
+        'image-prompts': 'runImagePrompts',
+        'image-captions': 'runImageCaptions',
+        'image-generation': 'runImageGeneration',
+        'optimise': 'runImageOptimise',
+        'header-title-summary': 'runHeaderTitleSummary',
+        'header-image-prompt': 'runHeaderImagePrompt',
+        'header-image-details': 'runHeaderImageDetails',
+        'header-image-generate': 'runHeaderImageGenerate',
+        'header-image-optimise': 'runHeaderImageOptimize',
+        'header-seo-meta': 'runHeaderSeoMeta',
+        'final-review': 'runFinalReview'
     }
 }
 
@@ -158,7 +203,8 @@ STEP_LABELS = {
     'profile-image-concepts': 'Profile — Image Concepts',
     'profile-image-prompts': 'Profile — Image Prompts',
     'profile-image-generation': 'Profile — Image Generation',
-    'profile-image-optimise': 'Profile — Image Optimise'
+    'profile-image-optimise': 'Profile — Image Optimise',
+    'product-data-review': 'Planning — Product Data Review'
 }
 
 def get_pipeline_steps(post_type):
