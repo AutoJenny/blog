@@ -71,10 +71,6 @@ class ResearchSynthesizer:
                 logger.warning(f"Ollama synthesis failed: {result.get('error')}, using simple synthesis fallback")
                 return self._simple_synthesis(dimension, sources)
             
-            if result and 'error' in result:
-                logger.error(f"LLM synthesis failed: {result['error']}")
-                return self._simple_synthesis(dimension, sources)
-            
             if result and result.get('content'):
                 content = result.get('content', '').strip()
                 

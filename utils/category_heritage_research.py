@@ -228,10 +228,6 @@ Return only valid JSON, no markdown formatting."""
                 logger.warning(f"Ollama category analysis failed: {result.get('error')}")
                 return None
             
-            if 'error' in result:
-                logger.error(f"LLM analysis failed: {result['error']}")
-                return None
-            
             content = result.get('content', '')
             
             # Try to extract JSON from response
