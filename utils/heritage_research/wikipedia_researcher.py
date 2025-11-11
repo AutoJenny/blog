@@ -34,9 +34,10 @@ class WikipediaResearcher:
             raise ImportError("wikipedia-api library is not installed. Install with: pip install wikipedia-api")
         
         self.language = language
+        # wikipedia-api requires user_agent as first parameter
         self.wiki = wikipediaapi.Wikipedia(
-            language=language,
-            user_agent='CLAN Heritage Research/1.0'
+            user_agent='CLAN Heritage Research/1.0 (https://clan.com)',
+            language=language
         )
     
     def search(self, query: str, max_results: int = 10) -> List[Dict]:
@@ -51,17 +52,54 @@ class WikipediaResearcher:
             List of article summaries with metadata
         """
         try:
-            # Wikipedia API search
-            search_results = self.wiki.search(query, results=max_results)
+            import requests
+            
+            # Use Wikipedia REST API for search
+            search_url = f"https://{self.language}.wikipedia.org/api/rest_v1/page/summary/{query.replace(' ', '_')}"
+            
+            # Try direct page access first
+            try:
+                response = requests.get(search_url, headers={'User-Agent': 'CLAN Heritage Research/1.0 (https://clan.com)'})
+                if response.status_code == 200:
+                    data = response.json()
+                    return [{
+                        'title': data.get('title', query),
+                        'url': data.get('content_urls', {}).get('desktop', {}).get('page', ''),
+                        'summary': data.get('extract', '')[:500],
+                        'word_count': len(data.get('extract', '').split())
+                    }]
+            except:
+                pass
+            
+            # If direct access fails, use search API
+            search_api_url = f"https://{self.language}.wikipedia.org/w/api.php"
+            params = {
+                'action': 'query',
+                'list': 'search',
+                'srsearch': query,
+                'srlimit': max_results,
+                'format': 'json'
+            }
+            
+            response = requests.get(search_api_url, params=params, 
+                                   headers={'User-Agent': 'CLAN Heritage Research/1.0 (https://clan.com)'})
+            
+            if response.status_code != 200:
+                logger.warning(f"Wikipedia search API returned status {response.status_code}")
+                return []
+            
+            data = response.json()
+            search_results = data.get('query', {}).get('search', [])
             
             articles = []
-            for title in search_results:
+            for result in search_results[:max_results]:
+                title = result.get('title', '')
                 page = self.wiki.page(title)
                 if page.exists():
                     articles.append({
                         'title': page.title,
                         'url': page.fullurl,
-                        'summary': page.summary[:500] if page.summary else '',  # First 500 chars
+                        'summary': page.summary[:500] if page.summary else '',
                         'word_count': len(page.summary.split()) if page.summary else 0
                     })
             
