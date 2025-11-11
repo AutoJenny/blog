@@ -375,13 +375,12 @@ Return only valid JSON, no markdown formatting."""
                 logger.warning(f"No queries generated for dimension: {dimension}")
                 continue
             
-            # Research using first query (can be expanded to use multiple queries)
-            primary_query = dimension_queries[0]
-            logger.info(f"Researching {dimension} with query: {primary_query}")
+            # Research using all queries for this dimension
+            logger.info(f"Researching {dimension} with queries: {dimension_queries}")
             
             try:
                 research_result = self.wikipedia_researcher.research_dimension(
-                    query=primary_query,
+                    queries=dimension_queries,
                     dimension=dimension
                 )
                 

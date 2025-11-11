@@ -53,12 +53,31 @@ class ResearchSynthesizer:
         try:
             prompt = self._build_synthesis_prompt(dimension, sources, category_name, hierarchy_context)
             
-            result = self.llm_service.generate(
-                prompt=prompt,
-                model='ollama/llama3.2',
-                temperature=0.7,
-                max_tokens=1500
+            messages = [
+                {'role': 'system', 'content': 'You are a Scottish heritage expert synthesizing research from Wikipedia articles. Extract specific factual information and create coherent narratives.'},
+                {'role': 'user', 'content': prompt}
+            ]
+            
+            import os
+            # Try OpenAI first, fallback to Ollama
+            result = self.llm_service.execute_llm_request(
+                provider='openai',
+                model='gpt-4',
+                messages=messages,
+                api_key=os.getenv('OPENAI_API_KEY')
             )
+            
+            if result and 'error' in result:
+                # Try Ollama as fallback
+                result = self.llm_service.execute_llm_request(
+                    provider='ollama',
+                    model='llama3.2',
+                    messages=messages
+                )
+            
+            if result and 'error' in result:
+                logger.error(f"LLM synthesis failed: {result['error']}")
+                return self._simple_synthesis(dimension, sources)
             
             if result and result.get('content'):
                 content = result.get('content', '').strip()
@@ -86,49 +105,77 @@ class ResearchSynthesizer:
                                category_name: str, hierarchy_context: str) -> str:
         """Build prompt for LLM synthesis"""
         
-        # Prepare source text
+        # Prepare source text with full content
         source_text = ""
-        for i, source in enumerate(sources[:10], 1):  # Top 10 sources
-            source_text += f"\n\nSource {i}: {source.get('title', 'Unknown')}\n"
+        for i, source in enumerate(sources[:5], 1):  # Top 5 sources (with full content)
+            source_text += f"\n\n=== Source {i}: {source.get('title', 'Unknown')} ===\n"
             source_text += f"URL: {source.get('url', '')}\n"
-            snippets = source.get('snippets', [])
-            if snippets:
-                source_text += "Relevant information:\n"
-                for snippet in snippets[:3]:  # Top 3 snippets per source
-                    source_text += f"- {snippet}\n"
+            
+            # Use full_content if available, otherwise fall back to summary
+            content = source.get('full_content') or source.get('summary', '')
+            if content:
+                source_text += f"\nContent:\n{content}\n"
+            
+            # Add references if available
+            references = source.get('references', [])
+            if references:
+                source_text += f"\nReferences to external sources: {len(references)} found\n"
         
         dimension_descriptions = {
-            'historical_origins': 'the historical origins and early development',
-            'cultural_significance': 'the cultural significance and role in Scottish traditions',
-            'evolution': 'how it has evolved and changed over time',
-            'scottish_heritage_connections': 'connections to Scottish clans, regions, events, and traditions',
-            'industrial_legacy': 'historical producers, manufacturing processes, and regional specializations (historical only, not modern)'
+            'historical_origins': {
+                'focus': 'the historical origins and early development of this category in Scotland',
+                'what_to_extract': 'when it first appeared, key historical periods, how it developed, important dates, early forms, historical context'
+            },
+            'cultural_significance': {
+                'focus': 'the cultural significance and role in Scottish traditions, identity, and heritage',
+                'what_to_extract': 'what it means to Scottish culture, traditions associated with it, symbolic meanings, role in Scottish identity, cultural practices'
+            },
+            'evolution': {
+                'focus': 'how this category has evolved and changed over time in Scotland',
+                'what_to_extract': 'historical changes, adaptations, developments over centuries, modern forms, how it transformed, continuity and change'
+            },
+            'scottish_heritage_connections': {
+                'focus': 'specific connections to Scottish clans, regions, events, and traditions',
+                'what_to_extract': 'clan associations, regional variations, connections to historical events, traditional uses, regional specializations, local traditions'
+            },
+            'industrial_legacy': {
+                'focus': 'historical Scottish producers, manufacturing processes, and regional specializations',
+                'what_to_extract': 'famous historical producers, traditional manufacturing methods, regional specializations, historical craftsmanship, traditional processes (historical only, exclude modern)'
+            }
         }
         
-        dimension_desc = dimension_descriptions.get(dimension, dimension)
+        dimension_info = dimension_descriptions.get(dimension, {'focus': dimension, 'what_to_extract': 'relevant information'})
         
-        return f"""You are synthesizing research about {dimension_desc} of a Scottish product category.
+        return f"""You are a Scottish heritage expert synthesizing research about {dimension_info['focus']} of a product category.
 
 Category: {category_name}
 Category Hierarchy: {hierarchy_context}
 
-Research Sources:
+Research Sources (full Wikipedia articles):
 {source_text}
 
-Based on these sources, create a comprehensive narrative (300-500 words) that:
-1. Synthesizes information from multiple sources
-2. Identifies key themes and significant elements
-3. Maintains focus on Scottish heritage and context
-4. Attributes information to sources where relevant
-5. Highlights interesting and unique insights
+TASK: Carefully read through all the source material above and extract specific, factual information about {dimension_info['what_to_extract']}.
 
-For industrial_legacy, focus ONLY on historical producers and processes, not modern manufacturers.
+IMPORTANT INSTRUCTIONS:
+1. Extract SPECIFIC FACTUAL INFORMATION from the sources (dates, names, places, events, processes)
+2. Focus ONLY on information directly relevant to {dimension_info['focus']}
+3. Ignore generic or irrelevant information
+4. Extract individual factoids and interesting details
+5. Maintain focus on Scottish context and heritage
+6. For industrial_legacy: ONLY include historical producers/processes, exclude anything modern
+
+Create a comprehensive narrative (300-500 words) that:
+- Synthesizes the extracted factual information into a coherent story
+- Identifies 3-5 key themes that emerge from the research
+- Lists 3-5 significant elements (specific facts, dates, people, events, processes) that are particularly interesting or important
+- Maintains focus on Scottish heritage and the specific category
+- Uses information directly from the sources (don't make things up)
 
 Return a JSON object with this structure:
 {{
-  "narrative": "300-500 word synthesized narrative...",
-  "key_themes": ["Theme 1", "Theme 2", "Theme 3"],
-  "significant_elements": ["Element 1", "Element 2", "Element 3"]
+  "narrative": "300-500 word synthesized narrative based on extracted facts from sources...",
+  "key_themes": ["Theme 1 (specific theme from sources)", "Theme 2", "Theme 3"],
+  "significant_elements": ["Specific factoid 1 (e.g., 'Tartan was first recorded in 3rd century AD')", "Specific factoid 2", "Specific factoid 3"]
 }}
 
 Return only valid JSON, no additional text."""
@@ -144,14 +191,15 @@ Return only valid JSON, no additional text."""
         Returns:
             Dictionary with basic synthesis
         """
-        # Combine snippets from sources
-        all_snippets = []
+        # Combine full content from sources
+        all_content = []
         for source in sources:
-            snippets = source.get('snippets', [])
-            all_snippets.extend(snippets)
+            content = source.get('full_content') or source.get('summary', '')
+            if content:
+                all_content.append(content)
         
-        # Create simple narrative from snippets
-        narrative = " ".join(all_snippets[:10])[:500]  # First 10 snippets, max 500 chars
+        # Create simple narrative from content
+        narrative = " ".join(all_content[:3])[:1000]  # First 3 sources, max 1000 chars
         
         return {
             'narrative': narrative,
