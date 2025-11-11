@@ -3,9 +3,10 @@
 Category Heritage Research
 
 Researches historical and cultural context for categories using:
-1. LLM analysis of aggregated product data
-2. Web research to validate and enhance
-3. Category hierarchy context
+1. Enhanced multi-stage research (Wikipedia API, query generation, synthesis)
+2. LLM analysis of aggregated product data
+3. Web research to validate and enhance
+4. Category hierarchy context
 """
 
 import logging
@@ -14,20 +15,37 @@ from typing import Dict, Optional, List
 from datetime import datetime
 import requests
 
+# Import enhanced research modules
+try:
+    from utils.heritage_research import (
+        WikipediaResearcher,
+        QueryGenerator,
+        SourceFilter,
+        ResearchSynthesizer,
+        RESEARCH_DIMENSIONS
+    )
+    ENHANCED_RESEARCH_AVAILABLE = True
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Enhanced research modules not available: {e}")
+    ENHANCED_RESEARCH_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 class CategoryHeritageResearcher:
     """Researches category heritage and cultural context"""
     
-    def __init__(self, db_connection, llm_service=None):
+    def __init__(self, db_connection, llm_service=None, use_enhanced_research=True):
         """
         Initialize researcher.
         
         Args:
             db_connection: Database connection
             llm_service: LLM service instance (optional, will create if not provided)
+            use_enhanced_research: Use enhanced multi-stage research (default: True)
         """
         self.db = db_connection
+        self.use_enhanced_research = use_enhanced_research and ENHANCED_RESEARCH_AVAILABLE
         
         # Initialize LLM service if not provided
         if llm_service is None:
@@ -39,6 +57,18 @@ class CategoryHeritageResearcher:
                 self.llm_service = None
         else:
             self.llm_service = llm_service
+        
+        # Initialize enhanced research modules if available
+        if self.use_enhanced_research:
+            try:
+                self.wikipedia_researcher = WikipediaResearcher()
+                self.query_generator = QueryGenerator(llm_service=self.llm_service)
+                self.source_filter = SourceFilter()
+                self.research_synthesizer = ResearchSynthesizer(llm_service=self.llm_service)
+                logger.info("Enhanced heritage research modules initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize enhanced research modules: {e}")
+                self.use_enhanced_research = False
     
     def get_category_path(self, category_id: int) -> List[str]:
         """
@@ -259,7 +289,7 @@ Return only valid JSON, no markdown formatting."""
     
     def derive_category_context(self, category_id: int) -> Dict:
         """
-        Derive complete category context (LLM + web research + hierarchy).
+        Derive complete category context using enhanced multi-stage research.
         
         Args:
             category_id: Category ID
@@ -293,34 +323,178 @@ Return only valid JSON, no markdown formatting."""
             category_path = self.get_category_path(category_id)
             hierarchy_context = ' > '.join(category_path) if category_path else category_name
             
-            # Aggregate product data
-            product_data = self.aggregate_category_data(category_id)
-            
-            # LLM analysis
-            llm_analysis = self.llm_analyze_category(category_name, hierarchy_context, product_data)
-            
-            # Web research
-            web_research = self.web_research_category(category_name)
-            
-            # Combine results
-            heritage_data = {
-                'historical_origins': llm_analysis.get('historical_origins', '') if llm_analysis else '',
-                'cultural_significance': llm_analysis.get('cultural_significance', '') if llm_analysis else '',
-                'evolution': llm_analysis.get('evolution', '') if llm_analysis else '',
-                'scottish_heritage_connections': llm_analysis.get('scottish_heritage_connections', '') if llm_analysis else '',
-                'hierarchy_context': hierarchy_context,
-                'llm_analysis': llm_analysis or {},
-                'web_research': web_research,
-                'validated_at': datetime.now().isoformat()
-            }
-            
-            return heritage_data
+            # Use enhanced research if available
+            if self.use_enhanced_research:
+                return self._derive_category_context_enhanced(
+                    category_id, category_name, hierarchy_context, category_desc
+                )
+            else:
+                # Fallback to original method
+                return self._derive_category_context_legacy(
+                    category_id, category_name, hierarchy_context
+                )
             
         except Exception as e:
             logger.error(f"Error deriving category context for {category_id}: {e}")
             import traceback
             traceback.print_exc()
             return {}
+    
+    def _derive_category_context_enhanced(self, category_id: int, category_name: str,
+                                         hierarchy_context: str, category_desc: str) -> Dict:
+        """
+        Enhanced multi-stage research process.
+        
+        Args:
+            category_id: Category ID
+            category_name: Category name
+            hierarchy_context: Category hierarchy path
+            category_desc: Category description
+            
+        Returns:
+            Dictionary with complete heritage data
+        """
+        logger.info(f"Starting enhanced heritage research for category {category_id}: {category_name}")
+        
+        # Stage 1: Generate research queries
+        logger.info("Stage 1: Generating research queries...")
+        queries = self.query_generator.generate_queries(
+            category_name=category_name,
+            hierarchy_context=hierarchy_context,
+            dimensions=RESEARCH_DIMENSIONS
+        )
+        
+        # Stage 2: Research each dimension using Wikipedia
+        logger.info("Stage 2: Researching dimensions using Wikipedia...")
+        dimension_research = {}
+        all_sources = []
+        
+        for dimension in RESEARCH_DIMENSIONS:
+            dimension_queries = queries.get(dimension, [])
+            if not dimension_queries:
+                logger.warning(f"No queries generated for dimension: {dimension}")
+                continue
+            
+            # Research using first query (can be expanded to use multiple queries)
+            primary_query = dimension_queries[0]
+            logger.info(f"Researching {dimension} with query: {primary_query}")
+            
+            try:
+                research_result = self.wikipedia_researcher.research_dimension(
+                    query=primary_query,
+                    dimension=dimension
+                )
+                
+                # Filter sources by credibility
+                filtered_sources = self.source_filter.filter_sources(
+                    research_result.get('sources', []),
+                    min_credibility=0.70
+                )
+                
+                dimension_research[dimension] = {
+                    'sources': filtered_sources,
+                    'total_sources': len(filtered_sources),
+                    'research_method': research_result.get('research_method', 'wikipedia_api')
+                }
+                all_sources.extend(filtered_sources)
+                
+            except Exception as e:
+                logger.error(f"Error researching dimension {dimension}: {e}")
+                dimension_research[dimension] = {
+                    'sources': [],
+                    'total_sources': 0,
+                    'research_method': 'error'
+                }
+        
+        # Stage 3: Synthesize research for each dimension
+        logger.info("Stage 3: Synthesizing research...")
+        heritage_data = {
+            'hierarchy_context': hierarchy_context,
+            'research_metadata': {
+                'total_sources': len(all_sources),
+                'research_date': datetime.now().isoformat(),
+                'researcher_version': '2.0',
+                'research_method': 'wikipedia_api'
+            }
+        }
+        
+        for dimension in RESEARCH_DIMENSIONS:
+            sources = dimension_research.get(dimension, {}).get('sources', [])
+            
+            if sources:
+                synthesis = self.research_synthesizer.synthesize_dimension(
+                    dimension=dimension,
+                    sources=sources,
+                    category_name=category_name,
+                    hierarchy_context=hierarchy_context
+                )
+                
+                heritage_data[dimension] = {
+                    'narrative': synthesis.get('narrative', ''),
+                    'key_themes': synthesis.get('key_themes', []),
+                    'significant_elements': synthesis.get('significant_elements', []),
+                    'source_count': len(sources),
+                    'research_date': datetime.now().isoformat()
+                }
+            else:
+                # No sources found - use fallback LLM analysis
+                logger.warning(f"No sources found for {dimension}, using fallback LLM analysis")
+                heritage_data[dimension] = {
+                    'narrative': '',
+                    'key_themes': [],
+                    'significant_elements': [],
+                    'source_count': 0,
+                    'research_date': datetime.now().isoformat()
+                }
+        
+        # Add Industrial Legacy specific fields if dimension exists
+        if 'industrial_legacy' in heritage_data and heritage_data['industrial_legacy'].get('narrative'):
+            # Extract producer/process information from synthesis
+            # This will be enhanced in Phase 2
+            heritage_data['industrial_legacy']['famous_historical_producers'] = []
+            heritage_data['industrial_legacy']['historical_manufacturing_processes'] = []
+            heritage_data['industrial_legacy']['regional_specializations'] = []
+        
+        logger.info(f"Enhanced heritage research complete for category {category_id}")
+        return heritage_data
+    
+    def _derive_category_context_legacy(self, category_id: int, category_name: str,
+                                       hierarchy_context: str) -> Dict:
+        """
+        Legacy research method (fallback if enhanced research unavailable).
+        
+        Args:
+            category_id: Category ID
+            category_name: Category name
+            hierarchy_context: Category hierarchy path
+            
+        Returns:
+            Dictionary with complete heritage data
+        """
+        logger.info(f"Using legacy research method for category {category_id}")
+        
+        # Aggregate product data
+        product_data = self.aggregate_category_data(category_id)
+        
+        # LLM analysis
+        llm_analysis = self.llm_analyze_category(category_name, hierarchy_context, product_data)
+        
+        # Web research
+        web_research = self.web_research_category(category_name)
+        
+        # Combine results
+        heritage_data = {
+            'historical_origins': llm_analysis.get('historical_origins', '') if llm_analysis else '',
+            'cultural_significance': llm_analysis.get('cultural_significance', '') if llm_analysis else '',
+            'evolution': llm_analysis.get('evolution', '') if llm_analysis else '',
+            'scottish_heritage_connections': llm_analysis.get('scottish_heritage_connections', '') if llm_analysis else '',
+            'hierarchy_context': hierarchy_context,
+            'llm_analysis': llm_analysis or {},
+            'web_research': web_research,
+            'validated_at': datetime.now().isoformat()
+        }
+        
+        return heritage_data
     
     def save_heritage_data(self, category_id: int, heritage_data: Dict) -> bool:
         """
