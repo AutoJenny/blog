@@ -70,10 +70,6 @@ class QueryGenerator:
                 logger.warning(f"Ollama query generation failed: {result.get('error')}, using simple query generation fallback")
                 return self._generate_simple_queries(category_name, hierarchy_context, dimensions)
             
-            if result and 'error' in result:
-                logger.error(f"LLM query generation failed: {result['error']}")
-                return self._generate_simple_queries(category_name, hierarchy_context, dimensions)
-            
             if result and result.get('content'):
                 content = result.get('content', '').strip()
                 

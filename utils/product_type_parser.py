@@ -381,10 +381,6 @@ Return only valid JSON, no markdown formatting."""
                 logger.warning(f"Ollama parsing failed: {result.get('error')}, skipping LLM parsing for this product")
                 return None
             
-            if result and 'error' in result:
-                logger.error(f"LLM parsing failed: {result['error']}")
-                return None
-            
             if result and result.get('content'):
                 content = result['content'].strip()
                 # Remove markdown code blocks if present
