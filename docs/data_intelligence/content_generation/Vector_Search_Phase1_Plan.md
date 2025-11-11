@@ -61,11 +61,16 @@ CREATE INDEX idx_content_chunks_metadata ON content_chunks USING GIN (metadata);
 - `description` - Full HTML description (needs cleaning)
 - `supplier_name` - Producer/manufacturer
 - `supplier_description` - HTML supplier info (needs cleaning)
+- `specifications` - Product specifications (dict or string)
+- `additional_data` - Structured product attributes (material, pattern, clan crest info, etc.)
+- `dimensions` - Product dimensions (text)
+- `configurable_options` - Product options (sizes, colors, etc.)
 
 **Chunking Process:**
 1. Extract all text fields
 2. Clean HTML: strip tags, decode entities, normalize whitespace
-3. Combine into single text block with structure:
+3. Format structured data (specifications, additional_data, options)
+4. Combine into single text block with structure:
    ```
    Product: {name}
    Producer: {supplier_name}
@@ -74,10 +79,21 @@ CREATE INDEX idx_content_chunks_metadata ON content_chunks USING GIN (metadata);
    
    {description (cleaned)}
    
+   Specifications:
+   {specifications formatted}
+   
+   Product Details:
+   {additional_data formatted as label: value}
+   
+   Dimensions: {dimensions}
+   
+   Available Options:
+   {configurable_options formatted}
+   
    About the Producer: {supplier_description (cleaned)}
    ```
-4. Single chunk per product (products are typically 200-800 tokens)
-5. Store metadata: `{product_name, sku, supplier_name, category_ids, price}`
+5. Single chunk per product (products are typically 500-1500 tokens with new fields)
+6. Store metadata: `{product_name, sku, supplier_name, category_ids, price}`
 
 ### Categories
 
@@ -88,21 +104,29 @@ CREATE INDEX idx_content_chunks_metadata ON content_chunks USING GIN (metadata);
 
 **Chunking Process:**
 1. Extract name and description
-2. Extract heritage_data fields if available:
-   - `historical_origins`
-   - `cultural_significance`
-   - `evolution`
-   - `scottish_heritage_connections`
+2. Extract heritage_data fields if available (handles both legacy string format and new dict format):
+   - `historical_origins` - Narrative, key themes, significant elements
+   - `cultural_significance` - Narrative, key themes, significant elements
+   - `evolution` - Narrative, key themes, significant elements
+   - `scottish_heritage_connections` - Narrative, key themes, significant elements
+   - `industrial_legacy` - Narrative, key themes, significant elements
 3. Combine into single text block:
    ```
    Category: {name}
    
    {description}
    
-   Historical Origins: {heritage_data.historical_origins}
-   Cultural Significance: {heritage_data.cultural_significance}
-   Evolution: {heritage_data.evolution}
-   Scottish Heritage: {heritage_data.scottish_heritage_connections}
+   Historical Origins:
+   {narrative}
+   Key Themes: {themes}
+   Significant Elements: {elements}
+   
+   Cultural Significance:
+   {narrative}
+   Key Themes: {themes}
+   Significant Elements: {elements}
+   
+   [Similar structure for other dimensions...]
    ```
 4. Single chunk per category
 5. Store metadata: `{category_name, category_id, parent_id, level, category_path}`

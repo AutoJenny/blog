@@ -67,12 +67,69 @@ class ContentChunker:
         Returns:
             Dictionary with chunk_text and metadata
         """
+        import json
+        
         # Extract and clean fields (handle None values)
         name = (product.get('name') or '').strip()
         short_desc = self.clean_html(product.get('short_description'))
         description = self.clean_html(product.get('description'))
         supplier_name = (product.get('supplier_name') or '').strip()
         supplier_desc = self.clean_html(product.get('supplier_description'))
+        
+        # Extract specifications (if it's a dict, format it; if string, use as-is)
+        specifications = product.get('specifications')
+        specs_text = ""
+        if specifications:
+            if isinstance(specifications, dict):
+                specs_parts = []
+                for key, value in specifications.items():
+                    specs_parts.append(f"{key.replace('_', ' ').title()}: {value}")
+                specs_text = "\n".join(specs_parts)
+            else:
+                specs_text = str(specifications)
+        
+        # Extract additional_data (structured product attributes)
+        additional_data = product.get('additional_data')
+        additional_text = ""
+        if additional_data:
+            if isinstance(additional_data, dict):
+                additional_parts = []
+                for key, item in additional_data.items():
+                    if isinstance(item, dict):
+                        label = item.get('label', key.replace('_', ' ').title())
+                        value = item.get('value', '')
+                        if value:
+                            additional_parts.append(f"{label}: {value}")
+                    else:
+                        additional_parts.append(f"{key.replace('_', ' ').title()}: {item}")
+                additional_text = "\n".join(additional_parts)
+            else:
+                additional_text = str(additional_data)
+        
+        # Extract dimensions
+        dimensions = product.get('dimensions', '').strip()
+        
+        # Extract configurable options
+        configurable_options = product.get('configurable_options')
+        options_text = ""
+        if configurable_options:
+            if isinstance(configurable_options, list):
+                options_parts = []
+                for option_group in configurable_options:
+                    if isinstance(option_group, dict):
+                        option_name = option_group.get('option', 'Option')
+                        options_list = option_group.get('options', [])
+                        if options_list:
+                            option_values = []
+                            for opt in options_list:
+                                if isinstance(opt, dict):
+                                    option_values.append(opt.get('label', str(opt)))
+                                else:
+                                    option_values.append(str(opt))
+                            options_parts.append(f"{option_name}: {', '.join(option_values)}")
+                options_text = "\n".join(options_parts)
+            else:
+                options_text = json.dumps(configurable_options)
         
         # Build structured text
         parts = []
@@ -90,6 +147,25 @@ class ContentChunker:
         if description:
             parts.append("")
             parts.append(description)
+        
+        if specs_text:
+            parts.append("")
+            parts.append("Specifications:")
+            parts.append(specs_text)
+        
+        if additional_text:
+            parts.append("")
+            parts.append("Product Details:")
+            parts.append(additional_text)
+        
+        if dimensions:
+            parts.append("")
+            parts.append(f"Dimensions: {dimensions}")
+        
+        if options_text:
+            parts.append("")
+            parts.append("Available Options:")
+            parts.append(options_text)
         
         if supplier_desc:
             parts.append("")
@@ -136,28 +212,94 @@ class ContentChunker:
             parts.append("")
             parts.append(description)
         
-        # Add heritage data if available
+        # Add heritage data if available (handle both old string format and new dict format)
         if heritage_data:
             parts.append("")
             
-            if heritage_data.get('historical_origins'):
-                parts.append("Historical Origins:")
-                parts.append(heritage_data['historical_origins'])
+            # Helper to extract narrative from either format
+            def get_narrative(dimension_data):
+                if isinstance(dimension_data, dict):
+                    return dimension_data.get('narrative', '')
+                elif isinstance(dimension_data, str):
+                    return dimension_data
+                return ''
             
-            if heritage_data.get('cultural_significance'):
+            # Helper to extract themes and elements
+            def get_themes_elements(dimension_data):
+                if isinstance(dimension_data, dict):
+                    themes = dimension_data.get('key_themes', [])
+                    elements = dimension_data.get('significant_elements', [])
+                    result = []
+                    if themes:
+                        result.append("Key Themes: " + ", ".join(themes))
+                    if elements:
+                        result.append("Significant Elements: " + ", ".join(elements))
+                    return "\n".join(result)
+                return ''
+            
+            # Historical Origins
+            historical_origins = heritage_data.get('historical_origins')
+            if historical_origins:
+                parts.append("Historical Origins:")
+                narrative = get_narrative(historical_origins)
+                if narrative:
+                    parts.append(narrative)
+                themes_elements = get_themes_elements(historical_origins)
+                if themes_elements:
+                    parts.append("")
+                    parts.append(themes_elements)
+            
+            # Cultural Significance
+            cultural_significance = heritage_data.get('cultural_significance')
+            if cultural_significance:
                 parts.append("")
                 parts.append("Cultural Significance:")
-                parts.append(heritage_data['cultural_significance'])
+                narrative = get_narrative(cultural_significance)
+                if narrative:
+                    parts.append(narrative)
+                themes_elements = get_themes_elements(cultural_significance)
+                if themes_elements:
+                    parts.append("")
+                    parts.append(themes_elements)
             
-            if heritage_data.get('evolution'):
+            # Evolution
+            evolution = heritage_data.get('evolution')
+            if evolution:
                 parts.append("")
                 parts.append("Evolution:")
-                parts.append(heritage_data['evolution'])
+                narrative = get_narrative(evolution)
+                if narrative:
+                    parts.append(narrative)
+                themes_elements = get_themes_elements(evolution)
+                if themes_elements:
+                    parts.append("")
+                    parts.append(themes_elements)
             
-            if heritage_data.get('scottish_heritage_connections'):
+            # Scottish Heritage Connections
+            scottish_heritage = heritage_data.get('scottish_heritage_connections')
+            if scottish_heritage:
                 parts.append("")
                 parts.append("Scottish Heritage Connections:")
-                parts.append(heritage_data['scottish_heritage_connections'])
+                narrative = get_narrative(scottish_heritage)
+                if narrative:
+                    parts.append(narrative)
+                themes_elements = get_themes_elements(scottish_heritage)
+                if themes_elements:
+                    parts.append("")
+                    parts.append(themes_elements)
+            
+            # Industrial Legacy
+            industrial_legacy = heritage_data.get('industrial_legacy')
+            if industrial_legacy:
+                parts.append("")
+                parts.append("Industrial Legacy:")
+                narrative = get_narrative(industrial_legacy)
+                if narrative:
+                    parts.append(narrative)
+                themes_elements = get_themes_elements(industrial_legacy)
+                if themes_elements:
+                    parts.append("")
+                    parts.append(themes_elements)
         
         chunk_text = "\n".join(parts).strip()
         
@@ -224,7 +366,8 @@ class ContentChunker:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT id, name, sku, short_description, description, 
-                       supplier_name, supplier_description, category_ids, price
+                       supplier_name, supplier_description, category_ids, price,
+                       specifications, additional_data, dimensions, configurable_options
                 FROM clan_products
                 ORDER BY id
             """)

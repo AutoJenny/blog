@@ -37,3 +37,4 @@ Found in these files (need to check if actively used):
 
 The rename test confirms that the migration was successful and all active code paths use the `images` table.
 
+

@@ -47,3 +47,4 @@
 - Migration script will handle the 41 records from `image` to `images`
 - FK update queries will handle the 14 + 7 = 21 total references
 
+

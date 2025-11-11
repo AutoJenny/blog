@@ -224,6 +224,54 @@
                             </div>
                         </div>
                         {% endif %}
+                        
+                        <!-- Specifications (within Product Description) -->
+                        {% if product_data.specifications %}
+                        <div class="description-specifications">
+                            <h4>Specifications</h4>
+                            <div class="data-value has-data">
+                                {% if product_data.specifications is mapping %}
+                                    <dl class="specifications-list">
+                                        {% for key, value in product_data.specifications.items() %}
+                                        <dt>{{ key|replace('_', ' ')|title }}:</dt>
+                                        <dd>{{ value }}</dd>
+                                        {% endfor %}
+                                    </dl>
+                                {% else %}
+                                    <pre class="specifications-content">{{ product_data.specifications|tojson(indent=2) }}</pre>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Additional Data & Dimensions (within Product Description) -->
+                        {% if product_data.additional_data or product_data.dimensions %}
+                        <div class="description-additional-data">
+                            {% if product_data.additional_data %}
+                            <h4>Additional Information</h4>
+                            <div class="data-value has-data">
+                                <dl class="specifications-list">
+                                    {% for key, item in product_data.additional_data.items() %}
+                                    <dt>{{ item.get('label', key|replace('_', ' ')|title) }}:</dt>
+                                    <dd>
+                                        {{ item.get('value', '') }}
+                                        {% if item.get('code') and item.get('code') != key %}
+                                        <span class="data-code">({{ item.get('code') }})</span>
+                                        {% endif %}
+                                    </dd>
+                                    {% endfor %}
+                                </dl>
+                            </div>
+                            {% endif %}
+                            
+                            {% if product_data.dimensions %}
+                            <h4>Dimensions</h4>
+                            <div class="data-value has-data">
+                                {{ product_data.dimensions }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <!-- Product Image - Right Column -->
@@ -292,23 +340,28 @@
             <!-- Heritage Data -->
             {% set has_heritage_data = False %}
             {% if product_data.heritage_data %}
+                {# Check all dimensions - use 'if' not 'elif' so we check all of them #}
                 {% if product_data.heritage_data.historical_origins %}
                     {% if product_data.heritage_data.historical_origins.narrative or (product_data.heritage_data.historical_origins is string and product_data.heritage_data.historical_origins) %}
                         {% set has_heritage_data = True %}
                     {% endif %}
-                {% elif product_data.heritage_data.cultural_significance %}
+                {% endif %}
+                {% if product_data.heritage_data.cultural_significance %}
                     {% if product_data.heritage_data.cultural_significance.narrative or (product_data.heritage_data.cultural_significance is string and product_data.heritage_data.cultural_significance) %}
                         {% set has_heritage_data = True %}
                     {% endif %}
-                {% elif product_data.heritage_data.evolution %}
+                {% endif %}
+                {% if product_data.heritage_data.evolution %}
                     {% if product_data.heritage_data.evolution.narrative or (product_data.heritage_data.evolution is string and product_data.heritage_data.evolution) %}
                         {% set has_heritage_data = True %}
                     {% endif %}
-                {% elif product_data.heritage_data.scottish_heritage_connections %}
+                {% endif %}
+                {% if product_data.heritage_data.scottish_heritage_connections %}
                     {% if product_data.heritage_data.scottish_heritage_connections.narrative or (product_data.heritage_data.scottish_heritage_connections is string and product_data.heritage_data.scottish_heritage_connections) %}
                         {% set has_heritage_data = True %}
                     {% endif %}
-                {% elif product_data.heritage_data.industrial_legacy %}
+                {% endif %}
+                {% if product_data.heritage_data.industrial_legacy %}
                     {% if product_data.heritage_data.industrial_legacy.narrative or (product_data.heritage_data.industrial_legacy is string and product_data.heritage_data.industrial_legacy) %}
                         {% set has_heritage_data = True %}
                     {% endif %}
@@ -591,27 +644,6 @@
             </div>
             {% endif %}
 
-            <!-- Specifications (when available) -->
-            {% if product_data.specifications %}
-            <div class="data-section specifications-section">
-                <h3>Specifications</h3>
-                <div class="data-item full-width">
-                    <div class="data-value has-data">
-                        {% if product_data.specifications is mapping %}
-                            <dl class="specifications-list">
-                                {% for key, value in product_data.specifications.items() %}
-                                <dt>{{ key|replace('_', ' ')|title }}:</dt>
-                                <dd>{{ value }}</dd>
-                                {% endfor %}
-                            </dl>
-                        {% else %}
-                            <pre class="specifications-content">{{ product_data.specifications|tojson(indent=2) }}</pre>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            
             <!-- Configurable Options -->
             {% if product_data.configurable_options %}
             <div class="data-section options-section">

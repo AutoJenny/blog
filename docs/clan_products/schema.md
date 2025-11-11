@@ -23,6 +23,8 @@ Primary table storing product catalog data from clan.com.
 | `clan_created_at` | TIMESTAMP | | Product creation date from clan.com API |
 | `clan_updated_at` | TIMESTAMP | | Product update date from clan.com (when available) |
 | `configurable_options` | JSONB | | Product options (sizes, colors, etc.) as JSON array |
+| `additional_data` | JSONB | | Structured product attributes from CLAN API (material, pattern, shirt style, clan crest info, etc.) |
+| `dimensions` | TEXT | | Product dimensions when available from CLAN API |
 | `product_content_hash` | TEXT | | SHA-256 hash of product content fields (for change detection) |
 | `category_ids` | JSONB | | Array of category IDs this product belongs to |
 | `first_seen_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | When product was first discovered in our system (never updated) |
@@ -79,7 +81,9 @@ Key-value metadata for cache management.
 
 ## Migration Notes
 
-### New Columns Added (October 2025)
+### New Columns Added
+
+**October 2025:**
 - `short_description`
 - `supplier_name`
 - `supplier_description`
@@ -90,6 +94,10 @@ Key-value metadata for cache management.
 - `first_seen_at`
 - `has_detailed_data`
 
+**November 2025:**
+- `additional_data` - Structured product attributes (material, pattern, shirt style, clan crest info, etc.)
+- `dimensions` - Product dimensions
+
 All new columns are added with `ADD COLUMN IF NOT EXISTS` to support existing installations without breaking migrations.
 
 ### Data Integrity
@@ -97,6 +105,7 @@ All new columns are added with `ADD COLUMN IF NOT EXISTS` to support existing in
 - **SKU Uniqueness**: Enforced by UNIQUE constraint on `sku`
 - **ID Consistency**: `id` (clan.com product ID) is primary key, ensuring one record per product
 - **Hash Consistency**: Hash is recomputed on every upsert to reflect current product content
+
 
 
 

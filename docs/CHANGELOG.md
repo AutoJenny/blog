@@ -1,5 +1,56 @@
 # Changelog
 
+## 2025-11-11 - Product Data Enhancement & Vector Search Update
+
+### Product Data Fields
+- **Additional Data**: Added `additional_data` (JSONB) field to `clan_products` table
+  - Stores structured product attributes (material, pattern, shirt style, clan crest info, etc.)
+  - Format: `{key: {label, value, code}}` structure from CLAN API
+- **Dimensions**: Added `dimensions` (TEXT) field to `clan_products` table
+  - Stores product dimensions when available from CLAN API
+- **Database Migration**: Added columns with `ADD COLUMN IF NOT EXISTS` for safe upgrades
+- **Storage**: Updated `store_single_product()` and `store_products()` to save new fields
+- **Extraction**: Updated `ClanDataExtractor` to include new fields in extracted data
+
+### UI Enhancements
+- **Product Data Review Page**: Enhanced display of product information
+  - Specifications section moved into Product Description panel (styled consistently)
+  - Additional Information section added (displays additional_data with labels/values)
+  - Dimensions displayed when available
+  - All sections styled consistently (blurb, bullets, main description, specifications, additional data)
+- **Styling**: Added CSS for new description sections (purple for specifications, teal for additional data)
+
+### Vector Search System Enhancement
+- **Chunking Updates**: Enhanced `ContentChunker` to include all product data fields
+  - **Products now include**:
+    - Product name and producer
+    - Short description (blurb)
+    - Full description (including bullet points)
+    - **Specifications** (when available)
+    - **Product Details** (additional_data: material, pattern, shirt style, clan crest info, etc.)
+    - **Dimensions** (when available)
+    - **Available Options** (configurable_options: sizes, colors, etc.)
+    - Supplier information
+  - **Categories now include**:
+    - Category name and description
+    - **Enhanced heritage data** (all 5 dimensions with new dictionary format):
+      - Historical Origins (narrative, key themes, significant elements)
+      - Cultural Significance (narrative, key themes, significant elements)
+      - Evolution (narrative, key themes, significant elements)
+      - Scottish Heritage Connections (narrative, key themes, significant elements)
+      - Industrial Legacy (narrative, key themes, significant elements)
+    - Handles both legacy string format and new dictionary format
+- **Index Rebuild**: Regenerated all chunks and rebuilt FAISS vector index
+  - 1,157 product chunks updated
+  - 259 category chunks updated
+  - Total: 1,416 vectors in index
+  - All new fields now searchable via semantic search
+
+### Technical Details
+- **Transformer Updates**: `transform_product_for_ui()` now extracts `additional_data` and `dimensions` from API
+- **Chunking Query**: Updated `process_all_products()` to fetch new fields from database
+- **Heritage Data**: Updated `chunk_category()` to extract narratives, themes, and elements from new dictionary format
+
 ## 2025-11-XX - Newsletter Event Management
 
 ### Event Classification & Management
