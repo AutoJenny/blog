@@ -169,7 +169,7 @@
                 </a>
             </div>
             {% elif post_type == 'generated' %}
-            <!-- Planning sub-stages for generated posts (start at taxonomy, skip ideas) -->
+            <!-- Planning sub-stages for generated posts (simplified pipeline) -->
             <div class="sub-stage-group" data-stage="concept">
                 <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="taxonomy">
@@ -179,17 +179,9 @@
                    class="sub-stage-btn" data-substage="product-data-review">
                     Product Data Review
                 </a>
-                <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="brainstorm">
-                    Topic Brainstorming
-                </a>
-                <a href="{{ url_for('planning.planning_concept_section_structure', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="section-structure">
-                    Section Structure Design
-                </a>
-                <a href="{{ url_for('planning.planning_concept_topic_allocation', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="topic-allocation">
-                    Section Ideas
+                <a href="{{ url_for('planning.planning_concept_section_content_mapping', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="section-content-mapping">
+                    Section Content Mapping
                 </a>
                 <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="titling">

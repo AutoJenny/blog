@@ -137,6 +137,12 @@ def planning_concept_titling(post_id):
     """Titling page"""
     return titling_func(post_id)
 
+@bp.route('/posts/<int:post_id>/concept/section-content-mapping')
+def planning_concept_section_content_mapping(post_id):
+    """Section content mapping page"""
+    from blueprints.planning_concept_section_content_mapping import planning_concept_section_content_mapping as handler
+    return handler(post_id)
+
 @bp.route('/posts/<int:post_id>/concept/outline')
 def planning_concept_outline(post_id):
     """Outline page"""
