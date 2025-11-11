@@ -11,6 +11,7 @@ from typing import Dict, List, Optional
 from modules.llm_service import LLMService
 from utils.content_generation.clan_data_extractor import ClanDataExtractor
 from utils.content_generation.prompt_manager import PromptManager
+from utils.content_generation.data_source_tracker import DataSourceTracker
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class ProductArticleGenerator:
         self.llm_service = LLMService()
         self.data_extractor = ClanDataExtractor()
         self.prompt_manager = PromptManager()
+        self.tracker = DataSourceTracker()
     
     def generate_topics(self, product_id: int, post_id: int) -> Dict:
         """
