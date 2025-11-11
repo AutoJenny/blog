@@ -74,7 +74,13 @@
     <div class="page-main">
         <div class="product-data-review-main">
         <div class="review-header">
-            <h2>Product Data Review</h2>
+            <h2>
+                {% if product_data.name %}
+                {{ product_data.name }}
+                {% else %}
+                Product Data Review
+                {% endif %}
+            </h2>
             <p>Review CLAN product data before content generation. This data will be prioritized over LLM-generated content.</p>
         </div>
 
@@ -86,179 +92,65 @@
 
         {% if product_data %}
         <div class="product-data-content">
-            <!-- Data Completeness Summary -->
-            <div class="completeness-summary">
-                <h3>Data Completeness</h3>
-                <div class="completeness-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Core Completeness:</span>
-                        <span class="stat-value {% if validation.core_completeness >= 1.0 %}complete{% elif validation.core_completeness >= 0.67 %}partial{% else %}incomplete{% endif %}">
-                            {{ "%.0f"|format(validation.core_completeness * 100) }}%
-                        </span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Has Minimum Requirements:</span>
-                        <span class="stat-value {% if validation.has_minimum_requirements %}complete{% else %}incomplete{% endif %}">
-                            {% if validation.has_minimum_requirements %}✓ Yes{% else %}✗ No{% endif %}
-                        </span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">LLM Threshold:</span>
-                        <span class="stat-value">{{ validation.threshold }} words</span>
-                    </div>
-                </div>
-                
-                {% if validation.missing_fields %}
-                <div class="missing-fields-warning">
-                    <strong>⚠️ Missing Fields:</strong> {{ validation.missing_fields|join(', ') }}
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Core Data -->
-            <div class="data-section">
-                <h3 class="section-header-with-level">
-                    <span class="section-title">
-                        Core Data
-                        {% if product_data.name %}
-                        <span class="product-title">{{ product_data.name }}</span>
-                        {% endif %}
-                    </span>
-                    {% set product_level = product_data.get('product_level', 'classic') %}
-                    <span class="product-level-indicator">
-                        <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
-                              title="Standard quality products made to traditional standards">Classic</span>
-                        <span class="level-separator">|</span>
-                        <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
-                              title="Premium quality products with enhanced features and materials">Luxury</span>
-                        <span class="level-separator">|</span>
-                        <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
-                              title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
-                    </span>
-                </h3>
-                <div class="data-grid">
-                    <div class="data-item">
-                        <label>Product Name:</label>
-                        <div class="data-value {% if product_data.has_name %}has-data{% else %}missing-data{% endif %}">
-                            {{ product_data.name or 'N/A' }}
-                            {% if product_data.has_name %}<span class="data-badge">✓ CLAN</span>{% else %}<span class="data-badge missing">✗ Missing</span>{% endif %}
-                        </div>
-                    </div>
-                    <div class="data-item">
-                        <label>SKU:</label>
-                        <div class="data-value">
-                            {{ product_data.sku or 'N/A' }}
-                        </div>
-                    </div>
-                    <div class="data-item">
-                        <label>Price:</label>
-                        <div class="data-value">
-                            {% if product_data.price %}£{{ product_data.price }}{% else %}N/A{% endif %}
-                        </div>
-                    </div>
-                    <div class="data-item">
-                        <label>Product URL:</label>
-                        <div class="data-value">
-                            {% if product_data.url %}
-                            <a href="{{ product_data.url }}" target="_blank" class="clan-product-link" rel="noopener noreferrer">
-                                <i class="fas fa-external-link-alt"></i> View on CLAN.com
-                            </a>
-                            {% else %}N/A{% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product Type Identifiers -->
-            {% if product_data.product_type_data %}
-            {% set type_data = product_data.product_type_data %}
-            <div class="data-section">
-                <h3>Product Type Identifiers</h3>
-                <div class="data-grid">
-                    {% if type_data.core_type %}
-                    <div class="data-item">
-                        <label>Core Type:</label>
-                        <div class="data-value has-data">
-                            <strong>{{ type_data.core_type|replace('_', ' ')|title }}</strong>
-                            {% if type_data.subtype %}
-                            <span class="type-subtype">({{ type_data.subtype|replace('_', ' ')|title }})</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.confidence is defined %}
-                    <div class="data-item">
-                        <label>Confidence:</label>
-                        <div class="data-value">
-                            {{ "%.0f"|format(type_data.confidence * 100) }}%
-                            <span class="confidence-badge {% if type_data.confidence >= 0.7 %}high{% elif type_data.confidence >= 0.5 %}medium{% else %}low{% endif %}">
-                                {% if type_data.confidence >= 0.7 %}✓ High{% elif type_data.confidence >= 0.5 %}⚠ Medium{% else %}✗ Low{% endif %}
+            <!-- Condensed Intro Panel: Data Completeness + Core Data Side-by-Side -->
+            <div class="intro-panel-container">
+                <!-- Data Completeness (Left) -->
+                <div class="intro-panel completeness-panel">
+                    <h3>Data Completeness</h3>
+                    <div class="completeness-stats-compact">
+                        <div class="stat-item-compact">
+                            <span class="stat-label">Core Completeness:</span>
+                            <span class="stat-value {% if validation.core_completeness >= 1.0 %}complete{% elif validation.core_completeness >= 0.67 %}partial{% else %}incomplete{% endif %}">
+                                {{ "%.0f"|format(validation.core_completeness * 100) }}%
                             </span>
                         </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.parsing_method %}
-                    <div class="data-item">
-                        <label>Parsing Method:</label>
-                        <div class="data-value">{{ type_data.parsing_method|title }}</div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.materials %}
-                    <div class="data-item">
-                        <label>Materials:</label>
-                        <div class="data-value">
-                            {{ type_data.materials|join(', ')|replace('_', ' ')|title }}
+                        <div class="stat-item-compact">
+                            <span class="stat-label">Min Requirements:</span>
+                            <span class="stat-value {% if validation.has_minimum_requirements %}complete{% else %}incomplete{% endif %}">
+                                {% if validation.has_minimum_requirements %}✓{% else %}✗{% endif %}
+                            </span>
+                        </div>
+                        <div class="stat-item-compact">
+                            <span class="stat-label">LLM Threshold:</span>
+                            <span class="stat-value">{{ validation.threshold }} words</span>
                         </div>
                     </div>
-                    {% endif %}
-                    {% if type_data.patterns %}
-                    <div class="data-item">
-                        <label>Patterns:</label>
-                        <div class="data-value">
-                            {{ type_data.patterns|join(', ')|replace('_', ' ')|title }}
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.decorations %}
-                    <div class="data-item">
-                        <label>Decorations:</label>
-                        <div class="data-value">
-                            {{ type_data.decorations|join(', ')|replace('_', ' ')|title }}
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.occasions %}
-                    <div class="data-item">
-                        <label>Occasions:</label>
-                        <div class="data-value">
-                            {{ type_data.occasions|join(', ')|replace('_', ' ')|title }}
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.styles %}
-                    <div class="data-item">
-                        <label>Styles:</label>
-                        <div class="data-value">
-                            {{ type_data.styles|join(', ')|replace('_', ' ')|title }}
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.disambiguation %}
-                    <div class="data-item">
-                        <label>Product Form:</label>
-                        <div class="data-value">
-                            {% set form = type_data.disambiguation.product_form %}
-                            {% if form %}{{ form|replace('_', ' ')|title }}{% else %}N/A{% endif %}
-                            {% if type_data.disambiguation.is_accessory %}<span class="type-badge">Accessory</span>{% endif %}
-                            {% if type_data.disambiguation.is_jewelry %}<span class="type-badge">Jewelry</span>{% endif %}
-                            {% if type_data.disambiguation.is_artwork %}<span class="type-badge">Artwork</span>{% endif %}
-                            {% if type_data.disambiguation.is_clothing %}<span class="type-badge">Clothing</span>{% endif %}
-                        </div>
+                    {% if validation.missing_fields %}
+                    <div class="missing-fields-warning-compact">
+                        <strong>⚠️ Missing:</strong> {{ validation.missing_fields|join(', ') }}
                     </div>
                     {% endif %}
                 </div>
+
+                <!-- Core Data (Right) -->
+                <div class="intro-panel core-data-panel">
+                    <h3>Core Data</h3>
+                    <div class="data-grid-compact">
+                        <div class="data-item-compact">
+                            <label>SKU:</label>
+                            <div class="data-value-compact">
+                                {{ product_data.sku or 'N/A' }}
+                            </div>
+                        </div>
+                        <div class="data-item-compact">
+                            <label>Price:</label>
+                            <div class="data-value-compact">
+                                {% if product_data.price %}£{{ product_data.price }}{% else %}N/A{% endif %}
+                            </div>
+                        </div>
+                        <div class="data-item-compact full-width">
+                            <label>Product URL:</label>
+                            <div class="data-value-compact">
+                                {% if product_data.url %}
+                                <a href="{{ product_data.url }}" target="_blank" class="clan-product-link-compact" rel="noopener noreferrer">
+                                    <i class="fas fa-external-link-alt"></i> View on CLAN.com
+                                </a>
+                                {% else %}N/A{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            {% endif %}
 
             <!-- Product Description - CLAN.com Style Layout -->
             <div class="data-section product-description-section">

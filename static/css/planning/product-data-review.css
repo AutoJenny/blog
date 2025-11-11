@@ -26,7 +26,132 @@ body {
     font-size: 1rem;
 }
 
-/* Completeness Summary */
+/* Condensed Intro Panel Container */
+.intro-panel-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.intro-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.intro-panel h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #f1f5f9;
+    font-size: 1.1rem;
+}
+
+/* Completeness Panel (Left) */
+.completeness-panel {
+    /* Inherits from .intro-panel */
+}
+
+.completeness-stats-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.stat-item-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #334155;
+}
+
+.stat-item-compact:last-child {
+    border-bottom: none;
+}
+
+.stat-item-compact .stat-label {
+    font-size: 0.875rem;
+    color: #cbd5e1;
+}
+
+.stat-item-compact .stat-value {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.missing-fields-warning-compact {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: #7f1d1d;
+    border: 1px solid #ef4444;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #fca5a5;
+}
+
+/* Core Data Panel (Right) */
+.core-data-panel {
+    /* Inherits from .intro-panel */
+}
+
+.data-grid-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.data-item-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.data-item-compact.full-width {
+    grid-column: 1 / -1;
+}
+
+.data-item-compact label {
+    font-weight: 600;
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-value-compact {
+    padding: 0.5rem;
+    background: #0f172a;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #f1f5f9;
+}
+
+.clan-product-link-compact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+
+.clan-product-link-compact:hover {
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Legacy Completeness Summary (kept for backwards compatibility if needed) */
 .completeness-summary {
     background: #1e293b;
     border: 1px solid #334155;
