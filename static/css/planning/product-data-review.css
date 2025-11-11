@@ -804,6 +804,30 @@ body {
     margin-left: 0.5rem;
 }
 
+/* Product Type Identifiers Footer */
+.type-identifiers-footer {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #334155;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.footer-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-meta .confidence-badge {
+    margin-left: 0;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+}
+
 .configurable-options-content {
     display: flex;
     flex-direction: column;

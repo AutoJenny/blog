@@ -312,19 +312,7 @@
             {% set type_data = product_data.product_type_data %}
             {% set product_level = product_data.get('product_level', 'classic') %}
             <div class="data-section">
-                <h3 class="section-header-with-level">
-                    <span class="section-title">Product Type Identifiers</span>
-                    <span class="product-level-indicator">
-                        <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
-                              title="Standard quality products made to traditional standards">Classic</span>
-                        <span class="level-separator">|</span>
-                        <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
-                              title="Premium quality products with enhanced features and materials">Luxury</span>
-                        <span class="level-separator">|</span>
-                        <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
-                              title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
-                    </span>
-                </h3>
+                <h3>Product Type Identifiers</h3>
                 <div class="data-grid">
                     {% if type_data.core_type %}
                     <div class="data-item">
@@ -337,23 +325,21 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% if type_data.confidence is defined %}
                     <div class="data-item">
-                        <label>Confidence:</label>
-                        <div class="data-value">
-                            {{ "%.0f"|format(type_data.confidence * 100) }}%
-                            <span class="confidence-badge {% if type_data.confidence >= 0.7 %}high{% elif type_data.confidence >= 0.5 %}medium{% else %}low{% endif %}">
-                                {% if type_data.confidence >= 0.7 %}✓ High{% elif type_data.confidence >= 0.5 %}⚠ Medium{% else %}✗ Low{% endif %}
+                        <label>Product Level:</label>
+                        <div class="data-value has-data">
+                            <span class="product-level-indicator">
+                                <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
+                                      title="Standard quality products made to traditional standards">Classic</span>
+                                <span class="level-separator">|</span>
+                                <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
+                                      title="Premium quality products with enhanced features and materials">Luxury</span>
+                                <span class="level-separator">|</span>
+                                <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
+                                      title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
                             </span>
                         </div>
                     </div>
-                    {% endif %}
-                    {% if type_data.parsing_method %}
-                    <div class="data-item">
-                        <label>Parsing Method:</label>
-                        <div class="data-value">{{ type_data.parsing_method|title }}</div>
-                    </div>
-                    {% endif %}
                     {% if type_data.materials %}
                     <div class="data-item">
                         <label>Materials:</label>
@@ -406,6 +392,21 @@
                             {% if type_data.disambiguation.is_clothing %}<span class="type-badge">Clothing</span>{% endif %}
                         </div>
                     </div>
+                    {% endif %}
+                </div>
+                <div class="type-identifiers-footer">
+                    {% if type_data.confidence is defined %}
+                    <span class="footer-meta">
+                        Confidence: {{ "%.0f"|format(type_data.confidence * 100) }}%
+                        <span class="confidence-badge {% if type_data.confidence >= 0.7 %}high{% elif type_data.confidence >= 0.5 %}medium{% else %}low{% endif %}">
+                            {% if type_data.confidence >= 0.7 %}✓ High{% elif type_data.confidence >= 0.5 %}⚠ Medium{% else %}✗ Low{% endif %}
+                        </span>
+                    </span>
+                    {% endif %}
+                    {% if type_data.parsing_method %}
+                    <span class="footer-meta">
+                        Parsing Method: {{ type_data.parsing_method|title }}
+                    </span>
                     {% endif %}
                 </div>
             </div>
