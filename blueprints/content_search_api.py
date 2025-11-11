@@ -231,6 +231,7 @@ def register_routes(bp):
                     category_match = 0.0
                     options_match = 0.0
                     description_match = 0.0
+                    accessory_penalty = 0.0  # Negative boost for accessories
                     
                     product_name = (product.get('name') or '').lower()
                     query_lower = query.lower()
@@ -242,12 +243,38 @@ def register_routes(bp):
                     elif query_lower in product_name:
                         name_contains = 0.2
                     
-                    # Category match (simple check - query might match category name)
+                    # Category match - actually check category names
                     category_ids = product.get('category_ids')
                     if category_ids:
-                        # For now, simple boost if we have category data
-                        # Future: check if query matches category name
-                        category_match = 0.1
+                        # Fetch category names to check if query matches
+                        if isinstance(category_ids, list) and category_ids:
+                            placeholders = ','.join(['%s'] * len(category_ids))
+                            cursor.execute(f"""
+                                SELECT name FROM clan_categories
+                                WHERE id IN ({placeholders})
+                            """, tuple(category_ids))
+                            
+                            categories = cursor.fetchall()
+                            category_names = ' '.join([cat['name'].lower() for cat in categories if cat.get('name')])
+                            
+                            # Check if query matches category name
+                            if query_lower in category_names:
+                                category_match = 0.3  # Strong boost for category match
+                            elif any(query_lower in cat['name'].lower() for cat in categories if cat.get('name')):
+                                category_match = 0.2
+                    
+                    # Accessory penalty: if query is a main product type and product is an accessory
+                    # Main product types: kilt, shirt, scarf, jacket, etc.
+                    # Accessory keywords: pin, accessory, keychain, etc.
+                    accessory_keywords = ['pin', 'accessory', 'keychain', 'badge', 'patch', 'button']
+                    main_product_types = ['kilt', 'shirt', 'scarf', 'jacket', 'tie', 'waistcoat', 'sporran']
+                    
+                    is_main_product_query = any(ptype in query_lower for ptype in main_product_types)
+                    is_accessory = any(keyword in product_name for keyword in accessory_keywords)
+                    
+                    if is_main_product_query and is_accessory:
+                        # Strong penalty for accessories when searching for main products
+                        accessory_penalty = -0.4
                     
                     # Options/attributes match
                     configurable_options = product.get('configurable_options')
@@ -267,9 +294,13 @@ def register_routes(bp):
                     final_score = (semantic_score * 0.4) + \
                                  (exact_name_match * 0.3) + \
                                  (name_contains * 0.2) + \
-                                 (category_match * 0.15) + \
+                                 (category_match * 0.2) + \
                                  (options_match * 0.1) + \
-                                 (description_match * 0.05)
+                                 (description_match * 0.05) + \
+                                 (accessory_penalty)  # Negative value for accessories
+                    
+                    # Ensure score doesn't go below 0
+                    final_score = max(0.0, final_score)
                     
                     # Build match reason
                     reasons = []
@@ -281,6 +312,8 @@ def register_routes(bp):
                         reasons.append("category match")
                     if options_match > 0:
                         reasons.append("options/attributes match")
+                    if accessory_penalty < 0:
+                        reasons.append("accessory (penalized)")
                     if semantic_score > 0.7:
                         reasons.append("high semantic similarity")
                     elif semantic_score > 0.5:
