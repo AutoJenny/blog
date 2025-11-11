@@ -206,6 +206,10 @@ class ClanCache:
                 additional_data = json.dumps(product.get('additional_data', None)) if product.get('additional_data') else None
                 dimensions = product.get('dimensions', '')
                 
+                # Parse product level from name
+                from utils.product_level import parse_product_level
+                product_level = parse_product_level(name)
+                
                 # Build hash over meaningful fields
                 content_fields = {
                     'name': name,
@@ -224,8 +228,8 @@ class ClanCache:
                 product_hash = self._build_product_hash(content_fields)
 
                 cursor.execute('''
-                    INSERT INTO clan_products (id, name, sku, price, image_url, url, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_content_hash, category_ids)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO clan_products (id, name, sku, price, image_url, url, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_content_hash, category_ids, product_level)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO UPDATE SET
                         name = EXCLUDED.name,
                         sku = EXCLUDED.sku,
@@ -243,6 +247,7 @@ class ClanCache:
                         dimensions = EXCLUDED.dimensions,
                         product_content_hash = EXCLUDED.product_content_hash,
                         category_ids = EXCLUDED.category_ids,
+                        product_level = EXCLUDED.product_level,
                         last_updated = CURRENT_TIMESTAMP
                 ''', (
                     product_id,
@@ -261,7 +266,8 @@ class ClanCache:
                     additional_data,
                     dimensions,
                     product_hash,
-                    category_ids
+                    category_ids,
+                    product_level
                 ))
 
             conn.commit()

@@ -152,6 +152,16 @@ class SectionMapper:
                             'source': 'clan_categories.description'
                         })
         
+        # Product level
+        product_level = product_data.get('product_level', 'classic')
+        data_sources.append({
+            'field': 'product_level',
+            'available': True,
+            'word_count': 0,
+            'source': 'clan_products.product_level',
+            'value': product_level
+        })
+        
         # Calculate completeness (0-1 scale)
         completeness = min(1.0, total_words / 500.0) if total_words > 0 else 0.0
         
@@ -161,7 +171,8 @@ class SectionMapper:
             'data_sources': data_sources,
             'completeness': round(completeness, 2),
             'llm_role': 'synthesize',
-            'llm_needed': True
+            'llm_needed': True,
+            'product_level': product_level
         }
     
     def _map_craftsmanship_materials(self, product_data: Dict) -> Dict:
@@ -311,13 +322,24 @@ class SectionMapper:
         
         completeness = min(1.0, total_words / 400.0) if total_words > 0 else 0.0
         
+        # Product level
+        product_level = product_data.get('product_level', 'classic')
+        data_sources.append({
+            'field': 'product_level',
+            'available': True,
+            'word_count': 0,
+            'source': 'clan_products.product_level',
+            'value': product_level
+        })
+        
         return {
             'section_name': 'Features & Specifications',
             'section_type': 'features_specifications',
             'data_sources': data_sources,
             'completeness': round(completeness, 2),
             'llm_role': 'clean_html_format',
-            'llm_needed': True
+            'llm_needed': True,
+            'product_level': product_level
         }
     
     def _map_how_to_use(self, product_data: Dict) -> Dict:
@@ -432,13 +454,24 @@ class SectionMapper:
         
         completeness = min(1.0, total_words / 300.0) if total_words > 0 else 0.0
         
+        # Product level
+        product_level = product_data.get('product_level', 'classic')
+        data_sources.append({
+            'field': 'product_level',
+            'available': True,
+            'word_count': 0,
+            'source': 'clan_products.product_level',
+            'value': product_level
+        })
+        
         return {
             'section_name': 'Benefits & Value',
             'section_type': 'benefits_value',
             'data_sources': data_sources,
             'completeness': round(completeness, 2),
             'llm_role': 'extract_synthesize',
-            'llm_needed': True
+            'llm_needed': True,
+            'product_level': product_level
         }
     
     def _map_alternative_products(self, product_data: Dict) -> Dict:
@@ -502,12 +535,23 @@ class SectionMapper:
         
         completeness = 1.0 if (name and url) else 0.5 if name else 0.0
         
+        # Product level
+        product_level = product_data.get('product_level', 'classic')
+        data_sources.append({
+            'field': 'product_level',
+            'available': True,
+            'word_count': 0,
+            'source': 'clan_products.product_level',
+            'value': product_level
+        })
+        
         return {
             'section_name': 'Conclusion / Call to Action',
             'section_type': 'conclusion_cta',
             'data_sources': data_sources,
             'completeness': round(completeness, 2),
             'llm_role': 'generate_summary_cta',
-            'llm_needed': True
+            'llm_needed': True,
+            'product_level': product_level
         }
 
