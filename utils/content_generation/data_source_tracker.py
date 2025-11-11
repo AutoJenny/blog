@@ -124,6 +124,24 @@ class DataSourceTracker:
         """
         try:
             with db_manager.get_cursor() as cursor:
+                # Check if meta_info column exists
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'post_development' AND column_name = 'meta_info'
+                """)
+                has_meta_info = cursor.fetchone() is not None
+                
+                if not has_meta_info:
+                    # Return empty structure if column doesn't exist
+                    logger.debug(f"meta_info column not found in post_development for post {post_id}")
+                    return {
+                        'post_id': post_id,
+                        'product_id': None,
+                        'data_completeness': {},
+                        'sections': {},
+                        'llm_supplementation': {}
+                    }
+                
                 cursor.execute("""
                     SELECT meta_info FROM post_development
                     WHERE post_id = %s
@@ -133,7 +151,7 @@ class DataSourceTracker:
                 if result and result.get('meta_info'):
                     meta_info = result['meta_info']
                     if isinstance(meta_info, str):
-                        meta_info = json.loads(meta_info)
+                        meta_info = json.loads(meta_info) if meta_info else {}
                     
                     # Check if tracking data exists
                     if isinstance(meta_info, dict) and 'data_source_tracking' in meta_info:
@@ -167,6 +185,17 @@ class DataSourceTracker:
         """
         try:
             with db_manager.get_cursor() as cursor:
+                # Check if meta_info column exists
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'post_development' AND column_name = 'meta_info'
+                """)
+                has_meta_info = cursor.fetchone() is not None
+                
+                if not has_meta_info:
+                    logger.warning(f"meta_info column not found in post_development. Tracking data not saved for post {post_id}")
+                    return
+                
                 # Get existing meta_info
                 cursor.execute("""
                     SELECT meta_info FROM post_development

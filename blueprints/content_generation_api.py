@@ -170,20 +170,20 @@ def api_generate_content():
             sections=sections
         )
         
-            # Auto-pull section images from CLAN product data
-            if source_type == 'product':
-                from utils.content_generation.product_image_handler import ProductImageHandler
-                image_handler = ProductImageHandler()
-                
-                # Auto-link product images to sections
-                image_result = image_handler.auto_pull_section_images(
-                    post_id=post_id,
-                    product_id=source_id,
-                    section_ids=section_ids
-                )
-                
-                if not image_result.get('success'):
-                    logger.warning(f"Failed to auto-pull section images: {image_result.get('error')}")
+        # Auto-pull section images from CLAN product data
+        if source_type == 'product':
+            from utils.content_generation.product_image_handler import ProductImageHandler
+            image_handler = ProductImageHandler()
+            
+            # Auto-link product images to sections
+            image_result = image_handler.auto_pull_section_images(
+                post_id=post_id,
+                product_id=source_id,
+                section_ids=section_ids
+            )
+            
+            if not image_result.get('success'):
+                logger.warning(f"Failed to auto-pull section images: {image_result.get('error')}")
         
         # Format response
         response_sections = [
