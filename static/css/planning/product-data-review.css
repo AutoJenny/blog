@@ -159,6 +159,131 @@
     color: #1f2937;
 }
 
+/* Product Description Section - CLAN.com Style */
+.product-description-section {
+    position: relative;
+}
+
+.product-description-section h3 {
+    margin-bottom: 1.5rem;
+}
+
+.product-description-layout {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: start;
+}
+
+.product-description-content {
+    min-width: 0; /* Allow content to shrink */
+}
+
+.product-image-column {
+    flex-shrink: 0;
+    position: sticky;
+    top: 1rem;
+}
+
+.product-main-image {
+    width: 300px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+    background: #f9fafb;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 768px) {
+    .product-description-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-image-column {
+        position: static;
+        text-align: center;
+    }
+    
+    .product-main-image {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+/* Description Sections - Distinct Styling */
+.description-blurb {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+}
+
+.description-blurb .data-value {
+    background: white;
+    border: 1px solid #fde68a;
+}
+
+.blurb-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #78350f;
+    font-style: italic;
+}
+
+.description-bullets {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    border-radius: 6px;
+}
+
+.description-bullets .data-value {
+    background: white;
+    border: 1px solid #bfdbfe;
+}
+
+.bullets-content ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+}
+
+.bullets-content li {
+    margin-bottom: 0.5rem;
+    color: #1e40af;
+    font-weight: 500;
+}
+
+.description-main {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #f0fdf4;
+    border-left: 4px solid #22c55e;
+    border-radius: 6px;
+}
+
+.description-main .data-value {
+    background: white;
+    border: 1px solid #86efac;
+}
+
+.main-text {
+    color: #14532d;
+}
+
+.main-text p {
+    margin-bottom: 1rem;
+}
+
+.main-text p:last-child {
+    margin-bottom: 0;
+}
+
 .word-count {
     font-size: 0.875rem;
     color: #6b7280;
@@ -203,7 +328,37 @@
     margin-bottom: 0.5rem;
 }
 
-/* Specifications */
+/* Specifications Section */
+.specifications-section {
+    padding: 1.25rem;
+    background: #f5f3ff;
+    border-left: 4px solid #8b5cf6;
+    border-radius: 6px;
+}
+
+.specifications-section .data-value {
+    background: white;
+    border: 1px solid #c4b5fd;
+}
+
+.specifications-list {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem 1.5rem;
+}
+
+.specifications-list dt {
+    font-weight: 600;
+    color: #6b21a8;
+}
+
+.specifications-list dd {
+    margin: 0;
+    color: #1f2937;
+}
+
 .specifications-content {
     background: #1f2937;
     color: #f9fafb;
@@ -212,6 +367,60 @@
     overflow-x: auto;
     font-size: 0.875rem;
     font-family: 'Courier New', monospace;
+}
+
+/* Options Section */
+.options-section {
+    padding: 1.25rem;
+    background: #f0f9ff;
+    border-left: 4px solid #0ea5e9;
+    border-radius: 6px;
+}
+
+.options-section .data-value {
+    background: white;
+    border: 1px solid #bae6fd;
+}
+
+.configurable-options-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.option-group {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.option-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.option-group strong {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: #0c4a6e;
+    font-size: 1rem;
+}
+
+.option-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.option-list li {
+    padding: 0.5rem 1rem;
+    background: #e0f2fe;
+    border: 1px solid #7dd3fc;
+    border-radius: 4px;
+    color: #0c4a6e;
+    font-size: 0.875rem;
 }
 
 /* Category List */
@@ -264,6 +473,33 @@
 
 .review-actions .btn-secondary:hover {
     background: #4b5563;
+}
+
+/* CLAN Product Link */
+.clan-product-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #6d28d9;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.clan-product-link:hover {
+    background: #7c3aed;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(109, 40, 217, 0.3);
+}
+
+.clan-product-link i {
+    font-size: 0.875rem;
 }
 
 /* Alert */

@@ -67,6 +67,11 @@
                 Planning
             </a>
             {% elif post_type == 'generated' %}
+            <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
+               class="stage-btn" data-stage="calendar">
+                <i class="fas fa-calendar-alt"></i>
+                Calendar
+            </a>
             <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
                class="stage-btn" data-stage="concept">
                 <i class="fas fa-lightbulb"></i>
@@ -169,6 +174,10 @@
                 <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="taxonomy">
                     Taxonomy
+                </a>
+                <a href="{{ url_for('planning.planning_calendar_product_data_review', post_id=post_id) }}" 
+                   class="sub-stage-btn" data-substage="product-data-review">
+                    Product Data Review
                 </a>
                 <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
                    class="sub-stage-btn" data-substage="brainstorm">

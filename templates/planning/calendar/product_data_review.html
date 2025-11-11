@@ -89,41 +89,98 @@
                         <label>Product URL:</label>
                         <div class="data-value">
                             {% if product_data.url %}
-                            <a href="{{ product_data.url }}" target="_blank">{{ product_data.url[:50] }}...</a>
+                            <a href="{{ product_data.url }}" target="_blank" class="clan-product-link" rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt"></i> View on CLAN.com
+                            </a>
                             {% else %}N/A{% endif %}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Product Description -->
-            <div class="data-section">
+            <!-- Product Description - CLAN.com Style Layout -->
+            <div class="data-section product-description-section">
                 <h3>Product Description</h3>
-                <div class="data-item full-width">
-                    <div class="data-value {% if product_data.has_description %}has-data{% else %}missing-data{% endif %}">
+                <div class="product-description-layout">
+                    <div class="product-description-content">
+                        <!-- Blurb (Short Description) -->
+                        {% if product_data.short_description %}
+                        <div class="description-blurb">
+                            <div class="data-value {% if product_data.has_description %}has-data{% else %}missing-data{% endif %}">
+                                <div class="description-content blurb-text">{{ product_data.short_description|safe }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Bullet Points (extracted from description) -->
                         {% if product_data.description %}
-                        <div class="description-content">{{ product_data.description|safe }}</div>
-                        <div class="word-count">Word count: {{ validation.word_counts.description }} words
-                            {% if validation.needs_llm_supplement.description %}
-                            <span class="supplement-badge">⚠️ Needs LLM supplement (< {{ validation.threshold }} words)</span>
+                            {% set desc_html = product_data.description %}
+                            {% if '<ul>' in desc_html %}
+                                {% set ul_split = desc_html.split('<ul>', 1) %}
+                                {% if ul_split|length > 1 %}
+                                    {% set before_ul = ul_split[0] %}
+                                    {% set after_ul = ul_split[1] %}
+                                    {% set ul_close_split = after_ul.split('</ul>', 1) %}
+                                    {% if ul_close_split|length > 1 %}
+                                        {% set bullets_html = '<ul>' + ul_close_split[0] + '</ul>' %}
+                                        {% set main_desc_html = before_ul + ul_close_split[1] %}
+                                    {% else %}
+                                        {% set bullets_html = '' %}
+                                        {% set main_desc_html = desc_html %}
+                                    {% endif %}
+                                {% else %}
+                                    {% set bullets_html = '' %}
+                                    {% set main_desc_html = desc_html %}
+                                {% endif %}
+                                
+                                {% if bullets_html and bullets_html|trim %}
+                                <div class="description-bullets">
+                                    <div class="data-value has-data">
+                                        <div class="description-content bullets-content">
+                                            {{ bullets_html|safe }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
                             {% else %}
-                            <span class="supplement-badge complete">✓ Sufficient</span>
+                                {% set main_desc_html = desc_html %}
                             {% endif %}
-                        </div>
-                        {% elif product_data.short_description %}
-                        <div class="description-content">{{ product_data.short_description|safe }}</div>
-                        <div class="word-count">Word count: {{ validation.word_counts.description }} words
-                            {% if validation.needs_llm_supplement.description %}
-                            <span class="supplement-badge">⚠️ Needs LLM supplement (< {{ validation.threshold }} words)</span>
-                            {% else %}
-                            <span class="supplement-badge complete">✓ Sufficient</span>
-                            {% endif %}
-                        </div>
                         {% else %}
-                        <div class="missing-data">No description available</div>
-                        <span class="data-badge missing">✗ Missing</span>
+                            {% set main_desc_html = '' %}
+                        {% endif %}
+                        
+                        <!-- Main Description (full text, excluding bullets) -->
+                        {% if product_data.description %}
+                        <div class="description-main">
+                            <div class="data-value {% if product_data.has_description %}has-data{% else %}missing-data{% endif %}">
+                                <div class="description-content main-text">
+                                    {{ main_desc_html|safe }}
+                                </div>
+                                <div class="word-count">Word count: {{ validation.word_counts.description }} words
+                                    {% if validation.needs_llm_supplement.description %}
+                                    <span class="supplement-badge">⚠️ Needs LLM supplement (< {{ validation.threshold }} words)</span>
+                                    {% else %}
+                                    <span class="supplement-badge complete">✓ Sufficient</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% elif not product_data.short_description %}
+                        <div class="description-main">
+                            <div class="data-value missing-data">
+                                <div class="missing-data">No description available</div>
+                                <span class="data-badge missing">✗ Missing</span>
+                            </div>
+                        </div>
                         {% endif %}
                     </div>
+                    
+                    <!-- Product Image - Right Column -->
+                    {% if product_data.image_url %}
+                    <div class="product-image-column">
+                        <img src="{{ product_data.image_url }}" alt="{{ product_data.name }}" class="product-main-image" />
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -215,27 +272,47 @@
             </div>
             {% endif %}
 
-            <!-- Specifications & Options -->
-            {% if product_data.specifications or product_data.configurable_options %}
-            <div class="data-section">
-                <h3>Specifications & Options</h3>
-                {% if product_data.specifications %}
+            <!-- Specifications (when available) -->
+            {% if product_data.specifications %}
+            <div class="data-section specifications-section">
+                <h3>Specifications</h3>
                 <div class="data-item full-width">
-                    <label>Specifications:</label>
                     <div class="data-value has-data">
-                        <pre class="specifications-content">{{ product_data.specifications|tojson(indent=2) }}</pre>
+                        {% if product_data.specifications is mapping %}
+                            <dl class="specifications-list">
+                                {% for key, value in product_data.specifications.items() %}
+                                <dt>{{ key|replace('_', ' ')|title }}:</dt>
+                                <dd>{{ value }}</dd>
+                                {% endfor %}
+                            </dl>
+                        {% else %}
+                            <pre class="specifications-content">{{ product_data.specifications|tojson(indent=2) }}</pre>
+                        {% endif %}
                     </div>
                 </div>
-                {% endif %}
-                
-                {% if product_data.configurable_options %}
+            </div>
+            {% endif %}
+            
+            <!-- Configurable Options -->
+            {% if product_data.configurable_options %}
+            <div class="data-section options-section">
+                <h3>Product Options</h3>
                 <div class="data-item full-width">
-                    <label>Configurable Options:</label>
                     <div class="data-value has-data">
-                        <pre class="specifications-content">{{ product_data.configurable_options|tojson(indent=2) }}</pre>
+                        <div class="configurable-options-content">
+                            {% for option_group in product_data.configurable_options %}
+                                <div class="option-group">
+                                    <strong>{{ option_group.get('option', 'Option') }}:</strong>
+                                    <ul class="option-list">
+                                        {% for option in option_group.get('options', []) %}
+                                        <li>{{ option.get('label', option) }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-                {% endif %}
             </div>
             {% endif %}
 
