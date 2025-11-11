@@ -103,6 +103,54 @@ body {
     padding-bottom: 0.5rem;
 }
 
+.section-header-with-level {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.section-title {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.product-title {
+    color: #f97316;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.product-level-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.level-word {
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.level-word.active {
+    color: #93c5fd;
+    font-weight: 700;
+}
+
+.level-word.inactive {
+    color: #475569;
+    opacity: 0.4;
+}
+
+.level-separator {
+    color: #475569;
+    opacity: 0.3;
+}
+
 .data-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -722,58 +770,4 @@ body {
     color: #fca5a5;
 }
 
-/* Product Level Display */
-.product-level-display {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #334155;
-}
-
-.product-level-display label {
-    display: block;
-    font-weight: 600;
-    color: #cbd5e1;
-    font-size: 0.875rem;
-    margin-bottom: 0.75rem;
-}
-
-.product-level-badges {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.product-level-badge {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    border: 2px solid #334155;
-    background: #0f172a;
-    text-align: center;
-    transition: all 0.2s;
-    cursor: default;
-}
-
-.product-level-badge.active {
-    background: #1e3a8a;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-.product-level-badge.inactive {
-    opacity: 0.4;
-    background: #0f172a;
-    border-color: #334155;
-}
-
-.product-level-badge .level-name {
-    color: #cbd5e1;
-    font-weight: 600;
-    font-size: 0.875rem;
-}
-
-.product-level-badge.active .level-name {
-    color: #93c5fd;
-    font-weight: 700;
-}
 

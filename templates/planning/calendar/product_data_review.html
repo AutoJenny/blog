@@ -123,9 +123,27 @@
                 {% endif %}
             </div>
 
-            <!-- Core Product Information -->
+            <!-- Core Data -->
             <div class="data-section">
-                <h3>Core Product Information</h3>
+                <h3 class="section-header-with-level">
+                    <span class="section-title">
+                        Core Data
+                        {% if product_data.name %}
+                        <span class="product-title">{{ product_data.name }}</span>
+                        {% endif %}
+                    </span>
+                    {% set product_level = product_data.get('product_level', 'classic') %}
+                    <span class="product-level-indicator">
+                        <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
+                              title="Standard quality products made to traditional standards">Classic</span>
+                        <span class="level-separator">|</span>
+                        <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
+                              title="Premium quality products with enhanced features and materials">Luxury</span>
+                        <span class="level-separator">|</span>
+                        <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
+                              title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
+                    </span>
+                </h3>
                 <div class="data-grid">
                     <div class="data-item">
                         <label>Product Name:</label>
@@ -154,26 +172,6 @@
                                 <i class="fas fa-external-link-alt"></i> View on CLAN.com
                             </a>
                             {% else %}N/A{% endif %}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Product Level -->
-                {% set product_level = product_data.get('product_level', 'classic') %}
-                <div class="product-level-display">
-                    <label>Product Level:</label>
-                    <div class="product-level-badges">
-                        <div class="product-level-badge {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
-                             title="Standard quality products made to traditional standards">
-                            <span class="level-name">Classic</span>
-                        </div>
-                        <div class="product-level-badge {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
-                             title="Premium quality products with enhanced features and materials">
-                            <span class="level-name">Luxury</span>
-                        </div>
-                        <div class="product-level-badge {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
-                             title="Budget-friendly options made to proper traditional standards, may have limited choices">
-                            <span class="level-name">Essential</span>
                         </div>
                     </div>
                 </div>
