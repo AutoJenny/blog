@@ -2436,3 +2436,67 @@ LINE 17:                         INNER JOIN calendar_week_posts cwp O...
 2025-11-11 10:51:54,874 - config.database - INFO - Database connection established
 2025-11-11 10:51:54,886 - config.database - INFO - Database connection established
 2025-11-11 10:51:54,892 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 10:51:54] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-11 11:34:19,576 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/heritage_research/research_synthesizer.py', reloading
+2025-11-11 11:34:19,856 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 11:34:20,204 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 11:34:20,224 - config.database - INFO - Database connection established
+2025-11-11 11:34:20,226 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 11:34:20,226 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 11:34:20,227 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 11:34:20,227 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 11:34:20,227 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 11:34:20,227 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 11:34:20,227 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 11:34:21,134 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 11:34:21,140 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 11:34:21,149 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 11:34:21,176 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 11:34:21,188 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 11:34:23,808 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/heritage_research/__init__.py', reloading
+2025-11-11 11:34:24,074 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 11:34:24,395 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 11:34:24,416 - config.database - INFO - Database connection established
+2025-11-11 11:34:24,418 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 11:34:24,418 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 11:34:24,418 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 11:34:24,419 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 11:34:24,419 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 11:34:24,419 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 11:34:24,419 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 11:34:25,316 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 11:34:25,320 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 11:34:25,328 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 11:34:25,350 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 11:34:25,362 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 11:34:33,869 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/heritage_research/wikipedia_researcher.py', reloading
+2025-11-11 11:34:34,133 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 11:34:34,460 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 11:34:34,483 - config.database - INFO - Database connection established
+2025-11-11 11:34:34,485 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 11:34:34,486 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 11:34:34,486 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 11:34:34,486 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 11:34:34,486 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 11:34:34,487 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 11:34:34,487 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 11:34:35,410 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 11:34:35,415 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 11:34:35,423 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 11:34:35,448 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 11:34:35,461 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 11:34:40,408 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/heritage_research/wikipedia_researcher.py', reloading
+2025-11-11 11:34:40,677 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 11:34:40,994 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 11:34:41,014 - config.database - INFO - Database connection established
+2025-11-11 11:34:41,016 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 11:34:41,017 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 11:34:41,017 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 11:34:41,017 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 11:34:41,018 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 11:34:41,018 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 11:34:41,018 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 11:34:41,917 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 11:34:41,922 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 11:34:41,930 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 11:34:41,953 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 11:34:41,964 - werkzeug - INFO -  * Debugger PIN: 263-852-041
