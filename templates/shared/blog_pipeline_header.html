@@ -40,6 +40,11 @@
             <!-- Taxonomy Category and Type will be displayed here -->
         </div>
         {% endif %}
+        {% if content_type_name is defined and content_type_name %}
+        <div class="pipeline-title-category" style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem; font-weight: 400; text-align: center; font-style: italic;">
+            {{ content_type_name }}
+        </div>
+        {% endif %}
     </div>
     
     <!-- Post Details Line -->
