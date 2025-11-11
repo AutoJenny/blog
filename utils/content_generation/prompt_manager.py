@@ -17,7 +17,13 @@ class PromptManager:
     PROMPT_NAMES = {
         'product_deep_dive': 'product_content_generation',
         'category_feature': 'category_content_generation',
-        'product_comparison': 'product_comparison_generation'
+        'product_comparison': 'product_comparison_generation',
+        # Product Article CLAN-first prompts
+        'product_article_topic_brainstorming': 'product_article_topic_brainstorming',
+        'product_article_section_structure': 'product_article_section_structure',
+        'product_article_section_ideas': 'product_article_section_ideas',
+        'product_article_section_titling': 'product_article_section_titling',
+        'product_article_section_drafting': 'product_article_section_drafting'
     }
     
     def __init__(self):
