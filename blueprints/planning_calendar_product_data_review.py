@@ -4,11 +4,12 @@ Planning Calendar - Product Data Review
 Displays CLAN product data for review before content generation.
 """
 
-from flask import render_template, request
+from flask import render_template, request, jsonify
 from config.database import db_manager
 import logging
 from utils.content_generation.clan_data_extractor import ClanDataExtractor
 from utils.taxonomy_helpers import get_post_type
+from utils.category_heritage_research import CategoryHeritageResearcher
 
 logger = logging.getLogger(__name__)
 
@@ -123,4 +124,78 @@ def planning_calendar_product_data_review(post_id):
                              post_type=post_type,  # Required for header template conditional logic
                              error=f"Error loading page: {str(e)}",
                              blueprint_name='planning')
+
+
+def api_regenerate_heritage_data(post_id, category_id):
+    """
+    API endpoint to regenerate heritage data for a category.
+    
+    Args:
+        post_id: Post ID (for validation)
+        category_id: Category ID to regenerate heritage data for
+        
+    Returns:
+        JSON response with success status
+    """
+    try:
+        # Verify this is a generated post
+        post_type = get_post_type(post_id)
+        if post_type != 'generated':
+            return jsonify({
+                'success': False,
+                'error': 'This endpoint is only available for generated posts'
+            }), 400
+        
+        # Verify category exists and get connection
+        conn = db_manager.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT id, name FROM clan_categories WHERE id = %s
+            """, (category_id,))
+            category = cursor.fetchone()
+            
+            if not category:
+                return jsonify({
+                    'success': False,
+                    'error': f'Category {category_id} not found'
+                }), 404
+            
+            # Regenerate heritage data
+            researcher = CategoryHeritageResearcher(conn)
+            heritage_data = researcher.derive_category_context(category_id)
+            
+            if not heritage_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to generate heritage data'
+                }), 500
+            
+            # Save to database
+            success = researcher.save_heritage_data(category_id, heritage_data)
+            
+            if success:
+                category_name = category.get('name') if isinstance(category, dict) else category[1]
+                return jsonify({
+                    'success': True,
+                    'message': f'Heritage data regenerated for {category_name}',
+                    'category_id': category_id,
+                    'category_name': category_name
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to save heritage data'
+                }), 500
+        finally:
+            conn.close()
+                
+    except Exception as e:
+        logger.error(f"Error regenerating heritage data for category {category_id}: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
