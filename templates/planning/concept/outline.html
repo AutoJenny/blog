@@ -4,14 +4,13 @@
 
 {% block content %}
 <div class="container">
-    <!-- Include shared header -->
-    {% include 'planning/includes/header.html' %}
-    
-    <!-- Include navigation -->
-    {% include 'planning/includes/navigation.html' %}
-    
-    <!-- Include tabs -->
-    {% include 'planning/includes/tabs.html' %}
+    <!-- Include unified header -->
+    <script>
+    window.postId = {{ post_id }};
+    window.currentStage = 'concept';
+    window.currentSubstage = 'outline';
+    </script>
+    {% include 'shared/blog_pipeline_header.html' %}
     
     {% block process_content %}
     <div class="outline-main">
@@ -266,12 +265,6 @@ function displayOutline() {
     `;
 }
 
-// Set navigation context
-document.addEventListener('DOMContentLoaded', function() {
-    // Set current stage for navigation
-    window.currentStage = 'concept';
-    window.currentSubstage = 'outline';
-    window.postId = {{ post_id }};
-});
+// Navigation context is set in the header script block above
 </script>
 {% endblock %}
