@@ -52,12 +52,31 @@ class QueryGenerator:
         try:
             prompt = self._build_query_prompt(category_name, hierarchy_context, dimensions)
             
-            result = self.llm_service.generate(
-                prompt=prompt,
-                model='ollama/llama3.2',
-                temperature=0.7,
-                max_tokens=1000
+            messages = [
+                {'role': 'system', 'content': 'You are a research assistant generating precise Wikipedia search queries for Scottish heritage research.'},
+                {'role': 'user', 'content': prompt}
+            ]
+            
+            import os
+            # Try OpenAI first, fallback to Ollama
+            result = self.llm_service.execute_llm_request(
+                provider='openai',
+                model='gpt-4',
+                messages=messages,
+                api_key=os.getenv('OPENAI_API_KEY')
             )
+            
+            if result and 'error' in result:
+                # Try Ollama as fallback
+                result = self.llm_service.execute_llm_request(
+                    provider='ollama',
+                    model='llama3.2',
+                    messages=messages
+                )
+            
+            if result and 'error' in result:
+                logger.error(f"LLM query generation failed: {result['error']}")
+                return self._generate_simple_queries(category_name, hierarchy_context, dimensions)
             
             if result and result.get('content'):
                 content = result.get('content', '').strip()
@@ -84,30 +103,55 @@ class QueryGenerator:
     def _build_query_prompt(self, category_name: str, hierarchy_context: str, 
                            dimensions: List[str]) -> str:
         """Build prompt for LLM query generation"""
-        return f"""You are generating specific search queries for researching Scottish heritage information about a product category.
+        
+        dimension_descriptions = {
+            'historical_origins': 'the historical origins and early development of this category in Scotland - when it first appeared, how it developed, key historical periods',
+            'cultural_significance': 'the cultural significance and role in Scottish traditions, identity, and heritage - what it means to Scottish culture',
+            'evolution': 'how this category has evolved and changed over time in Scotland - historical changes, adaptations, modern developments',
+            'scottish_heritage_connections': 'specific connections to Scottish clans, regions, events, traditions, and cultural practices',
+            'industrial_legacy': 'historical Scottish producers, manufacturing processes, regional specializations, and traditional craftsmanship (historical only, not modern)'
+        }
+        
+        dimension_queries = []
+        for dim in dimensions:
+            desc = dimension_descriptions.get(dim, dim)
+            dimension_queries.append(f"- {dim}: {desc}")
+        
+        return f"""You are generating precise Wikipedia search queries for researching Scottish heritage about a product category.
 
 Category: {category_name}
 Category Hierarchy: {hierarchy_context}
 
-Generate 3-5 specific search queries for each of these research dimensions:
-{', '.join(dimensions)}
+For each research dimension below, generate 3-5 specific Wikipedia article titles or search terms that will find comprehensive articles about that aspect of Scottish heritage.
 
-For each dimension, create queries that:
-1. Are specific to Scottish context
-2. Include relevant historical/cultural terms
-3. Target credible sources (museums, academic institutions, heritage organizations)
-4. Are suitable for Wikipedia and web search
+Research Dimensions:
+{chr(10).join(dimension_queries)}
+
+IMPORTANT GUIDELINES:
+1. Think of actual Wikipedia article titles that would exist (e.g., "History of tartan", "Scottish textile industry", "Highland dress")
+2. Use terms that Wikipedia articles are likely to have (not generic web search terms)
+3. Focus on Scottish-specific topics, not general topics
+4. For historical_origins: Think of articles about the history of this category in Scotland
+5. For cultural_significance: Think of articles about Scottish culture, traditions, identity related to this
+6. For evolution: Think of articles about how this category changed over time in Scotland
+7. For scottish_heritage_connections: Think of articles about Scottish clans, regions, events related to this
+8. For industrial_legacy: Think of articles about historical Scottish manufacturing, producers, traditional crafts
+
+Examples of good queries:
+- "Tartan" (for finding the main tartan article)
+- "History of Scottish textiles"
+- "Highland dress"
+- "Scottish clan system"
+- "Harris Tweed" (for regional specialization)
 
 Return a JSON object with this structure:
 {{
-  "historical_origins": ["query 1", "query 2", "query 3"],
-  "cultural_significance": ["query 1", "query 2", "query 3"],
-  "evolution": ["query 1", "query 2", "query 3"],
-  "scottish_heritage_connections": ["query 1", "query 2", "query 3"],
-  "industrial_legacy": ["query 1", "query 2", "query 3"]
+  "historical_origins": ["Wikipedia article title 1", "Wikipedia article title 2", "Wikipedia article title 3"],
+  "cultural_significance": ["Wikipedia article title 1", "Wikipedia article title 2", "Wikipedia article title 3"],
+  "evolution": ["Wikipedia article title 1", "Wikipedia article title 2", "Wikipedia article title 3"],
+  "scottish_heritage_connections": ["Wikipedia article title 1", "Wikipedia article title 2", "Wikipedia article title 3"],
+  "industrial_legacy": ["Wikipedia article title 1", "Wikipedia article title 2", "Wikipedia article title 3"]
 }}
-
-Focus on historical producers and processes for industrial_legacy (not modern manufacturers).
 
 Return only valid JSON, no additional text."""
     

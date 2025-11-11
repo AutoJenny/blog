@@ -134,7 +134,7 @@ class WikipediaResearcher:
                 'title': page.title,
                 'url': page.fullurl,
                 'summary': page.summary,
-                'content': page.text[:5000],  # First 5000 chars
+                'content': page.text,  # Full content, not truncated
                 'word_count': len(page.text.split()),
                 'references': references,
                 'categories': list(page.categories.keys())[:10] if page.categories else []
@@ -200,42 +200,126 @@ class WikipediaResearcher:
         else:
             return 'other'
     
-    def research_dimension(self, query: str, dimension: str) -> Dict:
+    def research_dimension(self, queries: List[str], dimension: str) -> Dict:
         """
         Research a specific dimension using Wikipedia.
         
         Args:
-            query: Search query for this dimension
+            queries: List of Wikipedia article titles/queries for this dimension
             dimension: Research dimension name
             
         Returns:
             Dictionary with research results
         """
-        # Search for relevant articles
-        articles = self.search(query, max_results=10)
-        
-        # Get full content for top articles
         sources = []
-        for article in articles[:5]:  # Top 5 articles
-            page_data = self.get_page(article['title'])
-            if page_data:
-                sources.append({
-                    'title': page_data['title'],
-                    'url': page_data['url'],
-                    'domain': self._extract_domain(page_data['url']),
-                    'source_type': 'wikipedia',
-                    'summary': page_data['summary'],
-                    'snippets': self._extract_snippets(page_data['content'], query),
-                    'references': page_data['references']
-                })
+        seen_titles = set()
+        
+        # Try each query - get full page content, not just snippets
+        for query in queries[:5]:  # Limit to 5 queries per dimension
+            try:
+                # Try direct page access first (most reliable)
+                page_data = self.get_page(query)
+                
+                if page_data and page_data['title'] not in seen_titles:
+                    seen_titles.add(page_data['title'])
+                    
+                    # Get full text content (not just summary)
+                    full_text = page_data.get('content', '')
+                    summary = page_data.get('summary', '')
+                    
+                    # Extract relevant sections based on dimension
+                    relevant_content = self._extract_relevant_content(full_text, dimension, query)
+                    
+                    sources.append({
+                        'title': page_data['title'],
+                        'url': page_data['url'],
+                        'domain': self._extract_domain(page_data['url']),
+                        'source_type': 'wikipedia',
+                        'summary': summary,
+                        'full_content': relevant_content,  # Full relevant content, not just snippets
+                        'word_count': len(relevant_content.split()),
+                        'references': page_data.get('references', [])
+                    })
+            except Exception as e:
+                logger.debug(f"Could not fetch page '{query}': {e}")
+                # Try search as fallback
+                search_results = self.search(query, max_results=3)
+                for article in search_results:
+                    if article['title'] not in seen_titles:
+                        page_data = self.get_page(article['title'])
+                        if page_data:
+                            seen_titles.add(page_data['title'])
+                            full_text = page_data.get('content', '')
+                            relevant_content = self._extract_relevant_content(full_text, dimension, query)
+                            
+                            sources.append({
+                                'title': page_data['title'],
+                                'url': page_data['url'],
+                                'domain': self._extract_domain(page_data['url']),
+                                'source_type': 'wikipedia',
+                                'summary': page_data.get('summary', ''),
+                                'full_content': relevant_content,
+                                'word_count': len(relevant_content.split()),
+                                'references': page_data.get('references', [])
+                            })
+                        break  # Only use first search result as fallback
         
         return {
             'dimension': dimension,
-            'query': query,
+            'queries': queries,
             'sources': sources,
             'total_sources': len(sources),
             'research_method': 'wikipedia_api'
         }
+    
+    def _extract_relevant_content(self, full_text: str, dimension: str, query: str) -> str:
+        """
+        Extract relevant content from full Wikipedia page text based on dimension.
+        
+        Args:
+            full_text: Full Wikipedia page text
+            dimension: Research dimension
+            query: Original query
+            
+        Returns:
+            Relevant content text
+        """
+        # For now, return first 5000 characters (can be enhanced with section extraction)
+        # In future, could extract specific sections like "History", "Cultural significance", etc.
+        if len(full_text) <= 5000:
+            return full_text
+        
+        # Try to find relevant sections
+        dimension_keywords = {
+            'historical_origins': ['history', 'origin', 'early', 'first', 'developed', 'began', 'century'],
+            'cultural_significance': ['culture', 'significance', 'tradition', 'heritage', 'identity', 'meaning'],
+            'evolution': ['evolution', 'change', 'develop', 'modern', 'adapt', 'transform'],
+            'scottish_heritage_connections': ['scotland', 'scottish', 'clan', 'highland', 'regional', 'tradition'],
+            'industrial_legacy': ['manufacture', 'producer', 'industry', 'craft', 'traditional', 'process']
+        }
+        
+        keywords = dimension_keywords.get(dimension, [])
+        
+        # Split into sentences and prioritize those with relevant keywords
+        sentences = full_text.split('.')
+        relevant_sentences = []
+        other_sentences = []
+        
+        for sentence in sentences:
+            sentence_lower = sentence.lower()
+            if any(keyword in sentence_lower for keyword in keywords):
+                relevant_sentences.append(sentence)
+            else:
+                other_sentences.append(sentence)
+        
+        # Combine: relevant sentences first, then others up to limit
+        combined = '. '.join(relevant_sentences + other_sentences[:50])
+        
+        # Limit to 5000 characters
+        if len(combined) > 5000:
+            combined = combined[:5000] + '...'
+        
+        return combined or full_text[:5000]
     
     def _extract_snippets(self, text: str, query: str, max_snippets: int = 5) -> List[str]:
         """
