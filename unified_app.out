@@ -833,3 +833,19 @@ LINE 17:                         INNER JOIN calendar_week_posts cwp O...
 2025-11-11 12:42:08,759 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 12:42:08] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
 2025-11-11 12:42:08,761 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 12:42:08] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
 2025-11-11 12:42:08,762 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 12:42:08] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-11 13:04:17,040 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/content_search_api.py', reloading
+2025-11-11 13:04:17,303 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 13:04:17,633 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 13:04:17,653 - config.database - INFO - Database connection established
+2025-11-11 13:04:17,656 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 13:04:17,657 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 13:04:17,657 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 13:04:17,657 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 13:04:17,657 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 13:04:17,657 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 13:04:17,657 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 13:04:18,551 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 13:04:18,556 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 13:04:18,564 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 13:04:18,585 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 13:04:18,598 - werkzeug - INFO -  * Debugger PIN: 263-852-041

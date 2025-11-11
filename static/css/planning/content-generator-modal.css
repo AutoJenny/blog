@@ -151,6 +151,17 @@
     margin-bottom: 0;
 }
 
+.content-generator-search-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.content-generator-label i {
+    margin-right: 0.5rem;
+    color: #8b5cf6;
+}
+
 .content-generator-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -309,6 +320,11 @@
     font-size: 0.875rem;
 }
 
+.search-result-info .relevance-score {
+    color: #8b5cf6;
+    font-weight: 600;
+}
+
 .suggestion-score {
     color: #8b5cf6;
     font-size: 0.75rem;
@@ -385,6 +401,10 @@
     }
     
     .content-generator-form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .content-generator-search-row {
         grid-template-columns: 1fr;
     }
 }
