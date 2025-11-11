@@ -73,14 +73,6 @@
     {% block process_content %}
     <div class="page-main">
         <div class="product-data-review-main">
-        <!-- Category Indicator Banner -->
-        {% if content_type_name %}
-        <div class="route-indicator">
-            <i class="fas fa-tag"></i>
-            <span>Content Category: <strong>{{ content_type_name }}</strong></span>
-        </div>
-        {% endif %}
-        
         <div class="review-header">
             <h2>Product Data Review</h2>
             <p>Review CLAN product data before content generation. This data will be prioritized over LLM-generated content.</p>
