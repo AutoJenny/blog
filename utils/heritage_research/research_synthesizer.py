@@ -199,6 +199,8 @@ Return only valid JSON, no additional text."""
                 all_content.append(content)
         
         # Create simple narrative from content
+        # TODO: Remove arbitrary 1000 char limit - this causes mid-sentence truncation
+        # Should allow full narrative or check for proper sentence endings
         narrative = " ".join(all_content[:3])[:1000]  # First 3 sources, max 1000 chars
         
         return {
