@@ -344,6 +344,27 @@ body {
     color: #cbd5e1;
 }
 
+.description-options {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #1e3a8a;
+    border-left: 4px solid #3b82f6;
+    border-radius: 6px;
+}
+
+.description-options h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #93c5fd;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.description-options .data-value {
+    background: #0f172a;
+    border: 1px solid #3b82f6;
+}
+
 .data-code {
     font-size: 0.875rem;
     color: #94a3b8;
