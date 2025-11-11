@@ -42,7 +42,9 @@ Parse all product titles into a structured set of identifiers that can be:
   "type_keywords": ["kilt", "casual", "wool", "tartan"],
   "parsed_at": "2025-11-11T10:30:00",
   "parsing_method": "hybrid",
-  "confidence": 0.95
+  "confidence": 0.95,
+  "needs_review": false,
+  "review_threshold": 0.7
 }
 ```
 
@@ -107,6 +109,17 @@ Parse all product titles into a structured set of identifiers that can be:
 - **`parsing_method`** (string): Method used ("strict", "llm", "hybrid")
 
 - **`confidence`** (float): Confidence score 0.0-1.0
+  - **Critical**: Stored in database for filtering and re-processing
+  - Used to flag products for review (confidence < threshold)
+  - Allows iterative refinement by re-processing low-confidence products
+
+- **`needs_review`** (boolean): Flag for manual review
+  - Automatically set to true if confidence < review_threshold (default: 0.7)
+  - Can be manually set/unset via UI (future)
+
+- **`review_threshold`** (float): Confidence threshold used (stored for reference)
+  - Default: 0.7
+  - Can be adjusted per run
 
 ---
 
@@ -462,23 +475,48 @@ class ProductTypeParser:
         pass
 ```
 
-### Batch Processing
+### Batch Processing with Confidence-Based Filtering
 
 ```python
-def process_all_products():
-    """Process entire catalog in batches"""
+def process_all_products(review_threshold=0.7, reprocess_low_confidence=False):
+    """
+    Process entire catalog in batches with confidence tracking.
+    
+    Args:
+        review_threshold: Confidence below which products are flagged for review
+        reprocess_low_confidence: If True, only process products with confidence < threshold
+    """
     batch_size = 100
     
     with db_manager.get_cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM clan_products")
+        if reprocess_low_confidence:
+            # Only process products with low confidence or no parsing yet
+            cursor.execute("""
+                SELECT COUNT(*) FROM clan_products
+                WHERE product_type_data->>'confidence' IS NULL
+                   OR (product_type_data->>'confidence')::float < %s
+            """, (review_threshold,))
+        else:
+            cursor.execute("SELECT COUNT(*) FROM clan_products")
         total = cursor.fetchone()['count']
     
     parser = ProductTypeParser()
+    stats = {
+        'total': 0,
+        'processed': 0,
+        'high_confidence': 0,
+        'low_confidence': 0,
+        'errors': 0
+    }
     
     for offset in range(0, total, batch_size):
-        products = fetch_products_batch(offset, batch_size)
+        if reprocess_low_confidence:
+            products = fetch_products_batch_low_confidence(offset, batch_size, review_threshold)
+        else:
+            products = fetch_products_batch(offset, batch_size)
         
         for product in products:
+            stats['total'] += 1
             try:
                 parsed = parser.parse_product(
                     product['name'],
@@ -486,11 +524,52 @@ def process_all_products():
                     product.get('description', '')[:200]
                 )
                 
+                # Set needs_review flag based on confidence
+                parsed['needs_review'] = parsed['confidence'] < review_threshold
+                parsed['review_threshold'] = review_threshold
+                
+                # Save parsed data (overwrites existing if reprocessing)
                 save_parsed_data(product['id'], parsed)
+                
+                stats['processed'] += 1
+                if parsed['confidence'] >= review_threshold:
+                    stats['high_confidence'] += 1
+                else:
+                    stats['low_confidence'] += 1
                 
             except Exception as e:
                 logger.error(f"Error parsing product {product['id']}: {e}")
+                stats['errors'] += 1
                 # Save with error flag for manual review
+                save_parsed_data_error(product['id'], str(e))
+    
+    logger.info(f"Processing complete: {stats}")
+    return stats
+
+def fetch_products_batch_low_confidence(offset, limit, threshold):
+    """Fetch products with low confidence or no parsing"""
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT id, name, category_ids, description
+            FROM clan_products
+            WHERE product_type_data->>'confidence' IS NULL
+               OR (product_type_data->>'confidence')::float < %s
+            ORDER BY id
+            LIMIT %s OFFSET %s
+        """, (threshold, limit, offset))
+        return cursor.fetchall()
+
+def get_review_queue(threshold=0.7):
+    """Get products flagged for review"""
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT id, name, product_type_data
+            FROM clan_products
+            WHERE product_type_data->>'needs_review' = 'true'
+               OR (product_type_data->>'confidence')::float < %s
+            ORDER BY (product_type_data->>'confidence')::float ASC
+        """, (threshold,))
+        return cursor.fetchall()
 ```
 
 ---
@@ -513,7 +592,9 @@ def process_all_products():
 
 **Final Confidence:**
 - Weighted average of strict + category + LLM
-- If final < 0.7, flag for manual review
+- **Stored in database** for filtering and re-processing
+- If final < threshold (default 0.7), `needs_review: true` flag set
+- Allows querying and re-processing without manual intervention
 
 ---
 
@@ -545,6 +626,78 @@ def process_all_products():
 
 ---
 
+## Processing Workflow
+
+### Initial Run (Fast Processing)
+```bash
+python scripts/parse_product_types.py --threshold 0.7
+```
+- Processes all products quickly
+- Stores confidence scores in database
+- Flags products with confidence < 0.7 for review
+- Continues without stopping
+
+### Review Low-Confidence Products
+```bash
+python scripts/parse_product_types.py --review-queue --threshold 0.7
+```
+- Lists all products with confidence < 0.7
+- Shows parsing results for manual review
+- Allows manual corrections
+
+### Re-process Low-Confidence (Iterative Refinement)
+```bash
+python scripts/parse_product_types.py --reprocess-low --threshold 0.7
+```
+- Only processes products with confidence < 0.7 (or no parsing)
+- Overwrites existing low-confidence results
+- Allows iterative improvement without re-processing high-confidence products
+
+### Adjust Threshold and Re-run
+```bash
+python scripts/parse_product_types.py --reprocess-low --threshold 0.8
+```
+- Raises the bar, re-processes products below new threshold
+- Useful for incremental quality improvement
+
+### Statistics and Reporting
+```bash
+python scripts/parse_product_types.py --stats
+```
+- Shows distribution of confidence scores
+- Counts by core_type, parsing_method
+- Lists products needing review
+
+## Database Queries for Review
+
+**Get all low-confidence products:**
+```sql
+SELECT id, name, product_type_data->>'core_type' as core_type,
+       product_type_data->>'confidence' as confidence,
+       product_type_data->>'parsing_method' as method
+FROM clan_products
+WHERE (product_type_data->>'confidence')::float < 0.7
+ORDER BY (product_type_data->>'confidence')::float ASC;
+```
+
+**Get products by core_type:**
+```sql
+SELECT product_type_data->>'core_type' as core_type, COUNT(*) as count
+FROM clan_products
+WHERE product_type_data->>'core_type' IS NOT NULL
+GROUP BY product_type_data->>'core_type'
+ORDER BY count DESC;
+```
+
+**Get parsing method distribution:**
+```sql
+SELECT product_type_data->>'parsing_method' as method, COUNT(*) as count,
+       AVG((product_type_data->>'confidence')::float) as avg_confidence
+FROM clan_products
+WHERE product_type_data->>'parsing_method' IS NOT NULL
+GROUP BY product_type_data->>'parsing_method';
+```
+
 ## Next Steps
 
 1. **Create master core type list** - Based on catalog analysis
@@ -554,8 +707,9 @@ def process_all_products():
 5. **Create validation rules** - Ensure consistency
 6. **Test on sample** - 50-100 products, review results
 7. **Refine patterns** - Add more patterns based on test results
-8. **Full catalog processing** - Process all 1,157 products
-9. **Review low-confidence** - Manual review of flagged products
+8. **Full catalog processing** - Process all 1,157 products (fast, stores confidence)
+9. **Review low-confidence** - Query database for products needing review
+10. **Iterative refinement** - Re-process low-confidence products with improved patterns/LLM prompts
 
 ---
 
