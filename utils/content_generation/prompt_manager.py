@@ -109,14 +109,14 @@ class PromptManager:
         if not prompt:
             # Default config
             return {
-                'model': 'llama3.2:latest',
+                'model': 'mistral',
                 'temperature': 0.7,
                 'max_tokens': 4000
             }
         
         params = prompt.get('parameters', {})
         return {
-            'model': params.get('model', 'llama3.2:latest'),
+            'model': params.get('model', 'mistral'),
             'temperature': params.get('temperature', 0.7),
             'max_tokens': params.get('max_tokens', 4000)
         }

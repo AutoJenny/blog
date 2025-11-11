@@ -372,7 +372,7 @@ Return only valid JSON, no markdown formatting."""
             # Only use OpenAI if explicitly needed for high-priority tasks
             result = self.llm_service.execute_llm_request(
                 provider='ollama',
-                model='llama3.2',
+                model='mistral',
                 messages=messages
             )
             
