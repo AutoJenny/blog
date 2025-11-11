@@ -80,7 +80,7 @@ def api_generate_content():
         
         # Create placeholder post with generated_source_type and preset taxonomy
         placeholder_title = f"Generating content for {source_name}..."
-        idea_seed = f"Generated from {source_type}: {source_name}"
+        idea_seed = f"Generated from {source_type}: {source_name} (ID: {source_id})"
         post_id = post_creator.create_post(
             title=placeholder_title,
             standfirst='',
