@@ -2988,3 +2988,25 @@ LINE 9:                     additional_data, dimensions, product_lev...
 2025-11-11 15:49:50,096 - __main__ - INFO - ✅ Registered preview routes
 2025-11-11 15:49:50,119 - werkzeug - WARNING -  * Debugger is active!
 2025-11-11 15:49:50,128 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 15:56:31,619 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:56:31] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-11 15:56:31,622 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:56:31] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-11 15:56:31,624 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:56:31] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-11 15:56:31,638 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:56:31] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-11 15:56:31,638 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:56:31] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-11 15:56:31,639 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 15:56:31] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-11 15:58:02,094 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/content_generation/clan_data_extractor.py', reloading
+2025-11-11 15:58:02,328 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 15:58:02,649 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 15:58:02,669 - config.database - INFO - Database connection established
+2025-11-11 15:58:02,675 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 15:58:02,676 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 15:58:02,676 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 15:58:02,676 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 15:58:02,677 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 15:58:02,677 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 15:58:02,677 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 15:58:03,511 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 15:58:03,515 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 15:58:03,522 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 15:58:03,546 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 15:58:03,555 - werkzeug - INFO -  * Debugger PIN: 263-852-041

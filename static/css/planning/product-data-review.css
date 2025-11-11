@@ -637,6 +637,48 @@ body {
     border: 1px solid #3b82f6;
 }
 
+/* Product Type Identifiers */
+.type-subtype {
+    color: #94a3b8;
+    font-weight: normal;
+    margin-left: 0.5rem;
+}
+
+.confidence-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.confidence-badge.high {
+    background: #10b981;
+    color: #0f172a;
+}
+
+.confidence-badge.medium {
+    background: #f59e0b;
+    color: #0f172a;
+}
+
+.confidence-badge.low {
+    background: #ef4444;
+    color: #f1f5f9;
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #3b82f6;
+    color: #f1f5f9;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+}
+
 .configurable-options-content {
     display: flex;
     flex-direction: column;
