@@ -253,9 +253,6 @@ From `docs/data_intelligence/content_generation/PRODUCT_ARTICLE_PLANNING_DISCUSS
   - Generate brief summary
   - Create call-to-action narrative
   - Link to product page naturally
-**Data Available:** ✅ Mostly complete
-- **Sources:** CLAN data sources, heritage research sources (from category heritage_data)
-- **LLM Needed:** None - data assembly
 
 ---
 
