@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/product-data-review.css') }}">
+<style>
+.section-mapping-main {
+    padding: 1rem;
+}
+
+.section-mapping-content {
+    margin-top: 1rem;
+}
+
+.product-info-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.product-info-panel h3 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.product-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.product-info-item {
+    color: #cbd5e1;
+}
+
+.product-info-item strong {
+    color: #f1f5f9;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.section-mapping-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-mapping-panel h3 {
+    color: #f1f5f9;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+}
+
+.section-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-item-header h4 {
+    color: #f1f5f9;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.completeness-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.completeness-badge.high {
+    background: #10b981;
+    color: #fff;
+}
+
+.completeness-badge.medium {
+    background: #f59e0b;
+    color: #fff;
+}
+
+.completeness-badge.low {
+    background: #ef4444;
+    color: #fff;
+}
+
+.data-sources-list {
+    margin-top: 1rem;
+}
+
+.data-source-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.data-source-item .status-icon {
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+}
+
+.data-source-item .status-icon.available {
+    color: #10b981;
+}
+
+.data-source-item .status-icon.unavailable {
+    color: #ef4444;
+}
+
+.data-source-info {
+    flex: 1;
+}
+
+.data-source-field {
+    color: #f1f5f9;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.data-source-meta {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.llm-role-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #8b5cf6;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.mapping-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #334155;
+}
+
+.error-message {
+    background: #7f1d1d;
+    border: 1px solid #991b1b;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #fca5a5;
+    margin: 1rem 0;
+}
+</style>
+{% endblock %}
+
+{% block title %}Section Content Mapping - Concept Development - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include condensed header -->
+    <script>
+    window.postId = {{ post_id }};
+    window.currentStage = 'concept';
+    window.currentSubstage = 'section-content-mapping';
+    </script>
+    {% include 'shared/blog_pipeline_header.html' %}
+    
+    {% block process_content %}
+    <div class="page-main">
+        <div class="section-mapping-main">
+            <!-- Category Indicator Banner -->
+            {% if content_type_name %}
+            <div class="route-indicator">
+                <i class="fas fa-tag"></i>
+                <span>Content Category: <strong>{{ content_type_name }}</strong></span>
+                {% if year and week %}
+                <span class="route-indicator-week">Week {{ week }}, {{ year }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+            {% else %}
+            
+            <!-- Product Info Panel -->
+            <div class="product-info-panel">
+                <h3><i class="fas fa-box"></i> Product Information</h3>
+                <div class="product-info-grid">
+                    <div class="product-info-item">
+                        <strong>Product Name</strong>
+                        {{ product_data.name or 'N/A' }}
+                    </div>
+                    <div class="product-info-item">
+                        <strong>SKU</strong>
+                        {{ product_data.sku or 'N/A' }}
+                    </div>
+                    <div class="product-info-item">
+                        <strong>Supplier</strong>
+                        {{ product_data.supplier_name or 'N/A' }}
+                    </div>
+                    <div class="product-info-item">
+                        <strong>Price</strong>
+                        {% if product_data.price %}
+                            £{{ product_data.price }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Mapping Panel -->
+            <div class="section-mapping-panel">
+                <h3><i class="fas fa-sitemap"></i> Data-to-Section Mapping</h3>
+                <p style="color: #94a3b8; margin-bottom: 1.5rem;">
+                    This shows which CLAN data sources will be used for each section. 
+                    Review the mapping and continue to section titling when ready.
+                </p>
+                
+                {% for section_id, section_data in section_mapping.items() %}
+                <div class="section-item">
+                    <div class="section-item-header">
+                        <h4>
+                            {{ loop.index }}. {{ section_data.section_name }}
+                        </h4>
+                        {% set completeness = section_data.completeness %}
+                        {% if completeness >= 0.7 %}
+                            <span class="completeness-badge high">
+                                {{ (completeness * 100)|int }}% Complete
+                            </span>
+                        {% elif completeness >= 0.4 %}
+                            <span class="completeness-badge medium">
+                                {{ (completeness * 100)|int }}% Complete
+                            </span>
+                        {% else %}
+                            <span class="completeness-badge low">
+                                {{ (completeness * 100)|int }}% Complete
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="data-sources-list">
+                        {% if section_data.data_sources %}
+                            {% for source in section_data.data_sources %}
+                            <div class="data-source-item">
+                                <i class="fas fa-check-circle status-icon available"></i>
+                                <div class="data-source-info">
+                                    <div class="data-source-field">{{ source.field }}</div>
+                                    <div class="data-source-meta">
+                                        Source: {{ source.source }}
+                                        {% if source.word_count > 0 %}
+                                            • {{ source.word_count }} words
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="data-source-item">
+                                <i class="fas fa-times-circle status-icon unavailable"></i>
+                                <div class="data-source-info">
+                                    <div class="data-source-field">No data sources available</div>
+                                    <div class="data-source-meta">
+                                        LLM will generate content from general knowledge
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if section_data.llm_needed %}
+                    <div class="llm-role-badge">
+                        LLM Role: {{ section_data.llm_role }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Actions -->
+            <div class="mapping-actions">
+                <div>
+                    <p style="color: #94a3b8; margin: 0;">
+                        <i class="fas fa-info-circle"></i> 
+                        This mapping will be used during content generation. 
+                        Continue to section titling to proceed.
+                    </p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="continueToTitling()">
+                        <i class="fas fa-arrow-right"></i> Continue to Section Titling
+                    </button>
+                </div>
+            </div>
+            
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function continueToTitling() {
+    // Navigate to section titling stage
+    const postId = {{ post_id }};
+    const year = {{ year or 'null' }};
+    const week = {{ week or 'null' }};
+    
+    let url = `/planning/posts/${postId}/concept/titling`;
+    if (year && week) {
+        url += `?year=${year}&week=${week}`;
+    }
+    
+    window.location.href = url;
+}
+</script>
+{% endblock %}
+{% endblock %}
+

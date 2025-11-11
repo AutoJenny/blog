@@ -71,10 +71,8 @@ POST_TYPE_PIPELINE_CONFIGS = {
         'active': True,
         'steps': [
             'taxonomy',                    # Already preset, allow refinement
-            'product-data-review',        # NEW: Review CLAN product data
-            'topic-brainstorming',        # Generate topics from CLAN data + standard sections
-            'section-structure-design',   # Design structure (template-based)
-            'section-ideas',              # Section-specific ideas
+            'product-data-review',        # Review CLAN product data
+            'section-content-mapping',    # Visual data-to-section mapping
             'section-titling',            # Finalize section titles
             'drafting',                   # Author drafts
             'image-concepts',             # Image concepts
@@ -152,9 +150,7 @@ STEP_FUNCTION_MAPPINGS = {
     'generated': {
         'taxonomy': 'runTaxonomy',
         'product-data-review': 'runProductDataReview',
-        'topic-brainstorming': 'runTopicBrainstorming',
-        'section-structure-design': 'runSectionStructure',
-        'section-ideas': 'runSectionIdeas',
+        'section-content-mapping': 'runSectionContentMapping',
         'section-titling': 'runSectionTitling',
         'drafting': 'runDrafting',
         'image-concepts': 'runImageConcepts',
@@ -204,7 +200,8 @@ STEP_LABELS = {
     'profile-image-prompts': 'Profile — Image Prompts',
     'profile-image-generation': 'Profile — Image Generation',
     'profile-image-optimise': 'Profile — Image Optimise',
-    'product-data-review': 'Planning — Product Data Review'
+    'product-data-review': 'Planning — Product Data Review',
+    'section-content-mapping': 'Planning — Section Content Mapping'
 }
 
 def get_pipeline_steps(post_type):
