@@ -8,7 +8,7 @@
     {% set page_title = 'Planning' %}
     <script>
     window.postId = {{ post_id }};
-    window.currentStage = 'planning';
+    window.currentStage = 'concept';  // Must match data-stage="concept" in header template
     window.currentSubstage = 'taxonomy';
     </script>
     {% include 'shared/blog_pipeline_header.html' %}

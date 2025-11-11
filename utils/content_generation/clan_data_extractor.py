@@ -118,13 +118,13 @@ class ClanDataExtractor:
                 'image_url': product.get('image_url'),
                 'url': product.get('url'),
                 
-                # Descriptions
-                'short_description': self.chunker.clean_html(product.get('short_description')),
-                'description': self.chunker.clean_html(product.get('description')),
+                # Descriptions (keep HTML for display, clean only for chunking)
+                'short_description': product.get('short_description') or '',  # Keep raw HTML
+                'description': product.get('description') or '',  # Keep raw HTML for bullets extraction
                 
                 # Supplier/Producer
                 'supplier_name': product.get('supplier_name', ''),
-                'supplier_description': self.chunker.clean_html(product.get('supplier_description')),
+                'supplier_description': product.get('supplier_description') or '',  # Keep raw HTML
                 'producer_data': producer_data,
                 
                 # Options and specifications
@@ -169,6 +169,7 @@ class ClanDataExtractor:
         
         # Check word counts
         desc_word_count = word_count(product_data.get('description') or product_data.get('short_description'))
+        short_desc_word_count = word_count(product_data.get('short_description'))
         supplier_word_count = word_count(product_data.get('supplier_description'))
         heritage_word_counts = {}
         if product_data.get('heritage_data'):
@@ -185,6 +186,7 @@ class ClanDataExtractor:
         # Check if fields are sufficient (>= threshold) or need LLM supplementation
         needs_llm_supplement = {
             'description': desc_word_count < self.llm_threshold,
+            'short_description': short_desc_word_count < self.llm_threshold if product_data.get('short_description') else True,
             'supplier_description': supplier_word_count < self.llm_threshold if product_data.get('supplier_description') else True,
             'heritage_data': {}
         }
@@ -211,6 +213,7 @@ class ClanDataExtractor:
             'optional_completeness': optional_completeness,
             'word_counts': {
                 'description': desc_word_count,
+                'short_description': short_desc_word_count,
                 'supplier_description': supplier_word_count,
                 'heritage_data': heritage_word_counts
             },

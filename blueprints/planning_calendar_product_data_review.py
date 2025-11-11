@@ -40,33 +40,41 @@ def planning_calendar_product_data_review(post_id):
                 source_type = result.get('generated_source_type')
                 idea_seed = result.get('idea_seed', '')
                 
-                # Extract product ID from idea_seed (format: "Generated from product: Product Name (ID: 123)")
-                # Or from post metadata if we store it
+                # Extract product ID from idea_seed
+                # Format 1: "Generated from product: Product Name (ID: 123)"
+                # Format 2: "Generated from product: product 185" (legacy format - extract number)
                 if source_type == 'product' and idea_seed:
-                    # Try to extract ID from idea_seed
                     import re
-                    match = re.search(r'ID:\s*(\d+)', idea_seed)
+                    # Try Format 1: Extract ID from "(ID: 123)"
+                    match = re.search(r'\(ID:\s*(\d+)\)', idea_seed)
                     if match:
                         product_id = int(match.group(1))
                     else:
-                        # Fallback: try to find product by name
-                        # Extract product name from idea_seed
-                        name_match = re.search(r'product:\s*([^(]+)', idea_seed, re.IGNORECASE)
-                        if name_match:
-                            product_name = name_match.group(1).strip()
-                            cursor.execute("""
-                                SELECT id FROM clan_products
-                                WHERE name = %s
-                                LIMIT 1
-                            """, (product_name,))
-                            product_result = cursor.fetchone()
-                            if product_result:
-                                product_id = product_result['id']
+                        # Try Format 2: Extract number from "product 185" or "product: product 185"
+                        # Look for "product" followed by whitespace and a number
+                        number_match = re.search(r'product[:\s]+(?:product\s+)?(\d+)', idea_seed, re.IGNORECASE)
+                        if number_match:
+                            product_id = int(number_match.group(1))
+                        else:
+                            # Fallback: try to find product by name
+                            # Extract product name from idea_seed
+                            name_match = re.search(r'product:\s*([^(]+)', idea_seed, re.IGNORECASE)
+                            if name_match:
+                                product_name = name_match.group(1).strip()
+                                cursor.execute("""
+                                    SELECT id FROM clan_products
+                                    WHERE name = %s
+                                    LIMIT 1
+                                """, (product_name,))
+                                product_result = cursor.fetchone()
+                                if product_result:
+                                    product_id = product_result['id']
         
         if not product_id:
             # No product ID found - show error
             return render_template('planning/calendar/product_data_review.html',
                                  post_id=post_id,
+                                 post_type=post_type,  # Required for header template conditional logic
                                  error="Product ID not found. Please ensure this post was generated from a product.",
                                  blueprint_name='planning')
         
@@ -79,6 +87,7 @@ def planning_calendar_product_data_review(post_id):
             logger.error(f"Error extracting product data for post {post_id}: {e}")
             return render_template('planning/calendar/product_data_review.html',
                                  post_id=post_id,
+                                 post_type=post_type,  # Required for header template conditional logic
                                  error=f"Error loading product data: {str(e)}",
                                  blueprint_name='planning')
         
@@ -101,13 +110,17 @@ def planning_calendar_product_data_review(post_id):
                              product_data=product_data,
                              validation=validation,
                              content_type_name=content_type_name,
+                             post_type=post_type,  # Required for header template conditional logic
                              blueprint_name='planning')
     except Exception as e:
         logger.error(f"Error in planning_calendar_product_data_review: {e}")
         import traceback
         traceback.print_exc()
+        # Get post_type for error template
+        post_type = get_post_type(post_id)
         return render_template('planning/calendar/product_data_review.html',
                              post_id=post_id,
+                             post_type=post_type,  # Required for header template conditional logic
                              error=f"Error loading page: {str(e)}",
                              blueprint_name='planning')
 

@@ -417,6 +417,23 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Reload current taxonomy display
                 await loadCurrentTaxonomy();
+                
+                // Check if this is a generated post - if so, navigate to next stage
+                try {
+                    const postTypeResp = await fetch(`/api/post-type-pipeline/posts/${savePostId}/pipeline`);
+                    if (postTypeResp.ok) {
+                        const postTypeData = await postTypeResp.json();
+                        if (postTypeData.success && postTypeData.post_type === 'generated') {
+                            // Navigate to product-data-review for generated posts
+                            window.location.href = `/planning/posts/${savePostId}/calendar/product-data-review`;
+                            return; // Exit early - navigation will happen
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[Taxonomy] Error checking post type for navigation:', e);
+                }
+                
+                // For non-generated posts, show success message
                 alert('Taxonomy saved successfully!');
             } else {
                 alert(`Error saving taxonomy: ${data.error}`);
