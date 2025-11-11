@@ -15,47 +15,122 @@ The current 4-step planning process (`taxonomy` → `product-data-review` → `t
 
 ## Product Profile Sections (Decided Structure)
 
-Based on `docs/data_intelligence/profiles/section-types.md`, product profiles use these **8 sections**:
+**IMPORTANT:** There are TWO different structures:
 
-### 1. `hero`
-- **Purpose:** Hero block with image and standfirst
-- **Content:** Header image, headline, standfirst (one-sentence summary)
-- **Data Source:** Product name, short_description, image_url
+### Structure A: Product Profiles (`profile` post type)
+From `docs/product-category-profiles-planning.md` - 8 sections:
+1. Hero Block
+2. The Object
+3. The Maker
+4. In Context
+5. Materials & Making
+6. Gallery
+7. Explore Further
+8. Credits & Sources
 
-### 2. `the_object`
-- **Purpose:** Product description - design, feel, purpose
-- **Content:** Narrative about the product concept, why it's distinctive
-- **Data Source:** Product description, short_description, category context
+### Structure B: Generated Product Articles (`generated` post type) - **THIS IS WHAT POST 88 USES**
+From `docs/data_intelligence/content_generation/PRODUCT_ARTICLE_PLANNING_DISCUSSION.md` - 7 sections:
 
-### 3. `the_maker`
-- **Purpose:** Producer information
-- **Content:** About the producer/workshop, place, materials, ethos, optional quote
-- **Data Source:** supplier_name, supplier_description, producer_data (if available)
+**For the current work (post 88, `generated` type), we use Structure B:**
 
-### 4. `in_context`
-- **Purpose:** Cultural/seasonal context
-- **Content:** Where product fits in tradition, seasonal/cultural significance
-- **Data Source:** Category heritage_data (cultural_significance, historical_origins)
+1. **Introduction & Historical Context**
+   - Product's place in Scottish culture/history
+   - Origins and traditional use
+   - Cultural significance
 
-### 5. `materials_making`
-- **Purpose:** Materials and processes
-- **Content:** Key materials, processes, sustainability notes
-- **Data Source:** specifications, additional_data, supplier_description, dimensions
+2. **Craftsmanship & Materials**
+   - How it's made
+   - Materials used
+   - Production methods
+   - Producer/supplier information
 
-### 6. `gallery`
-- **Purpose:** Image gallery (4-6 images)
-- **Content:** Multiple images with captions
-- **Data Source:** image_url, all_images (from API)
+3. **Features & Specifications**
+   - Product details
+   - Available options (sizes, colors, etc.)
+   - Technical specifications
+   - Care instructions
 
-### 7. `explore_further`
-- **Purpose:** CTA links
-- **Content:** Links to product, producer, category pages
-- **Data Source:** product.url, category URLs, producer website (if available)
+4. **How to Use / Practical Guide**
+   - When and how to use the product
+   - Styling tips
+   - Occasion recommendations
+   - Pairing suggestions
 
-### 8. `credits`
-- **Purpose:** Sources and attributions
-- **Content:** Image credits, fact sources
-- **Data Source:** CLAN data sources, heritage research sources
+5. **Benefits & Value**
+   - Why choose this product
+   - Quality and durability
+   - Heritage value
+   - Investment perspective
+
+6. **Alternative Products**
+   - Alternative options at different price points
+   - Differently detailed versions
+   - Different items serving the same need
+   - When to choose each alternative
+   - Comparison highlights
+
+7. **Conclusion / Call to Action**
+   - Summary
+   - Link to product page
+   - Related products
+
+**The following analysis is based on Structure B (7 sections for generated posts):**
+
+### 1. Introduction & Historical Context
+- **Purpose:** Product's place in Scottish culture/history, origins, cultural significance
+- **Content:** Historical background, traditional use, cultural importance
+- **Data Source:** 
+  - Primary: `heritage_data.historical_origins.narrative`
+  - Secondary: `heritage_data.cultural_significance.narrative`, `heritage_data.scottish_heritage_connections.narrative`
+  - Context: Category description, product description
+
+### 2. Craftsmanship & Materials
+- **Purpose:** How it's made, materials, production methods, producer information
+- **Content:** Manufacturing process, materials used, producer/supplier details
+- **Data Source:**
+  - Primary: `supplier_description` (craftsmanship, methods)
+  - Secondary: `specifications`, `additional_data` (materials), `supplier_name`
+  - Context: `producer_data` (if available)
+
+### 3. Features & Specifications
+- **Purpose:** Product details, available options, technical specifications, care instructions
+- **Content:** Product features, sizes/colors/tartans, specs, care info
+- **Data Source:**
+  - Primary: `description` (product details), `configurable_options` (sizes, colors, etc.)
+  - Secondary: `specifications`, `additional_data`, `dimensions`
+  - Context: Product description may include care instructions
+
+### 4. How to Use / Practical Guide
+- **Purpose:** When and how to use, styling tips, occasion recommendations, pairing suggestions
+- **Content:** Usage guidance, styling advice, when to wear/use, what to pair with
+- **Data Source:**
+  - Primary: `description` (if includes usage/styling)
+  - Secondary: Category context, heritage_data (cultural use)
+  - LLM: General styling/usage knowledge if not in product data
+
+### 5. Benefits & Value
+- **Purpose:** Why choose this product, quality, durability, heritage value, investment perspective
+- **Content:** Value proposition, quality points, heritage significance, investment angle
+- **Data Source:**
+  - Primary: `supplier_description` (quality, craftsmanship), `description` (benefits)
+  - Secondary: Heritage data (heritage value), price context
+  - LLM: General value propositions if not explicit in data
+
+### 6. Alternative Products
+- **Purpose:** Alternative options at different price points, different versions, same need items
+- **Content:** Similar products, price alternatives, when to choose each
+- **Data Source:**
+  - Primary: `find_alternative_products()` method results
+  - Includes: Same category, similar products (vector search), price alternatives, same producer
+  - LLM: Comparison narrative, when to choose each
+
+### 7. Conclusion / Call to Action
+- **Purpose:** Summary, link to product page, related products
+- **Content:** Brief summary, product link, related items
+- **Data Source:**
+  - Primary: Product name, `url` (product page link)
+  - Secondary: Related products, category links
+  - LLM: Summary narrative
 
 ---
 
@@ -107,61 +182,77 @@ Based on `docs/data_intelligence/profiles/section-types.md`, product profiles us
 
 ## Content Generation Strategy by Section
 
-### Section 1: `hero`
-**Data Available:** ✅ Complete
-- **Headline:** Use product name directly (or slight variation)
-- **Standfirst:** Use `short_description` (typically 1 sentence, <50 words)
-- **Image:** Use `image_url`
-- **LLM Needed:** Minimal - maybe refine standfirst if too short
+### Section 1: Introduction & Historical Context
+**Data Available:** ✅ Mostly complete (from category heritage_data)
+- **Primary:** `heritage_data.historical_origins.narrative` (full narrative with themes/elements)
+- **Secondary:** `heritage_data.cultural_significance.narrative`, `heritage_data.scottish_heritage_connections.narrative`
+- **Context:** Category description, product description
+- **LLM Needed:**
+  - Synthesize heritage narratives into cohesive introduction
+  - Connect product to historical/cultural context
+  - Add product-specific historical details if not in category heritage
 
-### Section 2: `the_object`
-**Data Available:** ✅ Mostly complete
-- **Primary:** `description` (full HTML, includes bullet points and main description)
-- **Context:** Category description, heritage_data.historical_origins
-- **LLM Needed:** 
-  - Clean HTML to narrative
-  - Expand if description < 50 words
-  - Add product distinctiveness narrative
-
-### Section 3: `the_maker`
+### Section 2: Craftsmanship & Materials
 **Data Available:** ✅ Complete
-- **Primary:** `supplier_description` (HTML supplier information)
-- **Secondary:** `supplier_name`, producer_data (if available)
+- **Primary:** `supplier_description` (HTML supplier information about craftsmanship, methods)
+- **Secondary:** `specifications`, `additional_data` (materials), `supplier_name`, `producer_data` (if available)
 - **LLM Needed:**
   - Clean HTML to narrative
-  - Expand if supplier_description < 50 words
-  - Add workshop/maker context if missing
-
-### Section 4: `in_context`
-**Data Available:** ✅ Complete (from category heritage_data)
-- **Primary:** `heritage_data.cultural_significance.narrative`
-- **Secondary:** `heritage_data.historical_origins.narrative`, `heritage_data.scottish_heritage_connections.narrative`
-- **LLM Needed:**
-  - Synthesize heritage data into cohesive narrative
-  - Add seasonal/cultural context if not in heritage data
-  - Connect product to broader Scottish tradition
-
-### Section 5: `materials_making`
-**Data Available:** ✅ Complete
-- **Primary:** `specifications`, `additional_data`, `dimensions`
-- **Secondary:** `supplier_description` (may include process info)
-- **LLM Needed:**
-  - Format structured data into narrative
+  - Synthesize supplier_description with specifications
   - Add process details if missing from supplier_description
-  - Add sustainability notes if not present
+  - Format materials from additional_data/specifications
 
-### Section 6: `gallery`
+### Section 3: Features & Specifications
 **Data Available:** ✅ Complete
-- **Images:** `all_images` from API
-- **Captions:** Extract from product description or generate from image context
-- **LLM Needed:** Generate captions if not in product data
+- **Primary:** `description` (full HTML, includes product details, bullet points)
+- **Secondary:** `configurable_options` (sizes, colors, tartans, etc.), `specifications`, `additional_data`, `dimensions`
+- **LLM Needed:**
+  - Clean HTML to narrative
+  - Format structured data (options, specs) into readable text
+  - Extract care instructions if in description
+  - Organize into clear feature list
 
-### Section 7: `explore_further`
+### Section 4: How to Use / Practical Guide
+**Data Available:** ⚠️ Partial (may not be in product data)
+- **Primary:** `description` (if includes usage/styling information)
+- **Secondary:** Category context, heritage_data (cultural use patterns)
+- **LLM Needed:**
+  - Extract usage info from description if present
+  - Generate styling tips if not in product data
+  - Add occasion recommendations based on product type
+  - Suggest pairings based on category
+
+### Section 5: Benefits & Value
+**Data Available:** ⚠️ Partial
+- **Primary:** `supplier_description` (quality, craftsmanship mentions), `description` (benefits)
+- **Secondary:** Heritage data (heritage value), price context
+- **LLM Needed:**
+  - Extract value propositions from supplier_description
+  - Synthesize quality/durability points
+  - Add heritage value narrative from heritage_data
+  - Add investment perspective if appropriate
+
+### Section 6: Alternative Products
+**Data Available:** ✅ Complete (from `find_alternative_products()` method)
+- **Primary:** Results from `ClanDataExtractor.find_alternative_products()`:
+  - Same category products
+  - Vector search similar products
+  - Price-based alternatives (cheaper/more luxury)
+  - Same producer products
+  - Cross-category alternatives
+- **LLM Needed:**
+  - Generate comparison narrative
+  - Explain when to choose each alternative
+  - Highlight key differences
+
+### Section 7: Conclusion / Call to Action
 **Data Available:** ✅ Complete
-- **Links:** product.url, category URLs, producer website
-- **LLM Needed:** None - pure data assembly
-
-### Section 8: `credits`
+- **Primary:** Product name, `url` (product page link)
+- **Secondary:** Related products (from alternatives), category links
+- **LLM Needed:**
+  - Generate brief summary
+  - Create call-to-action narrative
+  - Link to product page naturally
 **Data Available:** ✅ Mostly complete
 - **Sources:** CLAN data sources, heritage research sources (from category heritage_data)
 - **LLM Needed:** None - data assembly
@@ -374,18 +465,17 @@ Section: credits
 ### Generation Strategy Per Section
 
 #### High Data Coverage Sections (Minimal LLM)
-- **hero:** 95% data, 5% LLM (standfirst refinement)
-- **the_maker:** 90% data, 10% LLM (HTML cleaning, expansion)
-- **materials_making:** 85% data, 15% LLM (formatting, process details)
-- **explore_further:** 100% data, 0% LLM
-- **credits:** 100% data, 0% LLM
+- **Craftsmanship & Materials:** 85% data, 15% LLM (HTML cleaning, synthesis, formatting)
+- **Features & Specifications:** 90% data, 10% LLM (HTML cleaning, formatting structured data)
+- **Alternative Products:** 80% data, 20% LLM (comparison narrative, when to choose)
 
 #### Medium Data Coverage Sections (Moderate LLM)
-- **the_object:** 70% data, 30% LLM (narrative synthesis, distinctiveness)
-- **gallery:** 80% data, 20% LLM (captions)
+- **Introduction & Historical Context:** 70% data, 30% LLM (synthesis of heritage narratives, product connection)
+- **Benefits & Value:** 65% data, 35% LLM (extract value props, synthesize quality points)
 
 #### Lower Data Coverage Sections (More LLM)
-- **in_context:** 60% data, 40% LLM (synthesis of heritage data, seasonal context)
+- **How to Use / Practical Guide:** 40% data, 60% LLM (styling tips, occasion recommendations, pairings)
+- **Conclusion / Call to Action:** 50% data, 50% LLM (summary narrative, CTA writing)
 
 ---
 
@@ -426,6 +516,8 @@ Section: credits
 - **Current:** 6 planning stages + drafting = 7 steps
 - **Simplified:** 3-4 planning stages + drafting = 4-5 steps
 - **Savings:** 2-3 steps eliminated (30-40% reduction)
+
+**Note:** This analysis is for `generated` post type (7-section structure), not `profile` post type (8-section structure).
 
 ### Reduced Complexity
 - **Current:** Brainstorming topics when topics are predetermined
