@@ -122,15 +122,21 @@ def planning_concept_titling(post_id):
 
 def planning_concept_outline(post_id):
     """Outline page"""
+    from utils.taxonomy_helpers import get_post_type
     resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
+    post_type = get_post_type(resolved_post_id)
     return render_template('planning/concept/outline.html', 
-                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week, 
+                          post_type=post_type, blueprint_name='planning')
 
 def planning_research_sources(post_id):
     """Research sources page"""
+    from utils.taxonomy_helpers import get_post_type
     resolved_post_id, year, week = _resolve_post_and_get_week_context(post_id)
+    post_type = get_post_type(resolved_post_id)
     return render_template('planning/research/sources.html', 
-                          post_id=resolved_post_id, year=year, week=week, blueprint_name='planning')
+                          post_id=resolved_post_id, year=year, week=week,
+                          post_type=post_type, blueprint_name='planning')
 
 def planning_research_visuals(post_id):
     """Research visuals page"""

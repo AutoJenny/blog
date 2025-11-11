@@ -14,7 +14,7 @@
     {% set mode = mode|default('post-based') %}
     <script>
     window.postId = {{ post_id }};
-    window.currentStage = 'planning';
+    // window.currentStage will be set in DOMContentLoaded to 'concept'
     window.currentSubstage = 'ideas';
     
     // SINGLE SOURCE OF TRUTH: URL query parameters only
