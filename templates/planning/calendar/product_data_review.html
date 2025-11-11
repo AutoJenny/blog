@@ -282,6 +282,27 @@
                             {% endif %}
                         </div>
                         {% endif %}
+                        
+                        <!-- Product Options (within Product Description) -->
+                        {% if product_data.configurable_options %}
+                        <div class="description-options">
+                            <h4>Product Options</h4>
+                            <div class="data-value has-data">
+                                <div class="configurable-options-content">
+                                    {% for option_group in product_data.configurable_options %}
+                                        <div class="option-group">
+                                            <strong>{{ option_group.get('option', 'Option') }}:</strong>
+                                            <ul class="option-list">
+                                                {% for option in option_group.get('options', []) %}
+                                                <li>{{ option.get('label', option) }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <!-- Product Image - Right Column -->
@@ -651,29 +672,6 @@
                         </div>
                     {% endif %}
                 {% endif %}
-            </div>
-            {% endif %}
-
-            <!-- Configurable Options -->
-            {% if product_data.configurable_options %}
-            <div class="data-section options-section">
-                <h3>Product Options</h3>
-                <div class="data-item full-width">
-                    <div class="data-value has-data">
-                        <div class="configurable-options-content">
-                            {% for option_group in product_data.configurable_options %}
-                                <div class="option-group">
-                                    <strong>{{ option_group.get('option', 'Option') }}:</strong>
-                                    <ul class="option-list">
-                                        {% for option in option_group.get('options', []) %}
-                                        <li>{{ option.get('label', option) }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
             </div>
             {% endif %}
 

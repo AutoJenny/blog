@@ -98,6 +98,47 @@
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Process/Data Radio Toggle */
+.process-data-toggle {
+    display: flex;
+    gap: 0;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    padding: 0.25rem;
+}
+
+.process-data-toggle input[type="radio"] {
+    display: none;
+}
+
+.process-data-toggle .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border-radius: 4px;
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.process-data-toggle .toggle-label:hover {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+.process-data-toggle input[type="radio"]:checked + .toggle-label {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
 }
 
 .stage-btn {
