@@ -216,57 +216,93 @@
                 </div>
             </div>
 
-            <!-- Categories & Heritage Data -->
-            {% if product_data.categories or product_data.heritage_data %}
-            <div class="data-section">
-                <h3>Category & Heritage Data</h3>
-                {% if product_data.categories %}
+            <!-- Categories -->
+            {% if product_data.categories %}
+            <div class="data-section categories-section">
+                <h3>Product Categories</h3>
                 <div class="data-item">
                     <label>Categories:</label>
                     <div class="data-value">
                         <ul class="category-list">
                             {% for category in product_data.categories %}
-                            <li>{{ category.name }}</li>
+                            <li>
+                                <strong>{{ category.name }}</strong>
+                                {% if category.description %}
+                                <span class="category-description">— {{ category.description }}</span>
+                                {% endif %}
+                            </li>
                             {% endfor %}
                         </ul>
                     </div>
                 </div>
+            </div>
+            {% endif %}
+            
+            <!-- Heritage Data -->
+            {% if product_data.heritage_data and (product_data.heritage_data.historical_origins or product_data.heritage_data.cultural_significance or product_data.heritage_data.evolution or product_data.heritage_data.scottish_heritage_connections) %}
+            <div class="data-section heritage-section">
+                <h3>Heritage Data</h3>
+                {% if product_data.heritage_data.historical_origins %}
+                <div class="heritage-item">
+                    <label>Historical Origins:</label>
+                    <div class="data-value has-data">
+                        <div class="description-content">{{ product_data.heritage_data.historical_origins }}</div>
+                        <div class="word-count">Word count: {{ validation.word_counts.heritage_data.get('historical_origins', 0) }} words
+                            {% if validation.needs_llm_supplement.heritage_data.get('historical_origins', False) %}
+                            <span class="supplement-badge">⚠️ Needs LLM supplement</span>
+                            {% else %}
+                            <span class="supplement-badge complete">✓ Sufficient</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
                 
-                {% if product_data.heritage_data %}
-                <div class="heritage-data">
-                    <h4>Heritage Data</h4>
-                    {% if product_data.heritage_data.historical_origins %}
-                    <div class="heritage-item">
-                        <label>Historical Origins:</label>
-                        <div class="data-value has-data">
-                            <div class="description-content">{{ product_data.heritage_data.historical_origins }}</div>
-                            <div class="word-count">Word count: {{ validation.word_counts.heritage_data.get('historical_origins', 0) }} words
-                                {% if validation.needs_llm_supplement.heritage_data.get('historical_origins', False) %}
-                                <span class="supplement-badge">⚠️ Needs LLM supplement</span>
-                                {% else %}
-                                <span class="supplement-badge complete">✓ Sufficient</span>
-                                {% endif %}
-                            </div>
+                {% if product_data.heritage_data.cultural_significance %}
+                <div class="heritage-item">
+                    <label>Cultural Significance:</label>
+                    <div class="data-value has-data">
+                        <div class="description-content">{{ product_data.heritage_data.cultural_significance }}</div>
+                        <div class="word-count">Word count: {{ validation.word_counts.heritage_data.get('cultural_significance', 0) }} words
+                            {% if validation.needs_llm_supplement.heritage_data.get('cultural_significance', False) %}
+                            <span class="supplement-badge">⚠️ Needs LLM supplement</span>
+                            {% else %}
+                            <span class="supplement-badge complete">✓ Sufficient</span>
+                            {% endif %}
                         </div>
                     </div>
-                    {% endif %}
-                    
-                    {% if product_data.heritage_data.cultural_significance %}
-                    <div class="heritage-item">
-                        <label>Cultural Significance:</label>
-                        <div class="data-value has-data">
-                            <div class="description-content">{{ product_data.heritage_data.cultural_significance }}</div>
-                            <div class="word-count">Word count: {{ validation.word_counts.heritage_data.get('cultural_significance', 0) }} words
-                                {% if validation.needs_llm_supplement.heritage_data.get('cultural_significance', False) %}
-                                <span class="supplement-badge">⚠️ Needs LLM supplement</span>
-                                {% else %}
-                                <span class="supplement-badge complete">✓ Sufficient</span>
-                                {% endif %}
-                            </div>
+                </div>
+                {% endif %}
+                
+                {% if product_data.heritage_data.evolution %}
+                <div class="heritage-item">
+                    <label>Evolution:</label>
+                    <div class="data-value has-data">
+                        <div class="description-content">{{ product_data.heritage_data.evolution }}</div>
+                        <div class="word-count">Word count: {{ validation.word_counts.heritage_data.get('evolution', 0) }} words
+                            {% if validation.needs_llm_supplement.heritage_data.get('evolution', False) %}
+                            <span class="supplement-badge">⚠️ Needs LLM supplement</span>
+                            {% else %}
+                            <span class="supplement-badge complete">✓ Sufficient</span>
+                            {% endif %}
                         </div>
                     </div>
-                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if product_data.heritage_data.scottish_heritage_connections %}
+                <div class="heritage-item">
+                    <label>Scottish Heritage Connections:</label>
+                    <div class="data-value has-data">
+                        <div class="description-content">{{ product_data.heritage_data.scottish_heritage_connections }}</div>
+                        <div class="word-count">Word count: {{ validation.word_counts.heritage_data.get('scottish_heritage_connections', 0) }} words
+                            {% if validation.needs_llm_supplement.heritage_data.get('scottish_heritage_connections', False) %}
+                            <span class="supplement-badge">⚠️ Needs LLM supplement</span>
+                            {% else %}
+                            <span class="supplement-badge complete">✓ Sufficient</span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
             </div>

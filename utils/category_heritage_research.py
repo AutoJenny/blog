@@ -67,8 +67,16 @@ class CategoryHeritageResearcher:
                     if not row:
                         break
                     
-                    category_id_val, name, parent_id = row[0], row[1], row[2]
-                    path.insert(0, name)
+                    # Handle both dict and tuple row formats
+                    if isinstance(row, dict):
+                        name = row.get('name')
+                        parent_id = row.get('parent_id')
+                    else:
+                        name = row[1] if len(row) > 1 else None
+                        parent_id = row[2] if len(row) > 2 else None
+                    
+                    if name:
+                        path.insert(0, name)
                     current_id = parent_id
                 
                 return path
@@ -273,11 +281,12 @@ Return only valid JSON, no markdown formatting."""
                     logger.error(f"Category {category_id} not found")
                     return {}
                 
+                # Handle both dict and tuple row formats
                 if isinstance(row, dict):
-                    category_name = row['name']
+                    category_name = row.get('name')
                     category_desc = row.get('description')
                 else:
-                    category_name = row[1]
+                    category_name = row[1] if len(row) > 1 else None
                     category_desc = row[2] if len(row) > 2 else None
             
             # Get hierarchy context
