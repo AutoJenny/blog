@@ -404,29 +404,14 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% if type_data.disambiguation %}
+                    {% if type_data.disambiguation and type_data.disambiguation.product_form %}
                     <div class="data-item">
                         <label>Product Form:</label>
                         <div class="data-value">
                             <div class="attribute-tags">
-                                {% set form = type_data.disambiguation.product_form %}
-                                {% if form %}
-                                <span class="attribute-tag attribute-tag-form" data-attribute-type="product_form" data-attribute-value="{{ form }}">
-                                    {{ form|replace('_', ' ')|title }}
+                                <span class="attribute-tag attribute-tag-form" data-attribute-type="product_form" data-attribute-value="{{ type_data.disambiguation.product_form }}">
+                                    {{ type_data.disambiguation.product_form|replace('_', ' ')|title }}
                                 </span>
-                                {% endif %}
-                                {% if type_data.disambiguation.is_accessory %}
-                                <span class="attribute-tag attribute-tag-form" data-attribute-type="disambiguation" data-attribute-value="accessory">Accessory</span>
-                                {% endif %}
-                                {% if type_data.disambiguation.is_jewelry %}
-                                <span class="attribute-tag attribute-tag-form" data-attribute-type="disambiguation" data-attribute-value="jewelry">Jewelry</span>
-                                {% endif %}
-                                {% if type_data.disambiguation.is_artwork %}
-                                <span class="attribute-tag attribute-tag-form" data-attribute-type="disambiguation" data-attribute-value="artwork">Artwork</span>
-                                {% endif %}
-                                {% if type_data.disambiguation.is_clothing %}
-                                <span class="attribute-tag attribute-tag-form" data-attribute-type="disambiguation" data-attribute-value="clothing">Clothing</span>
-                                {% endif %}
                             </div>
                         </div>
                     </div>
