@@ -85,6 +85,37 @@ class ContentGeneratorModal {
                 }
             });
         }
+        
+        // Smart search (semantic) - attach event listener
+        const smartSearch = document.getElementById('content-generator-product-smart-search');
+        if (smartSearch) {
+            let smartSearchTimeout;
+            smartSearch.addEventListener('input', (e) => {
+                clearTimeout(smartSearchTimeout);
+                const query = e.target.value.trim();
+                if (query.length > 2) {
+                    smartSearchTimeout = setTimeout(() => {
+                        this.searchProductsSemantic(query);
+                    }, 300);
+                } else {
+                    // Clear results if query is too short
+                    const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+                    if (resultsDiv) resultsDiv.innerHTML = '';
+                }
+            });
+            
+            // Also add a keypress handler for Enter key
+            smartSearch.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(smartSearchTimeout);
+                    const query = e.target.value.trim();
+                    if (query.length > 2) {
+                        this.searchProductsSemantic(query);
+                    }
+                }
+            });
+        }
 
         // Category select
         const categorySelect = document.getElementById('content-generator-category-select');
@@ -176,6 +207,92 @@ class ContentGeneratorModal {
         const comparisonOption = generationType.querySelector('option[value="comparison"]');
         if (comparisonOption) {
             comparisonOption.style.display = this.currentSourceType === 'product' ? 'block' : 'none';
+        }
+    }
+
+    async searchProductsSemantic(query) {
+        if (!query || query.length <= 2) {
+            const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+            if (resultsDiv) resultsDiv.innerHTML = '';
+            return;
+        }
+
+        const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+        if (!resultsDiv) {
+            console.warn('Smart search results div not found');
+            return;
+        }
+        
+        // Show loading state
+        resultsDiv.innerHTML = '<div class="search-result-empty">Searching...</div>';
+
+        try {
+            const response = await fetch('/api/products/semantic-search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query: query,
+                    limit: 10
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Response is not JSON');
+            }
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Search failed');
+            }
+            
+            const products = data.results || [];
+            
+            if (products && products.length > 0) {
+                resultsDiv.innerHTML = products.map(product => `
+                    <div class="search-result-item" data-product-id="${product.id}">
+                        <div class="search-result-info">
+                            <strong>${this.escapeHtml(product.name || 'Unnamed Product')}</strong>
+                            ${product.supplier_name ? `<br><small>${this.escapeHtml(product.supplier_name)}</small>` : ''}
+                            ${product.sku ? `<br><small>SKU: ${this.escapeHtml(product.sku)}</small>` : ''}
+                            <br><small class="relevance-score">Relevance: ${(product.relevance_score * 100).toFixed(0)}%</small>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Add click handlers
+                resultsDiv.querySelectorAll('.search-result-item').forEach(item => {
+                    item.style.cursor = 'pointer';
+                    item.addEventListener('click', () => {
+                        const productId = parseInt(item.dataset.productId);
+                        const product = products.find(p => p.id === productId);
+                        if (product) {
+                            this.selectProduct(productId, product);
+                            // Clear both search results
+                            document.getElementById('content-generator-product-search-results').innerHTML = '';
+                            resultsDiv.innerHTML = '';
+                            // Clear both search inputs
+                            document.getElementById('content-generator-product-search').value = '';
+                            document.getElementById('content-generator-product-smart-search').value = '';
+                        } else {
+                            this.showError('Product not found in results');
+                        }
+                    });
+                });
+            } else {
+                resultsDiv.innerHTML = '<div class="search-result-empty">No products found</div>';
+            }
+        } catch (error) {
+            console.error('Error in semantic product search:', error);
+            resultsDiv.innerHTML = `<div class="search-result-empty" style="color: #ef4444;">Error: ${this.escapeHtml(error.message)}</div>`;
+            this.showError('Failed to search products: ' + error.message);
         }
     }
 

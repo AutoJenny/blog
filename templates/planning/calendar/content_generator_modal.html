@@ -41,11 +41,22 @@
                     
                     <!-- Product Selection -->
                     <div id="product-selection-group">
-                        <div class="content-generator-form-group">
-                            <label for="content-generator-product-search" class="content-generator-label required">Search Products</label>
-                            <input type="text" id="content-generator-product-search" class="content-generator-input" 
-                                   placeholder="Search by product name, SKU, or producer...">
-                            <div id="content-generator-product-search-results" class="search-results"></div>
+                        <div class="content-generator-search-row">
+                            <div class="content-generator-form-group">
+                                <label for="content-generator-product-search" class="content-generator-label required">Search Products</label>
+                                <input type="text" id="content-generator-product-search" class="content-generator-input" 
+                                       placeholder="Search by product name, SKU, or producer...">
+                                <div id="content-generator-product-search-results" class="search-results"></div>
+                            </div>
+                            
+                            <div class="content-generator-form-group">
+                                <label for="content-generator-product-smart-search" class="content-generator-label">
+                                    <i class="fas fa-lightbulb"></i> Smart Search
+                                </label>
+                                <input type="text" id="content-generator-product-smart-search" class="content-generator-input" 
+                                       placeholder="Search by meaning...">
+                                <div id="content-generator-product-smart-search-results" class="search-results"></div>
+                            </div>
                         </div>
                         
                         <div id="content-generator-selected-product" class="selected-item" style="display: none;">
