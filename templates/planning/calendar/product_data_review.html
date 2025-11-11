@@ -314,105 +314,129 @@
             <div class="data-section">
                 <h3>Product Type Identifiers</h3>
                 <div class="data-grid">
-                    {% if type_data.core_type %}
-                    <div class="data-item">
-                        <label>Core Type:</label>
-                        <div class="data-value has-data">
-                            <div class="attribute-tags">
-                                <span class="attribute-tag attribute-tag-primary" 
-                                      data-attribute-type="core_type" 
-                                      data-attribute-value="{{ type_data.core_type }}"
-                                      {% if type_data.subtype %}data-subtype="{{ type_data.subtype }}"{% endif %}>
-                                    {{ type_data.core_type|replace('_', ' ')|title }}{% if type_data.subtype %} ({{ type_data.subtype|replace('_', ' ')|title }}){% endif %}
-                                </span>
+                    <!-- Group 1: Identity & Classification -->
+                    <div class="identifier-group">
+                        <h4 class="identifier-group-title">Identity & Classification</h4>
+                        <div class="identifier-group-content">
+                            {% if type_data.core_type %}
+                            <div class="data-item">
+                                <label>Core Type:</label>
+                                <div class="data-value has-data">
+                                    <div class="attribute-tags">
+                                        <span class="attribute-tag attribute-tag-primary" 
+                                              data-attribute-type="core_type" 
+                                              data-attribute-value="{{ type_data.core_type }}"
+                                              {% if type_data.subtype %}data-subtype="{{ type_data.subtype }}"{% endif %}>
+                                            {{ type_data.core_type|replace('_', ' ')|title }}{% if type_data.subtype %} ({{ type_data.subtype|replace('_', ' ')|title }}){% endif %}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
+                            {% endif %}
+                            {% if type_data.disambiguation and type_data.disambiguation.product_form %}
+                            <div class="data-item">
+                                <label>Product Form:</label>
+                                <div class="data-value">
+                                    <div class="attribute-tags">
+                                        <span class="attribute-tag attribute-tag-form" data-attribute-type="product_form" data-attribute-value="{{ type_data.disambiguation.product_form }}">
+                                            {{ type_data.disambiguation.product_form|replace('_', ' ')|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="data-item">
+                                <label>Product Level:</label>
+                                <div class="data-value has-data">
+                                    <span class="product-level-indicator">
+                                        <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
+                                              title="Standard quality products made to traditional standards">Classic</span>
+                                        <span class="level-separator">|</span>
+                                        <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
+                                              title="Premium quality products with enhanced features and materials">Luxury</span>
+                                        <span class="level-separator">|</span>
+                                        <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
+                                              title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group 2: Physical Attributes -->
+                    {% if type_data.materials or type_data.patterns or type_data.decorations %}
+                    <div class="identifier-group">
+                        <h4 class="identifier-group-title">Physical Attributes</h4>
+                        <div class="identifier-group-content">
+                            {% if type_data.materials %}
+                            <div class="data-item">
+                                <label>Materials:</label>
+                                <div class="data-value">
+                                    <div class="attribute-tags">
+                                        {% for material in type_data.materials %}
+                                        <span class="attribute-tag" data-attribute-type="material" data-attribute-value="{{ material }}">{{ material|replace('_', ' ')|title }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if type_data.patterns %}
+                            <div class="data-item">
+                                <label>Patterns:</label>
+                                <div class="data-value">
+                                    <div class="attribute-tags">
+                                        {% for pattern in type_data.patterns %}
+                                        <span class="attribute-tag" data-attribute-type="pattern" data-attribute-value="{{ pattern }}">{{ pattern|replace('_', ' ')|title }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if type_data.decorations %}
+                            <div class="data-item">
+                                <label>Decorations:</label>
+                                <div class="data-value">
+                                    <div class="attribute-tags">
+                                        {% for decoration in type_data.decorations %}
+                                        <span class="attribute-tag" data-attribute-type="decoration" data-attribute-value="{{ decoration }}">{{ decoration|replace('_', ' ')|title }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endif %}
-                    <div class="data-item">
-                        <label>Product Level:</label>
-                        <div class="data-value has-data">
-                            <span class="product-level-indicator">
-                                <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
-                                      title="Standard quality products made to traditional standards">Classic</span>
-                                <span class="level-separator">|</span>
-                                <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
-                                      title="Premium quality products with enhanced features and materials">Luxury</span>
-                                <span class="level-separator">|</span>
-                                <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
-                                      title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
-                            </span>
-                        </div>
-                    </div>
-                    {% if type_data.materials %}
-                    <div class="data-item">
-                        <label>Materials:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for material in type_data.materials %}
-                                <span class="attribute-tag" data-attribute-type="material" data-attribute-value="{{ material }}">{{ material|replace('_', ' ')|title }}</span>
-                                {% endfor %}
+
+                    <!-- Group 3: Usage Context -->
+                    {% if type_data.occasions or type_data.styles %}
+                    <div class="identifier-group">
+                        <h4 class="identifier-group-title">Usage Context</h4>
+                        <div class="identifier-group-content">
+                            {% if type_data.occasions %}
+                            <div class="data-item">
+                                <label>Occasions:</label>
+                                <div class="data-value">
+                                    <div class="attribute-tags">
+                                        {% for occasion in type_data.occasions %}
+                                        <span class="attribute-tag" data-attribute-type="occasion" data-attribute-value="{{ occasion }}">{{ occasion|replace('_', ' ')|title }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.patterns %}
-                    <div class="data-item">
-                        <label>Patterns:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for pattern in type_data.patterns %}
-                                <span class="attribute-tag" data-attribute-type="pattern" data-attribute-value="{{ pattern }}">{{ pattern|replace('_', ' ')|title }}</span>
-                                {% endfor %}
+                            {% endif %}
+                            {% if type_data.styles %}
+                            <div class="data-item">
+                                <label>Styles:</label>
+                                <div class="data-value">
+                                    <div class="attribute-tags">
+                                        {% for style in type_data.styles %}
+                                        <span class="attribute-tag" data-attribute-type="style" data-attribute-value="{{ style }}">{{ style|replace('_', ' ')|title }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.decorations %}
-                    <div class="data-item">
-                        <label>Decorations:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for decoration in type_data.decorations %}
-                                <span class="attribute-tag" data-attribute-type="decoration" data-attribute-value="{{ decoration }}">{{ decoration|replace('_', ' ')|title }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.occasions %}
-                    <div class="data-item">
-                        <label>Occasions:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for occasion in type_data.occasions %}
-                                <span class="attribute-tag" data-attribute-type="occasion" data-attribute-value="{{ occasion }}">{{ occasion|replace('_', ' ')|title }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.styles %}
-                    <div class="data-item">
-                        <label>Styles:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for style in type_data.styles %}
-                                <span class="attribute-tag" data-attribute-type="style" data-attribute-value="{{ style }}">{{ style|replace('_', ' ')|title }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.disambiguation and type_data.disambiguation.product_form %}
-                    <div class="data-item">
-                        <label>Product Form:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                <span class="attribute-tag attribute-tag-form" data-attribute-type="product_form" data-attribute-value="{{ type_data.disambiguation.product_form }}">
-                                    {{ type_data.disambiguation.product_form|replace('_', ' ')|title }}
-                                </span>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endif %}
