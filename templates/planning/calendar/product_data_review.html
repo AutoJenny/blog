@@ -344,7 +344,11 @@
                     <div class="data-item">
                         <label>Materials:</label>
                         <div class="data-value">
-                            {{ type_data.materials|join(', ')|replace('_', ' ')|title }}
+                            <div class="attribute-tags">
+                                {% for material in type_data.materials %}
+                                <span class="attribute-tag" data-attribute-type="material" data-attribute-value="{{ material }}">{{ material|replace('_', ' ')|title }}</span>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     {% endif %}
@@ -352,7 +356,11 @@
                     <div class="data-item">
                         <label>Patterns:</label>
                         <div class="data-value">
-                            {{ type_data.patterns|join(', ')|replace('_', ' ')|title }}
+                            <div class="attribute-tags">
+                                {% for pattern in type_data.patterns %}
+                                <span class="attribute-tag" data-attribute-type="pattern" data-attribute-value="{{ pattern }}">{{ pattern|replace('_', ' ')|title }}</span>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     {% endif %}
@@ -360,7 +368,11 @@
                     <div class="data-item">
                         <label>Decorations:</label>
                         <div class="data-value">
-                            {{ type_data.decorations|join(', ')|replace('_', ' ')|title }}
+                            <div class="attribute-tags">
+                                {% for decoration in type_data.decorations %}
+                                <span class="attribute-tag" data-attribute-type="decoration" data-attribute-value="{{ decoration }}">{{ decoration|replace('_', ' ')|title }}</span>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     {% endif %}
@@ -368,7 +380,11 @@
                     <div class="data-item">
                         <label>Occasions:</label>
                         <div class="data-value">
-                            {{ type_data.occasions|join(', ')|replace('_', ' ')|title }}
+                            <div class="attribute-tags">
+                                {% for occasion in type_data.occasions %}
+                                <span class="attribute-tag" data-attribute-type="occasion" data-attribute-value="{{ occasion }}">{{ occasion|replace('_', ' ')|title }}</span>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     {% endif %}
@@ -376,7 +392,11 @@
                     <div class="data-item">
                         <label>Styles:</label>
                         <div class="data-value">
-                            {{ type_data.styles|join(', ')|replace('_', ' ')|title }}
+                            <div class="attribute-tags">
+                                {% for style in type_data.styles %}
+                                <span class="attribute-tag" data-attribute-type="style" data-attribute-value="{{ style }}">{{ style|replace('_', ' ')|title }}</span>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     {% endif %}
