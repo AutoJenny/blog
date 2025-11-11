@@ -89,11 +89,17 @@ class ClanDataExtractor:
                             cat_heritage = cat['heritage_data']
                             if isinstance(cat_heritage, dict):
                                 # Merge heritage data (product-specific takes priority)
+                                # Handle both new enhanced format (dict) and legacy format (string)
                                 for key in ['historical_origins', 'cultural_significance', 
-                                           'evolution', 'scottish_heritage_connections']:
+                                           'evolution', 'scottish_heritage_connections', 'industrial_legacy']:
                                     if key in cat_heritage and cat_heritage[key]:
+                                        # Only merge if we don't already have this key, or if existing is empty
                                         if key not in heritage_data or not heritage_data[key]:
                                             heritage_data[key] = cat_heritage[key]
+                                        elif isinstance(heritage_data[key], dict) and isinstance(cat_heritage[key], dict):
+                                            # Both are dicts: merge narratives if current is empty
+                                            if not heritage_data[key].get('narrative') and cat_heritage[key].get('narrative'):
+                                                heritage_data[key] = cat_heritage[key]
             
             # Fetch producer data if producer_id exists (producers table may not exist)
             producer_data = None
@@ -173,8 +179,19 @@ class ClanDataExtractor:
         supplier_word_count = word_count(product_data.get('supplier_description'))
         heritage_word_counts = {}
         if product_data.get('heritage_data'):
-            for key in ['historical_origins', 'cultural_significance', 'evolution', 'scottish_heritage_connections']:
-                heritage_word_counts[key] = word_count(product_data['heritage_data'].get(key))
+            for key in ['historical_origins', 'cultural_significance', 'evolution', 'scottish_heritage_connections', 'industrial_legacy']:
+                heritage_value = product_data['heritage_data'].get(key)
+                if heritage_value:
+                    # Handle both new enhanced format (dict with 'narrative') and legacy format (string)
+                    if isinstance(heritage_value, dict):
+                        # New enhanced format: extract narrative text
+                        narrative = heritage_value.get('narrative', '')
+                        heritage_word_counts[key] = word_count(narrative) if narrative else 0
+                    elif isinstance(heritage_value, str):
+                        # Legacy format: direct string
+                        heritage_word_counts[key] = word_count(heritage_value)
+                    else:
+                        heritage_word_counts[key] = 0
         
         # Check minimum requirements
         has_minimum = (
@@ -269,10 +286,22 @@ class ClanDataExtractor:
         if product_data.get('heritage_data'):
             parts.append("Heritage Data:")
             heritage = product_data['heritage_data']
-            for key in ['historical_origins', 'cultural_significance', 'evolution', 'scottish_heritage_connections']:
-                if heritage.get(key):
+            for key in ['historical_origins', 'cultural_significance', 'evolution', 'scottish_heritage_connections', 'industrial_legacy']:
+                heritage_value = heritage.get(key)
+                if heritage_value:
                     label = key.replace('_', ' ').title()
-                    parts.append(f"  {label}: {heritage[key]}")
+                    # Handle both new enhanced format (dict) and legacy format (string)
+                    if isinstance(heritage_value, dict):
+                        # New enhanced format: use narrative
+                        narrative = heritage_value.get('narrative', '')
+                        if narrative:
+                            parts.append(f"  {label}: {narrative}")
+                            # Add key themes if available
+                            if heritage_value.get('key_themes'):
+                                parts.append(f"    Key Themes: {', '.join(heritage_value['key_themes'])}")
+                    elif isinstance(heritage_value, str):
+                        # Legacy format: direct string
+                        parts.append(f"  {label}: {heritage_value}")
         
         # Specifications
         if product_data.get('specifications'):
