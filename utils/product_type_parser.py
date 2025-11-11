@@ -75,7 +75,7 @@ class ProductTypeParser:
         # Artwork/Homeware
         'painting', 'print', 'artwork', 'poster', 'plaque', 'cushion',
         'blanket', 'rug', 'tartan_fabric', 'chopping_board', 'board',
-        'fabric', 'swatch',
+        'fabric', 'swatch', 'glasses',
         # Other
         'bear', 'toy', 'gift_set', 'outfit'
     }
