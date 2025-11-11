@@ -319,14 +319,12 @@
                         <label>Core Type:</label>
                         <div class="data-value has-data">
                             <div class="attribute-tags">
-                                <span class="attribute-tag attribute-tag-primary" data-attribute-type="core_type" data-attribute-value="{{ type_data.core_type }}">
-                                    {{ type_data.core_type|replace('_', ' ')|title }}
+                                <span class="attribute-tag attribute-tag-primary" 
+                                      data-attribute-type="core_type" 
+                                      data-attribute-value="{{ type_data.core_type }}"
+                                      {% if type_data.subtype %}data-subtype="{{ type_data.subtype }}"{% endif %}>
+                                    {{ type_data.core_type|replace('_', ' ')|title }}{% if type_data.subtype %} ({{ type_data.subtype|replace('_', ' ')|title }}){% endif %}
                                 </span>
-                                {% if type_data.subtype %}
-                                <span class="attribute-tag attribute-tag-subtype" data-attribute-type="subtype" data-attribute-value="{{ type_data.subtype }}">
-                                    {{ type_data.subtype|replace('_', ' ')|title }}
-                                </span>
-                                {% endif %}
                             </div>
                         </div>
                     </div>

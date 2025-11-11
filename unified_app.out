@@ -3194,3 +3194,31 @@ LINE 9:                     additional_data, dimensions, product_lev...
 2025-11-11 16:19:43,861 - config.database - INFO - Database connection established
 2025-11-11 16:19:43,866 - config.database - INFO - Database connection established
 2025-11-11 16:19:43,868 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:19:43] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-11 16:22:59,880 - config.database - INFO - Database connection established
+2025-11-11 16:22:59,891 - config.database - INFO - Database connection established
+2025-11-11 16:22:59,897 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-11 16:22:59,897 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-11 16:22:59,905 - config.database - INFO - Database connection established
+2025-11-11 16:22:59,915 - config.database - INFO - Database connection established
+2025-11-11 16:22:59,953 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "GET /planning/posts/88/calendar/product-data-review HTTP/1.1" 200 -
+2025-11-11 16:22:59,973 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,975 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,976 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,976 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,977 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,977 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,979 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,979 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,980 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,980 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,981 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,981 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,983 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "GET /static/css/planning/product-data-review.css HTTP/1.1" 200 -
+2025-11-11 16:22:59,983 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:22:59] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-11 16:22:59,995 - config.database - INFO - Database connection established
+2025-11-11 16:23:00,008 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:23:00] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 16:23:00,017 - config.database - INFO - Database connection established
+2025-11-11 16:23:00,030 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:23:00] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 16:23:00,039 - config.database - INFO - Database connection established
+2025-11-11 16:23:00,048 - config.database - INFO - Database connection established
+2025-11-11 16:23:00,053 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:23:00] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
