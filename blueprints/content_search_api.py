@@ -161,17 +161,38 @@ def register_routes(bp):
             limit = data.get('limit', 10)
             
             # Use vector search to find relevant products
-            retriever = get_retriever()
-            search_results = retriever.search(
-                query=query,
-                chunk_types=['product'],
-                limit=limit * 2  # Get more candidates for re-ranking
-            )
-            
-            if not search_results.get('success'):
+            try:
+                retriever = get_retriever()
+            except Exception as e:
+                logger.error(f"Error initializing ContentRetriever: {e}")
+                import traceback
+                traceback.print_exc()
                 return jsonify({
                     'success': False,
-                    'error': 'Vector search failed'
+                    'error': f'Failed to initialize search: {str(e)}'
+                }), 500
+            
+            try:
+                search_results = retriever.search(
+                    query=query,
+                    chunk_types=['product'],
+                    limit=limit * 2  # Get more candidates for re-ranking
+                )
+            except Exception as e:
+                logger.error(f"Error in vector search: {e}")
+                import traceback
+                traceback.print_exc()
+                return jsonify({
+                    'success': False,
+                    'error': f'Vector search failed: {str(e)}'
+                }), 500
+            
+            if not search_results.get('success'):
+                error_msg = search_results.get('error', 'Unknown error')
+                logger.error(f"Vector search returned error: {error_msg}")
+                return jsonify({
+                    'success': False,
+                    'error': f'Vector search failed: {error_msg}'
                 }), 500
             
             # Fetch full product data and apply re-ranking

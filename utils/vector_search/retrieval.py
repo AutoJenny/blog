@@ -57,16 +57,54 @@ class ContentRetriever:
         """
         start_time = time.time()
         
-        # Generate query embedding
-        # For queries, use "query: " prefix for E5 models
-        query_text = query if query.startswith("query: ") else f"query: {query}"
-        query_embedding = self.embedding_generator.generate_embedding(query_text)
+        # Check if index is loaded
+        if self.faiss_manager.index is None:
+            logger.error("FAISS index not loaded - cannot perform search")
+            return {
+                'success': False,
+                'error': 'Vector index not loaded. Please rebuild the index.',
+                'results': [],
+                'query': query,
+                'query_time_ms': 0,
+                'total_results': 0
+            }
         
-        # Search FAISS index
-        distances, faiss_indices = self.faiss_manager.search(query_embedding, k=limit * 2)
+        try:
+            # Generate query embedding
+            # For queries, use "query: " prefix for E5 models
+            query_text = query if query.startswith("query: ") else f"query: {query}"
+            query_embedding = self.embedding_generator.generate_embedding(query_text)
+        except Exception as e:
+            logger.error(f"Error generating embedding: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                'success': False,
+                'error': f'Failed to generate embedding: {str(e)}',
+                'results': [],
+                'query': query,
+                'query_time_ms': 0,
+                'total_results': 0
+            }
         
-        # Convert FAISS indices to chunk IDs
-        chunk_ids = self.faiss_manager.get_chunk_ids(faiss_indices)
+        try:
+            # Search FAISS index
+            distances, faiss_indices = self.faiss_manager.search(query_embedding, k=limit * 2)
+            
+            # Convert FAISS indices to chunk IDs
+            chunk_ids = self.faiss_manager.get_chunk_ids(faiss_indices)
+        except Exception as e:
+            logger.error(f"Error searching FAISS index: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                'success': False,
+                'error': f'Failed to search index: {str(e)}',
+                'results': [],
+                'query': query,
+                'query_time_ms': 0,
+                'total_results': 0
+            }
         
         # Fetch chunk details from database
         results = []

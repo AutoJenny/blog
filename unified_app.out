@@ -849,3 +849,393 @@ LINE 17:                         INNER JOIN calendar_week_posts cwp O...
 2025-11-11 13:04:18,564 - __main__ - INFO - ✅ Registered preview routes
 2025-11-11 13:04:18,585 - werkzeug - WARNING -  * Debugger is active!
 2025-11-11 13:04:18,598 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 13:06:21,028 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,040 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,045 - utils.week_post_resolver - DEBUG - Resolved post_id 69 for week 2025/46
+2025-11-11 13:06:21,050 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,084 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/posts/0/calendar/week-view?year=2025&week=46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,107 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,108 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,109 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,110 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,111 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,111 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,111 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,112 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/css/planning/profile-modal.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,113 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,114 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/css/planning/idea-modal.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,115 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /static/css/planning/content-generator-modal.css HTTP/1.1" 200 -
+2025-11-11 13:06:21,115 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,116 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,117 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/planning/idea-modal-renderers.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,118 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,118 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/planning/idea-modal-api.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,119 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/planning/idea-modal-forms.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,120 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/planning/profile-modal-core.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,121 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/planning/idea-modal-conversions.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,121 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /static/js/planning/content-generator-modal-core.js HTTP/1.1" 200 -
+2025-11-11 13:06:21,122 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/planning/idea-modal-core.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,123 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,123 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,124 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:21,141 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,141 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,142 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,144 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-11-11 13:06:21,153 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,154 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,163 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,163 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,165 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,166 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,173 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,174 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,180 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,180 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,191 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,194 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,194 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,195 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,195 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,196 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,197 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-11-11 13:06:21,197 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-11-11 13:06:21,198 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/social-focus/week HTTP/1.1" 200 -
+2025-11-11 13:06:21,199 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,206 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/ideas/week/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,207 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,207 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,208 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/events/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,208 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,209 - blueprints.planning_api_calendar_recipes - DEBUG - calendar_week_posts table not available or error querying: relation "calendar_week_posts" does not exist
+LINE 17:                         INNER JOIN calendar_week_posts cwp O...
+                                            ^
+2025-11-11 13:06:21,210 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/recipes/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,211 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/profiles/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,211 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/content-generator/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,217 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,219 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-11 13:06:21,225 - config.database - INFO - Database connection established
+2025-11-11 13:06:21,231 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:21] "GET /planning/api/calendar/ideas/137 HTTP/1.1" 200 -
+2025-11-11 13:06:24,422 - config.database - INFO - Database connection established
+2025-11-11 13:06:24,426 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:24] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-11-11 13:06:28,204 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-11 13:06:28,205 - faiss.loader - INFO - Loading faiss.
+2025-11-11 13:06:28,233 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-11 13:06:28,237 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-11 13:06:28,238 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-11 13:06:30,148 - utils.vector_search.embeddings - INFO - Loading embedding model: intfloat/e5-large-v2
+2025-11-11 13:06:30,148 - utils.vector_search.embeddings - INFO - Loading embedding model: intfloat/e5-large-v2
+2025-11-11 13:06:30,165 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-11-11 13:06:30,165 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-11-11 13:06:30,165 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: intfloat/e5-large-v2
+2025-11-11 13:06:30,165 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: intfloat/e5-large-v2
+2025-11-11 13:06:30,167 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): huggingface.co:443
+2025-11-11 13:06:30,167 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): huggingface.co:443
+2025-11-11 13:06:30,426 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-11 13:06:30,427 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-11 13:06:30,475 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-11 13:06:30,475 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-11 13:06:30,600 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-11 13:06:30,603 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-11 13:06:30,731 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-11 13:06:30,746 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-11 13:06:30,859 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/README.md HTTP/1.1" 307 0
+2025-11-11 13:06:30,870 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/README.md HTTP/1.1" 307 0
+2025-11-11 13:06:30,907 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/README.md HTTP/1.1" 200 0
+2025-11-11 13:06:30,918 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/README.md HTTP/1.1" 200 0
+2025-11-11 13:06:31,043 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-11 13:06:31,047 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-11 13:06:31,092 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-11 13:06:31,094 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-11 13:06:31,228 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 307 0
+2025-11-11 13:06:31,230 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 307 0
+2025-11-11 13:06:31,277 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/sentence_bert_config.json HTTP/1.1" 200 0
+2025-11-11 13:06:31,278 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/sentence_bert_config.json HTTP/1.1" 200 0
+2025-11-11 13:06:31,414 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/adapter_config.json HTTP/1.1" 404 0
+2025-11-11 13:06:31,414 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/adapter_config.json HTTP/1.1" 404 0
+2025-11-11 13:06:31,549 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config.json HTTP/1.1" 307 0
+2025-11-11 13:06:31,552 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config.json HTTP/1.1" 307 0
+2025-11-11 13:06:31,600 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/config.json HTTP/1.1" 200 0
+2025-11-11 13:06:31,601 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/config.json HTTP/1.1" 200 0
+2025-11-11 13:06:31,985 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/tokenizer_config.json HTTP/1.1" 307 0
+2025-11-11 13:06:32,014 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/tokenizer_config.json HTTP/1.1" 307 0
+2025-11-11 13:06:32,032 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/tokenizer_config.json HTTP/1.1" 200 0
+2025-11-11 13:06:32,060 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/tokenizer_config.json HTTP/1.1" 200 0
+2025-11-11 13:06:32,165 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2/tree/main/additional_chat_templates?recursive=False&expand=False HTTP/1.1" 404 64
+2025-11-11 13:06:32,192 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2/tree/main/additional_chat_templates?recursive=False&expand=False HTTP/1.1" 404 64
+2025-11-11 13:06:32,314 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/1_Pooling/config.json HTTP/1.1" 307 0
+2025-11-11 13:06:32,339 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/1_Pooling/config.json HTTP/1.1" 307 0
+2025-11-11 13:06:32,365 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/1_Pooling%2Fconfig.json HTTP/1.1" 200 0
+2025-11-11 13:06:32,392 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/1_Pooling%2Fconfig.json HTTP/1.1" 200 0
+2025-11-11 13:06:32,510 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2 HTTP/1.1" 200 149102
+2025-11-11 13:06:32,534 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2 HTTP/1.1" 200 149102
+2025-11-11 13:06:32,647 - utils.vector_search.embeddings - ERROR - Error loading embedding model: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+2025-11-11 13:06:32,647 - utils.vector_search.embeddings - ERROR - Error loading embedding model: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+2025-11-11 13:06:32,647 - blueprints.content_search_api - ERROR - Error in semantic product search: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+2025-11-11 13:06:32,647 - blueprints.content_search_api - ERROR - Error in semantic product search: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/blueprints/content_search_api.py", line 165, in api_semantic_product_search
+    search_results = retriever.search(
+        query=query,
+        chunk_types=['product'],
+        limit=limit * 2  # Get more candidates for re-ranking
+    )
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/retrieval.py", line 63, in search
+    query_embedding = self.embedding_generator.generate_embedding(query_text)
+  File "/Users/autojenny/Documents/projects/blog/blueprints/content_search_api.py", line 165, in api_semantic_product_search
+    search_results = retriever.search(
+        query=query,
+        chunk_types=['product'],
+        limit=limit * 2  # Get more candidates for re-ranking
+    )
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 83, in generate_embedding
+    self._ensure_model_loaded()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 66, in _ensure_model_loaded
+    self.model = get_embedding_model(self.model_name)
+                 ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 35, in get_embedding_model
+    _embedding_model = SentenceTransformer(model_name)
+  File "/opt/homebrew/lib/python3.13/site-packages/sentence_transformers/SentenceTransformer.py", line 367, in __init__
+    self.to(device)
+    ~~~~~~~^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1371, in to
+    return self._apply(convert)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/retrieval.py", line 63, in search
+    query_embedding = self.embedding_generator.generate_embedding(query_text)
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 83, in generate_embedding
+    self._ensure_model_loaded()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 66, in _ensure_model_loaded
+    self.model = get_embedding_model(self.model_name)
+                 ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 35, in get_embedding_model
+    _embedding_model = SentenceTransformer(model_name)
+  File "/opt/homebrew/lib/python3.13/site-packages/sentence_transformers/SentenceTransformer.py", line 367, in __init__
+    self.to(device)
+    ~~~~~~~^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1371, in to
+    return self._apply(convert)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  [Previous line repeated 1 more time]
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 957, in _apply
+    param_applied = fn(param)
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1364, in convert
+    raise NotImplementedError(
+    ...<2 lines>...
+    ) from None
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  [Previous line repeated 1 more time]
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 957, in _apply
+    param_applied = fn(param)
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1364, in convert
+    raise NotImplementedError(
+    ...<2 lines>...
+    ) from None
+NotImplementedError: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+NotImplementedError: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+2025-11-11 13:06:32,654 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:32] "[35m[1mPOST /api/products/semantic-search HTTP/1.1[0m" 500 -
+2025-11-11 13:06:32,655 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:32] "[35m[1mPOST /api/products/semantic-search HTTP/1.1[0m" 500 -
+2025-11-11 13:06:54,341 - utils.vector_search.embeddings - INFO - Loading embedding model: intfloat/e5-large-v2
+2025-11-11 13:06:54,342 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-11-11 13:06:54,342 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: intfloat/e5-large-v2
+2025-11-11 13:06:54,445 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-11 13:06:54,462 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-11 13:06:54,569 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-11 13:06:54,664 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-11 13:06:54,768 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/README.md HTTP/1.1" 307 0
+2025-11-11 13:06:54,785 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/README.md HTTP/1.1" 200 0
+2025-11-11 13:06:54,882 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-11 13:06:54,903 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-11 13:06:55,000 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 307 0
+2025-11-11 13:06:55,017 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/sentence_bert_config.json HTTP/1.1" 200 0
+2025-11-11 13:06:55,123 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/adapter_config.json HTTP/1.1" 404 0
+2025-11-11 13:06:55,225 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config.json HTTP/1.1" 307 0
+2025-11-11 13:06:55,245 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/config.json HTTP/1.1" 200 0
+2025-11-11 13:06:55,448 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/tokenizer_config.json HTTP/1.1" 307 0
+2025-11-11 13:06:55,464 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/tokenizer_config.json HTTP/1.1" 200 0
+2025-11-11 13:06:55,559 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2/tree/main/additional_chat_templates?recursive=False&expand=False HTTP/1.1" 404 64
+2025-11-11 13:06:55,710 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/1_Pooling/config.json HTTP/1.1" 307 0
+2025-11-11 13:06:55,732 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/1_Pooling%2Fconfig.json HTTP/1.1" 200 0
+2025-11-11 13:06:55,843 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2 HTTP/1.1" 200 149102
+2025-11-11 13:06:55,873 - utils.vector_search.embeddings - ERROR - Error loading embedding model: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+2025-11-11 13:06:55,873 - blueprints.content_search_api - ERROR - Error in semantic product search: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+Traceback (most recent call last):
+  File "/Users/autojenny/Documents/projects/blog/blueprints/content_search_api.py", line 165, in api_semantic_product_search
+    search_results = retriever.search(
+        query=query,
+        chunk_types=['product'],
+        limit=limit * 2  # Get more candidates for re-ranking
+    )
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/retrieval.py", line 63, in search
+    query_embedding = self.embedding_generator.generate_embedding(query_text)
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 83, in generate_embedding
+    self._ensure_model_loaded()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 66, in _ensure_model_loaded
+    self.model = get_embedding_model(self.model_name)
+                 ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/autojenny/Documents/projects/blog/utils/vector_search/embeddings.py", line 35, in get_embedding_model
+    _embedding_model = SentenceTransformer(model_name)
+  File "/opt/homebrew/lib/python3.13/site-packages/sentence_transformers/SentenceTransformer.py", line 367, in __init__
+    self.to(device)
+    ~~~~~~~^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1371, in to
+    return self._apply(convert)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+    ~~~~~~~~~~~~~^^^^
+  [Previous line repeated 1 more time]
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 957, in _apply
+    param_applied = fn(param)
+  File "/opt/homebrew/lib/python3.13/site-packages/torch/nn/modules/module.py", line 1364, in convert
+    raise NotImplementedError(
+    ...<2 lines>...
+    ) from None
+NotImplementedError: Cannot copy out of meta tensor; no data! Please use torch.nn.Module.to_empty() instead of torch.nn.Module.to() when moving module from meta to a different device.
+2025-11-11 13:06:55,875 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:55] "[35m[1mPOST /api/products/semantic-search HTTP/1.1[0m" 500 -
+2025-11-11 13:06:58,240 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,249 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,253 - utils.week_post_resolver - DEBUG - Resolved post_id 69 for week 2025/46
+2025-11-11 13:06:58,258 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,262 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/posts/0/calendar/week-view?year=2025&week=46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,285 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,288 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,289 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,290 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,291 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,291 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,291 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,293 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,293 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/planning/idea-modal.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,295 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,295 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,296 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/planning/profile-modal.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,296 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,297 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,298 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/planning/idea-modal-renderers.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,299 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/planning/idea-modal-forms.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,300 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/planning/idea-modal-core.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,300 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/planning/idea-modal-conversions.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,301 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/planning/idea-modal-api.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,302 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/planning/profile-modal-core.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,302 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,302 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/planning/content-generator-modal-core.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,303 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,304 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-11 13:06:58,322 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,323 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,324 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,325 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-11-11 13:06:58,331 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,332 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,339 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,340 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,341 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,342 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,351 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,352 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,360 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,360 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,374 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,374 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,376 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,376 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,376 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,377 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-11-11 13:06:58,377 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-11-11 13:06:58,377 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,379 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/social-focus/week HTTP/1.1" 200 -
+2025-11-11 13:06:58,382 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,383 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,384 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,386 - blueprints.planning_api_calendar_recipes - DEBUG - calendar_week_posts table not available or error querying: relation "calendar_week_posts" does not exist
+LINE 17:                         INNER JOIN calendar_week_posts cwp O...
+                                            ^
+2025-11-11 13:06:58,386 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/recipes/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,386 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/ideas/week/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,387 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,388 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/profiles/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,389 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/events/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,390 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/content-generator/2025/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,396 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,397 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-11 13:06:58,403 - config.database - INFO - Database connection established
+2025-11-11 13:06:58,410 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:06:58] "GET /planning/api/calendar/ideas/137 HTTP/1.1" 200 -
+2025-11-11 13:07:02,406 - config.database - INFO - Database connection established
+2025-11-11 13:07:02,411 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 13:07:02] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-11-11 13:07:11,346 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/content_search_api.py', reloading
+2025-11-11 13:07:11,749 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 13:07:12,047 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 13:07:12,066 - config.database - INFO - Database connection established
+2025-11-11 13:07:12,068 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 13:07:12,068 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 13:07:12,068 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 13:07:12,069 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 13:07:12,069 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 13:07:12,069 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 13:07:12,069 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 13:07:12,908 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 13:07:12,912 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 13:07:12,920 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 13:07:12,940 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 13:07:12,950 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 13:07:23,924 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/vector_search/retrieval.py', reloading
+2025-11-11 13:07:24,131 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 13:07:24,425 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 13:07:24,444 - config.database - INFO - Database connection established
+2025-11-11 13:07:24,447 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 13:07:24,447 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 13:07:24,448 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 13:07:24,448 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 13:07:24,448 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 13:07:24,448 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 13:07:24,448 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 13:07:25,291 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 13:07:25,296 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 13:07:25,304 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 13:07:25,324 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 13:07:25,334 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 13:07:29,169 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/vector_search/retrieval.py', reloading
+2025-11-11 13:07:29,370 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 13:07:29,662 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 13:07:29,681 - config.database - INFO - Database connection established
+2025-11-11 13:07:29,683 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 13:07:29,684 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 13:07:29,684 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 13:07:29,684 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 13:07:29,684 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 13:07:29,684 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 13:07:29,684 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 13:07:30,526 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 13:07:30,530 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 13:07:30,538 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 13:07:30,557 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 13:07:30,568 - werkzeug - INFO -  * Debugger PIN: 263-852-041
