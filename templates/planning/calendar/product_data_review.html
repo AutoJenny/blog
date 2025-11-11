@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Product Data Review - Content Calendar - Planning - BlogForge{% endblock %}
+
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/product-data-review.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include condensed header -->
+    {% set page_title = 'Planning' %}
+    <script>
+    window.postId = {{ post_id }};
+    window.currentStage = 'planning';
+    window.currentSubstage = 'product-data-review';
+    </script>
+    {% include 'shared/blog_pipeline_header.html' %}
+    
+    {% block process_content %}
+    <div class="product-data-review-main">
+        <div class="review-header">
+            <h2>Product Data Review</h2>
+            <p>Review CLAN product data before content generation. This data will be prioritized over LLM-generated content.</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if product_data %}
+        <div class="product-data-content">
+            <!-- Data Completeness Summary -->
+            <div class="completeness-summary">
+                <h3>Data Completeness</h3>
+                <div class="completeness-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Core Completeness:</span>
+                        <span class="stat-value {% if validation.core_completeness >= 1.0 %}complete{% elif validation.core_completeness >= 0.67 %}partial{% else %}incomplete{% endif %}">
+                            {{ "%.0f"|format(validation.core_completeness * 100) }}%
+                        </span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Has Minimum Requirements:</span>
+                        <span class="stat-value {% if validation.has_minimum_requirements %}complete{% else %}incomplete{% endif %}">
+                            {% if validation.has_minimum_requirements %}✓ Yes{% else %}✗ No{% endif %}
+                        </span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">LLM Threshold:</span>
+                        <span class="stat-value">{{ validation.threshold }} words</span>
+                    </div>
+                </div>
+                
+                {% if validation.missing_fields %}
+                <div class="missing-fields-warning">
+                    <strong>⚠️ Missing Fields:</strong> {{ validation.missing_fields|join(', ') }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Core Product Information -->
+            <div class="data-section">
+                <h3>Core Product Information</h3>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <label>Product Name:</label>
+                        <div class="data-value {% if product_data.has_name %}has-data{% else %}missing-data{% endif %}">
+                            {{ product_data.name or 'N/A' }}
+                            {% if product_data.has_name %}<span class="data-badge">✓ CLAN</span>{% else %}<span class="data-badge missing">✗ Missing</span>{% endif %}
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <label>SKU:</label>
+                        <div class="data-value">
+                            {{ product_data.sku or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <label>Price:</label>
+                        <div class="data-value">
+                            {% if product_data.price %}£{{ product_data.price }}{% else %}N/A{% endif %}
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <label>Product URL:</label>
+                        <div class="data-value">
+                            {% if product_data.url %}
+                            <a href="{{ product_data.url }}" target="_blank">{{ product_data.url[:50] }}...</a>
+                            {% else %}N/A{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Description -->
+            <div class="data-section">
+                <h3>Product Description</h3>
+                <div class="data-item full-width">
+                    <div class="data-value {% if product_data.has_description %}has-data{% else %}missing-data{% endif %}">
+                        {% if product_data.description %}
+                        <div class="description-content">{{ product_data.description|safe }}</div>
+                        <div class="word-count">Word count: {{ validation.word_counts.description }} words
+                            {% if validation.needs_llm_supplement.description %}
+                            <span class="supplement-badge">⚠️ Needs LLM supplement (< {{ validation.threshold }} words)</span>
+                            {% else %}
+                            <span class="supplement-badge complete">✓ Sufficient</span>
+                            {% endif %}
+                        </div>
+                        {% elif product_data.short_description %}
+                        <div class="description-content">{{ product_data.short_description|safe }}</div>
+                        <div class="word-count">Word count: {{ validation.word_counts.description }} words
+                            {% if validation.needs_llm_supplement.description %}
+                            <span class="supplement-badge">⚠️ Needs LLM supplement (< {{ validation.threshold }} words)</span>
+                            {% else %}
+                            <span class="supplement-badge complete">✓ Sufficient</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="missing-data">No description available</div>
+                        <span class="data-badge missing">✗ Missing</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supplier/Producer Information -->
+            <div class="data-section">
+                <h3>Supplier/Producer Information</h3>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <label>Supplier Name:</label>
+                        <div class="data-value {% if product_data.has_supplier %}has-data{% else %}missing-data{% endif %}">
+                            {{ product_data.supplier_name or 'N/A' }}
+                            {% if product_data.has_supplier %}<span class="data-badge">✓ CLAN</span>{% else %}<span class="data-badge missing">✗ Missing</span>{% endif %}
+                        </div>
+                    </div>
+                    <div class="data-item full-width">
+                        <label>Supplier Description:</label>
+                        <div class="data-value {% if product_data.supplier_description %}has-data{% else %}missing-data{% endif %}">
+                            {% if product_data.supplier_description %}
+                            <div class="description-content">{{ product_data.supplier_description|safe }}</div>
+                            <div class="word-count">Word count: {{ validation.word_counts.supplier_description }} words
+                                {% if validation.needs_llm_supplement.supplier_description %}
+                                <span class="supplement-badge">⚠️ Needs LLM supplement (< {{ validation.threshold }} words)</span>
+                                {% else %}
+                                <span class="supplement-badge complete">✓ Sufficient</span>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="missing-data">No supplier description available</div>
+                            <span class="data-badge missing">✗ Missing</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories & Heritage Data -->
+            {% if product_data.categories or product_data.heritage_data %}
+            <div class="data-section">
+                <h3>Category & Heritage Data</h3>
+                {% if product_data.categories %}
+                <div class="data-item">
+                    <label>Categories:</label>
+                    <div class="data-value">
+                        <ul class="category-list">
+                            {% for category in product_data.categories %}
+                            <li>{{ category.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if product_data.heritage_data %}
+                <div class="heritage-data">
+                    <h4>Heritage Data</h4>
+                    {% if product_data.heritage_data.historical_origins %}
+                    <div class="heritage-item">
+                        <label>Historical Origins:</label>
+                        <div class="data-value has-data">
+                            <div class="description-content">{{ product_data.heritage_data.historical_origins }}</div>
+                            <div class="word-count">Word count: {{ validation.word_counts.heritage_data.get('historical_origins', 0) }} words
+                                {% if validation.needs_llm_supplement.heritage_data.get('historical_origins', False) %}
+                                <span class="supplement-badge">⚠️ Needs LLM supplement</span>
+                                {% else %}
+                                <span class="supplement-badge complete">✓ Sufficient</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if product_data.heritage_data.cultural_significance %}
+                    <div class="heritage-item">
+                        <label>Cultural Significance:</label>
+                        <div class="data-value has-data">
+                            <div class="description-content">{{ product_data.heritage_data.cultural_significance }}</div>
+                            <div class="word-count">Word count: {{ validation.word_counts.heritage_data.get('cultural_significance', 0) }} words
+                                {% if validation.needs_llm_supplement.heritage_data.get('cultural_significance', False) %}
+                                <span class="supplement-badge">⚠️ Needs LLM supplement</span>
+                                {% else %}
+                                <span class="supplement-badge complete">✓ Sufficient</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Specifications & Options -->
+            {% if product_data.specifications or product_data.configurable_options %}
+            <div class="data-section">
+                <h3>Specifications & Options</h3>
+                {% if product_data.specifications %}
+                <div class="data-item full-width">
+                    <label>Specifications:</label>
+                    <div class="data-value has-data">
+                        <pre class="specifications-content">{{ product_data.specifications|tojson(indent=2) }}</pre>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if product_data.configurable_options %}
+                <div class="data-item full-width">
+                    <label>Configurable Options:</label>
+                    <div class="data-value has-data">
+                        <pre class="specifications-content">{{ product_data.configurable_options|tojson(indent=2) }}</pre>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="review-actions">
+                <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Continue to Topic Brainstorming
+                </a>
+                <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Taxonomy
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endblock %}
+</div>
+{% endblock %}
+
