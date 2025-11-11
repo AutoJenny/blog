@@ -43,7 +43,9 @@ class ProductTypeParser:
     
     DECORATIONS = {
         'clan crest', 'celtic', 'thistle', 'stag', 'studded', 'lion rampant',
-        'sword', 'knot', 'rose', 'shamrock', 'dragon'
+        'sword', 'knot', 'rose', 'shamrock', 'dragon',
+        'rust-proof eyelets', 'rust proof eyelets', 'eyelets',
+        'thick leather tie', 'leather tie'
     }
     
     OCCASIONS = {
