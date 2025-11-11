@@ -13,7 +13,8 @@
     {% include 'shared/blog_pipeline_header.html' %}
     
     {% block process_content %}
-    <div class="sources-main">
+    <div class="page-main">
+        <div class="sources-main">
         <div class="sources-header">
             <h2>Source Research</h2>
             <p>Find authoritative sources and gather supporting information for your content.</p>
@@ -341,4 +342,8 @@ function exportSources() {
     // Implement export functionality
 }
 </script>
+        </div>
+    </div>
+    {% endblock %}
+</div>
 {% endblock %}

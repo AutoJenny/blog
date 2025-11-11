@@ -16,11 +16,11 @@
     <div class="brainstorm-main">
         <!-- Category Indicator Banner -->
         {% if content_type_name %}
-        <div class="route-indicator" style="background: #059669; color: white; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fas fa-tag" style="font-size: 1.1rem;"></i>
+        <div class="route-indicator">
+            <i class="fas fa-tag"></i>
             <span>Content Category: <strong>{{ content_type_name }}</strong></span>
             {% if year and week %}
-            <span style="margin-left: auto; font-weight: 500; opacity: 0.85;">Week {{ week }}, {{ year }}</span>
+            <span class="route-indicator-week">Week {{ week }}, {{ year }}</span>
             {% endif %}
         </div>
         {% endif %}

@@ -14,7 +14,8 @@
     {% include 'shared/blog_pipeline_header.html' %}
     
     {% block process_content %}
-    <div class="taxonomy-main">
+    <div class="page-main">
+        <div class="taxonomy-main">
         <div class="taxonomy-header">
             <h2>Taxonomy Assignment</h2>
             <p>Classify your post by Content Category, Content Type, and Format</p>
@@ -336,5 +337,9 @@
 </style>
 
 <script src="{{ url_for('static', filename='js/planning/taxonomy-assignment.js') }}"></script>
+        </div>
+    </div>
+    {% endblock %}
+</div>
 {% endblock %}
 

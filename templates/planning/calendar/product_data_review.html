@@ -4,6 +4,7 @@
 
 {% block css_assets %}
 {{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/planning/product-data-review.css') }}">
 {% endblock %}
 
@@ -70,7 +71,16 @@
     {% include 'shared/blog_pipeline_header.html' %}
     
     {% block process_content %}
-    <div class="product-data-review-main">
+    <div class="page-main">
+        <div class="product-data-review-main">
+        <!-- Category Indicator Banner -->
+        {% if content_type_name %}
+        <div class="route-indicator">
+            <i class="fas fa-tag"></i>
+            <span>Content Category: <strong>{{ content_type_name }}</strong></span>
+        </div>
+        {% endif %}
+        
         <div class="review-header">
             <h2>Product Data Review</h2>
             <p>Review CLAN product data before content generation. This data will be prioritized over LLM-generated content.</p>
@@ -678,6 +688,7 @@
             </div>
         </div>
         {% endif %}
+        </div>
     </div>
     {% endblock %}
 </div>

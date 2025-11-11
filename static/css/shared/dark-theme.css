@@ -3,6 +3,41 @@
 /* Page background and text defaults */
 body { background-color: #0f1419; color: #e0e0e0; }
 
+/* Container - Standardized layout wrapper */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Page main content wrapper */
+.page-main {
+    padding: 2rem 0;
+}
+
+/* Route Indicator - Standardized banner for content category display */
+.route-indicator {
+    background: #059669;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.route-indicator i {
+    font-size: 1.1rem;
+}
+
+.route-indicator-week {
+    margin-left: auto;
+    font-weight: 500;
+    opacity: 0.85;
+}
+
 /* Utility tokens used across pages */
 .content-area { min-height: 400px; background: transparent; border: none; border-radius: 0; padding: 0; margin-top: 0; box-shadow: none; }
 .gradient-header { background: linear-gradient(90deg, #23273a 0%, #181c2a 100%); border: 1px solid #31364a; box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45); }

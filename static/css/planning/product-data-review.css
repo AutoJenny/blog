@@ -1,9 +1,14 @@
-/* Product Data Review Styles */
+/* Product Data Review Styles - Dark Theme */
+
+/* Ensure page uses dark background - inherit from dark-theme.css */
+body {
+    background-color: #0f1419 !important;
+}
 
 .product-data-review-main {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+    /* Container max-width handled by .container class */
+    /* Padding handled by .page-main class */
+    background: transparent;
 }
 
 .review-header {
@@ -13,18 +18,18 @@
 .review-header h2 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
-    color: #1f2937;
+    color: #f1f5f9;
 }
 
 .review-header p {
-    color: #6b7280;
+    color: #94a3b8;
     font-size: 1rem;
 }
 
 /* Completeness Summary */
 .completeness-summary {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
+    background: #1e293b;
+    border: 1px solid #334155;
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 2rem;
@@ -33,7 +38,7 @@
 .completeness-summary h3 {
     margin-top: 0;
     margin-bottom: 1rem;
-    color: #1f2937;
+    color: #f1f5f9;
 }
 
 .completeness-stats {
@@ -51,7 +56,7 @@
 
 .stat-label {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #94a3b8;
 }
 
 .stat-value {
@@ -72,18 +77,18 @@
 }
 
 .missing-fields-warning {
-    background: #fef3c7;
-    border: 1px solid #fbbf24;
+    background: #7c2d12;
+    border: 1px solid #f59e0b;
     border-radius: 6px;
     padding: 0.75rem;
-    color: #92400e;
+    color: #fcd34d;
     font-size: 0.875rem;
 }
 
 /* Data Sections */
 .data-section {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: #1e293b;
+    border: 1px solid #334155;
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
@@ -92,9 +97,9 @@
 .data-section h3 {
     margin-top: 0;
     margin-bottom: 1rem;
-    color: #1f2937;
+    color: #f1f5f9;
     font-size: 1.25rem;
-    border-bottom: 2px solid #e5e7eb;
+    border-bottom: 2px solid #334155;
     padding-bottom: 0.5rem;
 }
 
@@ -116,26 +121,27 @@
 
 .data-item label {
     font-weight: 600;
-    color: #374151;
+    color: #cbd5e1;
     font-size: 0.875rem;
 }
 
 .data-value {
     padding: 0.75rem;
-    background: #f9fafb;
+    background: #0f172a;
     border-radius: 6px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #334155;
     position: relative;
+    color: #cbd5e1;
 }
 
 .data-value.has-data {
-    background: #f0fdf4;
-    border-color: #86efac;
+    background: #0f172a;
+    border-color: #10b981;
 }
 
 .data-value.missing-data {
-    background: #fef2f2;
-    border-color: #fca5a5;
+    background: #0f172a;
+    border-color: #ef4444;
 }
 
 .data-badge {
@@ -156,7 +162,7 @@
 .description-content {
     margin-bottom: 0.5rem;
     line-height: 1.6;
-    color: #1f2937;
+    color: #cbd5e1;
 }
 
 /* Product Description Section - CLAN.com Style */
@@ -190,10 +196,10 @@
     max-width: 100%;
     height: auto;
     border-radius: 8px;
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 2px solid #334155;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
     object-fit: contain;
-    background: #f9fafb;
+    background: #1e293b;
 }
 
 /* Responsive: stack on smaller screens */
@@ -217,34 +223,34 @@
 .description-blurb {
     margin-bottom: 1.5rem;
     padding: 1.25rem;
-    background: #fef3c7;
+    background: #7c2d12;
     border-left: 4px solid #f59e0b;
     border-radius: 6px;
 }
 
 .description-blurb .data-value {
-    background: white;
-    border: 1px solid #fde68a;
+    background: #0f172a;
+    border: 1px solid #f59e0b;
 }
 
 .blurb-text {
     font-size: 1.1rem;
     font-weight: 500;
-    color: #78350f;
+    color: #fcd34d;
     font-style: italic;
 }
 
 .description-bullets {
     margin-bottom: 1.5rem;
     padding: 1.25rem;
-    background: #eff6ff;
+    background: #1e3a8a;
     border-left: 4px solid #3b82f6;
     border-radius: 6px;
 }
 
 .description-bullets .data-value {
-    background: white;
-    border: 1px solid #bfdbfe;
+    background: #0f172a;
+    border: 1px solid #3b82f6;
 }
 
 .bullets-content ul {
@@ -255,25 +261,25 @@
 
 .bullets-content li {
     margin-bottom: 0.5rem;
-    color: #1e40af;
+    color: #93c5fd;
     font-weight: 500;
 }
 
 .description-main {
     margin-bottom: 1.5rem;
     padding: 1.25rem;
-    background: #f0fdf4;
-    border-left: 4px solid #22c55e;
+    background: #064e3b;
+    border-left: 4px solid #10b981;
     border-radius: 6px;
 }
 
 .description-main .data-value {
-    background: white;
-    border: 1px solid #86efac;
+    background: #0f172a;
+    border: 1px solid #10b981;
 }
 
 .main-text {
-    color: #14532d;
+    color: #6ee7b7;
 }
 
 .main-text p {
@@ -287,28 +293,28 @@
 .description-specifications {
     margin-bottom: 1.5rem;
     padding: 1.25rem;
-    background: #f5f3ff;
-    border-left: 4px solid #8b5cf6;
+    background: #1e293b;
+    border-left: 4px solid #3b82f6;
     border-radius: 6px;
 }
 
 .description-specifications h4 {
     margin-top: 0;
     margin-bottom: 1rem;
-    color: #6b21a8;
+    color: #93c5fd;
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .description-specifications .data-value {
-    background: white;
-    border: 1px solid #c4b5fd;
+    background: #0f172a;
+    border: 1px solid #3b82f6;
 }
 
 .description-additional-data {
     margin-bottom: 1.5rem;
     padding: 1.25rem;
-    background: #f0fdfa;
+    background: #134e4a;
     border-left: 4px solid #14b8a6;
     border-radius: 6px;
 }
@@ -316,7 +322,7 @@
 .description-additional-data h4 {
     margin-top: 0;
     margin-bottom: 1rem;
-    color: #0f766e;
+    color: #5eead4;
     font-size: 1.1rem;
     font-weight: 600;
 }
@@ -326,27 +332,27 @@
 }
 
 .description-additional-data .data-value {
-    background: white;
-    border: 1px solid #5eead4;
+    background: #0f172a;
+    border: 1px solid #14b8a6;
 }
 
 .description-additional-data .specifications-list dt {
-    color: #0f766e;
+    color: #5eead4;
 }
 
 .description-additional-data .specifications-list dd {
-    color: #1f2937;
+    color: #cbd5e1;
 }
 
 .data-code {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #94a3b8;
     font-style: italic;
 }
 
 .word-count {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #94a3b8;
     margin-top: 0.5rem;
 }
 
@@ -369,19 +375,19 @@
 /* Categories Section */
 .categories-section {
     padding: 1.25rem;
-    background: #f0f9ff;
-    border-left: 4px solid #0ea5e9;
+    background: #1e3a8a;
+    border-left: 4px solid #3b82f6;
     border-radius: 6px;
 }
 
 .categories-section .data-value {
-    background: white;
-    border: 1px solid #bae6fd;
+    background: #0f172a;
+    border: 1px solid #3b82f6;
 }
 
 .category-list li {
     padding: 0.75rem;
-    background: #f9fafb;
+    background: #1e293b;
     border-radius: 4px;
     margin-bottom: 0.5rem;
     display: flex;
@@ -390,12 +396,12 @@
 }
 
 .category-list li strong {
-    color: #0c4a6e;
+    color: #93c5fd;
     font-size: 1rem;
 }
 
 .category-description {
-    color: #6b7280;
+    color: #94a3b8;
     font-size: 0.875rem;
     font-style: italic;
 }
@@ -403,29 +409,29 @@
 /* Heritage Data Section */
 .heritage-section {
     padding: 1.25rem;
-    background: #fef3c7;
+    background: #7c2d12;
     border-left: 4px solid #f59e0b;
     border-radius: 6px;
 }
 
 .heritage-section .data-value {
-    background: white;
-    border: 1px solid #fde68a;
+    background: #0f172a;
+    border: 1px solid #f59e0b;
 }
 
 .heritage-note {
     font-size: 0.875rem;
-    color: #78350f;
+    color: #fcd34d;
     margin-top: 0.5rem;
     margin-bottom: 1rem;
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 4px;
     border-left: 3px solid #f59e0b;
 }
 
 .heritage-note strong {
-    color: #92400e;
+    color: #fbbf24;
 }
 
 /* Heritage Header with Regenerate Button */
@@ -493,7 +499,7 @@
 
 .heritage-data h4 {
     margin-bottom: 1rem;
-    color: #374151;
+    color: #f1f5f9;
 }
 
 .heritage-item {
@@ -502,7 +508,7 @@
 
 .heritage-item label {
     font-weight: 600;
-    color: #374151;
+    color: #cbd5e1;
     font-size: 0.875rem;
     display: block;
     margin-bottom: 0.5rem;
@@ -511,14 +517,14 @@
 /* Specifications Section */
 .specifications-section {
     padding: 1.25rem;
-    background: #f5f3ff;
-    border-left: 4px solid #8b5cf6;
+    background: #1e293b;
+    border-left: 4px solid #3b82f6;
     border-radius: 6px;
 }
 
 .specifications-section .data-value {
-    background: white;
-    border: 1px solid #c4b5fd;
+    background: #0f172a;
+    border: 1px solid #3b82f6;
 }
 
 .specifications-list {
@@ -531,17 +537,17 @@
 
 .specifications-list dt {
     font-weight: 600;
-    color: #6b21a8;
+    color: #93c5fd;
 }
 
 .specifications-list dd {
     margin: 0;
-    color: #1f2937;
+    color: #cbd5e1;
 }
 
 .specifications-content {
-    background: #1f2937;
-    color: #f9fafb;
+    background: #0f172a;
+    color: #cbd5e1;
     padding: 1rem;
     border-radius: 6px;
     overflow-x: auto;
@@ -552,14 +558,14 @@
 /* Options Section */
 .options-section {
     padding: 1.25rem;
-    background: #f0f9ff;
-    border-left: 4px solid #0ea5e9;
+    background: #1e3a8a;
+    border-left: 4px solid #3b82f6;
     border-radius: 6px;
 }
 
 .options-section .data-value {
-    background: white;
-    border: 1px solid #bae6fd;
+    background: #0f172a;
+    border: 1px solid #3b82f6;
 }
 
 .configurable-options-content {
@@ -570,7 +576,7 @@
 
 .option-group {
     padding-bottom: 1rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #334155;
 }
 
 .option-group:last-child {
@@ -581,7 +587,7 @@
 .option-group strong {
     display: block;
     margin-bottom: 0.75rem;
-    color: #0c4a6e;
+    color: #93c5fd;
     font-size: 1rem;
 }
 
@@ -596,10 +602,10 @@
 
 .option-list li {
     padding: 0.5rem 1rem;
-    background: #e0f2fe;
-    border: 1px solid #7dd3fc;
+    background: #1e3a8a;
+    border: 1px solid #3b82f6;
     border-radius: 4px;
-    color: #0c4a6e;
+    color: #93c5fd;
     font-size: 0.875rem;
 }
 
@@ -612,7 +618,7 @@
 
 .category-list li {
     padding: 0.5rem;
-    background: #f9fafb;
+    background: #1e293b;
     border-radius: 4px;
     margin-bottom: 0.5rem;
 }
@@ -623,7 +629,7 @@
     gap: 1rem;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 2px solid #e5e7eb;
+    border-top: 2px solid #334155;
 }
 
 .review-actions .btn {
@@ -638,12 +644,12 @@
 }
 
 .review-actions .btn-primary {
-    background: #6d28d9;
+    background: #3b82f6;
     color: white;
 }
 
 .review-actions .btn-primary:hover {
-    background: #7c3aed;
+    background: #2563eb;
 }
 
 .review-actions .btn-secondary {
@@ -661,7 +667,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #6d28d9;
+    background: #3b82f6;
     color: white;
     text-decoration: none;
     border-radius: 6px;
@@ -671,11 +677,11 @@
 }
 
 .clan-product-link:hover {
-    background: #7c3aed;
+    background: #2563eb;
     color: white;
     text-decoration: none;
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(109, 40, 217, 0.3);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 .clan-product-link i {
@@ -690,8 +696,8 @@
 }
 
 .alert-error {
-    background: #fef2f2;
-    border: 1px solid #fca5a5;
-    color: #991b1b;
+    background: #7f1d1d;
+    border: 1px solid #ef4444;
+    color: #fca5a5;
 }
 
