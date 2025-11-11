@@ -307,6 +307,110 @@
                 </div>
             </div>
 
+            <!-- Product Type Identifiers (Moved Below Description) -->
+            {% if product_data.product_type_data %}
+            {% set type_data = product_data.product_type_data %}
+            {% set product_level = product_data.get('product_level', 'classic') %}
+            <div class="data-section">
+                <h3 class="section-header-with-level">
+                    <span class="section-title">Product Type Identifiers</span>
+                    <span class="product-level-indicator">
+                        <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
+                              title="Standard quality products made to traditional standards">Classic</span>
+                        <span class="level-separator">|</span>
+                        <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
+                              title="Premium quality products with enhanced features and materials">Luxury</span>
+                        <span class="level-separator">|</span>
+                        <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
+                              title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
+                    </span>
+                </h3>
+                <div class="data-grid">
+                    {% if type_data.core_type %}
+                    <div class="data-item">
+                        <label>Core Type:</label>
+                        <div class="data-value has-data">
+                            <strong>{{ type_data.core_type|replace('_', ' ')|title }}</strong>
+                            {% if type_data.subtype %}
+                            <span class="type-subtype">({{ type_data.subtype|replace('_', ' ')|title }})</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.confidence is defined %}
+                    <div class="data-item">
+                        <label>Confidence:</label>
+                        <div class="data-value">
+                            {{ "%.0f"|format(type_data.confidence * 100) }}%
+                            <span class="confidence-badge {% if type_data.confidence >= 0.7 %}high{% elif type_data.confidence >= 0.5 %}medium{% else %}low{% endif %}">
+                                {% if type_data.confidence >= 0.7 %}✓ High{% elif type_data.confidence >= 0.5 %}⚠ Medium{% else %}✗ Low{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.parsing_method %}
+                    <div class="data-item">
+                        <label>Parsing Method:</label>
+                        <div class="data-value">{{ type_data.parsing_method|title }}</div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.materials %}
+                    <div class="data-item">
+                        <label>Materials:</label>
+                        <div class="data-value">
+                            {{ type_data.materials|join(', ')|replace('_', ' ')|title }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.patterns %}
+                    <div class="data-item">
+                        <label>Patterns:</label>
+                        <div class="data-value">
+                            {{ type_data.patterns|join(', ')|replace('_', ' ')|title }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.decorations %}
+                    <div class="data-item">
+                        <label>Decorations:</label>
+                        <div class="data-value">
+                            {{ type_data.decorations|join(', ')|replace('_', ' ')|title }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.occasions %}
+                    <div class="data-item">
+                        <label>Occasions:</label>
+                        <div class="data-value">
+                            {{ type_data.occasions|join(', ')|replace('_', ' ')|title }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.styles %}
+                    <div class="data-item">
+                        <label>Styles:</label>
+                        <div class="data-value">
+                            {{ type_data.styles|join(', ')|replace('_', ' ')|title }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.disambiguation %}
+                    <div class="data-item">
+                        <label>Product Form:</label>
+                        <div class="data-value">
+                            {% set form = type_data.disambiguation.product_form %}
+                            {% if form %}{{ form|replace('_', ' ')|title }}{% else %}N/A{% endif %}
+                            {% if type_data.disambiguation.is_accessory %}<span class="type-badge">Accessory</span>{% endif %}
+                            {% if type_data.disambiguation.is_jewelry %}<span class="type-badge">Jewelry</span>{% endif %}
+                            {% if type_data.disambiguation.is_artwork %}<span class="type-badge">Artwork</span>{% endif %}
+                            {% if type_data.disambiguation.is_clothing %}<span class="type-badge">Clothing</span>{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Supplier/Producer Information -->
             <div class="data-section">
                 <h3>Supplier/Producer Information</h3>
