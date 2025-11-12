@@ -7279,3 +7279,144 @@ NameError: name 'redirect' is not defined
 2025-11-12 20:35:04,740 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
 2025-11-12 20:35:04,741 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
 2025-11-12 20:35:04,741 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,785 - config.database - INFO - Database connection established
+2025-11-12 20:45:05,818 - config.database - INFO - Database connection established
+2025-11-12 20:45:05,826 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "GET /tags/browser?category=product_form&tag=artwork HTTP/1.1" 200 -
+2025-11-12 20:45:05,867 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,869 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,870 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,871 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,871 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,872 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,872 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,873 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:05,874 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:05] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,246 - config.database - INFO - Database connection established
+2025-11-12 20:45:22,314 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "GET /tags/browser HTTP/1.1" 200 -
+2025-11-12 20:45:22,318 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,367 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,373 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,374 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,374 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,374 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,375 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,375 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,376 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:22,378 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:22] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,790 - config.database - INFO - Database connection established
+2025-11-12 20:45:23,826 - config.database - INFO - Database connection established
+2025-11-12 20:45:23,842 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "GET /tags/browser?category=product_form&tag=clothing HTTP/1.1" 200 -
+2025-11-12 20:45:23,886 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,890 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,890 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,891 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,892 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,893 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,893 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,894 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:45:23,894 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:45:23] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,787 - config.database - INFO - Database connection established
+2025-11-12 20:46:16,819 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "GET /tags/browser HTTP/1.1" 200 -
+2025-11-12 20:46:16,822 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,870 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,874 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,875 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,875 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,876 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,876 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,876 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,877 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:46:16,878 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:16] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,562 - config.database - INFO - Database connection established
+2025-11-12 20:46:44,616 - config.database - INFO - Database connection established
+2025-11-12 20:46:44,638 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "GET /tags/browser?category=product_form&tag=accessory HTTP/1.1" 200 -
+2025-11-12 20:46:44,706 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,714 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,715 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,717 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,718 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,718 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,719 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,720 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:46:44,722 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:46:44] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:50:15,922 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/redistribute_accessories.py', reloading
+2025-11-12 20:50:16,153 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 20:50:16,429 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 20:50:16,447 - config.database - INFO - Database connection established
+2025-11-12 20:50:16,450 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 20:50:16,450 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 20:50:16,450 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 20:50:16,450 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 20:50:16,450 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 20:50:16,451 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 20:50:16,451 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 20:50:17,229 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 20:50:17,235 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 20:50:17,242 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 20:50:17,264 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 20:50:17,274 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 20:54:33,295 - config.database - INFO - Database connection established
+2025-11-12 20:54:33,365 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "GET /tags/browser HTTP/1.1" 200 -
+2025-11-12 20:54:33,369 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,427 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,429 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,431 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,432 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,432 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,432 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,433 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,434 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:33,434 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:33] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,391 - config.database - INFO - Database connection established
+2025-11-12 20:54:35,462 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "GET /tags/browser HTTP/1.1" 200 -
+2025-11-12 20:54:35,470 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "GET /static/css/tags/browser.css HTTP/1.1" 200 -
+2025-11-12 20:54:35,532 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,534 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,535 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,536 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,536 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,537 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,538 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,538 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:35,539 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:35] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,406 - config.database - INFO - Database connection established
+2025-11-12 20:54:45,436 - config.database - INFO - Database connection established
+2025-11-12 20:54:45,448 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "GET /tags/browser?category=product_form&tag=pets HTTP/1.1" 200 -
+2025-11-12 20:54:45,451 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,501 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,504 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,505 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,506 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,506 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,506 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,507 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,509 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:54:45,510 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:54:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,863 - config.database - INFO - Database connection established
+2025-11-12 20:57:14,921 - config.database - INFO - Database connection established
+2025-11-12 20:57:14,931 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "GET /tags/browser?category=core_type&tag=button HTTP/1.1" 200 -
+2025-11-12 20:57:14,983 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,986 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,986 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,986 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,987 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,988 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,990 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,992 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 20:57:14,994 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:57:14] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:57:24,133 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/normalize_core_types.py', reloading
+2025-11-12 20:57:24,398 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 20:57:24,696 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 20:57:24,715 - config.database - INFO - Database connection established
+2025-11-12 20:57:24,717 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 20:57:24,718 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 20:57:24,718 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 20:57:24,718 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 20:57:24,718 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 20:57:24,718 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 20:57:24,718 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 20:57:25,539 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 20:57:25,545 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 20:57:25,553 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 20:57:25,573 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 20:57:25,584 - werkzeug - INFO -  * Debugger PIN: 263-852-041

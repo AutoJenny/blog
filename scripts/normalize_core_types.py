@@ -12,6 +12,7 @@ from config.database import db_manager
 import json
 import re
 import logging
+from collections import defaultdict
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
