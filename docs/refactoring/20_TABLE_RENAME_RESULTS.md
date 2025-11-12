@@ -48,3 +48,4 @@ The table rename test confirms:
 **Recommendation**: The `image_archive` table can remain as-is for historical reference, or can be dropped after a verification period.
 
 
+
