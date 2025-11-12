@@ -12,27 +12,130 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('product_browser', __name__, url_prefix='/products')
 
+def get_category_breadcrumbs(category_id):
+    """Build breadcrumb trail from category hierarchy"""
+    if not category_id:
+        return []
+    
+    with db_manager.get_cursor() as cursor:
+        breadcrumbs = []
+        current_id = category_id
+        
+        # Walk up the hierarchy
+        while current_id:
+            cursor.execute("""
+                SELECT id, name, parent_id, level
+                FROM clan_categories
+                WHERE id = %s
+            """, (current_id,))
+            
+            cat = cursor.fetchone()
+            if not cat:
+                break
+            
+            breadcrumbs.insert(0, {
+                'id': cat['id'],
+                'name': cat['name'],
+                'level': cat.get('level', 0)
+            })
+            
+            current_id = cat.get('parent_id')
+        
+        # Filter out root/system categories (level 0-1 typically)
+        breadcrumbs = [b for b in breadcrumbs if b.get('level', 0) >= 2]
+        
+        return breadcrumbs
+
+def get_product_category_routes(product_id):
+    """
+    Get all category routes for a product.
+    Returns primary route (longest/deepest) and other routes.
+    """
+    with db_manager.get_cursor() as cursor:
+        # Get product's category IDs
+        cursor.execute("""
+            SELECT category_ids FROM clan_products WHERE id = %s
+        """, (product_id,))
+        
+        product = cursor.fetchone()
+        if not product or not product.get('category_ids'):
+            return {'primary': [], 'others': []}
+        
+        category_ids = product['category_ids']
+        if not isinstance(category_ids, list):
+            return {'primary': [], 'others': []}
+        
+        # Build breadcrumbs for each category
+        routes = []
+        for cat_id in category_ids:
+            breadcrumbs = get_category_breadcrumbs(cat_id)
+            if breadcrumbs:
+                routes.append(breadcrumbs)
+        
+        if not routes:
+            return {'primary': [], 'others': []}
+        
+        # Primary route is the longest/deepest
+        primary = max(routes, key=len)
+        others = [r for r in routes if r != primary]
+        
+        return {'primary': primary, 'others': others}
+
 @bp.route('/browser')
 def browser():
     """Product Browser main page"""
     product_id = request.args.get('product_id', type=int)
+    category_id = request.args.get('category_id', type=int)
+    
     product_data = None
     validation = None
+    category_routes = None
     
     if product_id:
         try:
             extractor = ClanDataExtractor()
             product_data = extractor.extract_product_data(product_id)
             validation = extractor.validate_data_completeness(product_data)
+            category_routes = get_product_category_routes(product_id)
         except Exception as e:
             logger.error(f"Error loading product {product_id}: {e}")
             return render_template('products/browser.html',
                                  error=f"Error loading product: {str(e)}")
     
+    # If viewing by category, get category data
+    category_data = None
+    category_products = []
+    if category_id and not product_id:
+        try:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, name, parent_id, level, description
+                    FROM clan_categories
+                    WHERE id = %s
+                """, (category_id,))
+                category_data = cursor.fetchone()
+                
+                if category_data:
+                    # Get products in this category
+                    cursor.execute("""
+                        SELECT id, name, sku
+                        FROM clan_products
+                        WHERE category_ids::text LIKE %s
+                        ORDER BY name
+                        LIMIT 50
+                    """, (f'%"%{category_id}%"%',))
+                    category_products = cursor.fetchall()
+        except Exception as e:
+            logger.error(f"Error loading category {category_id}: {e}")
+    
     return render_template('products/browser.html',
                          product_data=product_data,
                          validation=validation,
-                         current_product_id=product_id)
+                         category_routes=category_routes,
+                         category_data=category_data,
+                         category_products=category_products,
+                         current_product_id=product_id,
+                         current_category_id=category_id)
 
 @bp.route('/api/list')
 def api_list():
