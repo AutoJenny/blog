@@ -8,6 +8,7 @@ import json
 import logging
 import hashlib
 import os
+import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import psycopg
@@ -471,10 +472,14 @@ class ClanKBCache:
             stats['categories_stored'] = self.store_categories(categories)
             
             # Fetch and store articles for each category
-            for category in categories:
+            for i, category in enumerate(categories):
                 category_id = int(category.get('category_id', 0))
                 if not category_id:
                     continue
+                
+                # Rate limiting: Add delay between requests to avoid HTTP 429
+                if i > 0:
+                    time.sleep(0.5)  # 500ms delay between category requests
                 
                 try:
                     articles = self.fetch_articles(category_id)
