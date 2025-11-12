@@ -12,17 +12,34 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('tag_browser', __name__, url_prefix='/tags')
 
-def extract_all_tags():
+def extract_all_tags(product_form_filter=None):
     """
     Extract all unique tags from product_type_data, organized by category.
-    Returns dictionary with category -> list of tags with counts.
+    If product_form_filter is provided, only extract core_types for that form.
+    
+    Args:
+        product_form_filter: Optional product form to filter core types by
+        
+    Returns:
+        Dictionary with category -> list of tags with counts.
     """
     with db_manager.get_cursor() as cursor:
-        cursor.execute("""
-            SELECT product_type_data
-            FROM clan_products
-            WHERE product_type_data IS NOT NULL
-        """)
+        # Build query with optional product_form filter
+        if product_form_filter:
+            query = """
+                SELECT product_type_data
+                FROM clan_products
+                WHERE product_type_data IS NOT NULL
+                  AND product_type_data->'disambiguation'->>'product_form' = %s
+            """
+            cursor.execute(query, (product_form_filter,))
+        else:
+            query = """
+                SELECT product_type_data
+                FROM clan_products
+                WHERE product_type_data IS NOT NULL
+            """
+            cursor.execute(query)
         
         products = cursor.fetchall()
         
@@ -60,6 +77,7 @@ def extract_all_tags():
                 tags['identity_classification']['subtype'][subtype] = \
                     tags['identity_classification']['subtype'].get(subtype, 0) + 1
             
+            # Always extract product_form (to show all forms even when filtering)
             if type_data.get('disambiguation') and isinstance(type_data['disambiguation'], dict):
                 product_form = type_data['disambiguation'].get('product_form')
                 if product_form:
@@ -182,19 +200,22 @@ def browser():
     """Tag Browser main page"""
     tag_category = request.args.get('category')  # e.g., 'materials', 'core_type'
     tag_name = request.args.get('tag')  # e.g., 'pewter', 'kilt'
+    product_form_filter = request.args.get('product_form')  # Filter core types by product form
     
-    # Extract all tags
-    all_tags = extract_all_tags()
+    # Extract all tags (with optional product_form filter for core types)
+    all_tags = extract_all_tags(product_form_filter=product_form_filter)
     
-    # If filtering by tag, get products
+    # If filtering by product_form, don't show products, just filtered core types
+    # If filtering by other tag, get products
     products = []
-    if tag_category and tag_name:
+    if tag_category and tag_name and tag_category != 'product_form':
         products = get_products_by_tag(tag_category, tag_name)
     
     return render_template('tags/browser.html',
                          all_tags=all_tags,
                          selected_category=tag_category,
                          selected_tag=tag_name,
+                         product_form_filter=product_form_filter,
                          products=products)
 
 @bp.route('/api/products')

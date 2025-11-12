@@ -140,6 +140,119 @@
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
 }
 
+.tag-item-active {
+    background: #8b5cf6 !important;
+    border-color: #a78bfa !important;
+    color: #ffffff !important;
+}
+
+.tag-item-active:hover {
+    background: #a78bfa !important;
+    border-color: #c4b5fd !important;
+}
+
+/* Product Form Tags - Different styling to show different functionality */
+.product-form-subcategory {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #334155;
+}
+
+.product-form-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.product-form-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    padding: 6px 12px;
+    text-decoration: none;
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.product-form-tag:hover {
+    background: #1e293b;
+    border-color: #64748b;
+    color: #f1f5f9;
+    transform: translateY(-1px);
+}
+
+.product-form-tag-active {
+    background: #8b5cf6 !important;
+    border-color: #a78bfa !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.product-form-tag-active:hover {
+    background: #a78bfa !important;
+    border-color: #c4b5fd !important;
+    color: #ffffff !important;
+}
+
+.product-form-tag-name {
+    text-transform: capitalize;
+}
+
+.product-form-tag-count {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.product-form-tag-active .product-form-tag-count {
+    color: #e9d5ff;
+}
+
+.filter-indicator {
+    margin-top: 12px;
+    padding: 12px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+}
+
+.clear-filter-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #8b5cf6;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.clear-filter-link:hover {
+    color: #a78bfa;
+}
+
+.filter-badge {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.no-results-message {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    font-style: italic;
+    margin-top: 12px;
+    padding: 12px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+}
+
 .tag-name {
     font-weight: 500;
 }
