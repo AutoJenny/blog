@@ -180,7 +180,7 @@ def get_article_data(article_id):
                 short_text, text, meta_title, meta_keywords, meta_description,
                 is_active, user_id, user_name, votes_sum, votes_num, rating,
                 position, clan_created_at, clan_updated_at,
-                first_seen_at, last_updated, last_content_change_at
+                first_seen_at, last_updated, last_content_change_at, embedded_images
             FROM clan_kb_articles
             WHERE id = %s
         """, (article_id,))

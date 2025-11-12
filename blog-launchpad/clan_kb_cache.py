@@ -9,12 +9,14 @@ import logging
 import hashlib
 import os
 import time
+import re
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import psycopg
 from psycopg.rows import dict_row
 import requests
 from pathlib import Path
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +66,48 @@ class ClanKBCache:
                 logger.warning("KB tables do not exist. Please run migration: migrations/create_clan_kb_tables.sql")
             
             conn.commit()
+    
+    def _extract_embedded_images(self, html_content: str) -> List[str]:
+        """
+        Extract image URLs from HTML content.
+        
+        Args:
+            html_content: HTML content from article text field
+            
+        Returns:
+            List of image URLs (only HTTP/HTTPS URLs, excludes template placeholders)
+        """
+        if not html_content:
+            return []
+        
+        image_urls = []
+        
+        try:
+            soup = BeautifulSoup(html_content, 'html.parser')
+            images = soup.find_all('img')
+            
+            for img in images:
+                src = img.get('src', '')
+                if src and src.startswith('http'):
+                    # Only include actual HTTP/HTTPS URLs, not template placeholders
+                    image_urls.append(src)
+            
+            # Also check for image URLs in text (not just img tags)
+            url_pattern = r'https?://[^\s<>"]+\.(jpg|jpeg|png|gif|webp|svg)'
+            text_urls = re.findall(url_pattern, html_content, re.IGNORECASE)
+            # Note: re.findall returns tuples for groups, so we need to reconstruct URLs
+            # Let's use a better pattern
+            url_pattern_full = r'https?://[^\s<>"]+\.(?:jpg|jpeg|png|gif|webp|svg)'
+            text_urls = re.findall(url_pattern_full, html_content, re.IGNORECASE)
+            
+            # Combine and deduplicate
+            all_urls = list(set(image_urls + text_urls))
+            
+            return all_urls
+            
+        except Exception as e:
+            logger.warning(f"Error extracting embedded images: {e}")
+            return []
     
     def _build_article_hash(self, fields: Dict) -> str:
         """
@@ -341,6 +385,9 @@ class ClanKBCache:
                 except:
                     pass
             
+            # Extract embedded images from HTML content
+            embedded_images = self._extract_embedded_images(text)
+            
             # Build content hash
             content_fields = {
                 'name': name,
@@ -376,15 +423,17 @@ class ClanKBCache:
                     logger.info(f"Article {article_id} content changed")
                 
                 # Insert or update article
+                embedded_images_json = json.dumps(embedded_images)
+                
                 cursor.execute("""
                     INSERT INTO clan_kb_articles (
                         id, category_id, name, url_key, feature_image, feature_image_local,
                         short_text, text, meta_title, meta_keywords, meta_description,
                         is_active, user_id, user_name, votes_sum, votes_num, rating,
                         position, clan_created_at, clan_updated_at,
-                        article_content_hash, last_content_change_at
+                        article_content_hash, last_content_change_at, embedded_images
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO UPDATE SET
                         category_id = EXCLUDED.category_id,
                         name = EXCLUDED.name,
@@ -407,6 +456,7 @@ class ClanKBCache:
                         clan_updated_at = COALESCE(EXCLUDED.clan_updated_at, clan_kb_articles.clan_updated_at),
                         article_content_hash = EXCLUDED.article_content_hash,
                         last_content_change_at = COALESCE(EXCLUDED.last_content_change_at, clan_kb_articles.last_content_change_at),
+                        embedded_images = EXCLUDED.embedded_images,
                         last_updated = CURRENT_TIMESTAMP
                 """, (
                     article_id,
@@ -430,7 +480,8 @@ class ClanKBCache:
                     clan_created_at,
                     clan_updated_at,
                     article_hash,
-                    last_content_change_at
+                    last_content_change_at,
+                    embedded_images_json
                 ))
                 
                 conn.commit()
