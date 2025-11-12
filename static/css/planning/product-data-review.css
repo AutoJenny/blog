@@ -34,6 +34,12 @@ body {
     margin-bottom: 2rem;
 }
 
+/* When only one panel (Core Data only), make it full width */
+.intro-panel-container:has(.core-data-panel:only-child),
+.intro-panel-container:has(.completeness-panel:only-child) {
+    grid-template-columns: 1fr;
+}
+
 .intro-panel {
     background: #1e293b;
     border: 1px solid #334155;
@@ -95,6 +101,23 @@ body {
 /* Core Data Panel (Right) */
 .core-data-panel {
     /* Inherits from .intro-panel */
+    padding-right: 220px; /* Space for right-aligned product image (200px + 20px margin) */
+    min-height: 200px; /* Ensure minimum height for image positioning */
+}
+
+/* Product title in Core Data panel */
+.product-title-header {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+/* Product image inline in Core Data panel */
+.product-image-inline {
+    z-index: 1;
+}
+
+.product-main-image-inline {
+    max-width: 200px;
 }
 
 .data-grid-compact {
