@@ -243,6 +243,19 @@
                             </div>
                         {% endif %}
                         
+                        {% if article_data.embedded_images %}
+                            <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #334155;">
+                                <h3 style="color: #f1f5f9; font-size: 1.1rem; margin-bottom: 1rem;">Embedded Images</h3>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                                    {% for img_url in article_data.embedded_images %}
+                                        <div style="border: 1px solid #334155; border-radius: 6px; overflow: hidden;">
+                                            <img src="{{ img_url }}" alt="Article image" style="width: 100%; height: auto; display: block;" onerror="this.style.display='none';">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
                         {% if article_data.text %}
                             <div class="article-content">
                                 {{ article_data.text_cleaned|safe if article_data.text_cleaned else article_data.text|safe }}
@@ -505,6 +518,18 @@ function displayArticle(article) {
             ${article.short_text ? `
                 <div class="article-content" style="font-style: italic; color: #94a3b8; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #334155;">
                     ${article.short_text_cleaned || article.short_text}
+                </div>
+            ` : ''}
+            ${article.embedded_images && article.embedded_images.length > 0 ? `
+                <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #334155;">
+                    <h3 style="color: #f1f5f9; font-size: 1.1rem; margin-bottom: 1rem;">Embedded Images</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                        ${article.embedded_images.map(imgUrl => `
+                            <div style="border: 1px solid #334155; border-radius: 6px; overflow: hidden;">
+                                <img src="${escapeHtml(imgUrl)}" alt="Article image" style="width: 100%; height: auto; display: block;" onerror="this.style.display='none';">
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             ` : ''}
             ${article.text ? `
