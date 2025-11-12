@@ -1,0 +1,707 @@
+{% extends "base.html" %}
+
+{% block title %}Product Browser - BlogForge{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/product-data-review.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/content-generator-modal.css') }}">
+<style>
+    /* Ensure search inputs are visible in Product Browser */
+    .content-generator-input,
+    .content-generator-select {
+        background: #1e293b !important;
+        border: 1px solid #475569 !important;
+        color: #f1f5f9 !important;
+    }
+    
+    .content-generator-input::placeholder {
+        color: #94a3b8 !important;
+    }
+    
+    .content-generator-input:focus,
+    .content-generator-select:focus {
+        outline: none;
+        border-color: #8b5cf6 !important;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1) !important;
+    }
+    
+    .content-generator-label {
+        color: #cbd5e1 !important;
+    }
+    
+    .content-generator-section {
+        background: #0f172a !important;
+        border: 1px solid #334155 !important;
+    }
+    
+    /* Search results styling */
+    .search-results {
+        background: #1e293b !important;
+        border: 1px solid #475569 !important;
+        border-radius: 6px !important;
+        margin-top: 8px !important;
+        max-height: 300px !important;
+        overflow-y: auto !important;
+    }
+    
+    .search-results-list {
+        padding: 4px !important;
+    }
+    
+    .search-result-item {
+        padding: 8px !important;
+        border-bottom: 1px solid #334155 !important;
+        cursor: pointer !important;
+        transition: background 0.2s !important;
+    }
+    
+    .search-result-item:hover {
+        background: #334155 !important;
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none !important;
+    }
+    
+    .search-result-sku {
+        color: #94a3b8 !important;
+        font-size: 0.875rem !important;
+    }
+    
+    .search-no-results,
+    .search-error {
+        padding: 12px !important;
+        text-align: center !important;
+    }
+    
+    /* Accordion Styles */
+    .accordion-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .accordion-header {
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        margin: 0;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        transition: all 0.2s;
+        color: #f1f5f9;
+        font-size: 1.1rem;
+    }
+    
+    .accordion-header:hover {
+        background: #334155;
+        border-color: #475569;
+    }
+    
+    .accordion-icon {
+        transition: transform 0.3s;
+        font-size: 0.875rem;
+        color: #8b5cf6;
+    }
+    
+    .accordion-section[data-accordion-state="closed"] .accordion-icon {
+        transform: rotate(-90deg);
+    }
+    
+    .accordion-preview {
+        display: none;
+        padding: 0.75rem 1rem;
+        background: #0f172a;
+        border-left: 1px solid #334155;
+        border-right: 1px solid #334155;
+        border-bottom: 1px solid #334155;
+        border-radius: 0 0 8px 8px;
+        color: #cbd5e1;
+        font-size: 0.875rem;
+    }
+    
+    .accordion-section[data-accordion-state="closed"] .accordion-preview {
+        display: block;
+    }
+    
+    .accordion-content {
+        padding: 1.25rem;
+        background: #1e293b;
+        border-left: 1px solid #334155;
+        border-right: 1px solid #334155;
+        border-bottom: 1px solid #334155;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .accordion-section[data-accordion-state="closed"] .accordion-content {
+        display: none;
+    }
+    
+    .accordion-preview .data-item-compact:first-child,
+    .accordion-preview .data-item:first-child,
+    .accordion-preview .data-grid-compact > *:first-child,
+    .accordion-preview .data-grid > *:first-child {
+        margin-bottom: 0;
+    }
+    
+    .accordion-preview .data-value-compact,
+    .accordion-preview .data-value {
+        background: transparent;
+        border: none;
+        padding: 0.25rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-main">
+        <div class="product-data-review-main">
+            <div class="review-header">
+                <h2>Product Browser</h2>
+                <p>Browse and review CLAN product data</p>
+            </div>
+
+            <!-- Select Source Component -->
+            <div class="browser-source-section">
+                {% include 'includes/select_source_component.html' %}
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="browser-navigation" style="margin: 2rem 0;">
+                <div class="nav-controls" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px;">
+                    <button id="prev-product" class="btn btn-secondary" disabled style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #475569; background: #334155; color: #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <div class="nav-info" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 0;">
+                        <span id="current-product-info" style="color: #f1f5f9; font-weight: 600; text-align: center;">Select a product to browse</span>
+                        <div class="nav-mode-toggle" style="display: flex; gap: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; color: #cbd5e1; cursor: pointer; font-size: 0.875rem;">
+                                <input type="radio" name="nav-mode" value="id" checked> By ID
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; color: #cbd5e1; cursor: pointer; font-size: 0.875rem;">
+                                <input type="radio" name="nav-mode" value="name"> A-Z
+                            </label>
+                        </div>
+                    </div>
+                    <button id="next-product" class="btn btn-secondary" disabled style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #475569; background: #334155; color: #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product Data Display -->
+            <div id="product-display-container">
+                {% if product_data %}
+                    {% include 'includes/product_data_display.html' %}
+                {% else %}
+                    <div class="no-product-selected">
+                        <p>Select a product from the search above to view its details.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Product Browser Navigation
+let currentProductId = null;
+let allProductIds = [];
+let allProductNames = [];
+let currentIndex = -1;
+let navMode = 'id'; // 'id' or 'name'
+
+// Load product list on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we have a product_id in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const productIdParam = urlParams.get('product_id');
+    
+    loadProductList();
+    setupNavigation();
+    setupSourceSelection();
+    initializeProductSearch();
+    
+    // If product_id in URL, load it after products are loaded
+    if (productIdParam) {
+        const checkAndLoad = () => {
+            if (allProductIds.length > 0) {
+                const productId = parseInt(productIdParam);
+                if (productId && allProductIds.includes(productId)) {
+                    currentProductId = productId;
+                    updateCurrentIndex();
+                    updateNavigationState();
+                }
+            } else {
+                setTimeout(checkAndLoad, 100);
+            }
+        };
+        setTimeout(checkAndLoad, 100);
+    }
+});
+
+// Initialize product search functionality
+function initializeProductSearch() {
+    // Product search - attach event listener
+    const productSearch = document.getElementById('content-generator-product-search');
+    if (productSearch) {
+        let searchTimeout;
+        productSearch.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            if (query.length >= 2) {
+                searchTimeout = setTimeout(() => {
+                    searchProducts(query);
+                }, 300);
+            } else {
+                // Clear results if query is too short
+                const resultsDiv = document.getElementById('content-generator-product-search-results');
+                if (resultsDiv) resultsDiv.innerHTML = '';
+            }
+        });
+        
+        // Also add a keypress handler for Enter key
+        productSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+                if (query.length >= 2) {
+                    searchProducts(query);
+                }
+            }
+        });
+    }
+    
+    // Smart search (semantic) - attach event listener
+    const smartSearch = document.getElementById('content-generator-product-smart-search');
+    if (smartSearch) {
+        let smartSearchTimeout;
+        smartSearch.addEventListener('input', (e) => {
+            clearTimeout(smartSearchTimeout);
+            const query = e.target.value.trim();
+            if (query.length >= 3) {
+                smartSearchTimeout = setTimeout(() => {
+                    searchProductsSemantic(query);
+                }, 500);
+            } else {
+                const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+                if (resultsDiv) resultsDiv.innerHTML = '';
+            }
+        });
+        
+        smartSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(smartSearchTimeout);
+                const query = e.target.value.trim();
+                if (query.length >= 3) {
+                    searchProductsSemantic(query);
+                }
+            }
+        });
+    }
+}
+
+// Search products function
+async function searchProducts(query) {
+    try {
+        const response = await fetch(`/products/api/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        const resultsDiv = document.getElementById('content-generator-product-search-results');
+        if (!resultsDiv) return;
+        
+        if (data.success && data.products && data.products.length > 0) {
+            let html = '<div class="search-results-list">';
+            data.products.slice(0, 10).forEach(product => {
+                html += `
+                    <div class="search-result-item" data-product-id="${product.id}" onclick="selectProduct(${product.id}, '${product.name.replace(/'/g, "\\'")}')">
+                        <strong>${product.name}</strong>
+                        ${product.sku ? `<span class="search-result-sku">SKU: ${product.sku}</span>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        } else {
+            resultsDiv.innerHTML = '<div class="search-no-results">No products found</div>';
+        }
+    } catch (error) {
+        console.error('Error searching products:', error);
+        const resultsDiv = document.getElementById('content-generator-product-search-results');
+        if (resultsDiv) resultsDiv.innerHTML = '<div class="search-error">Error searching products</div>';
+    }
+}
+
+// Semantic search function
+async function searchProductsSemantic(query) {
+    try {
+        const response = await fetch('/api/products/semantic-search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: query })
+        });
+        const data = await response.json();
+        
+        const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+        if (!resultsDiv) return;
+        
+        if (data.success && data.results && data.results.length > 0) {
+            let html = '<div class="search-results-list">';
+            data.results.slice(0, 10).forEach(product => {
+                const escapedName = (product.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                html += `
+                    <div class="search-result-item" data-product-id="${product.id}" onclick="selectProduct(${product.id}, '${escapedName}')" style="cursor: pointer; padding: 8px; border-bottom: 1px solid #334155;">
+                        <strong style="color: #f1f5f9;">${product.name || 'Unnamed Product'}</strong>
+                        ${product.sku ? `<br><small style="color: #94a3b8;">SKU: ${product.sku}</small>` : ''}
+                        ${product.relevance_score ? `<br><small style="color: #8b5cf6;">Relevance: ${(product.relevance_score * 100).toFixed(0)}%</small>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        } else {
+            resultsDiv.innerHTML = '<div class="search-no-results" style="color: #94a3b8; padding: 8px;">No products found</div>';
+        }
+    } catch (error) {
+        console.error('Error in semantic product search:', error);
+        const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+        if (resultsDiv) resultsDiv.innerHTML = '<div class="search-error" style="color: #ef4444; padding: 8px;">Error searching products</div>';
+    }
+}
+
+// Select product function
+function selectProduct(productId, productName) {
+    currentProductId = productId;
+    updateCurrentIndex();
+    updateNavigationState();
+    loadProduct(productId);
+    
+    // Clear search results
+    document.getElementById('content-generator-product-search-results').innerHTML = '';
+    document.getElementById('content-generator-product-search').value = '';
+    document.getElementById('content-generator-product-smart-search-results').innerHTML = '';
+    document.getElementById('content-generator-product-smart-search').value = '';
+}
+
+function loadProductList() {
+    fetch('/products/api/list')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                allProductIds = data.products.map(p => p.id).sort((a, b) => a - b);
+                allProductNames = data.products
+                    .map(p => ({ id: p.id, name: p.name || 'Unnamed Product' }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
+                
+                // If we have a current product ID, update index
+                if (currentProductId) {
+                    updateCurrentIndex();
+                }
+                updateNavigationState();
+            }
+        })
+        .catch(error => console.error('Error loading products:', error));
+}
+
+function setupNavigation() {
+    const prevBtn = document.getElementById('prev-product');
+    const nextBtn = document.getElementById('next-product');
+    const modeRadios = document.querySelectorAll('input[name="nav-mode"]');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateProduct(-1);
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateProduct(1);
+        });
+    }
+
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            navMode = e.target.value;
+            if (currentProductId) {
+                updateCurrentIndex();
+                updateNavigationState();
+            }
+        });
+    });
+}
+
+function setupSourceSelection() {
+    // When a product is selected from the search, load it
+    const selectedProductDiv = document.getElementById('content-generator-selected-product');
+    if (selectedProductDiv) {
+        // Listen for product selection (this would be set up by the search component)
+        // For now, we'll add a simple handler
+        document.addEventListener('productSelected', (e) => {
+            loadProduct(e.detail.productId);
+        });
+    }
+}
+
+function navigateProduct(direction) {
+    // Wait for product list to be loaded
+    if (allProductIds.length === 0) {
+        console.log('Product list not loaded yet');
+        return;
+    }
+
+    const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
+    
+    // If no product selected yet, start at first/last
+    if (currentIndex === -1) {
+        currentIndex = direction === 1 ? 0 : list.length - 1;
+    } else {
+        currentIndex += direction;
+    }
+    
+    // Clamp to valid range
+    if (currentIndex < 0) {
+        currentIndex = 0;
+    }
+    if (currentIndex >= list.length) {
+        currentIndex = list.length - 1;
+    }
+
+    const productId = list[currentIndex];
+    if (productId) {
+        loadProduct(productId);
+    }
+}
+
+function loadProduct(productId) {
+    fetch(`/products/api/${productId}/full`)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                currentProductId = productId;
+                updateCurrentIndex();
+                updateNavigationState();
+                displayProduct(data.product_data, data.validation);
+            } else {
+                alert('Error loading product: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error loading product:', error);
+            alert('Error loading product: ' + error.message);
+        });
+}
+
+function updateCurrentIndex() {
+    if (!currentProductId) {
+        currentIndex = -1;
+        return;
+    }
+
+    const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
+    const index = list.indexOf(currentProductId);
+    if (index !== -1) {
+        currentIndex = index;
+    } else {
+        currentIndex = -1;
+    }
+}
+
+function updateNavigationState() {
+    const prevBtn = document.getElementById('prev-product');
+    const nextBtn = document.getElementById('next-product');
+    const infoSpan = document.getElementById('current-product-info');
+
+    if (!prevBtn || !nextBtn || !infoSpan) return;
+
+    const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
+    const total = list.length;
+
+    if (currentIndex === -1 || total === 0) {
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        prevBtn.style.opacity = '0.5';
+        prevBtn.style.cursor = 'not-allowed';
+        nextBtn.style.opacity = '0.5';
+        nextBtn.style.cursor = 'not-allowed';
+        infoSpan.textContent = 'Select a product to browse';
+    } else {
+        const isAtStart = currentIndex === 0;
+        const isAtEnd = currentIndex >= total - 1;
+        
+        prevBtn.disabled = isAtStart;
+        nextBtn.disabled = isAtEnd;
+        prevBtn.style.opacity = isAtStart ? '0.5' : '1';
+        prevBtn.style.cursor = isAtStart ? 'not-allowed' : 'pointer';
+        nextBtn.style.opacity = isAtEnd ? '0.5' : '1';
+        nextBtn.style.cursor = isAtEnd ? 'not-allowed' : 'pointer';
+        
+        const current = navMode === 'id' 
+            ? `Product ID: ${currentProductId}`
+            : allProductNames.find(p => p.id === currentProductId)?.name || `Product ${currentProductId}`;
+        infoSpan.textContent = `${current} (${currentIndex + 1} of ${total})`;
+    }
+}
+
+function displayProduct(productData, validation) {
+    // This would render the product data using the include
+    // For now, we'll reload the page with the product ID
+    window.location.href = `/products/browser?product_id=${currentProductId}`;
+}
+
+// Accordion functionality with localStorage persistence
+function initializeAccordions() {
+    const accordionSections = document.querySelectorAll('.accordion-section');
+    
+    accordionSections.forEach(section => {
+        const accordionId = section.getAttribute('data-accordion-id');
+        const header = section.querySelector('.accordion-header');
+        const content = section.querySelector('[data-accordion-content="' + accordionId + '"]');
+        const preview = section.querySelector('[data-accordion-preview="' + accordionId + '"]');
+        
+        if (!header || !content) return;
+        
+        // Load state from localStorage (default to open)
+        const storageKey = `product-browser-accordion-${accordionId}`;
+        const savedState = localStorage.getItem(storageKey);
+        const isOpen = savedState === null ? true : savedState === 'open';
+        
+        // Set initial state
+        section.setAttribute('data-accordion-state', isOpen ? 'open' : 'closed');
+        
+        // Extract and display first data element in preview
+        if (preview && !isOpen) {
+            extractFirstDataElement(content, preview, accordionId);
+        }
+        
+        // Add click handler
+        header.addEventListener('click', () => {
+            const currentState = section.getAttribute('data-accordion-state');
+            const newState = currentState === 'open' ? 'closed' : 'open';
+            
+            section.setAttribute('data-accordion-state', newState);
+            localStorage.setItem(storageKey, newState);
+            
+            // Update preview when closing
+            if (newState === 'closed' && preview) {
+                extractFirstDataElement(content, preview, accordionId);
+            }
+        });
+    });
+}
+
+function extractFirstDataElement(content, preview, accordionId) {
+    // Find the first meaningful data element
+    let firstElement = null;
+    let labelText = '';
+    
+    // Try different selectors based on section type
+    if (accordionId === 'product-description') {
+        // For description, get first blurb or first paragraph
+        firstElement = content.querySelector('.description-blurb .blurb-text') ||
+                      content.querySelector('.description-main .main-text') ||
+                      content.querySelector('.description-bullets') ||
+                      content.querySelector('.description-content');
+    } else if (accordionId === 'product-type-identifiers') {
+        // Get first identifier group's first item with label
+        const firstDataItem = content.querySelector('.identifier-group .data-item:first-child') ||
+                             content.querySelector('.data-item:first-child');
+        if (firstDataItem) {
+            const label = firstDataItem.querySelector('label');
+            labelText = label ? label.textContent.trim() + ': ' : '';
+            firstElement = firstDataItem.querySelector('.data-value, .attribute-tags');
+        }
+    } else if (accordionId === 'supplier-producer') {
+        // Get supplier name with label
+        const firstDataItem = content.querySelector('.data-item:first-child');
+        if (firstDataItem) {
+            const label = firstDataItem.querySelector('label');
+            labelText = label ? label.textContent.trim() + ': ' : '';
+            firstElement = firstDataItem.querySelector('.data-value');
+        }
+    } else if (accordionId === 'product-categories') {
+        // Get first category
+        firstElement = content.querySelector('.category-list li:first-child');
+    } else if (accordionId === 'heritage-data') {
+        // Get first heritage item with label
+        const firstHeritageItem = content.querySelector('.heritage-item:first-child');
+        if (firstHeritageItem) {
+            const label = firstHeritageItem.querySelector('label');
+            labelText = label ? label.textContent.trim() + ': ' : '';
+            firstElement = firstHeritageItem.querySelector('.description-content, .data-value');
+        }
+    } else if (accordionId === 'data-completeness') {
+        // Get first stat item with label
+        const firstStatItem = content.querySelector('.stat-item-compact:first-child');
+        if (firstStatItem) {
+            const label = firstStatItem.querySelector('.stat-label');
+            const value = firstStatItem.querySelector('.stat-value');
+            if (label && value) {
+                preview.innerHTML = `<div style="color: #cbd5e1;"><span style="color: #94a3b8;">${label.textContent.trim()}</span> <strong>${value.textContent.trim()}</strong></div>`;
+                return;
+            }
+        }
+    }
+    
+    if (firstElement) {
+        // Extract text content
+        const text = firstElement.textContent.trim();
+        if (text) {
+            const previewText = text.substring(0, 150);
+            preview.innerHTML = `<div style="color: #cbd5e1;">${labelText ? `<span style="color: #94a3b8;">${labelText}</span>` : ''}${previewText}${text.length > 150 ? '...' : ''}</div>`;
+        } else {
+            preview.innerHTML = '<div style="color: #64748b; font-style: italic;">No preview available</div>';
+        }
+    } else {
+        preview.innerHTML = '<div style="color: #64748b; font-style: italic;">No preview available</div>';
+    }
+}
+
+// Initialize accordions when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for product data to load
+    setTimeout(() => {
+        initializeAccordions();
+    }, 100);
+    
+    // Also initialize when product is loaded dynamically
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.addedNodes.length > 0) {
+                const hasAccordions = Array.from(mutation.addedNodes).some(node => 
+                    node.nodeType === 1 && node.querySelector('.accordion-section')
+                );
+                if (hasAccordions) {
+                    setTimeout(() => {
+                        initializeAccordions();
+                    }, 50);
+                }
+            }
+        });
+    });
+    
+    const container = document.getElementById('product-display-container');
+    if (container) {
+        observer.observe(container, { childList: true, subtree: true });
+    }
+});
+</script>
+{% endblock %}
+
