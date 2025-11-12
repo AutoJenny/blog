@@ -127,11 +127,19 @@
                 <h3 class="subcategory-title">Materials</h3>
                 <div class="tag-list">
                     {% for item in all_tags.physical_attributes.materials %}
+                    {% if item.tag == '__missing__' %}
+                    <a href="{{ url_for('tag_browser.browser', category='materials', tag='__missing__') }}" 
+                       class="tag-item tag-item-missing">
+                        <span class="tag-name">Missing Materials</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% else %}
                     <a href="{{ url_for('tag_browser.browser', category='materials', tag=item.tag) }}" 
                        class="tag-item">
                         <span class="tag-name">{{ item.tag }}</span>
                         <span class="tag-count">({{ item.count }})</span>
                     </a>
+                    {% endif %}
                     {% endfor %}
                 </div>
             </div>

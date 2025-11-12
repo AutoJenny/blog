@@ -87,11 +87,16 @@ def extract_all_tags(product_form_filter=None):
             # Physical Attributes
             if type_data.get('materials'):
                 materials = type_data['materials']
-                if isinstance(materials, list):
+                if isinstance(materials, list) and len(materials) > 0:
                     for material in materials:
                         if material:
                             tags['physical_attributes']['materials'][material] = \
                                 tags['physical_attributes']['materials'].get(material, 0) + 1
+            
+            # Track products with no materials (for missing materials indicator)
+            if not type_data.get('materials') or not isinstance(type_data.get('materials'), list) or len(type_data.get('materials', [])) == 0:
+                tags['physical_attributes']['materials']['__missing__'] = \
+                    tags['physical_attributes']['materials'].get('__missing__', 0) + 1
             
             if type_data.get('patterns'):
                 patterns = type_data['patterns']
@@ -131,11 +136,23 @@ def extract_all_tags(product_form_filter=None):
         for category, subcategories in tags.items():
             result[category] = {}
             for subcat, tag_dict in subcategories.items():
-                # Sort by count descending, then alphabetically
-                sorted_tags = sorted(
-                    tag_dict.items(),
-                    key=lambda x: (-x[1], x[0])
-                )
+                # Special handling for materials: put __missing__ at the end
+                if subcat == 'materials' and '__missing__' in tag_dict:
+                    missing_count = tag_dict.pop('__missing__')
+                    # Sort by count descending, then alphabetically
+                    sorted_tags = sorted(
+                        tag_dict.items(),
+                        key=lambda x: (-x[1], x[0])
+                    )
+                    # Add missing at the end
+                    sorted_tags.append(('__missing__', missing_count))
+                else:
+                    # Sort by count descending, then alphabetically
+                    sorted_tags = sorted(
+                        tag_dict.items(),
+                        key=lambda x: (-x[1], x[0])
+                    )
+                
                 result[category][subcat] = [
                     {'tag': tag, 'count': count}
                     for tag, count in sorted_tags
@@ -177,6 +194,20 @@ def get_products_by_tag(tag_category, tag_name):
                 WHERE product_type_data->'disambiguation'->>'product_form' = %s
                 ORDER BY name
             """
+        elif tag_category == 'materials' and tag_name == '__missing__':
+            # Special case: products with no materials
+            query = """
+                SELECT id, name, sku, image_url, price, url
+                FROM clan_products
+                WHERE product_type_data IS NOT NULL
+                  AND (
+                      product_type_data->'materials' IS NULL
+                      OR product_type_data->'materials' = '[]'::jsonb
+                      OR jsonb_array_length(product_type_data->'materials') = 0
+                  )
+                ORDER BY name
+            """
+            tag_name = None  # Not used in query
         elif tag_category in ['materials', 'patterns', 'decorations', 'occasions', 'styles']:
             # For JSONB arrays, check if the array contains the tag
             query = f"""
@@ -190,7 +221,11 @@ def get_products_by_tag(tag_category, tag_name):
         else:
             return []
         
-        cursor.execute(query, (tag_name,))
+        if tag_name is None:
+            # For missing materials query, no parameter needed
+            cursor.execute(query)
+        else:
+            cursor.execute(query, (tag_name,))
         products = cursor.fetchall()
         
         return [dict(p) for p in products]
