@@ -7251,3 +7251,31 @@ NameError: name 'redirect' is not defined
 2025-11-12 20:32:08,998 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:32:08] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
 2025-11-12 20:32:08,998 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:32:08] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
 2025-11-12 20:32:08,998 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:32:08] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-12 20:34:52,432 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/clean_artwork_category.py', reloading
+2025-11-12 20:34:52,666 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 20:34:52,969 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 20:34:52,992 - config.database - INFO - Database connection established
+2025-11-12 20:34:52,996 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 20:34:52,996 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 20:34:52,996 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 20:34:52,996 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 20:34:52,997 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 20:34:52,997 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 20:34:52,997 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 20:34:53,813 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 20:34:53,819 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 20:34:53,827 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 20:34:53,858 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 20:34:53,870 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 20:35:04,571 - config.database - INFO - Database connection established
+2025-11-12 20:35:04,629 - config.database - INFO - Database connection established
+2025-11-12 20:35:04,682 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "GET /tags/browser?category=product_form&tag=artwork HTTP/1.1" 200 -
+2025-11-12 20:35:04,735 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 20:35:04,736 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 20:35:04,737 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 20:35:04,739 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 20:35:04,739 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 20:35:04,740 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 20:35:04,740 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 20:35:04,741 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 20:35:04,741 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 20:35:04] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
