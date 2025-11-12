@@ -1,5 +1,34 @@
 # Changelog
 
+## 2025-11-11 - Knowledge Base Integration
+
+### Added
+- **Knowledge Base Database Schema**: Created `clan_kb_categories` and `clan_kb_articles` tables with full-text search indexes and change detection support
+- **Knowledge Base Cache Module** (`blog-launchpad/clan_kb_cache.py`): 
+  - Fetches categories and articles from CLAN Knowledge Base API
+  - Hash-based change detection for articles
+  - Image downloading and local caching for feature images
+  - On-demand sync functionality
+  - Graceful handling of missing parent categories with PostgreSQL savepoints
+- **Migration File**: `migrations/create_clan_kb_tables.sql` for creating KB tables
+- **Documentation**: 
+  - `docs/data_intelligence/knowledge_base/TABLE_STRUCTURE_PROPOSAL.md` (approved schema)
+  - `docs/data_intelligence/knowledge_base/IMPLEMENTATION_STATUS.md` (implementation guide)
+  - Updated `docs/data_intelligence/knowledge_base/README.md`
+
+### Technical Details
+- **Tables**: `clan_kb_categories` (167 categories), `clan_kb_articles` (29 articles stored)
+- **Features**: Change tracking via `article_content_hash` and `last_content_change_at`
+- **Image Caching**: Downloads feature images to `static/images/kb/` directory
+- **Error Handling**: Uses PostgreSQL savepoints for per-category error isolation
+- **API Integration**: Connects to `https://clan.com/clan/api/getKnowledgebaseCategories` and `getKnowledgebaseArticles`
+- **Rate Limiting**: Handles HTTP 429 responses gracefully (some categories may need retry)
+
+### Next Steps
+- Integrate KB articles into vector search index
+- Add KB search to content generator modal
+- Use KB context in content generation prompts
+
 ## 2025-11-11 - Product Data Enhancement & Vector Search Update
 
 ### Product Data Fields
