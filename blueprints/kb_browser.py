@@ -225,16 +225,21 @@ def get_category_breadcrumbs(category_id):
         
         # Fetch all categories in the path
         if path_ids:
-            placeholders = ','.join(['%s'] * len(path_ids))
-            cursor.execute(f"""
+            # Use psycopg array syntax for proper ordering
+            cursor.execute("""
                 SELECT id, name, level, parent_id
                 FROM clan_kb_categories
-                WHERE id IN ({placeholders})
-                ORDER BY array_position(ARRAY[{placeholders}], id)
-            """, path_ids + path_ids)
+                WHERE id = ANY(%s)
+                ORDER BY array_position(%s::int[], id)
+            """, (path_ids, path_ids))
             
             categories = cursor.fetchall()
-            return [{'id': c['id'], 'name': c['name'], 'level': c['level']} for c in categories]
+            breadcrumbs = [{'id': c['id'], 'name': c['name'], 'level': c['level']} for c in categories]
+            
+            # Filter out root category (ID 1) if present, or handle it specially
+            breadcrumbs = [b for b in breadcrumbs if b['id'] != 1]
+            
+            return breadcrumbs
         
         return []
 
