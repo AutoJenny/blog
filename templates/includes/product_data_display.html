@@ -50,9 +50,15 @@
     </div>
 
     <!-- Product Description - CLAN.com Style Layout -->
-    <div class="data-section product-description-section">
-        <h3>Product Description</h3>
-        <div class="product-description-layout">
+    <div class="data-section product-description-section accordion-section" data-accordion-id="product-description">
+        <h3 class="accordion-header" data-accordion-target="product-description">
+            <i class="fas fa-chevron-down accordion-icon"></i>
+            Product Description
+        </h3>
+        <div class="accordion-preview" data-accordion-preview="product-description">
+            <!-- First data element preview will be inserted here by JavaScript -->
+        </div>
+        <div class="accordion-content product-description-layout" data-accordion-content="product-description">
             <div class="product-description-content">
                 <!-- Blurb (Short Description) -->
                 {% if product_data.short_description %}
@@ -196,14 +202,22 @@
             </div>
             
         </div>
+        </div>
     </div>
 
     <!-- Product Type Identifiers (Moved Below Description) -->
     {% if product_data.product_type_data %}
     {% set type_data = product_data.product_type_data %}
     {% set product_level = product_data.get('product_level', 'classic') %}
-    <div class="data-section">
-        <h3>Product Type Identifiers</h3>
+    <div class="data-section accordion-section" data-accordion-id="product-type-identifiers">
+        <h3 class="accordion-header" data-accordion-target="product-type-identifiers">
+            <i class="fas fa-chevron-down accordion-icon"></i>
+            Product Type Identifiers
+        </h3>
+        <div class="accordion-preview" data-accordion-preview="product-type-identifiers">
+            <!-- First data element preview will be inserted here by JavaScript -->
+        </div>
+        <div class="accordion-content" data-accordion-content="product-type-identifiers">
         <div class="data-grid">
             <!-- Group 1: Identity & Classification -->
             <div class="identifier-group">
@@ -347,12 +361,20 @@
             </span>
             {% endif %}
         </div>
+        </div>
     </div>
     {% endif %}
 
     <!-- Supplier/Producer Information -->
-    <div class="data-section">
-        <h3>Supplier/Producer Information</h3>
+    <div class="data-section accordion-section" data-accordion-id="supplier-producer">
+        <h3 class="accordion-header" data-accordion-target="supplier-producer">
+            <i class="fas fa-chevron-down accordion-icon"></i>
+            Supplier/Producer Information
+        </h3>
+        <div class="accordion-preview" data-accordion-preview="supplier-producer">
+            <!-- First data element preview will be inserted here by JavaScript -->
+        </div>
+        <div class="accordion-content" data-accordion-content="supplier-producer">
         <div class="data-grid">
             <div class="data-item">
                 <label>Supplier Name:</label>
@@ -380,12 +402,20 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
 
     <!-- Categories -->
     {% if product_data.categories %}
-    <div class="data-section categories-section">
-        <h3>Product Categories</h3>
+    <div class="data-section categories-section accordion-section" data-accordion-id="product-categories">
+        <h3 class="accordion-header" data-accordion-target="product-categories">
+            <i class="fas fa-chevron-down accordion-icon"></i>
+            Product Categories
+        </h3>
+        <div class="accordion-preview" data-accordion-preview="product-categories">
+            <!-- First data element preview will be inserted here by JavaScript -->
+        </div>
+        <div class="accordion-content" data-accordion-content="product-categories">
         <div class="data-item">
             <label>Categories:</label>
             <div class="data-value">
@@ -400,6 +430,7 @@
                     {% endfor %}
                 </ul>
             </div>
+        </div>
         </div>
     </div>
     {% endif %}
@@ -435,7 +466,7 @@
         {% endif %}
     {% endif %}
     {% if has_heritage_data %}
-    <div class="data-section heritage-section">
+    <div class="data-section heritage-section accordion-section" data-accordion-id="heritage-data">
         {% set heritage_categories = [] %}
         {% for cat in product_data.categories %}
             {% if cat.heritage_data %}
@@ -444,7 +475,10 @@
         {% endfor %}
         {% if heritage_categories %}
             <div class="heritage-header">
-                <h3>Heritage Data — {{ heritage_categories[0].name }}{% if heritage_categories|length > 1 %} (and {{ heritage_categories|length - 1 }} other{% if heritage_categories|length > 2 %}s{% endif %}){% endif %}</h3>
+                <h3 class="accordion-header" data-accordion-target="heritage-data">
+                    <i class="fas fa-chevron-down accordion-icon"></i>
+                    Heritage Data — {{ heritage_categories[0].name }}{% if heritage_categories|length > 1 %} (and {{ heritage_categories|length - 1 }} other{% if heritage_categories|length > 2 %}s{% endif %}){% endif %}
+                </h3>
                 {% if post_id is defined %}
                 <button class="btn-regenerate-heritage" 
                         data-category-id="{{ heritage_categories[0].id }}" 
@@ -456,8 +490,15 @@
             </div>
             <p class="heritage-note">This heritage data is shared across all products in the <strong>{{ heritage_categories[0].name }}</strong> category.</p>
         {% else %}
-            <h3>Heritage Data</h3>
+            <h3 class="accordion-header" data-accordion-target="heritage-data">
+                <i class="fas fa-chevron-down accordion-icon"></i>
+                Heritage Data
+            </h3>
         {% endif %}
+        <div class="accordion-preview" data-accordion-preview="heritage-data">
+            <!-- First data element preview will be inserted here by JavaScript -->
+        </div>
+        <div class="accordion-content" data-accordion-content="heritage-data">
         {% if product_data.heritage_data.historical_origins %}
             {% set historical_origins = product_data.heritage_data.historical_origins %}
             {% if historical_origins.narrative %}
@@ -710,13 +751,21 @@
                 </div>
             {% endif %}
         {% endif %}
+        </div>
     </div>
     {% endif %}
     
     <!-- Data Completeness Panel (Moved to Bottom) -->
-    <div class="intro-panel-container" style="margin-top: 2rem;">
+    <div class="intro-panel-container accordion-section" style="margin-top: 2rem;" data-accordion-id="data-completeness">
         <div class="intro-panel completeness-panel">
-            <h3>Data Completeness</h3>
+            <h3 class="accordion-header" data-accordion-target="data-completeness">
+                <i class="fas fa-chevron-down accordion-icon"></i>
+                Data Completeness
+            </h3>
+            <div class="accordion-preview" data-accordion-preview="data-completeness">
+                <!-- First data element preview will be inserted here by JavaScript -->
+            </div>
+            <div class="accordion-content" data-accordion-content="data-completeness">
             <div class="completeness-stats-compact">
                 <div class="stat-item-compact">
                     <span class="stat-label">Core Completeness:</span>
@@ -740,6 +789,7 @@
                 <strong>⚠️ Missing:</strong> {{ validation.missing_fields|join(', ') }}
             </div>
             {% endif %}
+            </div>
         </div>
     </div>
 </div>
