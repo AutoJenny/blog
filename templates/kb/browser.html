@@ -219,6 +219,25 @@
             <div id="article-display-container">
                 {% if article_data %}
                     <div class="article-display">
+                        <!-- Breadcrumb Navigation -->
+                        {% if article_data.breadcrumbs %}
+                            <nav class="breadcrumb-nav" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #334155;">
+                                <ol style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0;">
+                                    <li><a href="/kb/browser" style="color: #8b5cf6; text-decoration: none;">Help Centre</a></li>
+                                    {% for crumb in article_data.breadcrumbs %}
+                                        <li style="color: #94a3b8;">/</li>
+                                        <li>
+                                            <a href="/kb/browser?category_id={{ crumb.id }}" style="color: #cbd5e1; text-decoration: none; hover:color: #8b5cf6;">
+                                                {{ crumb.name }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                    <li style="color: #94a3b8;">/</li>
+                                    <li style="color: #f1f5f9; font-weight: 500;">{{ article_data.name }}</li>
+                                </ol>
+                            </nav>
+                        {% endif %}
+                        
                         <div class="article-header">
                             <h1 class="article-title">{{ article_data.name }}</h1>
                             <div class="article-meta">
@@ -504,8 +523,29 @@ function updateNavigationState() {
 function displayArticle(article) {
     const container = document.getElementById('article-display-container');
     
+    // Build breadcrumb HTML
+    let breadcrumbHtml = '';
+    if (article.breadcrumbs && article.breadcrumbs.length > 0) {
+        breadcrumbHtml = `
+            <nav class="breadcrumb-nav" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #334155;">
+                <ol style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0;">
+                    <li><a href="/kb/browser" style="color: #8b5cf6; text-decoration: none;">Help Centre</a></li>
+                    ${article.breadcrumbs.map(crumb => `
+                        <li style="color: #94a3b8;">/</li>
+                        <li>
+                            <a href="/kb/browser?category_id=${crumb.id}" style="color: #cbd5e1; text-decoration: none;">${escapeHtml(crumb.name)}</a>
+                        </li>
+                    `).join('')}
+                    <li style="color: #94a3b8;">/</li>
+                    <li style="color: #f1f5f9; font-weight: 500;">${escapeHtml(article.name || 'Untitled')}</li>
+                </ol>
+            </nav>
+        `;
+    }
+    
     const html = `
         <div class="article-display">
+            ${breadcrumbHtml}
             <div class="article-header">
                 <h1 class="article-title">${escapeHtml(article.name || 'Untitled')}</h1>
                 <div class="article-meta">

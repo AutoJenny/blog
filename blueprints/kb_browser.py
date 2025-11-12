@@ -7,6 +7,7 @@ from flask import Blueprint, render_template, request, jsonify
 from config.database import db_manager
 import logging
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +127,25 @@ def api_article(article_id):
                 'error': 'Article not found'
             }), 404
         
+        # Convert datetime objects to strings for JSON serialization
+        def serialize_datetime(obj):
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            return obj
+        
+        # Serialize article data
+        serialized_article = {}
+        for key, value in article_data.items():
+            if isinstance(value, datetime):
+                serialized_article[key] = value.isoformat()
+            elif isinstance(value, list):
+                serialized_article[key] = [serialize_datetime(item) if isinstance(item, datetime) else item for item in value]
+            else:
+                serialized_article[key] = value
+        
         return jsonify({
             'success': True,
-            'article': article_data
+            'article': serialized_article
         })
     except Exception as e:
         logger.error(f"Error fetching article {article_id}: {e}")
@@ -171,6 +188,56 @@ def api_category(category_id):
             'error': str(e)
         }), 500
 
+def get_category_breadcrumbs(category_id):
+    """Build breadcrumb trail from category path"""
+    if not category_id:
+        return []
+    
+    with db_manager.get_cursor() as cursor:
+        # Get the category's path
+        cursor.execute("""
+            SELECT path FROM clan_kb_categories WHERE id = %s
+        """, (category_id,))
+        
+        result = cursor.fetchone()
+        if not result or not result[0]:
+            # Fallback: build from parent_id chain
+            breadcrumbs = []
+            current_id = category_id
+            while current_id:
+                cursor.execute("""
+                    SELECT id, name, parent_id FROM clan_kb_categories WHERE id = %s
+                """, (current_id,))
+                cat = cursor.fetchone()
+                if cat:
+                    breadcrumbs.insert(0, {'id': cat['id'], 'name': cat['name']})
+                    current_id = cat['parent_id']
+                else:
+                    break
+            return breadcrumbs
+        
+        # Parse path (e.g., "1/58/188/72")
+        path_ids = [int(id_str) for id_str in result[0].split('/') if id_str.strip()]
+        
+        # Also include the current category
+        if category_id not in path_ids:
+            path_ids.append(category_id)
+        
+        # Fetch all categories in the path
+        if path_ids:
+            placeholders = ','.join(['%s'] * len(path_ids))
+            cursor.execute(f"""
+                SELECT id, name, level, parent_id
+                FROM clan_kb_categories
+                WHERE id IN ({placeholders})
+                ORDER BY array_position(ARRAY[{placeholders}], id)
+            """, path_ids + path_ids)
+            
+            categories = cursor.fetchall()
+            return [{'id': c['id'], 'name': c['name'], 'level': c['level']} for c in categories]
+        
+        return []
+
 def get_article_data(article_id):
     """Get full article data from database"""
     with db_manager.get_cursor() as cursor:
@@ -190,6 +257,10 @@ def get_article_data(article_id):
             return None
         
         article_dict = dict(article)
+        
+        # Build breadcrumbs from category path
+        if article_dict.get('category_id'):
+            article_dict['breadcrumbs'] = get_category_breadcrumbs(article_dict['category_id'])
         
         # Clean HTML content for display
         if article_dict.get('text'):
