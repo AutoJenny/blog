@@ -201,7 +201,9 @@
                     <!-- Category View -->
                     <div class="category-display">
                         <div class="category-header">
-                            <h2>{{ category_data.name }}</h2>
+                            <h2 class="product-title-header" style="color: #f59e0b; font-size: 1.75rem; font-weight: bold; margin-bottom: 1rem; line-height: 1.2;">
+                                {{ category_data.name }}
+                            </h2>
                             {% if category_data.description %}
                             <p style="color: #94a3b8; margin-top: 0.5rem;">{{ category_data.description }}</p>
                             {% endif %}
