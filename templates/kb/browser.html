@@ -283,19 +283,94 @@
                     </div>
                 {% elif category_data %}
                     <div class="article-display">
+                        <!-- Breadcrumb Navigation -->
+                        {% if category_data.breadcrumbs %}
+                            <nav class="breadcrumb-nav" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #334155;">
+                                <ol style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0;">
+                                    <li><a href="/kb/browser" style="color: #8b5cf6; text-decoration: none;">Help Centre</a></li>
+                                    {% for crumb in category_data.breadcrumbs %}
+                                        <li style="color: #94a3b8;">/</li>
+                                        <li>
+                                            <a href="/kb/browser?category_id={{ crumb.id }}" style="color: #cbd5e1; text-decoration: none; hover:color: #8b5cf6;">
+                                                {{ crumb.name }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ol>
+                            </nav>
+                        {% endif %}
+                        
                         <div class="article-header">
                             <h1 class="article-title">{{ category_data.name }}</h1>
                             <div class="article-meta">
-                                <span>Level: {{ category_data.level }}</span>
-                                {% if category_data.parent_id %}
-                                    <span>Parent ID: {{ category_data.parent_id }}</span>
+                                {% if category_data.children_count %}
+                                    <span>{{ category_data.children_count }} subcategories</span>
                                 {% endif %}
-                                {% if category_data.path %}
-                                    <span>Path: {{ category_data.path }}</span>
+                                {% if category_articles %}
+                                    <span>{{ category_articles|length }} articles</span>
                                 {% endif %}
                             </div>
                         </div>
-                        <p style="color: #94a3b8;">This is a category. Articles in this category will be listed here.</p>
+                        
+                        <!-- Navigation Tree -->
+                        <div class="nav-tree" style="margin-top: 2rem;">
+                            {% if subcategories %}
+                                <div class="nav-section" style="margin-bottom: 2rem;">
+                                    <h3 style="color: #f1f5f9; font-size: 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <i class="fa-solid fa-folder-open" style="color: #8b5cf6;"></i>
+                                        Subcategories
+                                    </h3>
+                                    <div class="nav-tree-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem;">
+                                        {% for subcat in subcategories %}
+                                            <a href="/kb/browser?category_id={{ subcat.id }}" class="nav-tree-item" style="display: block; padding: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 6px; text-decoration: none; transition: all 0.2s; hover:border-color: #8b5cf6; hover:background: #334155;">
+                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                    <i class="fa-solid fa-folder" style="color: #8b5cf6; font-size: 1.2rem;"></i>
+                                                    <div style="flex: 1;">
+                                                        <div style="color: #f1f5f9; font-weight: 500; margin-bottom: 0.25rem;">{{ subcat.name }}</div>
+                                                        {% if subcat.children_count %}
+                                                            <div style="color: #94a3b8; font-size: 0.875rem;">{{ subcat.children_count }} subcategories</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <i class="fa-solid fa-chevron-right" style="color: #94a3b8;"></i>
+                                                </div>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if category_articles %}
+                                <div class="nav-section">
+                                    <h3 style="color: #f1f5f9; font-size: 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <i class="fa-solid fa-file-lines" style="color: #8b5cf6;"></i>
+                                        Articles
+                                    </h3>
+                                    <div class="nav-tree-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem;">
+                                        {% for article in category_articles %}
+                                            <a href="/kb/browser?article_id={{ article.id }}" class="nav-tree-item" style="display: block; padding: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 6px; text-decoration: none; transition: all 0.2s; hover:border-color: #8b5cf6; hover:background: #334155;">
+                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                    <i class="fa-solid fa-file-text" style="color: #8b5cf6; font-size: 1.2rem;"></i>
+                                                    <div style="flex: 1;">
+                                                        <div style="color: #f1f5f9; font-weight: 500;">{{ article.name }}</div>
+                                                        {% if article.url_key %}
+                                                            <div style="color: #94a3b8; font-size: 0.875rem;">{{ article.url_key }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <i class="fa-solid fa-chevron-right" style="color: #94a3b8;"></i>
+                                                </div>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if not subcategories and not category_articles %}
+                                <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+                                    <i class="fa-solid fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                    <p>This category has no subcategories or articles.</p>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 {% else %}
                     <div class="no-selection">
@@ -581,6 +656,134 @@ function displayArticle(article) {
     `;
     
     container.innerHTML = html;
+}
+
+function displayCategory(category, subcategories, articles) {
+    const container = document.getElementById('article-display-container');
+    
+    // Build breadcrumb HTML
+    let breadcrumbHtml = '';
+    if (category.breadcrumbs && category.breadcrumbs.length > 0) {
+        breadcrumbHtml = `
+            <nav class="breadcrumb-nav" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #334155;">
+                <ol style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0;">
+                    <li><a href="/kb/browser" style="color: #8b5cf6; text-decoration: none;">Help Centre</a></li>
+                    ${category.breadcrumbs.map(crumb => `
+                        <li style="color: #94a3b8;">/</li>
+                        <li>
+                            <a href="/kb/browser?category_id=${crumb.id}" style="color: #cbd5e1; text-decoration: none;">${escapeHtml(crumb.name)}</a>
+                        </li>
+                    `).join('')}
+                </ol>
+            </nav>
+        `;
+    }
+    
+    // Build subcategories HTML
+    let subcategoriesHtml = '';
+    if (subcategories && subcategories.length > 0) {
+        subcategoriesHtml = `
+            <div class="nav-section" style="margin-bottom: 2rem;">
+                <h3 style="color: #f1f5f9; font-size: 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-folder-open" style="color: #8b5cf6;"></i>
+                    Subcategories
+                </h3>
+                <div class="nav-tree-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem;">
+                    ${subcategories.map(subcat => `
+                        <a href="/kb/browser?category_id=${subcat.id}" class="nav-tree-item" style="display: block; padding: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 6px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.borderColor='#8b5cf6'; this.style.background='#334155';" onmouseout="this.style.borderColor='#334155'; this.style.background='#1e293b';">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <i class="fa-solid fa-folder" style="color: #8b5cf6; font-size: 1.2rem;"></i>
+                                <div style="flex: 1;">
+                                    <div style="color: #f1f5f9; font-weight: 500; margin-bottom: 0.25rem;">${escapeHtml(subcat.name)}</div>
+                                    ${subcat.children_count ? `<div style="color: #94a3b8; font-size: 0.875rem;">${subcat.children_count} subcategories</div>` : ''}
+                                </div>
+                                <i class="fa-solid fa-chevron-right" style="color: #94a3b8;"></i>
+                            </div>
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Build articles HTML
+    let articlesHtml = '';
+    if (articles && articles.length > 0) {
+        articlesHtml = `
+            <div class="nav-section">
+                <h3 style="color: #f1f5f9; font-size: 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-file-lines" style="color: #8b5cf6;"></i>
+                    Articles
+                </h3>
+                <div class="nav-tree-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem;">
+                    ${articles.map(article => `
+                        <a href="/kb/browser?article_id=${article.id}" class="nav-tree-item" style="display: block; padding: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 6px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.borderColor='#8b5cf6'; this.style.background='#334155';" onmouseout="this.style.borderColor='#334155'; this.style.background='#1e293b';">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <i class="fa-solid fa-file-text" style="color: #8b5cf6; font-size: 1.2rem;"></i>
+                                <div style="flex: 1;">
+                                    <div style="color: #f1f5f9; font-weight: 500;">${escapeHtml(article.name)}</div>
+                                    ${article.url_key ? `<div style="color: #94a3b8; font-size: 0.875rem;">${escapeHtml(article.url_key)}</div>` : ''}
+                                </div>
+                                <i class="fa-solid fa-chevron-right" style="color: #94a3b8;"></i>
+                            </div>
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    const emptyState = (!subcategories || subcategories.length === 0) && (!articles || articles.length === 0) ? `
+        <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+            <i class="fa-solid fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>This category has no subcategories or articles.</p>
+        </div>
+    ` : '';
+    
+    const html = `
+        <div class="article-display">
+            ${breadcrumbHtml}
+            <div class="article-header">
+                <h1 class="article-title">${escapeHtml(category.name || 'Category')}</h1>
+                <div class="article-meta">
+                    ${category.children_count ? `<span>${category.children_count} subcategories</span>` : ''}
+                    ${articles && articles.length > 0 ? `<span>${articles.length} articles</span>` : ''}
+                </div>
+            </div>
+            <div class="nav-tree" style="margin-top: 2rem;">
+                ${subcategoriesHtml}
+                ${articlesHtml}
+                ${emptyState}
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function loadCategory(categoryId) {
+    fetch(`/kb/api/category/${categoryId}`)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                displayCategory(data.category, data.category.subcategories || [], data.category.articles || []);
+                // Update URL
+                window.history.pushState({}, '', `/kb/browser?category_id=${categoryId}`);
+            } else {
+                alert('Error loading category: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error loading category:', error);
+            alert('Error loading category: ' + error.message);
+        });
 }
 
 function escapeHtml(text) {

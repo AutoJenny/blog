@@ -21,6 +21,8 @@ def browser():
     
     article_data = None
     category_data = None
+    subcategories = []
+    category_articles = []
     
     if article_id:
         try:
@@ -35,6 +37,11 @@ def browser():
     if category_id and not article_data:
         try:
             category_data = get_category_data(category_id)
+            if category_data:
+                # Get subcategories
+                subcategories = get_subcategories(category_id)
+                # Get articles in this category
+                category_articles = get_category_articles(category_id)
         except Exception as e:
             logger.error(f"Error loading category {category_id}: {e}")
             return render_template('kb/browser.html',
@@ -43,6 +50,8 @@ def browser():
     return render_template('kb/browser.html',
                          article_data=article_data,
                          category_data=category_data,
+                         subcategories=subcategories,
+                         category_articles=category_articles,
                          current_article_id=article_id,
                          current_category_id=category_id)
 
@@ -156,7 +165,7 @@ def api_article(article_id):
 
 @bp.route('/api/category/<int:category_id>')
 def api_category(category_id):
-    """Get full category data with articles"""
+    """Get full category data with subcategories and articles"""
     try:
         category_data = get_category_data(category_id)
         
@@ -166,20 +175,32 @@ def api_category(category_id):
                 'error': 'Category not found'
             }), 404
         
+        # Get subcategories
+        subcategories = get_subcategories(category_id)
+        category_data['subcategories'] = subcategories
+        
         # Get articles in this category
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT id, name, url_key, position
-                FROM clan_kb_articles
-                WHERE category_id = %s AND is_active = TRUE
-                ORDER BY position, name
-            """, (category_id,))
-            articles = cursor.fetchall()
-            category_data['articles'] = [dict(a) for a in articles]
+        articles = get_category_articles(category_id)
+        category_data['articles'] = articles
+        
+        # Serialize datetime objects
+        def serialize_datetime(obj):
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            return obj
+        
+        serialized_category = {}
+        for key, value in category_data.items():
+            if isinstance(value, datetime):
+                serialized_category[key] = value.isoformat()
+            elif isinstance(value, list):
+                serialized_category[key] = [serialize_datetime(item) if isinstance(item, datetime) else item for item in value]
+            else:
+                serialized_category[key] = value
         
         return jsonify({
             'success': True,
-            'category': category_data
+            'category': serialized_category
         })
     except Exception as e:
         logger.error(f"Error fetching category {category_id}: {e}")
@@ -297,5 +318,38 @@ def get_category_data(category_id):
         if not category:
             return None
         
-        return dict(category)
+        category_dict = dict(category)
+        
+        # Add breadcrumbs
+        category_dict['breadcrumbs'] = get_category_breadcrumbs(category_id)
+        
+        return category_dict
+
+def get_subcategories(category_id):
+    """Get direct child categories"""
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                id, name, url_key, level, children_count, position
+            FROM clan_kb_categories
+            WHERE parent_id = %s AND is_active = TRUE
+            ORDER BY position, name
+        """, (category_id,))
+        
+        categories = cursor.fetchall()
+        return [dict(c) for c in categories]
+
+def get_category_articles(category_id):
+    """Get articles in a category"""
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                id, name, url_key, position
+            FROM clan_kb_articles
+            WHERE category_id = %s AND is_active = TRUE
+            ORDER BY position, name
+        """, (category_id,))
+        
+        articles = cursor.fetchall()
+        return [dict(a) for a in articles]
 
