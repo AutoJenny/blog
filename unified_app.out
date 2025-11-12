@@ -3530,3 +3530,1704 @@ LINE 9:                     additional_data, dimensions, product_lev...
 2025-11-11 16:52:18,852 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:52:18] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
 2025-11-11 16:52:18,853 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:52:18] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
 2025-11-11 16:52:18,853 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 16:52:18] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-11 17:05:02,382 - config.database - INFO - Database connection established
+2025-11-11 17:05:02,397 - config.database - INFO - Database connection established
+2025-11-11 17:05:02,407 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-11 17:05:02,407 - faiss.loader - INFO - Loading faiss.
+2025-11-11 17:05:02,441 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-11 17:05:02,447 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-11 17:05:02,447 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-11 17:05:02,454 - config.database - INFO - Database connection established
+2025-11-11 17:05:02,464 - config.database - INFO - Database connection established
+2025-11-11 17:05:02,528 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "GET /planning/posts/88/calendar/product-data-review HTTP/1.1" 200 -
+2025-11-11 17:05:02,551 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,553 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,554 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "GET /static/css/planning/product-data-review.css HTTP/1.1" 200 -
+2025-11-11 17:05:02,554 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,554 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,555 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,559 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,560 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,560 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,560 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,560 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,561 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,562 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,562 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-11 17:05:02,575 - config.database - INFO - Database connection established
+2025-11-11 17:05:02,592 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 17:05:02,601 - config.database - INFO - Database connection established
+2025-11-11 17:05:02,612 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 17:05:02,624 - config.database - INFO - Database connection established
+2025-11-11 17:05:02,633 - config.database - INFO - Database connection established
+2025-11-11 17:05:02,636 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:05:02] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-11 17:06:16,279 - config.database - INFO - Database connection established
+2025-11-11 17:06:16,291 - config.database - INFO - Database connection established
+2025-11-11 17:06:16,298 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-11 17:06:16,298 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-11 17:06:16,306 - config.database - INFO - Database connection established
+2025-11-11 17:06:16,319 - config.database - INFO - Database connection established
+2025-11-11 17:06:16,326 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "GET /planning/posts/88/calendar/product-data-review HTTP/1.1" 200 -
+2025-11-11 17:06:16,351 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,353 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,355 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,356 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,357 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,360 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,361 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,362 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,363 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,364 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,366 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,367 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,369 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,370 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-11 17:06:16,388 - config.database - INFO - Database connection established
+2025-11-11 17:06:16,404 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 17:06:16,418 - config.database - INFO - Database connection established
+2025-11-11 17:06:16,428 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 17:06:16,439 - config.database - INFO - Database connection established
+2025-11-11 17:06:16,452 - config.database - INFO - Database connection established
+2025-11-11 17:06:16,457 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:06:16] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-11 17:08:27,516 - config.database - INFO - Database connection established
+2025-11-11 17:08:27,531 - config.database - INFO - Database connection established
+2025-11-11 17:08:27,541 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-11 17:08:27,543 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-11 17:08:27,552 - config.database - INFO - Database connection established
+2025-11-11 17:08:27,566 - config.database - INFO - Database connection established
+2025-11-11 17:08:27,577 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "GET /planning/posts/88/calendar/product-data-review HTTP/1.1" 200 -
+2025-11-11 17:08:27,603 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,607 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,608 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,609 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,609 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,611 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,614 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,615 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,617 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,618 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,620 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,621 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,622 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,623 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-11 17:08:27,637 - config.database - INFO - Database connection established
+2025-11-11 17:08:27,648 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 17:08:27,658 - config.database - INFO - Database connection established
+2025-11-11 17:08:27,670 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 17:08:27,691 - config.database - INFO - Database connection established
+2025-11-11 17:08:27,702 - config.database - INFO - Database connection established
+2025-11-11 17:08:27,708 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:08:27] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-11 17:11:00,216 - config.database - INFO - Database connection established
+2025-11-11 17:11:00,231 - config.database - INFO - Database connection established
+2025-11-11 17:11:00,241 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-11 17:11:00,242 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-11 17:11:00,251 - config.database - INFO - Database connection established
+2025-11-11 17:11:00,265 - config.database - INFO - Database connection established
+2025-11-11 17:11:00,274 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "GET /planning/posts/88/calendar/product-data-review HTTP/1.1" 200 -
+2025-11-11 17:11:00,294 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,296 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,297 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,300 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,301 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,302 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,304 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,307 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,309 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,311 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,312 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,314 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,314 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,315 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-11 17:11:00,329 - config.database - INFO - Database connection established
+2025-11-11 17:11:00,344 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 17:11:00,357 - config.database - INFO - Database connection established
+2025-11-11 17:11:00,368 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 17:11:00,380 - config.database - INFO - Database connection established
+2025-11-11 17:11:00,394 - config.database - INFO - Database connection established
+2025-11-11 17:11:00,400 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 17:11:00] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-11 17:11:48,207 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-11 17:11:48,551 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 17:11:48,872 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 17:11:48,892 - config.database - INFO - Database connection established
+2025-11-11 17:11:48,894 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 17:11:48,894 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 17:11:48,895 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 17:11:48,895 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 17:11:48,895 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 17:11:48,895 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 17:11:48,895 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 17:11:49,829 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 17:11:49,835 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 17:11:49,843 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 17:11:49,867 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 17:11:49,878 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 17:12:00,903 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-11 17:12:01,203 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 17:12:01,504 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 17:12:01,523 - config.database - INFO - Database connection established
+2025-11-11 17:12:01,526 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 17:12:01,526 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 17:12:01,526 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 17:12:01,526 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 17:12:01,527 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 17:12:01,527 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 17:12:01,527 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 17:12:02,390 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 17:12:02,394 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 17:12:02,402 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 17:12:02,426 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 17:12:02,436 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-11 18:28:07,246 - config.database - INFO - Database connection established
+2025-11-11 18:28:07,263 - config.database - INFO - Database connection established
+2025-11-11 18:28:07,275 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-11 18:28:07,275 - faiss.loader - INFO - Loading faiss.
+2025-11-11 18:28:07,309 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-11 18:28:07,317 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-11 18:28:07,318 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-11 18:28:07,326 - config.database - INFO - Database connection established
+2025-11-11 18:28:07,341 - config.database - INFO - Database connection established
+2025-11-11 18:28:07,424 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "GET /planning/posts/88/calendar/product-data-review HTTP/1.1" 200 -
+2025-11-11 18:28:07,463 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,463 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,464 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,465 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,466 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,467 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,468 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,468 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,469 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,470 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,471 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,471 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,474 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,474 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-11 18:28:07,504 - config.database - INFO - Database connection established
+2025-11-11 18:28:07,511 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 18:28:07,567 - config.database - INFO - Database connection established
+2025-11-11 18:28:07,579 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-11 18:28:07,587 - config.database - INFO - Database connection established
+2025-11-11 18:28:07,596 - config.database - INFO - Database connection established
+2025-11-11 18:28:07,600 - werkzeug - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:07] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-11 18:29:44,084 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/review_product_types.py', reloading
+2025-11-11 18:29:44,278 - werkzeug - INFO -  * Restarting with stat
+2025-11-11 18:29:44,552 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-11 18:29:44,570 - config.database - INFO - Database connection established
+2025-11-11 18:29:44,573 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-11 18:29:44,573 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-11 18:29:44,573 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-11 18:29:44,573 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-11 18:29:44,574 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-11 18:29:44,574 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-11 18:29:44,574 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-11 18:29:45,345 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-11 18:29:45,349 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-11 18:29:45,357 - __main__ - INFO - ✅ Registered preview routes
+2025-11-11 18:29:45,379 - werkzeug - WARNING -  * Debugger is active!
+2025-11-11 18:29:45,389 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:00:18,573 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:00:18,773 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:00:19,128 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:00:19,147 - config.database - INFO - Database connection established
+2025-11-12 09:00:19,152 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:00:19,152 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:00:19,153 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:00:19,153 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:00:19,154 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:00:19,154 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:00:19,154 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:00:20,353 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:00:20,362 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:00:20,375 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:00:20,400 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:00:20,412 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:05:10,368 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:05:10,565 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:05:10,900 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:05:10,918 - config.database - INFO - Database connection established
+2025-11-12 09:05:10,920 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:05:10,921 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:05:10,921 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:05:10,921 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:05:10,922 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:05:10,922 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:05:10,922 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:05:12,091 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:05:12,097 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:05:12,105 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:05:12,126 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:05:12,136 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:06:38,773 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/review_product_types.py', reloading
+2025-11-12 09:06:39,029 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:06:39,404 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:06:39,425 - config.database - INFO - Database connection established
+2025-11-12 09:06:39,427 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:06:39,427 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:06:39,428 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:06:39,429 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:06:39,429 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:06:39,430 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:06:39,430 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:06:40,703 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:06:40,709 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:06:40,717 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:06:40,739 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:06:40,750 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:06:45,785 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/review_product_types.py', reloading
+2025-11-12 09:06:46,041 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:06:46,353 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:06:46,372 - config.database - INFO - Database connection established
+2025-11-12 09:06:46,374 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:06:46,375 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:06:46,375 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:06:46,375 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:06:46,375 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:06:46,376 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:06:46,376 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:06:47,280 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:06:47,284 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:06:47,292 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:06:47,313 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:06:47,325 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:06:53,683 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/parse_product_types.py', reloading
+2025-11-12 09:06:53,963 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:06:54,278 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:06:54,299 - config.database - INFO - Database connection established
+2025-11-12 09:06:54,302 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:06:54,302 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:06:54,303 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:06:54,303 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:06:54,303 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:06:54,303 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:06:54,303 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:06:55,205 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:06:55,210 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:06:55,219 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:06:55,240 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:06:55,254 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:06:56,798 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/parse_product_types.py', reloading
+2025-11-12 09:06:57,067 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:06:57,382 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:06:57,403 - config.database - INFO - Database connection established
+2025-11-12 09:06:57,407 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:06:57,407 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:06:57,407 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:06:57,408 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:06:57,408 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:06:57,408 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:06:57,408 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:06:58,318 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:06:58,322 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:06:58,330 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:06:58,350 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:06:58,360 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:07:03,414 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/parse_product_types.py', reloading
+2025-11-12 09:07:03,690 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:07:04,001 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:07:04,021 - config.database - INFO - Database connection established
+2025-11-12 09:07:04,023 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:07:04,023 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:07:04,023 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:07:04,024 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:07:04,024 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:07:04,024 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:07:04,024 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:07:04,925 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:07:04,930 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:07:04,938 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:07:04,961 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:07:04,974 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:07:06,479 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/review_product_types.py', reloading
+2025-11-12 09:07:06,721 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:07:07,023 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:07:07,044 - config.database - INFO - Database connection established
+2025-11-12 09:07:07,048 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:07:07,048 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:07:07,048 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:07:07,049 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:07:07,049 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:07:07,049 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:07:07,049 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:07:07,832 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:07:07,836 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:07:07,844 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:07:07,864 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:07:07,873 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:17:26,744 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:17:26,947 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:17:27,240 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:17:27,258 - config.database - INFO - Database connection established
+2025-11-12 09:17:27,263 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:17:27,263 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:17:27,263 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:17:27,263 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:17:27,264 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:17:27,264 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:17:27,264 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:17:28,129 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:17:28,133 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:17:28,141 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:17:28,164 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:17:28,176 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:17:33,226 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:17:33,425 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:17:33,716 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:17:33,734 - config.database - INFO - Database connection established
+2025-11-12 09:17:33,736 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:17:33,737 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:17:33,737 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:17:33,737 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:17:33,737 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:17:33,737 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:17:33,738 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:17:34,566 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:17:34,570 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:17:34,578 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:17:34,598 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:17:34,608 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:17:43,165 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:17:43,457 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:17:43,786 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:17:43,807 - config.database - INFO - Database connection established
+2025-11-12 09:17:43,809 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:17:43,810 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:17:43,810 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:17:43,810 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:17:43,810 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:17:43,810 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:17:43,810 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:17:44,691 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:17:44,695 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:17:44,703 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:17:44,725 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:17:44,743 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:17:52,182 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:17:52,458 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:17:52,783 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:17:52,802 - config.database - INFO - Database connection established
+2025-11-12 09:17:52,804 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:17:52,804 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:17:52,804 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:17:52,804 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:17:52,804 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:17:52,805 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:17:52,805 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:17:53,685 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:17:53,689 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:17:53,698 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:17:53,720 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:17:53,731 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:18:53,331 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:18:53,536 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:18:53,845 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:18:53,864 - config.database - INFO - Database connection established
+2025-11-12 09:18:53,868 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:18:53,868 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:18:53,868 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:18:53,868 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:18:53,868 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:18:53,869 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:18:53,869 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:18:54,697 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:18:54,701 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:18:54,709 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:18:54,728 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:18:54,738 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:19:44,185 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:19:44] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-12 09:19:44,186 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:19:44] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-12 09:19:44,188 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:19:44] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-12 09:19:44,204 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:19:44] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-12 09:19:44,205 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:19:44] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-12 09:19:44,205 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:19:44] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-12 09:20:02,525 - config.database - INFO - Database connection established
+2025-11-12 09:20:02,585 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "GET / HTTP/1.1" 200 -
+2025-11-12 09:20:02,605 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 09:20:02,607 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 09:20:02,607 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 09:20:02,608 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 09:20:02,608 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 09:20:02,608 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 09:20:02,609 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 09:20:02,610 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 09:20:02,620 - config.database - INFO - Database connection established
+2025-11-12 09:20:02,632 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:20:02,641 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-12 09:20:02,642 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-12 09:20:02,643 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-12 09:20:02,646 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-12 09:20:02,646 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-12 09:20:02,647 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:02] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-12 09:20:32,718 - config.database - INFO - Database connection established
+2025-11-12 09:20:32,726 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:20:32] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:21:02,813 - config.database - INFO - Database connection established
+2025-11-12 09:21:02,822 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:21:02] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:21:32,911 - config.database - INFO - Database connection established
+2025-11-12 09:21:32,920 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:21:32] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:22:03,013 - config.database - INFO - Database connection established
+2025-11-12 09:22:03,027 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:22:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:22:33,008 - config.database - INFO - Database connection established
+2025-11-12 09:22:33,017 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:22:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:23:03,113 - config.database - INFO - Database connection established
+2025-11-12 09:23:03,122 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:03] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:23:05,879 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:23:06,143 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:23:06,467 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:23:06,487 - config.database - INFO - Database connection established
+2025-11-12 09:23:06,491 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:23:06,491 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:23:06,491 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:23:06,492 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:23:06,492 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:23:06,492 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:23:06,492 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:23:07,405 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:23:07,409 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:23:07,417 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:23:07,439 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:23:07,451 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:23:07,763 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:23:08,024 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:23:08,338 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:23:08,357 - config.database - INFO - Database connection established
+2025-11-12 09:23:08,359 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:23:08,359 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:23:08,360 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:23:08,360 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:23:08,360 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:23:08,360 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:23:08,360 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:23:09,229 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:23:09,233 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:23:09,241 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:23:09,262 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:23:09,273 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:23:15,595 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:23:15,876 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:23:16,190 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:23:16,210 - config.database - INFO - Database connection established
+2025-11-12 09:23:16,212 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:23:16,213 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:23:16,213 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:23:16,213 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:23:16,213 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:23:16,213 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:23:16,213 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:23:17,097 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:23:17,101 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:23:17,109 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:23:17,131 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:23:17,144 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:23:19,915 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:23:20,159 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:23:20,463 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:23:20,482 - config.database - INFO - Database connection established
+2025-11-12 09:23:20,485 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:23:20,486 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:23:20,486 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:23:20,486 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:23:20,486 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:23:20,486 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:23:20,487 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:23:21,345 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:23:21,349 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:23:21,356 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:23:21,378 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:23:21,388 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:23:33,304 - config.database - INFO - Database connection established
+2025-11-12 09:23:33,321 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:33] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:23:38,891 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "GET /planning/posts/88/calendar HTTP/1.1" 200 -
+2025-11-12 09:23:38,902 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,903 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,904 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,905 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,905 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,906 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,906 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,907 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,907 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,908 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,909 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,909 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,909 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 09:23:38,933 - config.database - INFO - Database connection established
+2025-11-12 09:23:38,951 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:38] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-12 09:23:44,697 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:23:44,956 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:23:45,262 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:23:45,280 - config.database - INFO - Database connection established
+2025-11-12 09:23:45,283 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:23:45,283 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:23:45,283 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:23:45,283 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:23:45,284 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:23:45,284 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:23:45,284 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:23:46,144 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:23:46,148 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:23:46,156 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:23:46,177 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:23:46,188 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:23:46,594 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,605 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,653 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/posts/88/calendar/week-view HTTP/1.1" 200 -
+2025-11-12 09:23:46,659 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/planning/content-generator-modal-core.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,659 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,659 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/planning/calendar-week-view.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,672 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,675 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,676 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,676 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/llm-actions.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,676 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,676 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,676 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,677 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,678 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,681 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/planning/profile-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,681 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,682 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/planning/idea-modal-renderers.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,682 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/css/planning/idea-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,683 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/planning/idea-modal-forms.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,684 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/planning/idea-modal-api.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,684 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/planning/idea-modal-conversions.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,685 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/planning/idea-modal-core.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,686 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,686 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/planning/profile-modal-core.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,687 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,688 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "[36mGET /static/js/simplified-llm-actions.js HTTP/1.1[0m" 304 -
+2025-11-12 09:23:46,716 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,718 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,718 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,719 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,722 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/categories HTTP/1.1" 200 -
+2025-11-12 09:23:46,728 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/posts/88 HTTP/1.1" 200 -
+2025-11-12 09:23:46,729 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,729 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,737 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,737 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,738 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,740 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,740 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,747 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,747 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,748 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,753 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,754 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,754 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,755 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,761 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,761 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,762 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,767 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,767 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,768 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,770 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-12 09:23:46,772 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-12 09:23:46,774 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,781 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,782 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,783 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,784 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,784 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /api/post-type-pipeline/posts/88/pipeline HTTP/1.1" 200 -
+2025-11-12 09:23:46,785 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,786 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,787 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=blog_post HTTP/1.1" 200 -
+2025-11-12 09:23:46,788 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /launchpad/api/syndication/schedules?platform=facebook&content_type=product HTTP/1.1" 200 -
+2025-11-12 09:23:46,789 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/schedule/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,790 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,795 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/social-focus/week HTTP/1.1" 200 -
+2025-11-12 09:23:46,796 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,797 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,798 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/ideas/week/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,799 - blueprints.planning_api_calendar_recipes - DEBUG - calendar_week_posts table not available or error querying: relation "calendar_week_posts" does not exist
+LINE 17:                         INNER JOIN calendar_week_posts cwp O...
+                                            ^
+2025-11-12 09:23:46,799 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/recipes/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,801 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/content-generator/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,802 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/events/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,802 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,805 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/profiles/2025/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,811 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,813 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/themes/week/46 HTTP/1.1" 200 -
+2025-11-12 09:23:46,819 - config.database - INFO - Database connection established
+2025-11-12 09:23:46,826 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:46] "GET /planning/api/calendar/ideas/137 HTTP/1.1" 200 -
+2025-11-12 09:23:51,870 - config.database - INFO - Database connection established
+2025-11-12 09:23:51,876 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:23:51] "GET /launchpad/api/syndication/categories HTTP/1.1" 200 -
+2025-11-12 09:23:56,075 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:23:56,366 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:23:56,676 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:23:56,696 - config.database - INFO - Database connection established
+2025-11-12 09:23:56,698 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:23:56,698 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:23:56,698 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:23:56,699 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:23:56,699 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:23:56,699 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:23:56,699 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:23:57,522 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:23:57,525 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:23:57,533 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:23:57,555 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:23:57,565 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:24:22,017 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:24:22,313 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:24:22,625 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:24:22,645 - config.database - INFO - Database connection established
+2025-11-12 09:24:22,648 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:24:22,648 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:24:22,648 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:24:22,649 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:24:22,649 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:24:22,649 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:24:22,649 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:24:23,547 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:24:23,552 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:24:23,560 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:24:23,582 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:24:23,593 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:24:31,217 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:24:31,415 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:24:31,708 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:24:31,728 - config.database - INFO - Database connection established
+2025-11-12 09:24:31,732 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:24:31,732 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:24:31,732 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:24:31,732 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:24:31,732 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:24:31,733 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:24:31,733 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:24:32,534 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:24:32,538 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:24:32,545 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:24:32,566 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:24:32,575 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:24:35,247 - config.database - INFO - Database connection established
+2025-11-12 09:24:35,261 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:24:35] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:24:39,312 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:24:39] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-12 09:24:39,316 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:24:39] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-12 09:24:39,317 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:24:39] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-12 09:24:39,326 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:24:39] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-12 09:24:39,326 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:24:39] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-12 09:24:39,327 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:24:39] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-12 09:25:47,633 - config.database - INFO - Database connection established
+2025-11-12 09:25:47,702 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "GET / HTTP/1.1" 200 -
+2025-11-12 09:25:47,720 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 09:25:47,726 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 09:25:47,726 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 09:25:47,726 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 09:25:47,726 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 09:25:47,726 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 09:25:47,727 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 09:25:47,730 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 09:25:47,741 - config.database - INFO - Database connection established
+2025-11-12 09:25:47,752 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:47] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:25:49,974 - config.database - INFO - Database connection established
+2025-11-12 09:25:49,983 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:49] "GET / HTTP/1.1" 200 -
+2025-11-12 09:25:50,005 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 09:25:50,013 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 09:25:50,014 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 09:25:50,014 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 09:25:50,015 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 09:25:50,016 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 09:25:50,018 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 09:25:50,019 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 09:25:50,033 - config.database - INFO - Database connection established
+2025-11-12 09:25:50,045 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:50] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:25:58,370 - config.database - INFO - Database connection established
+2025-11-12 09:25:58,384 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:25:58] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:26:10,578 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:26:10] "GET /clan-api/ HTTP/1.1" 200 -
+2025-11-12 09:26:25,771 - config.database - INFO - Database connection established
+2025-11-12 09:26:25,790 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:26:25] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:26:29,599 - config.database - INFO - Database connection established
+2025-11-12 09:26:29,614 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:26:29] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:26:36,960 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:26:36] "GET /clan-api/ HTTP/1.1" 200 -
+2025-11-12 09:27:12,559 - config.database - INFO - Database connection established
+2025-11-12 09:27:12,572 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:27:12] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:27:42,656 - config.database - INFO - Database connection established
+2025-11-12 09:27:42,663 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:27:42] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:27:49,600 - config.database - INFO - Database connection established
+2025-11-12 09:27:49,617 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:27:49] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:28:12,668 - config.database - INFO - Database connection established
+2025-11-12 09:28:12,680 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:28:12] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:28:42,765 - config.database - INFO - Database connection established
+2025-11-12 09:28:42,781 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:28:42] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:29:09,597 - config.database - INFO - Database connection established
+2025-11-12 09:29:09,610 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:29:09] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:29:12,851 - config.database - INFO - Database connection established
+2025-11-12 09:29:12,865 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:29:12] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:29:44,679 - config.database - INFO - Database connection established
+2025-11-12 09:29:44,697 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:29:44] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:30:17,104 - config.database - INFO - Database connection established
+2025-11-12 09:30:17,121 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:30:17] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:30:29,585 - config.database - INFO - Database connection established
+2025-11-12 09:30:29,595 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:30:29] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:30:52,127 - config.database - INFO - Database connection established
+2025-11-12 09:30:52,144 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:30:52] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:31:56,660 - config.database - INFO - Database connection established
+2025-11-12 09:31:56,675 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:31:56] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:33:30,334 - config.database - INFO - Database connection established
+2025-11-12 09:33:30,345 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:33:30] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:34:00,521 - config.database - INFO - Database connection established
+2025-11-12 09:34:00,532 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:34:00] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:34:41,417 - config.database - INFO - Database connection established
+2025-11-12 09:34:41,432 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:34:41] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:35:44,423 - config.database - INFO - Database connection established
+2025-11-12 09:35:44,434 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:35:44] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:36:17,609 - config.database - INFO - Database connection established
+2025-11-12 09:36:17,620 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:36:17] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:37:36,863 - config.database - INFO - Database connection established
+2025-11-12 09:37:36,873 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:37:36] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:38:56,860 - config.database - INFO - Database connection established
+2025-11-12 09:38:56,869 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:38:56] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:40:16,833 - config.database - INFO - Database connection established
+2025-11-12 09:40:16,842 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:40:16] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:41:36,880 - config.database - INFO - Database connection established
+2025-11-12 09:41:36,889 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:41:36] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:43:12,752 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:43:12,959 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:43:13,258 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:43:13,278 - config.database - INFO - Database connection established
+2025-11-12 09:43:13,280 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:43:13,281 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:43:13,281 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:43:13,281 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:43:13,281 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:43:13,281 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:43:13,281 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:43:14,104 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:43:14,108 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:43:14,116 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:43:14,138 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:43:14,149 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:43:17,987 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:43:18,182 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:43:18,457 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:43:18,476 - config.database - INFO - Database connection established
+2025-11-12 09:43:18,478 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:43:18,478 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:43:18,478 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:43:18,479 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:43:18,479 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:43:18,479 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:43:18,479 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:43:19,262 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:43:19,266 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:43:19,274 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:43:19,294 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:43:19,304 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:43:23,178 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:43:23,370 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:43:23,661 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:43:23,679 - config.database - INFO - Database connection established
+2025-11-12 09:43:23,681 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:43:23,682 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:43:23,682 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:43:23,682 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:43:23,682 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:43:23,682 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:43:23,682 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:43:24,483 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:43:24,487 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:43:24,494 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:43:24,514 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:43:24,524 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:43:27,147 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:43:27,340 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:43:27,629 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:43:27,648 - config.database - INFO - Database connection established
+2025-11-12 09:43:27,650 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:43:27,650 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:43:27,650 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:43:27,651 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:43:27,651 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:43:27,651 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:43:27,651 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:43:28,463 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:43:28,467 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:43:28,475 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:43:28,496 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:43:28,506 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:47:58,769 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:47:58,968 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:47:59,261 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:47:59,281 - config.database - INFO - Database connection established
+2025-11-12 09:47:59,284 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:47:59,284 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:47:59,284 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:47:59,284 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:47:59,285 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:47:59,285 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:47:59,285 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:48:00,103 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:48:00,107 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:48:00,114 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:48:00,135 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:48:00,145 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:48:02,783 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:48:03,013 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:48:03,308 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:48:03,328 - config.database - INFO - Database connection established
+2025-11-12 09:48:03,330 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:48:03,331 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:48:03,331 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:48:03,331 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:48:03,331 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:48:03,331 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:48:03,331 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:48:04,175 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:48:04,179 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:48:04,187 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:48:04,210 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:48:04,221 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:50:05,887 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:50:06,086 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:50:06,368 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:50:06,386 - config.database - INFO - Database connection established
+2025-11-12 09:50:06,390 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:50:06,391 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:50:06,391 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:50:06,391 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:50:06,391 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:50:06,391 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:50:06,391 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:50:07,191 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:50:07,195 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:50:07,202 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:50:07,225 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:50:07,235 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:50:11,130 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:50:11,318 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:50:11,594 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:50:11,613 - config.database - INFO - Database connection established
+2025-11-12 09:50:11,615 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:50:11,615 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:50:11,615 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:50:11,616 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:50:11,616 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:50:11,616 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:50:11,616 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:50:12,414 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:50:12,418 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:50:12,426 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:50:12,446 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:50:12,456 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:50:16,248 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:50:16,443 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:50:16,733 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:50:16,751 - config.database - INFO - Database connection established
+2025-11-12 09:50:16,753 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:50:16,754 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:50:16,754 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:50:16,754 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:50:16,754 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:50:16,754 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:50:16,754 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:50:17,605 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:50:17,609 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:50:17,617 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:50:17,639 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:50:17,649 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:50:48,702 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:50:48,895 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:50:49,186 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:50:49,205 - config.database - INFO - Database connection established
+2025-11-12 09:50:49,207 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:50:49,207 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:50:49,207 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:50:49,208 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:50:49,208 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:50:49,208 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:50:49,208 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:50:50,021 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:50:50,025 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:50:50,033 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:50:50,055 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:50:50,065 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:51:46,631 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 09:51:46,814 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 09:51:47,102 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 09:51:47,120 - config.database - INFO - Database connection established
+2025-11-12 09:51:47,124 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 09:51:47,125 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 09:51:47,125 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 09:51:47,125 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 09:51:47,125 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 09:51:47,125 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 09:51:47,125 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 09:51:47,930 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 09:51:47,934 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 09:51:47,941 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 09:51:47,964 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 09:51:47,974 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 09:56:53,734 - config.database - INFO - Database connection established
+2025-11-12 09:56:53,746 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:56:53] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 09:59:43,997 - config.database - INFO - Database connection established
+2025-11-12 09:59:44,008 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 09:59:44] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:02:24,274 - config.database - INFO - Database connection established
+2025-11-12 10:02:24,288 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:02:24] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:02:56,713 - config.database - INFO - Database connection established
+2025-11-12 10:02:56,719 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:02:56] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:03:26,717 - config.database - INFO - Database connection established
+2025-11-12 10:03:26,724 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:26] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:03:40,617 - config.database - INFO - Database connection established
+2025-11-12 10:03:40,672 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "GET / HTTP/1.1" 200 -
+2025-11-12 10:03:40,698 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:03:40,702 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:03:40,702 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:03:40,703 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:03:40,703 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:03:40,704 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:03:40,704 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:03:40,705 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:03:40,718 - config.database - INFO - Database connection established
+2025-11-12 10:03:40,726 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:40] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:03:45,442 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:03:45] "GET /clan-api/ HTTP/1.1" 200 -
+2025-11-12 10:04:18,834 - config.database - INFO - Database connection established
+2025-11-12 10:04:18,853 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:04:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:04:48,834 - config.database - INFO - Database connection established
+2025-11-12 10:04:48,851 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:04:48] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:05:18,825 - config.database - INFO - Database connection established
+2025-11-12 10:05:18,834 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:05:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:05:39,515 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:05:39,765 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:05:40,074 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:05:40,093 - config.database - INFO - Database connection established
+2025-11-12 10:05:40,095 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:05:40,095 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:05:40,096 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:05:40,096 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:05:40,096 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:05:40,096 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:05:40,096 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:05:40,931 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:05:40,935 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:05:40,943 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:05:40,965 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:05:40,976 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:05:44,787 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:05:45,038 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:05:45,352 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:05:45,373 - config.database - INFO - Database connection established
+2025-11-12 10:05:45,375 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:05:45,375 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:05:45,376 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:05:45,376 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:05:45,376 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:05:45,376 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:05:45,376 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:05:46,273 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:05:46,278 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:05:46,286 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:05:46,308 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:05:46,318 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:05:48,830 - config.database - INFO - Database connection established
+2025-11-12 10:05:48,842 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:05:48] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:06:18,826 - config.database - INFO - Database connection established
+2025-11-12 10:06:18,838 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:06:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:06:48,840 - config.database - INFO - Database connection established
+2025-11-12 10:06:48,855 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:06:48] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:06:59,207 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:06:59,465 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:06:59,765 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:06:59,782 - config.database - INFO - Database connection established
+2025-11-12 10:06:59,784 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:06:59,784 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:06:59,785 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:06:59,785 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:06:59,785 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:06:59,785 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:06:59,785 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:07:00,604 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:07:00,608 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:07:00,616 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:07:00,640 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:07:00,650 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:07:19,727 - config.database - INFO - Database connection established
+2025-11-12 10:07:19,744 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:07:19] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:07:50,716 - config.database - INFO - Database connection established
+2025-11-12 10:07:50,727 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:07:50] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:08:21,716 - config.database - INFO - Database connection established
+2025-11-12 10:08:21,726 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:08:21] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:08:34,377 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-11-12 10:08:34,640 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:08:34,944 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:08:34,964 - config.database - INFO - Database connection established
+2025-11-12 10:08:34,965 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:08:34,966 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:08:34,966 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:08:34,966 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:08:34,966 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:08:34,966 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:08:34,966 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:08:35,830 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:08:35,837 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:08:35,844 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:08:35,865 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:08:35,876 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:08:52,721 - config.database - INFO - Database connection established
+2025-11-12 10:08:52,739 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:08:52] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:09:07,362 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-12 10:09:07,598 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:09:07,877 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:09:07,896 - config.database - INFO - Database connection established
+2025-11-12 10:09:07,899 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:09:07,899 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:09:07,900 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:09:07,900 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:09:07,900 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:09:07,900 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:09:07,900 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:09:08,679 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:09:08,684 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:09:08,692 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:09:08,712 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:09:08,721 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:09:23,730 - config.database - INFO - Database connection established
+2025-11-12 10:09:23,742 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:09:23] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:09:54,726 - config.database - INFO - Database connection established
+2025-11-12 10:09:54,741 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:09:54] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:10:25,723 - config.database - INFO - Database connection established
+2025-11-12 10:10:25,739 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:25] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:10:43,427 - config.database - INFO - Database connection established
+2025-11-12 10:10:43,481 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "GET / HTTP/1.1" 200 -
+2025-11-12 10:10:43,511 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:10:43,511 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:10:43,512 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:10:43,514 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:10:43,514 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:10:43,515 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:10:43,516 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:10:43,516 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:10:43,529 - config.database - INFO - Database connection established
+2025-11-12 10:10:43,535 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:43] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-12 10:10:46,674 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "GET /products/browser HTTP/1.1" 200 -
+2025-11-12 10:10:46,980 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:10:46,985 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:10:46,987 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:10:46,988 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:10:46,989 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:10:46,989 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:10:46,990 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:10:46,991 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:10:46,998 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:10:46] "[33mGET /api/products/list HTTP/1.1[0m" 404 -
+2025-11-12 10:11:56,752 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "GET /products/browser HTTP/1.1" 200 -
+2025-11-12 10:11:56,770 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,773 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,774 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,775 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,776 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,776 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,777 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,781 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,781 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:11:56,788 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:11:56] "[33mGET /api/products/list HTTP/1.1[0m" 404 -
+2025-11-12 10:13:03,057 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-12 10:13:03,303 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:13:03,596 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:13:03,615 - config.database - INFO - Database connection established
+2025-11-12 10:13:03,617 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:13:03,617 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:13:03,617 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:13:03,618 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:13:03,618 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:13:03,618 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:13:03,618 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:13:04,460 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:13:04,466 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:13:04,473 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:13:04,494 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:13:04,504 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:14:00,908 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-12 10:14:01,134 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:14:01,430 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:14:01,452 - config.database - INFO - Database connection established
+2025-11-12 10:14:01,455 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:14:01,456 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:14:01,456 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:14:01,456 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:14:01,456 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:14:01,456 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:14:01,456 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:14:02,290 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:14:02,296 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:14:02,304 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:14:02,323 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:14:02,333 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:26:14,610 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "GET /products/browser HTTP/1.1" 200 -
+2025-11-12 10:26:14,633 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,638 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,639 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,640 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,640 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,640 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,641 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,641 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,643 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:26:14,648 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:14] "[33mGET /api/products/list HTTP/1.1[0m" 404 -
+2025-11-12 10:26:18,107 - config.database - INFO - Database connection established
+2025-11-12 10:26:18,119 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:18] "GET /products/api/search?q=kilt HTTP/1.1" 200 -
+2025-11-12 10:26:20,026 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:26:20] "[33mGET /api/products/829/full HTTP/1.1[0m" 404 -
+2025-11-12 10:27:07,482 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-12 10:27:07,739 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:27:08,064 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:27:08,083 - config.database - INFO - Database connection established
+2025-11-12 10:27:08,087 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:27:08,088 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:27:08,088 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:27:08,088 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:27:08,088 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:27:08,089 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:27:08,089 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:27:09,013 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:27:09,020 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:27:09,029 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:27:09,049 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:27:09,062 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:27:31,894 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-12 10:27:32,109 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:27:32,412 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:27:32,433 - config.database - INFO - Database connection established
+2025-11-12 10:27:32,436 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:27:32,436 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:27:32,437 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:27:32,437 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:27:32,437 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:27:32,437 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:27:32,437 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:27:33,314 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:27:33,321 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:27:33,329 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:27:33,349 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:27:33,358 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:27:35,969 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:35] "GET /products/browser HTTP/1.1" 200 -
+2025-11-12 10:27:35,994 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:35] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:35,995 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:35] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:35,996 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:35] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:35,997 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:35] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:35,997 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:35] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:35,998 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:35] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:27:35,999 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:35] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:27:36,000 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:36] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:27:36,000 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:27:36,012 - config.database - INFO - Database connection established
+2025-11-12 10:27:36,022 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:36] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:27:39,405 - config.database - INFO - Database connection established
+2025-11-12 10:27:39,419 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:39] "GET /products/api/search?q=kilt HTTP/1.1" 200 -
+2025-11-12 10:27:40,380 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-12 10:27:40,380 - faiss.loader - INFO - Loading faiss.
+2025-11-12 10:27:40,411 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-12 10:27:40,415 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:27:40,416 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:27:40,422 - config.database - INFO - Database connection established
+2025-11-12 10:27:40,428 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "GET /products/api/829/full HTTP/1.1" 200 -
+2025-11-12 10:27:40,439 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:27:40,440 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:27:40,447 - config.database - INFO - Database connection established
+2025-11-12 10:27:40,488 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "GET /products/browser?product_id=829 HTTP/1.1" 200 -
+2025-11-12 10:27:40,864 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,867 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,867 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,869 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,869 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,869 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,870 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,871 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,871 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:27:40,883 - config.database - INFO - Database connection established
+2025-11-12 10:27:40,890 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:27:40] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:29:22,153 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:29:22,155 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:29:22,164 - config.database - INFO - Database connection established
+2025-11-12 10:29:22,177 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "GET /products/browser?product_id=829 HTTP/1.1" 200 -
+2025-11-12 10:29:22,204 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,209 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,209 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,210 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,211 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "GET /static/css/planning/product-data-review.css HTTP/1.1" 200 -
+2025-11-12 10:29:22,211 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,212 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,213 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,214 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,215 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:29:22,271 - config.database - INFO - Database connection established
+2025-11-12 10:29:22,282 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:29:22] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:35:32,527 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-12 10:35:32,737 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:35:33,018 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:35:33,042 - config.database - INFO - Database connection established
+2025-11-12 10:35:33,047 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:35:33,048 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:35:33,048 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:35:33,048 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:35:33,048 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:35:33,048 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:35:33,048 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:35:33,834 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:35:33,841 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:35:33,848 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:35:33,872 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:35:33,883 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:38:13,633 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-12 10:38:13,634 - faiss.loader - INFO - Loading faiss.
+2025-11-12 10:38:13,667 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-12 10:38:13,673 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:38:13,674 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:38:13,685 - config.database - INFO - Database connection established
+2025-11-12 10:38:13,755 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "GET /products/browser?product_id=829 HTTP/1.1" 200 -
+2025-11-12 10:38:13,793 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,799 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,799 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,800 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,800 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,800 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,801 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,804 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,805 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,805 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:38:13,826 - config.database - INFO - Database connection established
+2025-11-12 10:38:13,833 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:13] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:38:16,127 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:38:16,129 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:38:16,144 - config.database - INFO - Database connection established
+2025-11-12 10:38:16,156 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "GET /products/api/830/full HTTP/1.1" 200 -
+2025-11-12 10:38:16,172 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:38:16,173 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:38:16,185 - config.database - INFO - Database connection established
+2025-11-12 10:38:16,199 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "GET /products/browser?product_id=830 HTTP/1.1" 200 -
+2025-11-12 10:38:16,548 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,552 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,552 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,554 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,556 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,559 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,559 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,562 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,563 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,564 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:16,578 - config.database - INFO - Database connection established
+2025-11-12 10:38:16,585 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:16] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:38:28,751 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:38:28,751 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:38:28,757 - config.database - INFO - Database connection established
+2025-11-12 10:38:28,762 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "GET /products/api/829/full HTTP/1.1" 200 -
+2025-11-12 10:38:28,772 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:38:28,772 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:38:28,778 - config.database - INFO - Database connection established
+2025-11-12 10:38:28,782 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "GET /products/browser?product_id=829 HTTP/1.1" 200 -
+2025-11-12 10:38:28,806 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,807 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,809 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,809 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,810 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,810 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,811 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,811 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,812 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,813 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:38:28,825 - config.database - INFO - Database connection established
+2025-11-12 10:38:28,834 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:38:28] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:40:00,045 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:40:00,046 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:40:00,056 - config.database - INFO - Database connection established
+2025-11-12 10:40:00,062 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "GET /products/api/830/full HTTP/1.1" 200 -
+2025-11-12 10:40:00,074 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:40:00,075 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:40:00,086 - config.database - INFO - Database connection established
+2025-11-12 10:40:00,096 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "GET /products/browser?product_id=830 HTTP/1.1" 200 -
+2025-11-12 10:40:00,127 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,130 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,130 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,130 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,134 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,137 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,137 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,138 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,139 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,140 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:40:00,153 - config.database - INFO - Database connection established
+2025-11-12 10:40:00,163 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:00] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:40:19,022 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:40:19,022 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:40:19,030 - config.database - INFO - Database connection established
+2025-11-12 10:40:19,037 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "GET /products/api/831/full HTTP/1.1" 200 -
+2025-11-12 10:40:19,049 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:40:19,050 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:40:19,056 - config.database - INFO - Database connection established
+2025-11-12 10:40:19,061 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "GET /products/browser?product_id=831 HTTP/1.1" 200 -
+2025-11-12 10:40:19,386 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,389 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,389 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,390 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,391 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,393 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,393 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,396 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,397 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,399 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:40:19,413 - config.database - INFO - Database connection established
+2025-11-12 10:40:19,426 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:40:19] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:42:45,626 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:42:45] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-12 10:42:45,627 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:42:45] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-12 10:42:45,628 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:42:45] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-12 10:42:45,631 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:42:45] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-12 10:42:45,632 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:42:45] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-12 10:42:45,633 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:42:45] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-12 10:43:17,434 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:43:17] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-12 10:43:17,440 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:43:17] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-12 10:43:17,440 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:43:17] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-12 10:43:17,440 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:43:17] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-12 10:43:17,442 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:43:17] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-12 10:43:17,442 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:43:17] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-12 10:49:49,621 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:49:49,622 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:49:49,635 - config.database - INFO - Database connection established
+2025-11-12 10:49:49,696 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "GET /products/browser?product_id=831 HTTP/1.1" 200 -
+2025-11-12 10:49:49,727 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,728 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,729 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,730 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,731 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,731 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "GET /static/css/planning/product-data-review.css HTTP/1.1" 200 -
+2025-11-12 10:49:49,732 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,732 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,734 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,734 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:49:49,746 - config.database - INFO - Database connection established
+2025-11-12 10:49:49,755 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:49:49] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:50:33,973 - config.database - INFO - Database connection established
+2025-11-12 10:50:33,981 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:33] "GET /products/api/search?q=oxhorn HTTP/1.1" 200 -
+2025-11-12 10:50:35,693 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:50:35,694 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:50:35,702 - config.database - INFO - Database connection established
+2025-11-12 10:50:35,708 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:35] "GET /products/api/3/full HTTP/1.1" 200 -
+2025-11-12 10:50:35,721 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 10:50:35,723 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 10:50:35,734 - config.database - INFO - Database connection established
+2025-11-12 10:50:35,743 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:35] "GET /products/browser?product_id=3 HTTP/1.1" 200 -
+2025-11-12 10:50:36,088 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,092 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,092 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,095 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,096 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,096 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,099 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,100 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,102 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,102 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 10:50:36,122 - config.database - INFO - Database connection established
+2025-11-12 10:50:36,136 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 10:50:36] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 10:55:04,109 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:55:04,360 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:55:04,649 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:55:04,671 - config.database - INFO - Database connection established
+2025-11-12 10:55:04,674 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:55:04,674 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:55:04,674 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:55:04,675 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:55:04,675 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:55:04,675 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:55:04,675 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:55:05,514 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:55:05,519 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:55:05,527 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:55:05,548 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:55:05,559 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:55:19,028 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:55:19,294 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:55:19,595 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:55:19,615 - config.database - INFO - Database connection established
+2025-11-12 10:55:19,618 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:55:19,618 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:55:19,619 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:55:19,619 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:55:19,619 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:55:19,619 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:55:19,619 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:55:20,495 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:55:20,500 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:55:20,508 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:55:20,530 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:55:20,542 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:55:58,050 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:55:58,349 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:55:58,660 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:55:58,679 - config.database - INFO - Database connection established
+2025-11-12 10:55:58,681 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:55:58,682 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:55:58,682 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:55:58,682 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:55:58,682 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:55:58,683 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:55:58,683 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:55:59,520 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:55:59,524 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:55:59,532 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:55:59,553 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:55:59,563 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:56:21,397 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:56:21,660 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:56:21,947 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:56:21,966 - config.database - INFO - Database connection established
+2025-11-12 10:56:21,968 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:56:21,968 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:56:21,969 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:56:21,969 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:56:21,969 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:56:21,969 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:56:21,969 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:56:22,797 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:56:22,802 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:56:22,809 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:56:22,829 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:56:22,840 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:56:36,239 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:56:36,501 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:56:36,807 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:56:36,826 - config.database - INFO - Database connection established
+2025-11-12 10:56:36,828 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:56:36,829 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:56:36,829 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:56:36,829 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:56:36,829 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:56:36,829 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:56:36,829 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:56:37,689 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:56:37,695 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:56:37,703 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:56:37,725 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:56:37,736 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:56:45,186 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:56:45,418 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:56:45,704 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:56:45,723 - config.database - INFO - Database connection established
+2025-11-12 10:56:45,725 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:56:45,726 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:56:45,726 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:56:45,726 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:56:45,726 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:56:45,726 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:56:45,726 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:56:46,552 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:56:46,557 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:56:46,565 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:56:46,586 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:56:46,596 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:57:10,792 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:57:11,028 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:57:11,343 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:57:11,364 - config.database - INFO - Database connection established
+2025-11-12 10:57:11,367 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:57:11,368 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:57:11,368 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:57:11,368 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:57:11,369 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:57:11,369 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:57:11,369 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:57:12,196 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:57:12,201 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:57:12,209 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:57:12,229 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:57:12,238 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:57:14,928 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:57:15,182 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:57:15,471 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:57:15,490 - config.database - INFO - Database connection established
+2025-11-12 10:57:15,491 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:57:15,492 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:57:15,492 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:57:15,492 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:57:15,492 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:57:15,492 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:57:15,492 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:57:16,278 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:57:16,282 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:57:16,290 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:57:16,310 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:57:16,319 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 10:57:25,015 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 10:57:25,200 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 10:57:25,471 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 10:57:25,489 - config.database - INFO - Database connection established
+2025-11-12 10:57:25,491 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 10:57:25,491 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 10:57:25,491 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 10:57:25,491 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 10:57:25,492 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 10:57:25,492 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 10:57:25,492 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 10:57:26,270 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 10:57:26,275 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 10:57:26,282 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 10:57:26,303 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 10:57:26,312 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 11:02:12,495 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-12 11:02:12,496 - faiss.loader - INFO - Loading faiss.
+2025-11-12 11:02:12,528 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-12 11:02:12,535 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 11:02:12,536 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 11:02:12,547 - config.database - INFO - Database connection established
+2025-11-12 11:02:12,615 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "GET /products/browser?product_id=3 HTTP/1.1" 200 -
+2025-11-12 11:02:12,658 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,659 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,660 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,661 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,661 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,663 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,663 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,663 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,665 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,665 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 11:02:12,679 - config.database - INFO - Database connection established
+2025-11-12 11:02:12,689 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:02:12] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 11:04:57,668 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:04:57] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-12 11:04:57,669 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:04:57] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-12 11:04:57,671 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:04:57] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-12 11:04:57,676 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:04:57] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-12 11:04:57,676 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:04:57] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-12 11:04:57,677 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:04:57] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-12 11:13:47,768 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 11:13:47,770 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 11:13:47,779 - config.database - INFO - Database connection established
+2025-11-12 11:13:47,866 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "GET /products/browser?product_id=3 HTTP/1.1" 200 -
+2025-11-12 11:13:47,897 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,899 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,900 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,901 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,901 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,902 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,902 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,903 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,903 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,904 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 11:13:47,915 - config.database - INFO - Database connection established
+2025-11-12 11:13:47,926 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:13:47] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 11:14:16,428 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 11:14:16,429 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 11:14:16,440 - config.database - INFO - Database connection established
+2025-11-12 11:14:16,449 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "GET /products/api/4/full HTTP/1.1" 200 -
+2025-11-12 11:14:16,465 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 11:14:16,467 - utils.vector_search.faiss_index - INFO - Loaded metadata for 1416 chunks
+2025-11-12 11:14:16,480 - config.database - INFO - Database connection established
+2025-11-12 11:14:16,491 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "GET /products/browser?product_id=4 HTTP/1.1" 200 -
+2025-11-12 11:14:16,830 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,831 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,832 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,833 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,833 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,834 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,835 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,836 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,836 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,837 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 11:14:16,847 - config.database - INFO - Database connection established
+2025-11-12 11:14:16,856 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 11:14:16] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 11:15:42,880 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-11-12 11:15:43,135 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 11:15:43,414 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 11:15:43,433 - config.database - INFO - Database connection established
+2025-11-12 11:15:43,435 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 11:15:43,436 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 11:15:43,436 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 11:15:43,436 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 11:15:43,436 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 11:15:43,436 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 11:15:43,436 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 11:15:44,214 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 11:15:44,220 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 11:15:44,227 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 11:15:44,248 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 11:15:44,257 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 11:17:32,775 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/unified_app.py', reloading
+2025-11-12 11:17:33,061 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 11:17:33,393 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 11:17:33,419 - config.database - INFO - Database connection established
+2025-11-12 11:17:33,423 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 11:17:33,424 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 11:17:33,424 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 11:17:33,424 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 11:17:33,424 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 11:17:33,425 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 11:17:33,425 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 11:17:34,343 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 11:17:34,348 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 11:17:34,356 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 11:17:34,378 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 11:17:34,393 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 11:36:18,998 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/review_product_types.py', reloading
+2025-11-12 11:36:19,260 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 11:36:19,571 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 11:36:19,591 - config.database - INFO - Database connection established
+2025-11-12 11:36:19,595 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 11:36:19,596 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 11:36:19,596 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 11:36:19,596 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 11:36:19,596 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 11:36:19,596 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 11:36:19,596 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 11:36:20,562 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 11:36:20,566 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 11:36:20,575 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 11:36:20,598 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 11:36:20,611 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 11:36:22,104 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/product_type_parser.py', reloading
+2025-11-12 11:36:22,426 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 11:36:22,742 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 11:36:22,764 - config.database - INFO - Database connection established
+2025-11-12 11:36:22,767 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 11:36:22,767 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 11:36:22,767 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 11:36:22,768 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 11:36:22,768 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 11:36:22,768 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 11:36:22,768 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 11:36:23,686 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 11:36:23,690 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 11:36:23,698 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 11:36:23,722 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 11:36:23,733 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 11:40:40,721 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-12 11:40:41,041 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 11:40:41,350 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 11:40:41,368 - config.database - INFO - Database connection established
+2025-11-12 11:40:41,370 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 11:40:41,371 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 11:40:41,371 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 11:40:41,371 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 11:40:41,371 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 11:40:41,372 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 11:40:41,372 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 11:40:42,230 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 11:40:42,235 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 11:40:42,243 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 11:40:42,265 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 11:40:42,278 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 11:41:16,960 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/review_product_types.py', reloading
+2025-11-12 11:41:17,246 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 11:41:17,575 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 11:41:17,596 - config.database - INFO - Database connection established
+2025-11-12 11:41:17,600 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 11:41:17,600 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 11:41:17,600 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 11:41:17,601 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 11:41:17,601 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 11:41:17,601 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 11:41:17,601 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 11:41:18,559 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 11:41:18,563 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 11:41:18,572 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 11:41:18,593 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 11:41:18,607 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 11:41:48,662 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-12 11:41:48,994 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 11:41:49,322 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 11:41:49,342 - config.database - INFO - Database connection established
+2025-11-12 11:41:49,344 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 11:41:49,345 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 11:41:49,345 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 11:41:49,345 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 11:41:49,345 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 11:41:49,345 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 11:41:49,346 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 11:41:50,247 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 11:41:50,251 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 11:41:50,259 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 11:41:50,280 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 11:41:50,290 - werkzeug - INFO -  * Debugger PIN: 263-852-041

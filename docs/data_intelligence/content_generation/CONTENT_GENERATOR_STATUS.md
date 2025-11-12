@@ -332,7 +332,7 @@ POST /api/content/suggest-ideas
 - [Content Generation Roadmap](./KB_Content_Generation_Roadmap.md)
 - [Vector Search Phase 1 Plan](./Vector_Search_Phase1_Plan.md)
 - [Content Generation Phases 2-3 Plan](./Content_Generation_Phases2-3_Plan.md)
-- [Product & Category Profiles](../profiles/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md)
+- [Product & Category Profiles](../products/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md)
 - [Development Rules](../../DEVELOPMENT_RULES.md)
 
 ---

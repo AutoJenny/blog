@@ -579,7 +579,7 @@ Based on discussion, the following decisions have been finalized:
 
 - [Content Generator Status](./CONTENT_GENERATOR_STATUS.md)
 - [Content Generation Roadmap](./KB_Content_Generation_Roadmap.md)
-- [Product & Category Profiles](../profiles/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md)
+- [Product & Category Profiles](../products/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md)
 - [Vector Search Phase 1 Plan](./Vector_Search_Phase1_Plan.md)
 
 ---

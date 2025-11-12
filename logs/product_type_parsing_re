@@ -1,0 +1,4 @@
+usage: parse_product_types.py [-h] [--threshold THRESHOLD] [--reprocess-low]
+                              [--mistral-only] [--review-queue] [--stats]
+                              [--limit LIMIT]
+parse_product_types.py: error: unrecognized arguments: run_20251112_110131.log
