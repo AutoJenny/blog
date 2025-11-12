@@ -174,21 +174,54 @@ This analysis used:
 
 ## Detailed Findings
 
-### KB Article Length Distribution
-- **Very Short (<1k chars)**: ~X articles - May need expansion
-- **Short (1-5k chars)**: ~X articles - Adequate coverage
-- **Medium (5-15k chars)**: ~X articles - Good depth
-- **Long (15k+ chars)**: ~X articles - Already chunked appropriately
+### Topic Coverage Analysis (Semantic Search)
+
+**Core Topics:**
+- **"kilt"**: 20 results (7 products, 3 KB) - Good product coverage, could expand KB
+- **"tartan"**: 20 results (7 products, 3 KB) - Strong product coverage, KB could be expanded
+- **"scottish heritage"**: 20 results (3 products, 4 categories, 3 KB) - Balanced but could expand all types
+- **"clan"**: 20 results (3 products, 1 category, 6 KB) - Strong KB coverage, products/categories could expand
+- **"highland dress"**: 20 results (6 products, 3 categories, 1 KB) - Good product/category coverage, KB gap
+
+**Heritage/Cultural Topics:**
+- **"historical origins"**: 20 results (4 products, 3 categories, 13 KB) - Strong KB coverage
+- **"cultural significance"**: 20 results (1 product, 2 categories, 17 KB) - Very strong KB, weak product/category
+- **"tartan patterns"**: 20 results (2 products, 0 categories, 18 KB) - Excellent KB, weak product/category
+- **"clan traditions"**: 20 results (10 products, 2 categories, 8 KB) - Strong product coverage
+
+**Key Insights:**
+- KB articles excel at heritage/cultural content
+- Products have good coverage of core items (kilts, tartans) but weak on heritage context
+- Categories have heritage data but coverage is inconsistent
+- Opportunity: Add heritage context to product descriptions
 
 ### Products Needing Description Expansion
-- Products with <200 character descriptions represent opportunities
-- Focus on products with high category counts (more visibility)
-- Prioritize products in popular categories
 
-### Heritage Content Coverage
-- Semantic search reveals coverage patterns for heritage topics
-- Some topics well-covered across all content types
-- Others show gaps in specific content types
+**20 products identified with <200 character descriptions:**
+- Classic Jacobite Kilt Outfit (409 chars) - High visibility item
+- Estate Check Wool Tie (313 chars)
+- Clan Crest items (multiple) - Could reference heritage
+- Luxury items (Cashmere Throw, Roll Neck Jumper) - Premium products need better descriptions
+
+**Recommendation:**
+- Prioritize high-visibility products (outfits, luxury items)
+- Add heritage context to clan crest items
+- Expand descriptions for products in popular categories
+
+### KB Article Length Distribution
+*(To be populated from analysis)*
+
+### Content Redundancy Patterns
+
+**Potential Areas:**
+1. **Clan Crest Products**: Many similar items with minimal differentiation in descriptions
+2. **Kilt Variants**: Multiple kilt styles may have overlapping descriptions
+3. **KB Articles**: Some topics covered in multiple articles (e.g., "How to measure" variations)
+
+**Recommendation:**
+- Use template-based descriptions with unique differentiators
+- Consolidate similar KB articles where appropriate
+- Cross-reference related content instead of repeating
 
 ---
 
