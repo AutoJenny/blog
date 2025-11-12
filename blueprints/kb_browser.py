@@ -238,8 +238,9 @@ def get_category_breadcrumbs(category_id):
             categories = cursor.fetchall()
             breadcrumbs = [{'id': c['id'], 'name': c['name'], 'level': c['level']} for c in categories]
             
-            # Filter out root category (ID 1) if present, or handle it specially
-            breadcrumbs = [b for b in breadcrumbs if b['id'] != 1]
+            # Filter out root categories
+            # ID 1 is system root, ID 58 is "Help Centre" (we show that as root link)
+            breadcrumbs = [b for b in breadcrumbs if b['id'] not in [1, 58]]
             
             return breadcrumbs
         
