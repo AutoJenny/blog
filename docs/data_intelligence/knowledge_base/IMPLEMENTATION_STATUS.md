@@ -67,9 +67,15 @@ FROM clan_kb_articles
 WHERE last_content_change_at IS NOT NULL;
 ```
 
-### 4. Integration Tasks
-- [ ] Add KB articles to vector search index (chunking)
-- [ ] Update `ContentChunker` to handle KB articles
+### ✅ Phase 2: Vector Integration - COMPLETE
+- ✅ Added `chunk_kb_article()` method to `ContentChunker`
+- ✅ Added `process_all_kb_articles()` for batch processing
+- ✅ Updated `generate_embeddings.py` with `--kb` flag
+- ✅ KB articles chunked and embedded (696 chunks from 629 articles)
+- ✅ All KB chunks added to FAISS index
+- ✅ Total index: 2,112 vectors (1,157 products + 259 categories + 696 KB)
+
+### 4. Remaining Integration Tasks
 - [ ] Add KB search to content generator modal
 - [ ] Update content generation to use KB context
 - [ ] Create UI for on-demand KB sync
