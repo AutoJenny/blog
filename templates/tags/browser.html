@@ -57,6 +57,21 @@
         <div class="tag-category-section">
             <h2 class="category-title">Identity & Classification</h2>
             
+            {% if all_tags.identity_classification.product_form %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Product Form</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.identity_classification.product_form %}
+                    <a href="{{ url_for('tag_browser.browser', category='product_form', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             {% if all_tags.identity_classification.core_type %}
             <div class="tag-subcategory">
                 <h3 class="subcategory-title">Core Type</h3>
@@ -78,21 +93,6 @@
                 <div class="tag-list">
                     {% for item in all_tags.identity_classification.subtype %}
                     <a href="{{ url_for('tag_browser.browser', category='subtype', tag=item.tag) }}" 
-                       class="tag-item">
-                        <span class="tag-name">{{ item.tag }}</span>
-                        <span class="tag-count">({{ item.count }})</span>
-                    </a>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            {% if all_tags.identity_classification.product_form %}
-            <div class="tag-subcategory">
-                <h3 class="subcategory-title">Product Form</h3>
-                <div class="tag-list">
-                    {% for item in all_tags.identity_classification.product_form %}
-                    <a href="{{ url_for('tag_browser.browser', category='product_form', tag=item.tag) }}" 
                        class="tag-item">
                         <span class="tag-name">{{ item.tag }}</span>
                         <span class="tag-count">({{ item.count }})</span>
