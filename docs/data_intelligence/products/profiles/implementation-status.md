@@ -36,7 +36,7 @@
 ## Phase 3: Content Model & Templates ✅ COMPLETE
 
 ### Documentation
-- ✅ `docs/profiles/section-types.md` - Section type definitions
+- ✅ `docs/data_intelligence/products/section-types.md` - Section type definitions
 
 ### Templates Created
 - ✅ `templates/profiles/product_profile.html` - Product profile page template

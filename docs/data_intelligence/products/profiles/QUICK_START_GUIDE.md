@@ -220,7 +220,7 @@ products = selector.select_representative_products(category_id=123, limit=8)
 
 ## Getting Help
 
-1. Check documentation in `docs/profiles/`
+1. Check documentation in `docs/data_intelligence/products/`
 2. Review code comments in implementation files
 3. Check database schema in migration files
 4. Review API responses in browser network tab

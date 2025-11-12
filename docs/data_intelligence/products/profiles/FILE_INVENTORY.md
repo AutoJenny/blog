@@ -114,19 +114,19 @@ Complete list of all files created, modified, or extended for the Profiles featu
 
 ### Documentation
 
-36. `docs/profiles/section-types.md`
+36. `docs/data_intelligence/products/section-types.md`
     - Section type definitions
 
-37. `docs/profiles/implementation-status.md`
+37. `docs/data_intelligence/products/implementation-status.md`
     - Implementation status tracking
 
-38. `docs/profiles/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md`
+38. `docs/data_intelligence/products/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md`
     - Complete technical documentation (this project)
 
-39. `docs/profiles/QUICK_START_GUIDE.md`
+39. `docs/data_intelligence/products/QUICK_START_GUIDE.md`
     - Quick start guide for new developers
 
-40. `docs/profiles/FILE_INVENTORY.md`
+40. `docs/data_intelligence/products/FILE_INVENTORY.md`
     - This file
 
 ---

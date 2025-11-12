@@ -798,7 +798,7 @@ Sections are stored in the existing `post_section` table:
   ```
 - Products queried on render for fresh data
 
-**Full Documentation**: See `docs/profiles/section-types.md`
+**Full Documentation**: See `docs/data_intelligence/products/section-types.md`
 
 ---
 
@@ -1048,16 +1048,16 @@ products = selector.select_representative_products(category_id=123, limit=8)
 - `docs/product-category-profiles-implementation-thoughts.md`: Technical implementation recommendations
 - `docs/product-category-profiles-data-derivation.md`: Data derivation strategy
 - `docs/product-category-profiles-design-layout.md`: Design and layout specifications
-- `docs/profiles/section-types.md`: Section type definitions
-- `docs/profiles/implementation-status.md`: Implementation status tracking
+- `docs/data_intelligence/products/section-types.md`: Section type definitions
+- `docs/data_intelligence/products/implementation-status.md`: Implementation status tracking
 
 ---
 
 ## Contact & Support
 
 For questions or issues:
-1. Check existing documentation in `docs/profiles/`
-2. Review implementation status in `docs/profiles/implementation-status.md`
+1. Check existing documentation in `docs/data_intelligence/products/`
+2. Review implementation status in `docs/data_intelligence/products/implementation-status.md`
 3. Check code comments in implementation files
 4. Review database schema in migration files
 

@@ -10,16 +10,27 @@ This directory contains documentation for systems that transform CLAN's structur
 
 ### Key Components
 
-1. **Product & Category Profiles** (`/profiles/`)
-   - Editorial-first blog features exploring Scottish heritage, craftsmanship, and culture
-   - Uses `clan_products` and `clan_categories` data
-   - See: [Product & Category Profiles Documentation](./profiles/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md)
+1. **Products** (`/products/`)
+   - Product & Category Profiles: Editorial-first blog features exploring Scottish heritage, craftsmanship, and culture
+   - Product Data Parsing: Product type classification and data structure parsing
+   - Product Search: Smart semantic search for products
+   - See: [Products Documentation](./products/README.md)
 
-2. **Content Generation System** (`/content_generation/`)
+2. **Heritage Research System** (`/heritage_research/`)
+   - Multi-stage research for category heritage data
+   - Wikipedia integration (Phase 1 complete)
+   - Google Search integration (Phase 3 planned)
+   - See: [Heritage Research Documentation](./heritage_research/SYSTEM_DOCUMENTATION.md)
+
+3. **Content Generation System** (`/content_generation/`)
    - Vector search infrastructure for semantic retrieval
    - LLM-driven blog post generation from products/categories
    - Future: Knowledge Base integration
    - See: [Content Generation Roadmap](./content_generation/KB_Content_Generation_Roadmap.md)
+
+4. **Knowledge Base** (`/knowledge_base/`)
+   - Knowledge Base integration (planned)
+   - Future integration with vector search and content generation
 
 ---
 
@@ -40,29 +51,40 @@ KB (future)   Metadata         Semantic       AI-Generated
 ### ✅ Completed
 
 - **Product & Category Profiles**: Fully implemented and documented
+- **Product Data Enhancement**: 
+  - Product type parsing (core_type, subtype, materials, patterns, decorations, etc.)
+  - Product level classification (classic, luxury, essential)
+  - Enhanced product data fields (additional_data, dimensions, product_type_data)
+- **Heritage Research System (Phase 1)**: Complete
+  - Wikipedia API integration
+  - Multi-dimensional research (historical origins, cultural significance, evolution, etc.)
+  - LLM synthesis with Mistral 7B
 - **Vector Search Infrastructure (Phase 1)**: Complete
   - `content_chunks` table
   - Chunking pipeline for products/categories
   - Embedding generation (E5-large-v2)
   - FAISS index with PostgreSQL metadata
   - Retrieval API
-
 - **Content Generation Engine (Phase 2)**: Complete
   - Prompt templates in `llm_prompt` table
   - Generation orchestrator
   - Post creation workflow
   - API endpoints
-
+- **Product Pipeline Simplification**: Complete
+  - Reduced from 6 to 4 stages for `generated` posts
+  - Section content mapping stage
 - **User Interface (Phase 3)**: Complete
   - Content Generator modal in calendar week view
-  - Product/category search
+  - Product/category search (simple filter + semantic "Smart Search")
   - Generation options
   - Preview and save functionality
 
 ### 🚧 In Progress
 
+- Product type parsing review (305 products need review)
+- Smart product search enhancement (relevance issues)
+- Heritage data truncation fix
 - Testing and refinement of content generation quality
-- Error handling improvements
 
 ### 📋 Planned
 
@@ -86,21 +108,32 @@ KB (future)   Metadata         Semantic       AI-Generated
 
 ## Documentation Structure
 
-### `/profiles/`
-- [Product & Category Profiles Documentation](./profiles/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md)
-- [Quick Start Guide](./profiles/QUICK_START_GUIDE.md)
-- [Implementation Status](./profiles/implementation-status.md)
-- [Section Types](./profiles/section-types.md)
-- [File Inventory](./profiles/FILE_INVENTORY.md)
+### `/products/`
+- [Products Documentation](./products/README.md) - Overview of all product-related systems
+- [Product & Category Profiles Documentation](./products/PRODUCT_CATEGORY_PROFILES_DOCUMENTATION.md) - Main profiles documentation
+- `/products/profiles/` - Profile-specific documentation (Quick Start, Implementation Status, Section Types, File Inventory)
+- `/products/data/` - Product data parsing & classification (Type Parsing Design, Planning Review, Pipeline Checklist)
+- `/products/search/` - Smart product search implementation
+
+### `/knowledge_base/`
+- Knowledge Base integration documentation (coming soon)
 
 ### `/content_generation/`
 - [Content Generation Roadmap](./content_generation/KB_Content_Generation_Roadmap.md)
+- [Content Generator Status](./content_generation/CONTENT_GENERATOR_STATUS.md)
 - [Vector Search Phase 1 Plan](./content_generation/Vector_Search_Phase1_Plan.md)
 - [Content Generation Phases 2-3 Plan](./content_generation/Content_Generation_Phases2-3_Plan.md)
-- [Phase 1 Test Results](./content_generation/Phase1_Test_Results.md)
-- [Phase 2 Test Results](./content_generation/Phase2_Test_Results.md)
-- [Phase 2 Next Steps](./content_generation/Phase2_Next_Steps.md)
-- [Implementation Readiness Assessment](./content_generation/Implementation_Readiness_Assessment.md)
+- [Product Article Planning Discussion](./content_generation/PRODUCT_ARTICLE_PLANNING_DISCUSSION.md)
+
+### `/heritage_research/`
+- [System Documentation](./heritage_research/SYSTEM_DOCUMENTATION.md)
+- [Quick Reference](./heritage_research/QUICK_REFERENCE.md)
+- [Current Implementation Status](./heritage_research/CURRENT_IMPLEMENTATION_STATUS.md)
+- [Enhanced Heritage Research Proposal](./heritage_research/ENHANCED_HERITAGE_RESEARCH_PROPOSAL.md)
+- [Implementation Plan](./heritage_research/IMPLEMENTATION_PLAN.md)
+
+### Top-Level Documents
+- [Project Status Summary](./PROJECT_STATUS_SUMMARY.md) - Comprehensive project overview and status
 
 ---
 
@@ -122,5 +155,5 @@ KB (future)   Metadata         Semantic       AI-Generated
 
 ---
 
-**Last Updated:** 2025-01-10
+**Last Updated:** 2025-11-11
 
