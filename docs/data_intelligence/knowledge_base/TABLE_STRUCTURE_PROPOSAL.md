@@ -112,6 +112,18 @@ Stores Knowledge Base category hierarchy (similar to `clan_categories`).
 - `path` field allows efficient hierarchy queries
 - `children_count` cached for performance (updated when children change)
 
+#### Category Hierarchy Notes
+
+**Important:** Categories are **not sorted into a tree structure**. The `level` field represents position in hierarchy, not tree depth.
+
+- **Level 4**: Main categories
+- **Level 5**: Sub-categories
+- **Level 6+**: Sub-sub-categories
+
+The `path` field contains a slash-separated list of all parent category IDs (e.g., `"1/58/188/72"`), showing the complete ancestry from root to current category. Use this with `parent_id` to understand relationships.
+
+See [CATEGORY_HIERARCHY_NOTES.md](./CATEGORY_HIERARCHY_NOTES.md) for detailed explanation and usage examples.
+
 ---
 
 ### `clan_kb_articles`
