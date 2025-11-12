@@ -1,0 +1,32 @@
+[
+  {
+    "product_id": 288,
+    "product_name": "Highland Saltire Buckle with All Over Antique Finish",
+    "current_form": "homeware",
+    "current_core_type": "kilt",
+    "new_form": "homeware",
+    "new_core_type": "kilt_accessory",
+    "confidence": 0.8,
+    "reasoning": "The product is a buckle that can be used to accessorize kilts and since it's not worn on the body like clothing or jewellery, it falls under homeware category. The product's core type is a kilt accessory as it complements the kilt."
+  },
+  {
+    "product_id": 962,
+    "product_name": "Celtic Square Buckle",
+    "current_form": "homeware",
+    "current_core_type": "kilt",
+    "new_form": "homeware",
+    "new_core_type": "kilt_accessory",
+    "confidence": 0.8,
+    "reasoning": "The product is a Celtic inspired buckle that adds an impressive finishing touch to an outfit. It is used as an accessory for kilts, which fall under the homeware category."
+  },
+  {
+    "product_id": 966,
+    "product_name": "Celtic Dog Buckle",
+    "current_form": "homeware",
+    "current_core_type": "kilt",
+    "new_form": "homeware",
+    "new_core_type": "buckle",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle and it is used in conjunction with kilts which falls under the homeware category. Although this specific design has elements of pets (Celtic Dog), it's primary function is not for pets but as an accessory for clothing."
+  }
+]
