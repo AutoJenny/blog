@@ -7,6 +7,7 @@ from flask import Blueprint, render_template, request, jsonify
 from config.database import db_manager
 from utils.content_generation.clan_data_extractor import ClanDataExtractor
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -117,13 +118,14 @@ def browser():
                 
                 if category_data:
                     # Get products in this category
+                    # category_ids is a JSONB array, so we need to check if it contains the category_id
                     cursor.execute("""
                         SELECT id, name, sku
                         FROM clan_products
-                        WHERE category_ids::text LIKE %s
+                        WHERE category_ids @> %s::jsonb
                         ORDER BY name
                         LIMIT 50
-                    """, (f'%"%{category_id}%"%',))
+                    """, (json.dumps([category_id]),))
                     category_products = cursor.fetchall()
         except Exception as e:
             logger.error(f"Error loading category {category_id}: {e}")
