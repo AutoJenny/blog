@@ -205,6 +205,14 @@ def create_app(config_name=None):
     # Register side projects blueprint
     from blueprints.side_projects import bp as side_projects_bp
     app.register_blueprint(side_projects_bp)
+    
+    # Register product browser blueprint
+    from blueprints.product_browser import bp as product_browser_bp
+    app.register_blueprint(product_browser_bp)
+    
+    # Register KB browser blueprint
+    from blueprints.kb_browser import bp as kb_browser_bp
+    app.register_blueprint(kb_browser_bp)
 
     # Register publish blueprint (for recipe post publishing)
     try:

@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Base Browser - BlogForge{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
+<style>
+    .kb-browser-main {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .browser-header {
+        margin-bottom: 2rem;
+    }
+    
+    .browser-header h2 {
+        color: #f1f5f9;
+        margin-bottom: 0.5rem;
+    }
+    
+    .browser-header p {
+        color: #94a3b8;
+    }
+    
+    .browser-navigation {
+        margin: 2rem 0;
+    }
+    
+    .nav-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+    }
+    
+    .nav-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+    }
+    
+    .nav-controls button {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: 1px solid #475569;
+        background: #334155;
+        color: #f1f5f9;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+    }
+    
+    .nav-controls button:hover:not(:disabled) {
+        background: #475569;
+    }
+    
+    .nav-controls button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .article-display {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .article-header {
+        border-bottom: 1px solid #334155;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .article-title {
+        color: #f1f5f9;
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .article-meta {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .article-content {
+        color: #cbd5e1;
+        line-height: 1.7;
+    }
+    
+    .article-content h1, .article-content h2, .article-content h3 {
+        color: #f1f5f9;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .article-content p {
+        margin-bottom: 1rem;
+    }
+    
+    .article-content ul, .article-content ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+        margin: 1rem 0;
+    }
+    
+    .category-browser {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .category-tree {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .category-item {
+        padding: 0.5rem;
+        cursor: pointer;
+        border-radius: 4px;
+        margin: 0.25rem 0;
+    }
+    
+    .category-item:hover {
+        background: #334155;
+    }
+    
+    .category-item.active {
+        background: #475569;
+        color: #8b5cf6;
+    }
+    
+    .search-section {
+        margin-bottom: 2rem;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 0.75rem;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        color: #f1f5f9;
+        font-size: 1rem;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    
+    .no-selection {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-main">
+        <div class="kb-browser-main">
+            <div class="browser-header">
+                <h2>Knowledge Base Browser</h2>
+                <p>Browse and review CLAN Knowledge Base articles and categories</p>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <input type="text" 
+                       id="article-search" 
+                       class="search-input" 
+                       placeholder="Search articles by name...">
+                <div id="search-results" style="display: none; margin-top: 0.5rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; max-height: 300px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="browser-navigation">
+                <div class="nav-controls">
+                    <button id="prev-article" class="btn btn-secondary" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <div class="nav-info">
+                        <span id="current-article-info">Select an article to browse</span>
+                    </div>
+                    <button id="next-article" class="btn btn-secondary" disabled>
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Article Display -->
+            <div id="article-display-container">
+                {% if article_data %}
+                    <div class="article-display">
+                        <div class="article-header">
+                            <h1 class="article-title">{{ article_data.name }}</h1>
+                            <div class="article-meta">
+                                {% if article_data.category_id %}
+                                    <span>Category ID: {{ article_data.category_id }}</span>
+                                {% endif %}
+                                {% if article_data.url_key %}
+                                    <span>URL Key: {{ article_data.url_key }}</span>
+                                {% endif %}
+                                {% if article_data.user_name %}
+                                    <span>Author: {{ article_data.user_name }}</span>
+                                {% endif %}
+                                {% if article_data.clan_updated_at %}
+                                    <span>Updated: {{ article_data.clan_updated_at.strftime('%Y-%m-%d') if article_data.clan_updated_at else '' }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if article_data.short_text %}
+                            <div class="article-content" style="font-style: italic; color: #94a3b8; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #334155;">
+                                {{ article_data.short_text_cleaned|safe if article_data.short_text_cleaned else article_data.short_text|safe }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if article_data.text %}
+                            <div class="article-content">
+                                {{ article_data.text_cleaned|safe if article_data.text_cleaned else article_data.text|safe }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% elif category_data %}
+                    <div class="article-display">
+                        <div class="article-header">
+                            <h1 class="article-title">{{ category_data.name }}</h1>
+                            <div class="article-meta">
+                                <span>Level: {{ category_data.level }}</span>
+                                {% if category_data.parent_id %}
+                                    <span>Parent ID: {{ category_data.parent_id }}</span>
+                                {% endif %}
+                                {% if category_data.path %}
+                                    <span>Path: {{ category_data.path }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p style="color: #94a3b8;">This is a category. Articles in this category will be listed here.</p>
+                    </div>
+                {% else %}
+                    <div class="no-selection">
+                        <p>Select an article from the search above to view its details.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// KB Browser Navigation
+let currentArticleId = null;
+let allArticleIds = [];
+let currentIndex = -1;
+
+// Load article list on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const articleIdParam = urlParams.get('article_id');
+    
+    loadArticleList();
+    setupNavigation();
+    setupSearch();
+    
+    if (articleIdParam) {
+        const checkAndLoad = () => {
+            if (allArticleIds.length > 0) {
+                const articleId = parseInt(articleIdParam);
+                if (articleId && allArticleIds.includes(articleId)) {
+                    currentArticleId = articleId;
+                    updateCurrentIndex();
+                    updateNavigationState();
+                    loadArticle(articleId);
+                }
+            } else {
+                setTimeout(checkAndLoad, 100);
+            }
+        };
+        setTimeout(checkAndLoad, 100);
+    }
+});
+
+function loadArticleList() {
+    fetch('/kb/api/articles')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                allArticleIds = data.articles.map(a => a.id).sort((a, b) => a - b);
+                if (currentArticleId) {
+                    updateCurrentIndex();
+                }
+                updateNavigationState();
+            }
+        })
+        .catch(error => console.error('Error loading articles:', error));
+}
+
+function setupNavigation() {
+    const prevBtn = document.getElementById('prev-article');
+    const nextBtn = document.getElementById('next-article');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateArticle(-1);
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateArticle(1);
+        });
+    }
+}
+
+function setupSearch() {
+    const searchInput = document.getElementById('article-search');
+    const resultsDiv = document.getElementById('search-results');
+    
+    if (!searchInput || !resultsDiv) return;
+    
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            searchArticles(query);
+        }, 300);
+    });
+}
+
+function searchArticles(query) {
+    const resultsDiv = document.getElementById('search-results');
+    
+    fetch(`/kb/api/articles?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.articles.length > 0) {
+                resultsDiv.innerHTML = data.articles.map(article => `
+                    <div class="category-item" onclick="selectArticle(${article.id})">
+                        <strong>${article.name}</strong>
+                        ${article.url_key ? `<br><small style="color: #94a3b8;">${article.url_key}</small>` : ''}
+                    </div>
+                `).join('');
+                resultsDiv.style.display = 'block';
+            } else {
+                resultsDiv.innerHTML = '<div style="padding: 1rem; color: #94a3b8;">No articles found</div>';
+                resultsDiv.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error searching articles:', error);
+            resultsDiv.innerHTML = '<div style="padding: 1rem; color: #ef4444;">Error searching articles</div>';
+            resultsDiv.style.display = 'block';
+        });
+}
+
+function selectArticle(articleId) {
+    document.getElementById('article-search').value = '';
+    document.getElementById('search-results').style.display = 'none';
+    loadArticle(articleId);
+}
+
+function navigateArticle(direction) {
+    if (allArticleIds.length === 0) {
+        console.log('Article list not loaded yet');
+        return;
+    }
+    
+    if (currentIndex === -1) {
+        currentIndex = direction === 1 ? 0 : allArticleIds.length - 1;
+    } else {
+        currentIndex += direction;
+    }
+    
+    if (currentIndex < 0) {
+        currentIndex = 0;
+    }
+    if (currentIndex >= allArticleIds.length) {
+        currentIndex = allArticleIds.length - 1;
+    }
+    
+    const articleId = allArticleIds[currentIndex];
+    if (articleId) {
+        loadArticle(articleId);
+    }
+}
+
+function loadArticle(articleId) {
+    fetch(`/kb/api/article/${articleId}`)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                currentArticleId = articleId;
+                updateCurrentIndex();
+                updateNavigationState();
+                displayArticle(data.article);
+                // Update URL
+                window.history.pushState({}, '', `/kb/browser?article_id=${articleId}`);
+            } else {
+                alert('Error loading article: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error loading article:', error);
+            alert('Error loading article: ' + error.message);
+        });
+}
+
+function updateCurrentIndex() {
+    if (!currentArticleId) {
+        currentIndex = -1;
+        return;
+    }
+    
+    const index = allArticleIds.indexOf(currentArticleId);
+    if (index !== -1) {
+        currentIndex = index;
+    } else {
+        currentIndex = -1;
+    }
+}
+
+function updateNavigationState() {
+    const prevBtn = document.getElementById('prev-article');
+    const nextBtn = document.getElementById('next-article');
+    const infoSpan = document.getElementById('current-article-info');
+    
+    if (!prevBtn || !nextBtn || !infoSpan) return;
+    
+    const total = allArticleIds.length;
+    
+    if (currentIndex === -1 || total === 0) {
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        infoSpan.textContent = 'Select an article to browse';
+    } else {
+        const isAtStart = currentIndex === 0;
+        const isAtEnd = currentIndex >= total - 1;
+        
+        prevBtn.disabled = isAtStart;
+        nextBtn.disabled = isAtEnd;
+        
+        infoSpan.textContent = `Article ${currentIndex + 1} of ${total} (ID: ${currentArticleId})`;
+    }
+}
+
+function displayArticle(article) {
+    const container = document.getElementById('article-display-container');
+    
+    const html = `
+        <div class="article-display">
+            <div class="article-header">
+                <h1 class="article-title">${escapeHtml(article.name || 'Untitled')}</h1>
+                <div class="article-meta">
+                    ${article.category_id ? `<span>Category ID: ${article.category_id}</span>` : ''}
+                    ${article.url_key ? `<span>URL Key: ${escapeHtml(article.url_key)}</span>` : ''}
+                    ${article.user_name ? `<span>Author: ${escapeHtml(article.user_name)}</span>` : ''}
+                    ${article.clan_updated_at ? `<span>Updated: ${new Date(article.clan_updated_at).toLocaleDateString()}</span>` : ''}
+                </div>
+            </div>
+            ${article.short_text ? `
+                <div class="article-content" style="font-style: italic; color: #94a3b8; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #334155;">
+                    ${article.short_text_cleaned || article.short_text}
+                </div>
+            ` : ''}
+            ${article.text ? `
+                <div class="article-content">
+                    ${article.text_cleaned || article.text}
+                </div>
+            ` : '<p style="color: #94a3b8;">No content available.</p>'}
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}
+
