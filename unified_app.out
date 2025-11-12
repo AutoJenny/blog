@@ -8135,3 +8135,228 @@ NameError: name 'redirect' is not defined
 2025-11-12 22:09:24,011 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:09:24] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
 2025-11-12 22:09:24,011 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:09:24] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
 2025-11-12 22:09:24,014 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:09:24] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,588 - config.database - INFO - Database connection established
+2025-11-12 22:20:53,615 - config.database - INFO - Database connection established
+2025-11-12 22:20:53,628 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "GET /tags/browser?category=core_type&tag=quaich&product_form=homeware HTTP/1.1" 200 -
+2025-11-12 22:20:53,664 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,673 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,674 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,674 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,675 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,675 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,676 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,679 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 22:20:53,680 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:53] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,091 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-12 22:20:59,092 - faiss.loader - INFO - Loading faiss.
+2025-11-12 22:20:59,130 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-12 22:20:59,141 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 22:20:59,141 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-12 22:20:59,148 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,161 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,169 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,176 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,184 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,191 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,196 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,200 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,205 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,208 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,212 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,250 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "GET /products/browser?product_id=680 HTTP/1.1" 200 -
+2025-11-12 22:20:59,265 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,269 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,271 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,272 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,273 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,273 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,273 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "GET /static/css/planning/product-data-review.css HTTP/1.1" 200 -
+2025-11-12 22:20:59,274 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,275 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,275 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 22:20:59,289 - config.database - INFO - Database connection established
+2025-11-12 22:20:59,297 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:20:59] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 22:24:33,051 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 22:24:33,053 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-12 22:24:34,782 - utils.vector_search.embeddings - INFO - Loading embedding model: intfloat/e5-large-v2
+2025-11-12 22:24:34,798 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-11-12 22:24:34,798 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: intfloat/e5-large-v2
+2025-11-12 22:24:34,800 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): huggingface.co:443
+2025-11-12 22:24:34,950 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-12 22:24:34,962 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-12 22:24:35,057 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-12 22:24:35,155 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-12 22:24:35,250 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/README.md HTTP/1.1" 307 0
+2025-11-12 22:24:35,263 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/README.md HTTP/1.1" 200 0
+2025-11-12 22:24:35,360 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-12 22:24:35,372 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-12 22:24:35,468 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 307 0
+2025-11-12 22:24:35,480 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/sentence_bert_config.json HTTP/1.1" 200 0
+2025-11-12 22:24:35,576 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/adapter_config.json HTTP/1.1" 404 0
+2025-11-12 22:24:35,670 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config.json HTTP/1.1" 307 0
+2025-11-12 22:24:35,684 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/config.json HTTP/1.1" 200 0
+2025-11-12 22:24:35,910 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/tokenizer_config.json HTTP/1.1" 307 0
+2025-11-12 22:24:35,922 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/tokenizer_config.json HTTP/1.1" 200 0
+2025-11-12 22:24:36,022 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2/tree/main/additional_chat_templates?recursive=False&expand=False HTTP/1.1" 404 64
+2025-11-12 22:24:36,169 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/1_Pooling/config.json HTTP/1.1" 307 0
+2025-11-12 22:24:36,184 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/1_Pooling%2Fconfig.json HTTP/1.1" 200 0
+2025-11-12 22:24:36,293 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2 HTTP/1.1" 200 149102
+2025-11-12 22:24:37,293 - utils.vector_search.embeddings - INFO - Loading embedding model: intfloat/e5-large-v2
+2025-11-12 22:24:37,294 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-11-12 22:24:37,294 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: intfloat/e5-large-v2
+2025-11-12 22:24:37,295 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): huggingface.co:443
+2025-11-12 22:24:37,318 - utils.vector_search.embeddings - INFO - Embedding model loaded successfully
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]2025-11-12 22:24:37,412 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-12 22:24:37,423 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+Batches: 100%|██████████| 1/1 [00:00<00:00,  5.31it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.31it/s]
+2025-11-12 22:24:37,510 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-12 22:24:37,517 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-12 22:24:37,552 - config.database - INFO - Database connection established
+2025-11-12 22:24:37,565 - config.database - INFO - Database connection established
+2025-11-12 22:24:37,576 - config.database - INFO - Database connection established
+2025-11-12 22:24:37,586 - config.database - INFO - Database connection established
+2025-11-12 22:24:37,590 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:37] "POST /api/products/semantic-search HTTP/1.1" 200 -
+2025-11-12 22:24:37,615 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-12 22:24:37,709 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/README.md HTTP/1.1" 307 0
+2025-11-12 22:24:37,720 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/README.md HTTP/1.1" 200 0
+2025-11-12 22:24:37,838 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-12 22:24:37,851 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-12 22:24:37,945 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 307 0
+2025-11-12 22:24:37,959 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/sentence_bert_config.json HTTP/1.1" 200 0
+2025-11-12 22:24:38,057 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/adapter_config.json HTTP/1.1" 404 0
+2025-11-12 22:24:38,173 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config.json HTTP/1.1" 307 0
+2025-11-12 22:24:38,191 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/config.json HTTP/1.1" 200 0
+2025-11-12 22:24:38,411 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/tokenizer_config.json HTTP/1.1" 307 0
+2025-11-12 22:24:38,424 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/tokenizer_config.json HTTP/1.1" 200 0
+2025-11-12 22:24:38,523 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2/tree/main/additional_chat_templates?recursive=False&expand=False HTTP/1.1" 404 64
+2025-11-12 22:24:38,661 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/1_Pooling/config.json HTTP/1.1" 307 0
+2025-11-12 22:24:38,679 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/1_Pooling%2Fconfig.json HTTP/1.1" 200 0
+2025-11-12 22:24:38,803 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2 HTTP/1.1" 200 149102
+2025-11-12 22:24:39,371 - utils.vector_search.embeddings - INFO - Embedding model loaded successfully
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.53it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.52it/s]
+2025-11-12 22:24:39,480 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-12 22:24:39,545 - config.database - INFO - Database connection established
+2025-11-12 22:24:39,557 - config.database - INFO - Database connection established
+2025-11-12 22:24:39,566 - config.database - INFO - Database connection established
+2025-11-12 22:24:39,575 - config.database - INFO - Database connection established
+2025-11-12 22:24:39,583 - config.database - INFO - Database connection established
+2025-11-12 22:24:39,590 - config.database - INFO - Database connection established
+2025-11-12 22:24:39,597 - config.database - INFO - Database connection established
+2025-11-12 22:24:39,599 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:39] "POST /api/products/semantic-search HTTP/1.1" 200 -
+2025-11-12 22:24:49,019 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 22:24:49,021 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-12 22:24:49,028 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,034 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "GET /products/api/160/full HTTP/1.1" 200 -
+2025-11-12 22:24:49,045 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-12 22:24:49,047 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-12 22:24:49,057 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,074 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,086 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,096 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,107 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,118 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,130 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,134 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "GET /products/browser?product_id=160 HTTP/1.1" 200 -
+2025-11-12 22:24:49,161 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,166 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,168 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,168 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,169 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,169 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,171 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,173 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,175 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,175 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 22:24:49,189 - config.database - INFO - Database connection established
+2025-11-12 22:24:49,202 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:24:49] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-12 22:36:12,179 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/rationalize_materials.py', reloading
+2025-11-12 22:36:12,716 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 22:36:13,099 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 22:36:13,120 - config.database - INFO - Database connection established
+2025-11-12 22:36:13,123 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 22:36:13,124 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 22:36:13,124 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 22:36:13,125 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 22:36:13,126 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 22:36:13,126 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 22:36:13,126 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 22:36:14,400 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 22:36:14,408 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 22:36:14,417 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 22:36:14,440 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 22:36:14,452 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 22:36:20,751 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/tag_browser.py', reloading
+2025-11-12 22:36:21,044 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 22:36:21,353 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 22:36:21,373 - config.database - INFO - Database connection established
+2025-11-12 22:36:21,375 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 22:36:21,376 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 22:36:21,376 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 22:36:21,377 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 22:36:21,377 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 22:36:21,377 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 22:36:21,377 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 22:36:22,290 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 22:36:22,298 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 22:36:22,306 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 22:36:22,330 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 22:36:22,342 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 22:36:22,534 - config.database - INFO - Database connection established
+2025-11-12 22:36:22,597 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "GET /tags/browser HTTP/1.1" 200 -
+2025-11-12 22:36:22,655 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 22:36:22,655 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "GET /static/css/tags/browser.css HTTP/1.1" 200 -
+2025-11-12 22:36:22,656 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 22:36:22,657 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 22:36:22,658 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 22:36:22,658 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 22:36:22,660 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 22:36:22,660 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 22:36:22,661 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 22:36:22] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 22:36:45,453 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/scripts/rationalize_materials.py', reloading
+2025-11-12 22:36:45,758 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 22:36:46,085 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 22:36:46,106 - config.database - INFO - Database connection established
+2025-11-12 22:36:46,108 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 22:36:46,109 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 22:36:46,109 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 22:36:46,109 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 22:36:46,109 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 22:36:46,109 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 22:36:46,109 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 22:36:46,994 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 22:36:47,000 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 22:36:47,008 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 22:36:47,029 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 22:36:47,039 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 22:36:55,752 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/tag_browser.py', reloading
+2025-11-12 22:36:56,010 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 22:36:56,327 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 22:36:56,350 - config.database - INFO - Database connection established
+2025-11-12 22:36:56,354 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 22:36:56,355 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 22:36:56,355 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 22:36:56,355 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 22:36:56,355 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 22:36:56,356 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 22:36:56,356 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 22:36:57,265 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 22:36:57,273 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 22:36:57,281 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 22:36:57,302 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 22:36:57,314 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-12 22:37:00,028 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/tag_browser.py', reloading
+2025-11-12 22:37:00,342 - werkzeug - INFO -  * Restarting with stat
+2025-11-12 22:37:00,679 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-12 22:37:00,702 - config.database - INFO - Database connection established
+2025-11-12 22:37:00,706 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-12 22:37:00,707 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-12 22:37:00,707 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-12 22:37:00,707 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-12 22:37:00,707 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-12 22:37:00,708 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-12 22:37:00,708 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-12 22:37:01,639 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-12 22:37:01,647 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-12 22:37:01,655 - __main__ - INFO - ✅ Registered preview routes
+2025-11-12 22:37:01,677 - werkzeug - WARNING -  * Debugger is active!
+2025-11-12 22:37:01,689 - werkzeug - INFO -  * Debugger PIN: 263-852-041
