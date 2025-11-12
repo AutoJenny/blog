@@ -200,7 +200,9 @@ def get_category_breadcrumbs(category_id):
         """, (category_id,))
         
         result = cursor.fetchone()
-        if not result or not result[0]:
+        path_value = result['path'] if result and result.get('path') else None
+        
+        if not path_value:
             # Fallback: build from parent_id chain
             breadcrumbs = []
             current_id = category_id
@@ -217,7 +219,7 @@ def get_category_breadcrumbs(category_id):
             return breadcrumbs
         
         # Parse path (e.g., "1/58/188/72")
-        path_ids = [int(id_str) for id_str in result[0].split('/') if id_str.strip()]
+        path_ids = [int(id_str) for id_str in path_value.split('/') if id_str.strip()]
         
         # Also include the current category
         if category_id not in path_ids:
