@@ -25,18 +25,35 @@ Currently:
 ## Current State Analysis
 
 ### Products with Pewter
-- Multiple products contain "pewter" in `additional_data`, `description`, or `product_type_data.materials`
-- Material information stored in `product_type_data.materials` array
+- **71 products** have "pewter" in `product_type_data.materials` array
+- **20+ products** have "pewter" in descriptions or additional_data
+- Material is 4th most common material (after tartan, wool, polyester)
+- Examples: Celtic Banded Pewter Quaich, various kilt pins, brooches, buckles
 
 ### KB Articles about Pewter
-- 4 articles found with "pewter" in name or content
-- None marked as primary
-- None linked to products
-- Varying content lengths and quality
+- **12 articles** found with "pewter" in name or content
+- **4 core pewter articles** in "Pewter" category:
+  1. **"What is pewter?"** (ID: 589) - 2,256 chars - Overview article
+  2. **"Historical Scottish pewter wares"** (ID: 590) - 5,794 chars - Historical context
+  3. **"How do I care for pewter objects?"** (ID: 592) - 2,423 chars - Care guide
+  4. **"Is pewter safe to use for food and drink items?"** (ID: 591) - 1,980 chars - Safety info
+- **8 related articles** mention pewter (quaichs, kilt accessories, etc.)
+- **None marked as primary**
+- **None linked to products**
 
 ### Semantic Search Results
-- Vector search successfully finds pewter-related content across products, categories, and KB
-- Can identify relevant content even without exact keyword matches
+- Vector search successfully finds pewter-related content:
+  - **14 products** with high similarity (0.71-0.72)
+  - **4 KB articles** with high similarity (0.71-0.74)
+  - **2 categories** (Quaichs, Cufflinks/Tie Pins)
+- **"What is pewter?"** has highest semantic relevance (0.744-0.778 depending on query)
+- **"Historical Scottish pewter wares"** has best content length (5,794 chars) and good relevance
+- **"How do I care for pewter objects?"** has excellent relevance for care queries (0.809)
+
+### Blog Posts
+- `post` table exists with content fields
+- Need to check for pewter-related posts
+- Posts have `profile_product_id`, `profile_category_id` fields for direct product links
 
 ---
 
@@ -261,46 +278,104 @@ Related Knowledge
 ## Example: Pewter Implementation
 
 ### Current State
-- **Products**: ~X products with "pewter" material
-- **KB Articles**: 4 articles about pewter
+- **Products**: 71 products with "pewter" material
+- **KB Articles**: 4 core pewter articles + 8 related articles
 - **Links**: None
+- **Primary Article**: None designated
+
+### Recommended Classification
+
+**Primary Article:**
+- **"Historical Scottish pewter wares"** (ID: 590)
+  - **Rationale**: Longest content (5,794 chars), comprehensive historical coverage
+  - **Alternative**: "What is pewter?" (ID: 589) - Good overview, but shorter
+  - **Decision**: Use "Historical Scottish pewter wares" as primary (more comprehensive)
+
+**Secondary Articles:**
+- **"What is pewter?"** (ID: 589) - Overview/introduction
+- **"How do I care for pewter objects?"** (ID: 592) - Care guide
+- **"Is pewter safe to use for food and drink items?"** (ID: 591) - Safety information
+
+**Related Articles** (mention pewter but not primarily about it):
+- "About the Quaich" (ID: 230) - Mentions pewter quaichs
+- "Kilt Pins" (ID: 233) - Some pewter kilt pins
+- Other kilt accessory articles
 
 ### After Implementation
 
 **Step 1: Classify KB Articles**
-- "What is Pewter?" → Primary (comprehensive overview)
-- "Caring for Pewter" → Secondary (specialized topic)
-- "Pewter History" → Secondary (specialized topic)
-- "Pewter vs Silver" → Secondary (comparison)
+- "Historical Scottish pewter wares" → **Primary** (`is_primary = TRUE`, `primary_topic = 'pewter'`)
+- "What is pewter?" → Secondary (`primary_topic = 'pewter'`, `related_topics = ['overview', 'introduction']`)
+- "How do I care for pewter objects?" → Secondary (`primary_topic = 'pewter'`, `related_topics = ['care', 'maintenance']`)
+- "Is pewter safe to use for food and drink items?" → Secondary (`primary_topic = 'pewter'`, `related_topics = ['safety', 'food']`)
 
 **Step 2: Link Products**
-- All products with `materials: ['pewter']` → Primary link to "What is Pewter?"
-- Products with care questions → Secondary link to "Caring for Pewter"
-- Historical products → Secondary link to "Pewter History"
+- **All 71 products** with `materials: ['pewter']` → Primary link to "Historical Scottish pewter wares" (ID: 590)
+- **All 71 products** → Secondary link to "What is pewter?" (ID: 589) - Overview
+- **All 71 products** → Secondary link to "How do I care for pewter objects?" (ID: 592) - Care
+- **Food/drink products** (quaichs, cups) → Secondary link to "Is pewter safe to use for food and drink items?" (ID: 591)
+- **Quaich products** → Additional link to "About the Quaich" (ID: 230)
 
 **Step 3: Display in UI**
-- Product browser shows primary article prominently
-- Secondary articles in expandable section
+- Product browser shows "Historical Scottish pewter wares" prominently as primary
+- Secondary articles in expandable "Learn More" section:
+  - "What is pewter?" (overview)
+  - "How do I care for pewter objects?" (care)
+  - "Is pewter safe to use for food and drink items?" (safety, if applicable)
 - Blog posts (if any) at bottom
 
+### Expected Impact
+- **71 products** will have immediate KB links
+- Users can learn about pewter directly from product pages
+- Care instructions easily accessible
+- Historical context provided automatically
+
 ---
+
+## Key Findings from Analysis
+
+### Pewter-Specific Findings
+- **71 products** use pewter material (4th most common material)
+- **4 core pewter KB articles** exist but none are primary
+- **"Historical Scottish pewter wares"** (5,794 chars) is best candidate for primary
+- **Semantic search works well** - finds relevant articles with 0.71-0.81 similarity scores
+- **No blog posts** currently about pewter (opportunity for content creation)
+
+### Material Distribution
+Top materials by product count:
+- Tartan: 274 products
+- Wool: 97 products  
+- Polyester: 83 products
+- **Pewter: 71 products** ← Good test case
+- Leather: 57 products
+- Cashmere: 47 products
+
+### KB Article Quality
+- Articles in "Pewter" category are well-organized
+- Content lengths vary (1,980 - 5,794 chars)
+- Semantic search identifies relevant articles accurately
+- No current linking mechanism
 
 ## Questions to Resolve
 
 1. **Primary Article Selection**: Should there be only ONE primary article per topic, or multiple?
    - **Recommendation**: One primary per topic, but allow multiple if articles cover different aspects
+   - **Pewter Example**: "Historical Scottish pewter wares" as primary (comprehensive), others as secondary
 
 2. **Link Confidence Threshold**: What similarity score threshold for automatic semantic links?
    - **Recommendation**: 0.7 for automatic, 0.6-0.7 for review queue
+   - **Pewter Example**: All 4 core articles score 0.71-0.81, so all would auto-link
 
 3. **Manual Override**: Should users be able to manually add/remove links?
    - **Recommendation**: Yes, with admin interface
 
 4. **Link Display Priority**: How to order multiple links?
    - **Recommendation**: Primary first, then by confidence score, then alphabetical
+   - **Pewter Example**: Primary → "What is pewter?" → "How do I care?" → "Is pewter safe?"
 
 5. **Topic Taxonomy**: Should we create a formal topic taxonomy or use free-form topics?
    - **Recommendation**: Start free-form, build taxonomy iteratively
+   - **Pewter Example**: Use "pewter" as primary_topic, extract related topics from content
 
 ---
 
