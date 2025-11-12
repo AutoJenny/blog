@@ -474,4 +474,246 @@ class ContentChunker:
             'created': created,
             'updated': updated
         }
+    
+    def chunk_kb_article(self, article: Dict, category_name: Optional[str] = None) -> List[Dict]:
+        """
+        Create chunks from a KB article record.
+        Articles may be long, so we split into multiple chunks if needed.
+        
+        Args:
+            article: Dictionary with article fields from clan_kb_articles table
+            category_name: Optional category name for context
+            
+        Returns:
+            List of dictionaries with chunk_text and metadata (one or more chunks)
+        """
+        name = (article.get('name') or '').strip()
+        short_text = self.clean_html(article.get('short_text'))
+        text = self.clean_html(article.get('text'))
+        category_id = article.get('category_id')
+        url_key = article.get('url_key', '').strip()
+        
+        # Build structured text
+        parts = []
+        
+        if name:
+            parts.append(f"Article: {name}")
+        
+        if category_name:
+            parts.append(f"Category: {category_name}")
+        
+        if short_text:
+            parts.append("")
+            parts.append("Summary:")
+            parts.append(short_text)
+        
+        if text:
+            parts.append("")
+            parts.append("Content:")
+            parts.append(text)
+        
+        full_text = "\n".join(parts).strip()
+        
+        # Determine if we need to split into multiple chunks
+        # Rough estimate: ~4 characters per token, so 2000 tokens = ~8000 characters
+        # We'll use 6000 characters as a safe chunk size to leave room for overlap
+        max_chunk_size = 6000
+        chunks = []
+        
+        if len(full_text) <= max_chunk_size:
+            # Single chunk
+            metadata = {
+                'article_name': name,
+                'article_id': article.get('id'),
+                'category_id': category_id,
+                'url_key': url_key,
+                'chunk_count': 1,
+                'chunk_index': 0
+            }
+            chunks.append({
+                'chunk_text': full_text,
+                'metadata': metadata
+            })
+        else:
+            # Split into multiple chunks with overlap
+            # Split by paragraphs first, then by sentences if needed
+            paragraphs = full_text.split('\n\n')
+            current_chunk_parts = []
+            current_chunk_size = 0
+            chunk_index = 0
+            
+            for para in paragraphs:
+                para_size = len(para)
+                
+                # If adding this paragraph would exceed limit, finalize current chunk
+                if current_chunk_size + para_size > max_chunk_size and current_chunk_parts:
+                    # Create chunk
+                    chunk_text = "\n\n".join(current_chunk_parts)
+                    metadata = {
+                        'article_name': name,
+                        'article_id': article.get('id'),
+                        'category_id': category_id,
+                        'url_key': url_key,
+                        'chunk_count': None,  # Will be set after we know total
+                        'chunk_index': chunk_index
+                    }
+                    chunks.append({
+                        'chunk_text': chunk_text,
+                        'metadata': metadata
+                    })
+                    
+                    # Start new chunk with overlap (last paragraph from previous chunk)
+                    if current_chunk_parts:
+                        overlap_para = current_chunk_parts[-1]
+                        current_chunk_parts = [overlap_para, para]
+                        current_chunk_size = len(overlap_para) + para_size
+                    else:
+                        current_chunk_parts = [para]
+                        current_chunk_size = para_size
+                    chunk_index += 1
+                else:
+                    current_chunk_parts.append(para)
+                    current_chunk_size += para_size + 2  # +2 for \n\n
+                    
+                    # If paragraph itself is too large, split by sentences
+                    if para_size > max_chunk_size:
+                        sentences = para.split('. ')
+                        for sentence in sentences:
+                            sentence_size = len(sentence)
+                            if current_chunk_size + sentence_size > max_chunk_size and current_chunk_parts:
+                                # Finalize chunk
+                                chunk_text = "\n\n".join(current_chunk_parts)
+                                metadata = {
+                                    'article_name': name,
+                                    'article_id': article.get('id'),
+                                    'category_id': category_id,
+                                    'url_key': url_key,
+                                    'chunk_count': None,
+                                    'chunk_index': chunk_index
+                                }
+                                chunks.append({
+                                    'chunk_text': chunk_text,
+                                    'metadata': metadata
+                                })
+                                
+                                # Start new chunk
+                                current_chunk_parts = [sentence]
+                                current_chunk_size = sentence_size
+                                chunk_index += 1
+                            else:
+                                if current_chunk_parts and not current_chunk_parts[-1].endswith('.'):
+                                    current_chunk_parts[-1] += '. ' + sentence
+                                else:
+                                    current_chunk_parts.append(sentence)
+                                current_chunk_size += sentence_size + 2
+            
+            # Add final chunk
+            if current_chunk_parts:
+                chunk_text = "\n\n".join(current_chunk_parts)
+                metadata = {
+                    'article_name': name,
+                    'article_id': article.get('id'),
+                    'category_id': category_id,
+                    'url_key': url_key,
+                    'chunk_count': len(chunks) + 1,
+                    'chunk_index': chunk_index
+                }
+                chunks.append({
+                    'chunk_text': chunk_text,
+                    'metadata': metadata
+                })
+            
+            # Update chunk_count in all metadata
+            total_chunks = len(chunks)
+            for chunk in chunks:
+                chunk['metadata']['chunk_count'] = total_chunks
+        
+        return chunks
+    
+    def process_all_kb_articles(self) -> Dict[str, int]:
+        """
+        Process all KB articles and create chunks.
+        
+        Returns:
+            Dictionary with counts: {'processed': N, 'created': M, 'updated': K, 'chunks_created': C}
+        """
+        processed = 0
+        created = 0
+        updated = 0
+        chunks_created = 0
+        
+        with db_manager.get_cursor() as cursor:
+            # Get all active articles with their category names
+            cursor.execute("""
+                SELECT 
+                    a.id, a.name, a.url_key, a.short_text, a.text, 
+                    a.category_id, a.is_active,
+                    c.name as category_name
+                FROM clan_kb_articles a
+                LEFT JOIN clan_kb_categories c ON a.category_id = c.id
+                WHERE a.is_active = TRUE
+                ORDER BY a.id
+            """)
+            
+            articles = cursor.fetchall()
+            
+            for article in articles:
+                try:
+                    category_name = article.get('category_name')
+                    chunks = self.chunk_kb_article(article, category_name)
+                    
+                    # Check existing chunks for this article
+                    cursor.execute("""
+                        SELECT id, chunk_index FROM content_chunks
+                        WHERE chunk_type = 'kb' AND source_id = %s
+                        ORDER BY chunk_index
+                    """, (article['id'],))
+                    
+                    existing_chunks = cursor.fetchall()
+                    existing_by_index = {chunk['chunk_index']: chunk['id'] for chunk in existing_chunks}
+                    
+                    # Process each chunk
+                    for chunk_data in chunks:
+                        chunk_index = chunk_data['metadata']['chunk_index']
+                        
+                        if chunk_index in existing_by_index:
+                            # Update existing chunk
+                            import json
+                            chunk_id = existing_by_index[chunk_index]
+                            cursor.execute("""
+                                UPDATE content_chunks
+                                SET chunk_text = %s, metadata = %s::jsonb, updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, (chunk_data['chunk_text'], json.dumps(chunk_data['metadata']), chunk_id))
+                            updated += 1
+                        else:
+                            # Create new chunk
+                            self.save_chunk('kb', article['id'], chunk_data, chunk_index)
+                            chunks_created += 1
+                            created += 1
+                    
+                    # Remove any extra chunks (if article was shortened)
+                    if len(chunks) < len(existing_chunks):
+                        indices_to_keep = {chunk_data['metadata']['chunk_index'] for chunk_data in chunks}
+                        for existing in existing_chunks:
+                            if existing['chunk_index'] not in indices_to_keep:
+                                cursor.execute("""
+                                    DELETE FROM content_chunks
+                                    WHERE id = %s
+                                """, (existing['id'],))
+                    
+                    processed += 1
+                    
+                    if processed % 50 == 0:
+                        logger.info(f"Processed {processed} KB articles ({chunks_created} chunks created)...")
+                        
+                except Exception as e:
+                    logger.error(f"Error processing KB article {article.get('id')}: {e}")
+        
+        return {
+            'processed': processed,
+            'created': created,
+            'updated': updated,
+            'chunks_created': chunks_created
+        }
 

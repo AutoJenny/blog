@@ -120,18 +120,22 @@ def main():
     parser = argparse.ArgumentParser(description='Generate embeddings for content chunks')
     parser.add_argument('--products', action='store_true', help='Process products')
     parser.add_argument('--categories', action='store_true', help='Process categories')
+    parser.add_argument('--kb', action='store_true', help='Process KB articles')
     parser.add_argument('--rebuild-index', action='store_true', help='Rebuild FAISS index from scratch')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size for embedding generation')
     
     args = parser.parse_args()
     
-    # Default: process both if neither specified
-    process_products = args.products or (not args.products and not args.categories)
-    process_categories = args.categories or (not args.products and not args.categories)
+    # Default: process all if none specified
+    any_specified = args.products or args.categories or args.kb
+    process_products = args.products or (not any_specified)
+    process_categories = args.categories or (not any_specified)
+    process_kb = args.kb or (not any_specified)
     
     logger.info("Starting embedding generation...")
     logger.info(f"Process products: {process_products}")
     logger.info(f"Process categories: {process_categories}")
+    logger.info(f"Process KB articles: {process_kb}")
     logger.info(f"Rebuild index: {args.rebuild_index}")
     
     # Initialize components
@@ -172,6 +176,15 @@ def main():
         
         logger.info("Step 2: Generating embeddings for categories...")
         process_chunks('category', chunker, embedding_gen, faiss_manager, args.batch_size)
+    
+    # Process KB articles
+    if process_kb:
+        logger.info("Step 1: Creating KB article chunks...")
+        kb_stats = chunker.process_all_kb_articles()
+        logger.info(f"KB article chunks: {kb_stats}")
+        
+        logger.info("Step 2: Generating embeddings for KB articles...")
+        process_chunks('kb', chunker, embedding_gen, faiss_manager, args.batch_size)
     
     # Save index
     logger.info("Saving FAISS index...")
