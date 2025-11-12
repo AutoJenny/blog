@@ -47,6 +47,53 @@
             </div>
             {% endif %}
         </div>
+        
+        <!-- Category Hierarchy Panel (Right) -->
+        {% if category_routes and (category_routes.primary or category_routes.others) %}
+        <div class="intro-panel category-hierarchy-panel">
+            <h3>Category Routes</h3>
+            
+            <!-- Primary Route -->
+            {% if category_routes.primary %}
+            <div class="category-route primary-route">
+                <div class="route-label" style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 500;">Primary Route</div>
+                <div class="route-breadcrumbs">
+                    {% for crumb in category_routes.primary %}
+                    <div class="breadcrumb-step" style="padding-left: {{ (crumb.level - 2) * 1.5 }}rem; margin-bottom: 0.25rem;">
+                        <a href="/products/browser?category_id={{ crumb.id }}" 
+                           style="color: #cbd5e1; text-decoration: none; display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; transition: all 0.2s;"
+                           onmouseover="this.style.background='#334155'; this.style.color='#8b5cf6';"
+                           onmouseout="this.style.background='transparent'; this.style.color='#cbd5e1';">
+                            {{ crumb.name }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Other Routes -->
+            {% if category_routes.others %}
+            <div class="category-route other-routes" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #334155;">
+                <div class="route-label" style="color: #94a3b8; font-size: 0.75rem; margin-bottom: 0.5rem; font-weight: 500;">Other Routes</div>
+                {% for route in category_routes.others %}
+                <div class="route-breadcrumbs" style="margin-bottom: 0.75rem;">
+                    {% for crumb in route %}
+                    <div class="breadcrumb-step" style="padding-left: {{ (crumb.level - 2) * 1.2 }}rem; margin-bottom: 0.15rem;">
+                        <a href="/products/browser?category_id={{ crumb.id }}" 
+                           style="color: #64748b; text-decoration: none; display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.875rem; transition: all 0.2s;"
+                           onmouseover="this.style.background='#334155'; this.style.color='#8b5cf6';"
+                           onmouseout="this.style.background='transparent'; this.style.color='#64748b';">
+                            {{ crumb.name }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     <!-- Product Description - CLAN.com Style Layout -->

@@ -92,9 +92,69 @@ body {
     color: #fca5a5;
 }
 
-/* Core Data Panel (Right) */
+/* Core Data Panel (Left) */
 .core-data-panel {
     /* Inherits from .intro-panel */
+}
+
+/* Category Hierarchy Panel (Right) */
+.category-hierarchy-panel {
+    /* Inherits from .intro-panel */
+}
+
+.category-route {
+    margin-bottom: 0.5rem;
+}
+
+.route-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.route-breadcrumbs {
+    display: flex;
+    flex-direction: column;
+}
+
+.breadcrumb-step {
+    margin-bottom: 0.25rem;
+}
+
+.breadcrumb-step a {
+    color: #cbd5e1;
+    text-decoration: none;
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.breadcrumb-step a:hover {
+    background: #334155;
+    color: #8b5cf6;
+}
+
+.primary-route .breadcrumb-step a {
+    color: #cbd5e1;
+    font-size: 0.9375rem;
+}
+
+.other-routes .breadcrumb-step a {
+    color: #64748b;
+    font-size: 0.875rem;
+    padding: 0.15rem 0.4rem;
+}
+
+.other-routes {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #334155;
+}
+
+.other-routes .route-label {
+    font-size: 0.75rem;
 }
 
 .data-grid-compact {
