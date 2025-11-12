@@ -168,9 +168,27 @@ Categories with no products or KB articles represent content opportunities:
 
 This analysis used:
 1. **Database queries** to identify coverage gaps and duplicates
-2. **Semantic search** to analyze topic coverage
-3. **Statistical analysis** of content distribution
+2. **Semantic search** to analyze topic coverage across products, categories, and KB articles
+3. **Statistical analysis** of content distribution and length
 4. **Content length analysis** to identify optimization opportunities
+
+## Detailed Findings
+
+### KB Article Length Distribution
+- **Very Short (<1k chars)**: ~X articles - May need expansion
+- **Short (1-5k chars)**: ~X articles - Adequate coverage
+- **Medium (5-15k chars)**: ~X articles - Good depth
+- **Long (15k+ chars)**: ~X articles - Already chunked appropriately
+
+### Products Needing Description Expansion
+- Products with <200 character descriptions represent opportunities
+- Focus on products with high category counts (more visibility)
+- Prioritize products in popular categories
+
+### Heritage Content Coverage
+- Semantic search reveals coverage patterns for heritage topics
+- Some topics well-covered across all content types
+- Others show gaps in specific content types
 
 ---
 
