@@ -91,9 +91,9 @@ Stores Knowledge Base category hierarchy (similar to `clan_categories`).
 | `is_active` | BOOLEAN | DEFAULT TRUE | Whether category is active |
 | `sort_order` | INTEGER | DEFAULT 0 | Sort order within parent |
 | `parent_id` | INTEGER | | Parent category ID (NULL for root) |
-| `path` | TEXT | | Category path (e.g., "1/22/38") |
-| `level` | INTEGER | DEFAULT 0 | Hierarchy level (0 = root) |
-| `position` | INTEGER | DEFAULT 0 | Position within level |
+| `path` | TEXT | | Full category path showing all parent IDs<br>Format: slash-separated (e.g., "1/58/188/72/194/196/215")<br>Shows complete ancestry from root to current category |
+| `level` | INTEGER | DEFAULT 0 | Position in hierarchy (not tree depth)<br>Level 4 = Main category<br>Level 5 = Sub-category<br>Level 6+ = Sub-sub-category |
+| `position` | INTEGER | DEFAULT 0 | Sort order within parent category |
 | `children_count` | INTEGER | DEFAULT 0 | Number of child categories |
 | `clan_created_at` | TIMESTAMP | | Creation date from clan.com (if available) |
 | `clan_updated_at` | TIMESTAMP | | Last update date from clan.com |
