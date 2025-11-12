@@ -7459,3 +7459,14 @@ NameError: name 'redirect' is not defined
 2025-11-12 21:02:11,480 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:02:11] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
 2025-11-12 21:02:11,481 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:02:11] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
 2025-11-12 21:02:11,481 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:02:11] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-12 21:06:53,877 - config.database - INFO - Database connection established
+2025-11-12 21:06:53,943 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:53] "GET /tags/browser HTTP/1.1" 200 -
+2025-11-12 21:06:53,994 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:53] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-12 21:06:53,996 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:53] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-12 21:06:53,996 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:53] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-12 21:06:53,998 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:53] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-12 21:06:53,999 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:53] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-12 21:06:53,999 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:53] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-12 21:06:53,999 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:53] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-12 21:06:54,000 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:54] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-12 21:06:54,001 - werkzeug - INFO - 127.0.0.1 - - [12/Nov/2025 21:06:54] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
