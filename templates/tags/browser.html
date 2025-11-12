@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Tag Browser - BlogForge{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tags/browser.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="tag-browser-container">
+    <div class="tag-browser-header">
+        <h1 class="tag-browser-title">Tag Browser</h1>
+        <p class="tag-browser-subtitle">Browse products by tags from Product Type Identifiers</p>
+    </div>
+
+    {% if selected_category and selected_tag %}
+    <div class="tag-filter-header">
+        <a href="{{ url_for('tag_browser.browser') }}" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to all tags
+        </a>
+        <h2 class="filter-title">
+            Products tagged: <span class="tag-highlight">{{ selected_tag }}</span>
+            <span class="tag-category">({{ selected_category }})</span>
+        </h2>
+        <p class="product-count">{{ products|length }} product{{ 's' if products|length != 1 else '' }} found</p>
+    </div>
+
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <a href="{{ url_for('product_browser.browser', product_id=product.id) }}" class="product-link">
+                <div class="product-image">
+                    {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+                    {% else %}
+                    <div class="product-image-placeholder">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-sku">SKU: {{ product.sku }}</p>
+                    {% if product.price %}
+                    <p class="product-price">£{{ "%.2f"|format(product.price) }}</p>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    
+    <div class="tag-categories-container">
+        <!-- Identity & Classification -->
+        <div class="tag-category-section">
+            <h2 class="category-title">Identity & Classification</h2>
+            
+            {% if all_tags.identity_classification.core_type %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Core Type</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.identity_classification.core_type %}
+                    <a href="{{ url_for('tag_browser.browser', category='core_type', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if all_tags.identity_classification.subtype %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Subtype</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.identity_classification.subtype %}
+                    <a href="{{ url_for('tag_browser.browser', category='subtype', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if all_tags.identity_classification.product_form %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Product Form</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.identity_classification.product_form %}
+                    <a href="{{ url_for('tag_browser.browser', category='product_form', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Physical Attributes -->
+        <div class="tag-category-section">
+            <h2 class="category-title">Physical Attributes</h2>
+            
+            {% if all_tags.physical_attributes.materials %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Materials</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.physical_attributes.materials %}
+                    <a href="{{ url_for('tag_browser.browser', category='materials', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if all_tags.physical_attributes.patterns %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Patterns</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.physical_attributes.patterns %}
+                    <a href="{{ url_for('tag_browser.browser', category='patterns', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if all_tags.physical_attributes.decorations %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Decorations</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.physical_attributes.decorations %}
+                    <a href="{{ url_for('tag_browser.browser', category='decorations', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Usage Context -->
+        <div class="tag-category-section">
+            <h2 class="category-title">Usage Context</h2>
+            
+            {% if all_tags.usage_context.occasions %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Occasions</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.usage_context.occasions %}
+                    <a href="{{ url_for('tag_browser.browser', category='occasions', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if all_tags.usage_context.styles %}
+            <div class="tag-subcategory">
+                <h3 class="subcategory-title">Styles</h3>
+                <div class="tag-list">
+                    {% for item in all_tags.usage_context.styles %}
+                    <a href="{{ url_for('tag_browser.browser', category='styles', tag=item.tag) }}" 
+                       class="tag-item">
+                        <span class="tag-name">{{ item.tag }}</span>
+                        <span class="tag-count">({{ item.count }})</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

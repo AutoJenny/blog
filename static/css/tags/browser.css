@@ -1,0 +1,251 @@
+/* Tag Browser Styles */
+
+.tag-browser-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.tag-browser-header {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.tag-browser-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 10px;
+}
+
+.tag-browser-subtitle {
+    font-size: 1.1rem;
+    color: #94a3b8;
+}
+
+/* Tag Filter Header (when viewing filtered products) */
+.tag-filter-header {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #8b5cf6;
+    text-decoration: none;
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: #a78bfa;
+}
+
+.filter-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+}
+
+.tag-highlight {
+    color: #f59e0b;
+    font-weight: 700;
+}
+
+.tag-category {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.product-count {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin-top: 8px;
+}
+
+/* Tag Categories Container */
+.tag-categories-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.tag-category-section {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 30px;
+}
+
+.category-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tag-subcategory {
+    margin-bottom: 32px;
+}
+
+.tag-subcategory:last-child {
+    margin-bottom: 0;
+}
+
+.subcategory-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+    text-transform: capitalize;
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: #f1f5f9;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.tag-item:hover {
+    background: #334155;
+    border-color: #8b5cf6;
+    color: #a78bfa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+.tag-name {
+    font-weight: 500;
+}
+
+.tag-count {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+/* Products Grid (when viewing filtered products) */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.product-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border-color: #8b5cf6;
+}
+
+.product-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-image {
+    width: 100%;
+    height: 250px;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 3rem;
+}
+
+.product-info {
+    padding: 16px;
+}
+
+.product-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.product-sku {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.product-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f59e0b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tag-browser-container {
+        padding: 20px 15px;
+    }
+
+    .tag-browser-title {
+        font-size: 2rem;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+}
+
