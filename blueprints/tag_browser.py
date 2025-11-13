@@ -158,10 +158,14 @@ def extract_all_tags(product_form_filter=None):
                         key=lambda x: (-x[1], x[0])
                     )
                 
-                result[category][subcat] = [
+                # Filter out tags with count < 1 (except __missing__ which is special)
+                filtered_tags = [
                     {'tag': tag, 'count': count}
                     for tag, count in sorted_tags
+                    if count >= 1 or tag == '__missing__'
                 ]
+                
+                result[category][subcat] = filtered_tags
         
         return result
 

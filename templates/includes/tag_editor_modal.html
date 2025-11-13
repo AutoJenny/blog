@@ -6,7 +6,8 @@
 let currentEditingProductId = null;
 let tagEditorModal = null;
 
-function openTagEditor(productId) {
+// Make function globally accessible
+window.openTagEditor = function(productId) {
     currentEditingProductId = productId;
     
     // Create modal if it doesn't exist
@@ -46,7 +47,7 @@ function createTagEditorModal() {
     });
 }
 
-function closeTagEditor() {
+window.closeTagEditor = function() {
     if (tagEditorModal) {
         tagEditorModal.style.display = 'none';
         document.body.style.overflow = '';
