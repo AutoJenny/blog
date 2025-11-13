@@ -220,14 +220,17 @@ def api_search():
             break
     
     # Allow category/tag-only filtering (query can be '*' or empty if filters are provided)
-    if not query or len(query) < 2:
+    if not query or (len(query) < 2 and query != '*'):
         if category_id or tag_filters:
             # Category/tag-only filtering - allow it
             query = '*'
+        elif query == '*':
+            # Explicit '*' means get all products
+            pass
         else:
             return jsonify({
                 'success': False,
-                'error': 'Query must be at least 2 characters, or provide a category_id or tag filter'
+                'error': 'Query must be at least 2 characters, or use "*" for all products, or provide a category_id or tag filter'
             }), 400
     
     try:

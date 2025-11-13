@@ -6,17 +6,67 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tags/browser.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/products/tag-editor.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/product-data-review.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="tag-editor-container">
     <div class="tag-editor-header">
-        <h1 class="tag-editor-title">Product Tag Editor</h1>
-        <p class="tag-editor-subtitle">Find products and manage tags in bulk</p>
+        <div class="tag-editor-header-content">
+            <div>
+                <h1 class="tag-editor-title">Product Tag Editor</h1>
+                <p class="tag-editor-subtitle">Find products and manage tags in bulk</p>
+            </div>
+            <div class="tag-editor-header-actions">
+                <div class="selected-products-count" id="header-selected-count">
+                    <span id="header-selected-number">0</span> product<span id="header-selected-plural">s</span> selected
+                </div>
+                <button type="button" class="btn-clear-all-filters" id="btn-clear-all-filters" onclick="clearAllFilters()">
+                    <i class="fas fa-times-circle"></i> Clear All Filters
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Filter Accordions -->
     <div class="filter-accordions-section">
+        <!-- Search & Filter Accordion -->
+        <div class="filter-accordion" id="search-filter-accordion">
+            <div class="filter-accordion-header" onclick="toggleFilterAccordion('search-filter')">
+                <div class="filter-accordion-title">
+                    <i class="fas fa-chevron-down filter-accordion-icon"></i>
+                    <i class="fas fa-search"></i>
+                    <span>Search & Filter</span>
+                </div>
+            </div>
+            <div class="filter-accordion-content" id="search-filter-content">
+                <div class="tag-editor-search-section">
+                    {% include 'includes/product_search_component.html' %}
+                </div>
+                
+                <!-- Title Filter -->
+                <div class="title-filter-section">
+                    <div class="content-generator-form-group">
+                        <label for="title-filter-input" class="content-generator-label">Filter by Title</label>
+                        <div class="title-filter-controls">
+                            <input type="text" id="title-filter-input" class="content-generator-input" 
+                                   placeholder="Enter text to match in product title...">
+                            <div class="title-filter-mode">
+                                <label class="title-filter-radio">
+                                    <input type="radio" name="title-filter-mode" value="include" checked>
+                                    <span>Include</span>
+                                </label>
+                                <label class="title-filter-radio">
+                                    <input type="radio" name="title-filter-mode" value="exclude">
+                                    <span>Exclude</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Category Filter Accordion -->
         <div class="filter-accordion" id="category-filter-accordion">
             <div class="filter-accordion-header" onclick="toggleFilterAccordion('category-filter')">
@@ -27,8 +77,18 @@
                 </div>
             </div>
             <div class="filter-accordion-content" id="category-filter-content">
-                <div class="tag-editor-search-section">
-                    {% include 'includes/product_search_component.html' %}
+                <div class="category-filter-section">
+                    <div class="category-filter-wrapper">
+                        <div class="content-generator-form-group category-filter-group">
+                            <div id="category-filter-results-standalone" class="category-filter-results category-filter-always-visible"></div>
+                            <div id="category-selected-standalone" class="selected-category-badge" style="display: none;">
+                                <span class="selected-category-name"></span>
+                                <button type="button" class="selected-category-remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -59,10 +119,15 @@
     <div class="selection-controls" id="selection-controls" style="display: none;">
         <div class="selection-info">
             <span id="selected-count">0</span> product<span id="selected-plural">s</span> selected
+            <span id="omitted-count-wrapper" style="display: none;">
+                (<span id="omitted-count">0</span> omitted)
+            </span>
         </div>
         <div class="selection-actions">
-            <button type="button" class="btn-select-all" id="btn-select-all">Select All</button>
-            <button type="button" class="btn-clear-selection" id="btn-clear-selection">Clear Selection</button>
+            <button type="button" class="btn-restore-omitted" id="btn-restore-omitted" style="display: none;">
+                <i class="fas fa-undo"></i> Restore Omitted
+            </button>
+            <button type="button" class="btn-clear-selection" id="btn-clear-selection">Clear All</button>
             <button type="button" class="btn-edit-tags" id="btn-edit-tags" style="display: none;">
                 <i class="fas fa-tags"></i> Edit Tags for Selected
             </button>
@@ -89,7 +154,7 @@
                     <span>Replace all tags in group</span>
                 </label>
             </div>
-            <div id="bulk-tag-editor-body">
+            <div id="bulk-tag-editor-body" class="tag-editor-body">
                 <div class="bulk-tag-editor-loading">Loading tags...</div>
             </div>
         </div>
@@ -111,6 +176,7 @@
     'use strict';
     
     let selectedProductIds = new Set();
+    let omittedProductIds = new Set(); // Products that have been omitted from selection
     let currentProducts = [];
     let currentSearchQuery = '';
     let searchTimeout = null;
@@ -160,14 +226,34 @@
             
             if (data.success && data.products) {
                 console.log('Displaying products:', data.products.length);
-                displayProducts(data.products);
-                
-                // Show pagination if needed
-                if (data.pagination && data.pagination.pages > 1) {
-                    displayPagination(data.pagination, query);
-                } else {
-                    hidePagination();
-                }
+                // Apply title filter before displaying
+                applyTitleFilterToProducts(data.products).then(filteredProducts => {
+                    displayProducts(filteredProducts);
+                    
+                    // Show pagination if needed
+                    const titleInput = document.getElementById('title-filter-input');
+                    const titleFilter = titleInput ? titleInput.value.trim() : '';
+                    const modeInput = document.querySelector('input[name="title-filter-mode"]:checked');
+                    const mode = modeInput ? modeInput.value : 'include';
+                    
+                    // Hide pagination if title filter is active (since we're filtering client-side or adding products)
+                    if (titleFilter && titleFilter.length >= 2) {
+                        hidePagination();
+                    } else if (data.pagination && data.pagination.pages > 1) {
+                        displayPagination(data.pagination, query);
+                    } else {
+                        hidePagination();
+                    }
+                }).catch(error => {
+                    console.error('Error applying title filter:', error);
+                    // Display products without title filter if there's an error
+                    displayProducts(data.products);
+                    if (data.pagination && data.pagination.pages > 1) {
+                        displayPagination(data.pagination, query);
+                    } else {
+                        hidePagination();
+                    }
+                });
             } else {
                 console.log('No products found or error:', data);
                 const container = document.getElementById('products-container');
@@ -241,6 +327,64 @@
         performSearch(query, page);
     };
     
+    // Apply title filter to products (client-side filtering)
+    async function applyTitleFilterToProducts(products) {
+        const titleInput = document.getElementById('title-filter-input');
+        const titleFilter = titleInput ? titleInput.value.trim().toLowerCase() : '';
+        const modeInput = document.querySelector('input[name="title-filter-mode"]:checked');
+        const mode = modeInput ? modeInput.value : 'include';
+        
+        if (!titleFilter || titleFilter.length < 2) {
+            return products;
+        }
+        
+        if (mode === 'exclude') {
+            // Exclude mode: Remove products matching title from existing list
+            return products.filter(product => {
+                const productTitle = (product.name || '').toLowerCase();
+                return !productTitle.includes(titleFilter);
+            });
+        } else {
+            // Include mode: Filter to only products matching title
+            // If we have existing products (from other filters), filter them
+            // Otherwise, this will be handled by fetchProductsByTitle in applyAllFilters
+            return products.filter(product => {
+                const productTitle = (product.name || '').toLowerCase();
+                return productTitle.includes(titleFilter);
+            });
+        }
+    }
+    
+    // Fetch all products matching title (for include mode)
+    async function fetchProductsByTitle(titleFilter) {
+        if (!titleFilter || titleFilter.length < 2) {
+            return [];
+        }
+        
+        try {
+            // Use search endpoint with the title as query
+            const response = await fetch(`/products/tag-editor/api/search?q=${encodeURIComponent(titleFilter)}&per_page=1000`);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Search API error:', response.status, errorData);
+                return [];
+            }
+            
+            const data = await response.json();
+            if (data.success && data.products) {
+                // Filter to only products where title contains the filter text (case-insensitive)
+                return data.products.filter(product => {
+                    const productTitle = (product.name || '').toLowerCase();
+                    return productTitle.includes(titleFilter.toLowerCase());
+                });
+            }
+            return [];
+        } catch (error) {
+            console.error('Error fetching products by title:', error);
+            return [];
+        }
+    }
+    
     // Display products in grid
     function displayProducts(products) {
         console.log('displayProducts called with:', products ? products.length : 0, 'products');
@@ -254,24 +398,45 @@
         
         if (!products || products.length === 0) {
             container.innerHTML = '<div class="no-products-message"><p>No products found.</p></div>';
+            selectedProductIds.clear();
+            updateSelectionControls();
             return;
         }
         
+        // Remove products that are no longer in the current list from selected set
+        const currentProductIds = new Set(products.map(p => p.id));
+        selectedProductIds.forEach(productId => {
+            if (!currentProductIds.has(productId)) {
+                selectedProductIds.delete(productId);
+            }
+        });
+        
+        // Add all new products to selected set (default selection) - only if not already omitted
+        products.forEach(product => {
+            if (!omittedProductIds.has(product.id)) {
+                selectedProductIds.add(product.id);
+            } else {
+                // Remove from selected if it's omitted
+                selectedProductIds.delete(product.id);
+            }
+        });
+        
+        // Filter out omitted products from display
+        const productsToDisplay = products.filter(product => !omittedProductIds.has(product.id));
+        
         let html = '<div class="products-grid" id="product-selection-grid">';
         
-        products.forEach(product => {
-            const isSelected = selectedProductIds.has(product.id);
+        productsToDisplay.forEach(product => {
             const price = product.price ? (typeof product.price === 'string' ? parseFloat(product.price) : product.price) : null;
             html += `
                 <div class="product-card" data-product-id="${product.id}">
-                    <div class="product-checkbox-wrapper">
-                        <input type="checkbox" 
-                               class="product-checkbox" 
-                               id="product-checkbox-${product.id}"
-                               data-product-id="${product.id}"
-                               ${isSelected ? 'checked' : ''}
-                               onchange="handleProductSelection(${product.id}, this.checked)">
-                        <label for="product-checkbox-${product.id}" class="product-checkbox-label"></label>
+                    <div class="product-omit-wrapper">
+                        <button type="button" 
+                                class="product-omit-btn" 
+                                onclick="omitProduct(${product.id})"
+                                title="Remove from selection">
+                            <i class="fas fa-times"></i> Omit
+                        </button>
                     </div>
                     <a href="/products/browser?product_id=${product.id}" 
                        class="product-link" 
@@ -298,13 +463,24 @@
         updateSelectionControls();
     }
     
-    // Handle product selection
-    window.handleProductSelection = function(productId, isSelected) {
-        if (isSelected) {
-            selectedProductIds.add(productId);
-        } else {
-            selectedProductIds.delete(productId);
+    // Omit a product from selection (remove it from display and selection)
+    window.omitProduct = function(productId) {
+        omittedProductIds.add(productId);
+        selectedProductIds.delete(productId);
+        
+        // Remove the product card from display
+        const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+        if (productCard) {
+            productCard.remove();
         }
+        
+        // If no products left, show message
+        const grid = document.getElementById('product-selection-grid');
+        if (grid && grid.children.length === 0) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="no-products-message"><p>All products have been omitted. Clear selection or search again to see products.</p></div>';
+        }
+        
         updateSelectionControls();
     };
     
@@ -314,13 +490,63 @@
         const count = document.getElementById('selected-count');
         const plural = document.getElementById('selected-plural');
         const editBtn = document.getElementById('btn-edit-tags');
+        const omittedCountWrapper = document.getElementById('omitted-count-wrapper');
+        const omittedCount = document.getElementById('omitted-count');
+        const restoreBtn = document.getElementById('btn-restore-omitted');
         
-        if (selectedProductIds.size > 0) {
+        // Update header count
+        const headerCount = document.getElementById('header-selected-number');
+        const headerPlural = document.getElementById('header-selected-plural');
+        const headerCountWrapper = document.getElementById('header-selected-count');
+        
+        if (headerCount) {
+            headerCount.textContent = selectedProductIds.size;
+        }
+        if (headerPlural) {
+            headerPlural.textContent = selectedProductIds.size === 1 ? '' : 's';
+        }
+        if (headerCountWrapper) {
+            // Always show the count, even if 0
+            headerCountWrapper.style.display = 'inline-flex';
+        }
+        
+        if (selectedProductIds.size > 0 || omittedProductIds.size > 0) {
             controls.style.display = 'flex';
-            count.textContent = selectedProductIds.size;
-            plural.textContent = selectedProductIds.size === 1 ? '' : 's';
-            if (editBtn) {
-                editBtn.style.display = 'inline-block';
+            
+            if (selectedProductIds.size > 0) {
+                count.textContent = selectedProductIds.size;
+                plural.textContent = selectedProductIds.size === 1 ? '' : 's';
+                if (editBtn) {
+                    editBtn.style.display = 'inline-block';
+                }
+            } else {
+                count.textContent = '0';
+                plural.textContent = 's';
+                if (editBtn) {
+                    editBtn.style.display = 'none';
+                }
+                // Close bulk editor if open
+                closeBulkTagEditor();
+            }
+            
+            // Show omitted count if any
+            if (omittedProductIds.size > 0) {
+                if (omittedCountWrapper) {
+                    omittedCountWrapper.style.display = 'inline';
+                }
+                if (omittedCount) {
+                    omittedCount.textContent = omittedProductIds.size;
+                }
+                if (restoreBtn) {
+                    restoreBtn.style.display = 'inline-block';
+                }
+            } else {
+                if (omittedCountWrapper) {
+                    omittedCountWrapper.style.display = 'none';
+                }
+                if (restoreBtn) {
+                    restoreBtn.style.display = 'none';
+                }
             }
         } else {
             controls.style.display = 'none';
@@ -433,7 +659,7 @@
             // Category (Product Form)
             if (availableTags.identity_classification && availableTags.identity_classification.product_form) {
                 html += '<div class="tag-editor-subgroup">';
-                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Category:</div></div>';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Category:</div><button class="tag-editor-add-btn" onclick="addNewBulkTag(\'product_form\', \'Category\')">Add...</button></div>';
                 html += '<div class="tag-editor-tags">';
                 for (const form of availableTags.identity_classification.product_form) {
                     html += `<span class="tag-editor-tag inactive bulk-tag" 
@@ -449,7 +675,7 @@
             // Product Group (Core Type)
             if (availableTags.identity_classification && availableTags.identity_classification.core_type) {
                 html += '<div class="tag-editor-subgroup">';
-                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Product Group:</div></div>';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Product Group:</div><button class="tag-editor-add-btn" onclick="addNewBulkTag(\'core_type\', \'Product Group\')">Add...</button></div>';
                 html += '<div class="tag-editor-tags">';
                 for (const coreType of availableTags.identity_classification.core_type) {
                     html += `<span class="tag-editor-tag inactive bulk-tag" 
@@ -465,7 +691,7 @@
             // Product Type
             if (availableTags.identity_classification && availableTags.identity_classification.subtype) {
                 html += '<div class="tag-editor-subgroup">';
-                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Product Type:</div></div>';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Product Type:</div><button class="tag-editor-add-btn" onclick="addNewBulkTag(\'subtype\', \'Product Type\')">Add...</button></div>';
                 html += '<div class="tag-editor-tags">';
                 for (const subtype of availableTags.identity_classification.subtype) {
                     html += `<span class="tag-editor-tag inactive bulk-tag" 
@@ -481,7 +707,7 @@
             // Materials
             if (availableTags.physical_attributes.materials) {
                 html += '<div class="tag-editor-subgroup">';
-                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Materials:</div></div>';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Materials:</div><button class="tag-editor-add-btn" onclick="addNewBulkTag(\'materials\', \'Materials\')">Add...</button></div>';
                 html += '<div class="tag-editor-tags">';
                 for (const material of availableTags.physical_attributes.materials) {
                     if (material.tag === '__missing__') continue;
@@ -498,7 +724,7 @@
             // Patterns
             if (availableTags.physical_attributes.patterns) {
                 html += '<div class="tag-editor-subgroup">';
-                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Patterns:</div></div>';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Patterns:</div><button class="tag-editor-add-btn" onclick="addNewBulkTag(\'patterns\', \'Patterns\')">Add...</button></div>';
                 html += '<div class="tag-editor-tags">';
                 for (const pattern of availableTags.physical_attributes.patterns) {
                     html += `<span class="tag-editor-tag inactive bulk-tag" 
@@ -514,7 +740,7 @@
             // Motif
             if (availableTags.physical_attributes.decorations) {
                 html += '<div class="tag-editor-subgroup">';
-                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Motif:</div></div>';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Motif:</div><button class="tag-editor-add-btn" onclick="addNewBulkTag(\'decorations\', \'Motif\')">Add...</button></div>';
                 html += '<div class="tag-editor-tags">';
                 for (const decoration of availableTags.physical_attributes.decorations) {
                     html += `<span class="tag-editor-tag inactive bulk-tag" 
@@ -530,7 +756,7 @@
             // Occasions
             if (availableTags.usage_context.occasions) {
                 html += '<div class="tag-editor-subgroup">';
-                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Occasions:</div></div>';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Occasions:</div><button class="tag-editor-add-btn" onclick="addNewBulkTag(\'occasions\', \'Occasions\')">Add...</button></div>';
                 html += '<div class="tag-editor-tags">';
                 for (const occasion of availableTags.usage_context.occasions) {
                     html += `<span class="tag-editor-tag inactive bulk-tag" 
@@ -546,7 +772,7 @@
             // Styles
             if (availableTags.usage_context.styles) {
                 html += '<div class="tag-editor-subgroup">';
-                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Styles:</div></div>';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Styles:</div><button class="tag-editor-add-btn" onclick="addNewBulkTag(\'styles\', \'Styles\')">Add...</button></div>';
                 html += '<div class="tag-editor-tags">';
                 for (const style of availableTags.usage_context.styles) {
                     html += `<span class="tag-editor-tag inactive bulk-tag" 
@@ -579,6 +805,15 @@
                     tag.classList.add('inactive');
                 }
             });
+        }
+    };
+    
+    // Add new tag for bulk editor (placeholder - same as modal)
+    window.addNewBulkTag = function(tagType, label) {
+        const tagName = prompt(`Enter new ${label} tag name:`);
+        if (tagName && tagName.trim()) {
+            // TODO: Implement API call to add new tag
+            alert(`Adding new ${label} tag "${tagName}" is not yet implemented. This will be added in a future update.`);
         }
     };
     
@@ -758,24 +993,25 @@
         }
     }, 500);
     
-    // Select all products
-    document.getElementById('btn-select-all').addEventListener('click', function() {
-        currentProducts.forEach(product => {
-            selectedProductIds.add(product.id);
-            const checkbox = document.getElementById(`product-checkbox-${product.id}`);
-            if (checkbox) checkbox.checked = true;
-        });
-        updateSelectionControls();
+    // Restore omitted products
+    document.getElementById('btn-restore-omitted').addEventListener('click', function() {
+        omittedProductIds.clear();
+        // Re-display products to show all again
+        if (currentProducts.length > 0) {
+            displayProducts(currentProducts);
+        }
     });
     
-    // Clear selection
+    // Clear all (reset selection and omitted)
     document.getElementById('btn-clear-selection').addEventListener('click', function() {
         selectedProductIds.clear();
-        currentProducts.forEach(product => {
-            const checkbox = document.getElementById(`product-checkbox-${product.id}`);
-            if (checkbox) checkbox.checked = false;
-        });
-        updateSelectionControls();
+        omittedProductIds.clear();
+        // Re-display products to show all again
+        if (currentProducts.length > 0) {
+            displayProducts(currentProducts);
+        } else {
+            updateSelectionControls();
+        }
     });
     
     // Escape HTML
@@ -1156,7 +1392,7 @@
         applyAllFilters();
     };
     
-    // Apply all filters (search, category, tags)
+    // Apply all filters (search, category, tags, title)
     function applyAllFilters() {
         const searchInput = document.getElementById('content-generator-product-search');
         const query = searchInput ? searchInput.value.trim() : '';
@@ -1164,25 +1400,383 @@
         // Get category filter
         const categoryId = window.getSelectedCategoryId ? window.getSelectedCategoryId() : null;
         
+        // Get title filter
+        const titleInput = document.getElementById('title-filter-input');
+        const titleFilter = titleInput ? titleInput.value.trim() : '';
+        
         // Build search with all filters
+        // Note: Title filter is applied client-side after fetching, so we always fetch first
         if (query.length >= 2) {
             performSearch(query, 1);
         } else if (categoryId || Object.keys(selectedTagFilters).length > 0) {
             // Category or tag filter only
             performSearch('*', 1);
+        } else if (titleFilter && titleFilter.length >= 2) {
+            // Title filter only - fetch all products matching title
+            const modeInput = document.querySelector('input[name="title-filter-mode"]:checked');
+            const mode = modeInput ? modeInput.value : 'include';
+            
+            if (mode === 'exclude') {
+                // For exclude mode, we need all products first, then filter
+                fetchAllProducts();
+                // The title filter will be applied in performSearch/displayProducts
+            } else {
+                // Include mode - fetch matching products
+                fetchProductsByTitle(titleFilter).then(filteredProducts => {
+                    displayProducts(filteredProducts);
+                    hidePagination();
+                }).catch(error => {
+                    console.error('Error fetching products by title:', error);
+                    const container = document.getElementById('products-container');
+                    container.innerHTML = '<div class="no-products-message"><p>Error loading products. Please try again.</p></div>';
+                    hidePagination();
+                });
+            }
         } else {
-            // No filters
-            const container = document.getElementById('products-container');
-            container.innerHTML = '<div class="no-products-message"><p>Search for products to get started, or use the Tag Browser to find products by tags.</p></div>';
-            hidePagination();
+            // No filters - show all products
+            fetchAllProducts();
         }
+    }
+    
+    // Initialize title filter
+    function initializeTitleFilter() {
+        const titleInput = document.getElementById('title-filter-input');
+        const modeInputs = document.querySelectorAll('input[name="title-filter-mode"]');
+        
+        if (titleInput) {
+            let timeout = null;
+            
+            // Handle input with debounce
+            titleInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    applyTitleFilterToCurrentProducts();
+                }, 500);
+            });
+            
+            // Handle Enter key - apply immediately
+            titleInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(timeout);
+                    applyTitleFilterToCurrentProducts();
+                }
+            });
+        }
+        
+        if (modeInputs.length > 0) {
+            modeInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    applyTitleFilterToCurrentProducts();
+                });
+            });
+        }
+    }
+    
+    // Apply title filter to currently displayed products
+    async function applyTitleFilterToCurrentProducts() {
+        const titleInput = document.getElementById('title-filter-input');
+        const titleFilter = titleInput ? titleInput.value.trim() : '';
+        const modeInput = document.querySelector('input[name="title-filter-mode"]:checked');
+        const mode = modeInput ? modeInput.value : 'include';
+        
+        // If no title filter, show all current products (minus omitted)
+        if (!titleFilter || titleFilter.length < 2) {
+            const productsToDisplay = currentProducts.filter(product => !omittedProductIds.has(product.id));
+            displayProducts(productsToDisplay);
+            return;
+        }
+        
+        // Apply filter to current products
+        const filtered = await applyTitleFilterToProducts(currentProducts);
+        displayProducts(filtered);
     }
     
     // Initialize tag filter on page load
     initializeTagFilter();
     
+    // Initialize title filter on page load
+    initializeTitleFilter();
+    
+    // Initialize standalone category filter (for Category Filter accordion)
+    async function initializeStandaloneCategoryFilter() {
+        // Wait for product_search_component to load categories first
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Check if categories are already loaded by the search component
+        if (window.allCategories && window.allCategories.length > 0 && window.categoryTree) {
+            renderStandaloneCategoryFilter();
+        } else {
+            // Load categories ourselves
+            try {
+                const response = await fetch('/products/tag-editor/api/categories/tree');
+                const data = await response.json();
+                if (data.success && data.categories) {
+                    window.allCategories = data.categories;
+                    buildStandaloneCategoryTree();
+                    renderStandaloneCategoryFilter();
+                }
+            } catch (error) {
+                console.error('Error loading categories for standalone filter:', error);
+            }
+        }
+    }
+    
+    function buildStandaloneCategoryTree() {
+        window.categoryTree = {};
+        window.allCategories.forEach(cat => {
+            window.categoryTree[cat.id] = {
+                id: cat.id,
+                name: cat.name,
+                level: cat.level,
+                parent_id: cat.parent_id,
+                children: [],
+                path: cat.path
+            };
+        });
+        window.allCategories.forEach(cat => {
+            if (cat.parent_id && window.categoryTree[cat.parent_id]) {
+                window.categoryTree[cat.parent_id].children.push(window.categoryTree[cat.id]);
+            }
+        });
+        Object.values(window.categoryTree).forEach(node => {
+            node.children.sort((a, b) => a.name.localeCompare(b.name));
+        });
+    }
+    
+    function renderStandaloneCategoryFilter() {
+        const container = document.getElementById('category-filter-results-standalone');
+        if (!container || !window.categoryTree) return;
+        
+        const topLevel = getTopLevelCategoriesForStandalone();
+        if (topLevel.length === 0) return;
+        
+        let html = '<div class="category-hierarchy-container">';
+        html += '<div class="category-hierarchy-column">';
+        topLevel.forEach(cat => {
+            const hasChildren = cat.children && cat.children.length > 0;
+            html += `<div class="category-hierarchy-item ${hasChildren ? 'has-children' : 'leaf'}" 
+                           data-category-id="${cat.id}" 
+                           onclick="handleStandaloneCategoryClick(${cat.id}, event)"
+                           title="${hasChildren ? 'Click to expand, double-click or Ctrl+click to select' : 'Click to select'}">
+                        <span class="category-hierarchy-item-name">${escapeHtml(cat.name)}</span>
+                        ${hasChildren ? '<i class="fas fa-chevron-right category-hierarchy-arrow"></i>' : ''}
+                     </div>`;
+        });
+        html += '</div></div>';
+        container.innerHTML = html;
+        
+        // Force flex layout
+        const hierarchyContainer = container.querySelector('.category-hierarchy-container');
+        if (hierarchyContainer) {
+            hierarchyContainer.style.display = 'flex';
+            hierarchyContainer.style.flexDirection = 'row';
+        }
+    }
+    
+    function getTopLevelCategoriesForStandalone() {
+        const topLevel = window.allCategories
+            .filter(cat => cat.level === 1)
+            .map(cat => window.categoryTree[cat.id])
+            .filter(Boolean);
+        const order = ['Products', 'Departments', 'Collections'];
+        topLevel.sort((a, b) => {
+            const indexA = order.indexOf(a.name);
+            const indexB = order.indexOf(b.name);
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        return topLevel;
+    }
+    
+    window.handleStandaloneCategoryClick = function(categoryId, event) {
+        const category = window.categoryTree[categoryId];
+        if (!category) return;
+        
+        const e = event || window.event;
+        const isSelectAction = e && (e.detail === 2 || e.ctrlKey || e.metaKey);
+        
+        // If has children and not a select action, expand
+        if (category.children && category.children.length > 0 && !isSelectAction) {
+            expandStandaloneCategory(categoryId);
+        } else {
+            // Select the category
+            window.selectedCategoryId = categoryId;
+            
+            // Update badge
+            const selectedBadge = document.getElementById('category-selected-standalone');
+            if (selectedBadge) {
+                selectedBadge.querySelector('.selected-category-name').textContent = category.path;
+                selectedBadge.style.display = 'flex';
+            }
+            
+            // Apply filter
+            applyAllFilters();
+        }
+    };
+    
+    function expandStandaloneCategory(categoryId) {
+        const category = window.categoryTree[categoryId];
+        if (!category || !category.children || category.children.length === 0) return;
+        
+        const container = document.getElementById('category-filter-results-standalone');
+        if (!container) return;
+        
+        const hierarchyContainer = container.querySelector('.category-hierarchy-container');
+        if (!hierarchyContainer) return;
+        
+        // Find the clicked item to determine which column to add after
+        const clickedItem = hierarchyContainer.querySelector(`[data-category-id="${categoryId}"]`);
+        if (!clickedItem) return;
+        
+        // Find the column containing this item
+        let currentColumn = clickedItem.closest('.category-hierarchy-column');
+        if (!currentColumn) return;
+        
+        // Remove columns after this one
+        const allColumns = hierarchyContainer.querySelectorAll('.category-hierarchy-column');
+        allColumns.forEach((col, idx) => {
+            const colIndex = Array.from(hierarchyContainer.children).indexOf(col);
+            const clickedIndex = Array.from(hierarchyContainer.children).indexOf(currentColumn);
+            if (colIndex > clickedIndex) {
+                col.remove();
+            }
+        });
+        
+        // Highlight clicked item
+        hierarchyContainer.querySelectorAll('.category-hierarchy-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        clickedItem.classList.add('selected');
+        
+        // Create new column with children
+        const newColumn = document.createElement('div');
+        newColumn.className = 'category-hierarchy-column';
+        category.children.forEach(child => {
+            const hasChildren = child.children && child.children.length > 0;
+            const item = document.createElement('div');
+            item.className = `category-hierarchy-item ${hasChildren ? 'has-children' : 'leaf'}`;
+            item.setAttribute('data-category-id', child.id);
+            item.innerHTML = `<span class="category-hierarchy-item-name">${escapeHtml(child.name)}</span>${hasChildren ? '<i class="fas fa-chevron-right category-hierarchy-arrow"></i>' : ''}`;
+            item.onclick = (e) => handleStandaloneCategoryClick(child.id, e);
+            newColumn.appendChild(item);
+        });
+        
+        hierarchyContainer.appendChild(newColumn);
+        
+        // Scroll to show new column
+        newColumn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+    }
+    
+    // Escape HTML helper
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Clear standalone category filter
+    const standaloneCategoryRemove = document.querySelector('#category-selected-standalone .selected-category-remove');
+    if (standaloneCategoryRemove) {
+        standaloneCategoryRemove.addEventListener('click', function() {
+            window.selectedCategoryId = null;
+            const selectedBadge = document.getElementById('category-selected-standalone');
+            if (selectedBadge) {
+                selectedBadge.style.display = 'none';
+            }
+            applyAllFilters();
+        });
+    }
+    
+    // Clear all filters and show all products
+    window.clearAllFilters = function() {
+        // Clear search inputs
+        const searchInput = document.getElementById('content-generator-product-search');
+        const smartSearchInput = document.getElementById('content-generator-product-smart-search');
+        const titleInput = document.getElementById('title-filter-input');
+        
+        if (searchInput) searchInput.value = '';
+        if (smartSearchInput) smartSearchInput.value = '';
+        if (titleInput) titleInput.value = '';
+        
+        // Clear category filter
+        window.selectedCategoryId = null;
+        const categoryBadge = document.getElementById('category-selected-standalone');
+        if (categoryBadge) {
+            categoryBadge.style.display = 'none';
+        }
+        // Reset category hierarchy
+        if (window.allCategories && window.allCategories.length > 0 && window.categoryTree) {
+            renderStandaloneCategoryFilter();
+        }
+        
+        // Clear tag filters
+        selectedTagFilters = {};
+        renderTagFilter();
+        updateTagFilterBadges();
+        
+        // Clear search results from search component
+        const searchResults = document.getElementById('content-generator-product-search-results');
+        const smartSearchResults = document.getElementById('content-generator-product-smart-search-results');
+        if (searchResults) searchResults.innerHTML = '';
+        if (smartSearchResults) smartSearchResults.innerHTML = '';
+        
+        // Fetch and display all products
+        fetchAllProducts();
+    };
+    
+    // Fetch all products (no filters)
+    async function fetchAllProducts() {
+        try {
+            // Clear omitted products when fetching all
+            omittedProductIds.clear();
+            
+            const response = await fetch('/products/tag-editor/api/search?q=*&per_page=10000');
+            const data = await response.json();
+            
+            if (data.success && data.products) {
+                displayProducts(data.products);
+                hidePagination();
+            } else {
+                const container = document.getElementById('products-container');
+                container.innerHTML = '<div class="no-products-message"><p>No products found.</p></div>';
+                hidePagination();
+                updateSelectionControls();
+            }
+        } catch (error) {
+            console.error('Error fetching all products:', error);
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="no-products-message"><p>Error loading products.</p></div>';
+            hidePagination();
+        }
+    }
+    
+    // Initialize standalone category filter
+    initializeStandaloneCategoryFilter();
+    
     // Initialize filter accordions
     function initializeFilterAccordions() {
+        // Search & Filter accordion
+        const searchState = sessionStorage.getItem('search-filter-accordion-state');
+        const searchAccordion = document.getElementById('search-filter-accordion');
+        const searchContent = document.getElementById('search-filter-content');
+        const searchIcon = searchAccordion?.querySelector('.filter-accordion-icon');
+        
+        if (searchAccordion && searchContent) {
+            const isOpen = searchState === null ? true : searchState === 'open';
+            searchAccordion.setAttribute('data-state', isOpen ? 'open' : 'closed');
+            
+            if (!isOpen) {
+                searchContent.style.display = 'none';
+                if (searchIcon) {
+                    searchIcon.style.transform = 'rotate(-90deg)';
+                }
+            }
+        }
+        
         // Category filter accordion
         const categoryState = sessionStorage.getItem('category-filter-accordion-state');
         const categoryAccordion = document.getElementById('category-filter-accordion');
@@ -1251,6 +1845,14 @@
     
     // Initialize accordions on page load
     initializeFilterAccordions();
+    
+    // Load all products on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fetchAllProducts);
+    } else {
+        // DOM is already ready
+        fetchAllProducts();
+    }
     
     // Also add direct input listeners as backup (after component loads)
     setTimeout(() => {
@@ -1355,5 +1957,174 @@
     }
 })();
 </script>
+
+<style>
+/* Tag Editor Modal Styles (for Bulk Tag Editor) - matching tag_editor_modal.html */
+.tag-editor-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.tag-editor-loading,
+.tag-editor-error {
+    text-align: center;
+    padding: 2rem;
+    color: #cbd5e1;
+}
+
+.tag-editor-error {
+    color: #ef4444;
+}
+
+.tag-editor-group-accordion {
+    margin-bottom: 1.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tag-editor-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    transition: background 0.2s;
+}
+
+.tag-editor-group-header:hover {
+    background: #334155;
+}
+
+.tag-editor-accordion-icon {
+    font-size: 0.75rem;
+    color: #64748b;
+    transition: transform 0.2s;
+}
+
+.tag-editor-group-accordion[data-accordion-state="closed"] .tag-editor-accordion-icon {
+    transform: rotate(-90deg);
+}
+
+.tag-editor-group-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex: 1;
+    text-align: left;
+}
+
+.tag-editor-group-preview {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: normal;
+    margin-left: 1rem;
+}
+
+.tag-preview-value {
+    color: #f59e0b;
+    font-weight: 700;
+}
+
+.tag-editor-group-content {
+    padding: 1.25rem;
+}
+
+.tag-editor-subgroup {
+    margin-bottom: 1.5rem;
+}
+
+.tag-editor-subgroup:last-child {
+    margin-bottom: 0;
+}
+
+.tag-editor-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.tag-editor-label {
+    font-size: 0.875rem;
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.tag-editor-add-btn {
+    background: transparent;
+    border: 1px solid #475569;
+    color: #8b5cf6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.tag-editor-add-btn:hover {
+    background: #334155;
+    border-color: #8b5cf6;
+    color: #a78bfa;
+}
+
+.tag-editor-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-editor-tag {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.tag-editor-tag.inactive {
+    background: #1e293b;
+    border-color: #334155;
+    color: #64748b;
+    opacity: 0.6;
+}
+
+.tag-editor-tag.selected {
+    background: #8b5cf6;
+    border-color: #a78bfa;
+    color: #ffffff;
+    opacity: 1;
+    font-weight: 600;
+}
+
+.tag-editor-tag:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tag-editor-tag.inactive:hover {
+    background: #334155;
+    border-color: #475569;
+    color: #94a3b8;
+}
+
+.tag-editor-tag.selected:hover {
+    background: #a78bfa;
+    border-color: #c4b5fd;
+}
+</style>
 {% endblock %}
 
