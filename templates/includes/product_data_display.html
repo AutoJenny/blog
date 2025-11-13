@@ -53,11 +53,16 @@
         {% set type_data = product_data.product_type_data %}
         {% set product_level = product_data.get('product_level', 'classic') %}
         <div class="intro-panel tags-panel">
-            <h3>Tags</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;">Tags</h3>
+                <button class="edit-tags-btn" onclick="openTagEditor({{ product_data.get('product_id') or current_product_id }})" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 0.375rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;" onmouseover="this.style.borderColor='#8b5cf6'; this.style.color='#8b5cf6';" onmouseout="this.style.borderColor='#475569'; this.style.color='#cbd5e1';">
+                    Edit...
+                </button>
+            </div>
             
-            <!-- Group 1: Identity & Classification -->
+            <!-- Group 1: Product Category -->
             <div class="tags-group">
-                <div class="tags-group-name">Identity & Classification</div>
+                <div class="tags-group-name">Product Category</div>
                 <div class="tags-group-content">
                     {% if type_data.disambiguation and type_data.disambiguation.product_form %}
                     <div class="tag-row">
@@ -75,9 +80,20 @@
                         <div class="tag-icons">
                             <span class="attribute-tag attribute-tag-primary" 
                                   data-attribute-type="core_type" 
-                                  data-attribute-value="{{ type_data.core_type }}"
-                                  {% if type_data.subtype %}data-subtype="{{ type_data.subtype }}"{% endif %}>
-                                {{ type_data.core_type|replace('_', ' ')|title }}{% if type_data.subtype %} ({{ type_data.subtype|replace('_', ' ')|title }}){% endif %}
+                                  data-attribute-value="{{ type_data.core_type }}">
+                                {{ type_data.core_type|replace('_', ' ')|title }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.subtype %}
+                    <div class="tag-row">
+                        <div class="tag-label">Product Type:</div>
+                        <div class="tag-icons">
+                            <span class="attribute-tag attribute-tag-primary" 
+                                  data-attribute-type="subtype" 
+                                  data-attribute-value="{{ type_data.subtype }}">
+                                {{ type_data.subtype|replace('_', ' ')|title }}
                             </span>
                         </div>
                     </div>
@@ -100,10 +116,10 @@
                 </div>
             </div>
 
-            <!-- Group 2: Physical Attributes -->
+            <!-- Group 2: Design -->
             {% if type_data.materials or type_data.patterns or type_data.decorations %}
             <div class="tags-group">
-                <div class="tags-group-name">Physical Attributes</div>
+                <div class="tags-group-name">Design</div>
                 <div class="tags-group-content">
                     {% if type_data.materials %}
                     <div class="tag-row">
@@ -127,7 +143,7 @@
                     {% endif %}
                     {% if type_data.decorations %}
                     <div class="tag-row">
-                        <div class="tag-label">Decorations:</div>
+                        <div class="tag-label">Motif:</div>
                         <div class="tag-icons">
                             {% for decoration in type_data.decorations %}
                             <span class="attribute-tag" data-attribute-type="decoration" data-attribute-value="{{ decoration }}">{{ decoration|replace('_', ' ')|title }}</span>
@@ -139,10 +155,10 @@
             </div>
             {% endif %}
 
-            <!-- Group 3: Usage Context -->
+            <!-- Group 3: Usage -->
             {% if type_data.occasions or type_data.styles %}
             <div class="tags-group">
-                <div class="tags-group-name">Usage Context</div>
+                <div class="tags-group-name">Usage</div>
                 <div class="tags-group-content">
                     {% if type_data.occasions %}
                     <div class="tag-row">

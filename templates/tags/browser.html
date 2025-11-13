@@ -53,13 +53,13 @@
     {% else %}
     
     <div class="tag-categories-container">
-        <!-- Identity & Classification -->
+        <!-- Product Category -->
         <div class="tag-category-section">
-            <h2 class="category-title">Identity & Classification</h2>
+            <h2 class="category-title">Product Category</h2>
             
             {% if all_tags.identity_classification.product_form %}
             <div class="tag-subcategory product-form-subcategory">
-                <h3 class="subcategory-title">Product Form</h3>
+                <h3 class="subcategory-title">Category</h3>
                 <div class="product-form-list">
                     {% for item in all_tags.identity_classification.product_form %}
                     <a href="{{ url_for('tag_browser.browser', product_form=item.tag) }}" 
@@ -82,7 +82,7 @@
             {% if all_tags.identity_classification.core_type %}
             <div class="tag-subcategory">
                 <h3 class="subcategory-title">
-                    Core Type
+                    Product Group
                     {% if product_form_filter %}
                     <span class="filter-badge">(filtered by {{ product_form_filter }})</span>
                     {% endif %}
@@ -97,14 +97,14 @@
                     {% endfor %}
                 </div>
                 {% if product_form_filter and all_tags.identity_classification.core_type|length == 0 %}
-                <p class="no-results-message">No core types found for {{ product_form_filter }}.</p>
+                <p class="no-results-message">No product groups found for {{ product_form_filter }}.</p>
                 {% endif %}
             </div>
             {% endif %}
 
             {% if all_tags.identity_classification.subtype %}
             <div class="tag-subcategory">
-                <h3 class="subcategory-title">Subtype</h3>
+                <h3 class="subcategory-title">Product Type</h3>
                 <div class="tag-list">
                     {% for item in all_tags.identity_classification.subtype %}
                     <a href="{{ url_for('tag_browser.browser', category='subtype', tag=item.tag) }}" 
@@ -118,9 +118,9 @@
             {% endif %}
         </div>
 
-        <!-- Physical Attributes -->
+        <!-- Design -->
         <div class="tag-category-section">
-            <h2 class="category-title">Physical Attributes</h2>
+            <h2 class="category-title">Design</h2>
             
             {% if all_tags.physical_attributes.materials %}
             <div class="tag-subcategory">
@@ -162,7 +162,7 @@
 
             {% if all_tags.physical_attributes.decorations %}
             <div class="tag-subcategory">
-                <h3 class="subcategory-title">Decorations</h3>
+                <h3 class="subcategory-title">Motif</h3>
                 <div class="tag-list">
                     {% for item in all_tags.physical_attributes.decorations %}
                     <a href="{{ url_for('tag_browser.browser', category='decorations', tag=item.tag) }}" 
@@ -176,9 +176,9 @@
             {% endif %}
         </div>
 
-        <!-- Usage Context -->
+        <!-- Usage -->
         <div class="tag-category-section">
-            <h2 class="category-title">Usage Context</h2>
+            <h2 class="category-title">Usage</h2>
             
             {% if all_tags.usage_context.occasions %}
             <div class="tag-subcategory">
