@@ -141,21 +141,26 @@
             <button type="button" class="bulk-tag-editor-close" id="bulk-tag-editor-close">&times;</button>
         </div>
         <div class="bulk-tag-editor-content" id="bulk-tag-editor-content">
-            <div class="bulk-tag-editor-info">
-                <p>Editing tags for <strong id="bulk-editor-product-count">0</strong> selected product(s)</p>
-            </div>
-            <div class="bulk-tag-editor-mode">
-                <label class="bulk-tag-mode-label">
-                    <input type="radio" name="bulk-tag-mode" value="add" checked>
-                    <span>Add tags (keep existing)</span>
-                </label>
-                <label class="bulk-tag-mode-label">
-                    <input type="radio" name="bulk-tag-mode" value="replace">
-                    <span>Replace all tags in group</span>
-                </label>
-            </div>
-            <div id="bulk-tag-editor-body" class="tag-editor-body">
-                <div class="bulk-tag-editor-loading">Loading tags...</div>
+            <div class="bulk-tag-editor-content-inner">
+                <div class="bulk-tag-editor-info">
+                    <p class="bulk-tag-editor-note" style="font-size: 0.875rem; color: #94a3b8; margin-bottom: 1rem;">
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Only the tag sections you select below will be modified. Other sections will remain unchanged.
+                    </p>
+                    <p>Editing tags for <strong id="bulk-editor-product-count">0</strong> selected product(s)</p>
+                </div>
+                <div class="bulk-tag-editor-mode">
+                    <label class="bulk-tag-mode-label">
+                        <input type="radio" name="bulk-tag-mode" value="add" checked>
+                        <span>Add tags (keep existing)</span>
+                    </label>
+                    <label class="bulk-tag-mode-label">
+                        <input type="radio" name="bulk-tag-mode" value="replace">
+                        <span>Replace all tags in group</span>
+                    </label>
+                </div>
+                <div id="bulk-tag-editor-body" class="tag-editor-body">
+                    <div class="bulk-tag-editor-loading">Loading tags...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -180,6 +185,137 @@
     let currentProducts = [];
     let currentSearchQuery = '';
     let searchTimeout = null;
+    
+    // Session storage keys
+    const STORAGE_KEY_SELECTED = 'tag-editor-selected-products';
+    const STORAGE_KEY_OMITTED = 'tag-editor-omitted-products';
+    const STORAGE_KEY_CURRENT_PRODUCTS = 'tag-editor-current-products';
+    const STORAGE_KEY_FILTERS = 'tag-editor-filters';
+    
+    // Save state to session storage
+    function saveStateToSession() {
+        try {
+            console.log('saveStateToSession called');
+            const selectedArray = Array.from(selectedProductIds);
+            const omittedArray = Array.from(omittedProductIds);
+            console.log('Saving:', {
+                selected: selectedArray.length,
+                omitted: omittedArray.length,
+                products: currentProducts.length
+            });
+            
+            sessionStorage.setItem(STORAGE_KEY_SELECTED, JSON.stringify(selectedArray));
+            sessionStorage.setItem(STORAGE_KEY_OMITTED, JSON.stringify(omittedArray));
+            sessionStorage.setItem(STORAGE_KEY_CURRENT_PRODUCTS, JSON.stringify(currentProducts));
+            
+            // Save current filters
+            const filters = {
+                searchQuery: currentSearchQuery,
+                categoryId: window.getSelectedCategoryId ? window.getSelectedCategoryId() : null,
+                tagFilters: selectedTagFilters,
+                titleFilter: document.getElementById('title-filter-input')?.value || '',
+                titleFilterMode: document.querySelector('input[name="title-filter-mode"]:checked')?.value || 'include'
+            };
+            sessionStorage.setItem(STORAGE_KEY_FILTERS, JSON.stringify(filters));
+            console.log('State saved to session storage');
+        } catch (error) {
+            console.error('Error saving state to session:', error);
+            console.error(error.stack);
+        }
+    }
+    
+    // Load state from session storage
+    function loadStateFromSession() {
+        console.log('loadStateFromSession called');
+        try {
+            // Load selected and omitted product IDs
+            const savedSelected = sessionStorage.getItem(STORAGE_KEY_SELECTED);
+            console.log('Saved selected:', savedSelected);
+            if (savedSelected) {
+                const ids = JSON.parse(savedSelected);
+                selectedProductIds = new Set(ids);
+                console.log('Restored selected product IDs:', selectedProductIds.size);
+            }
+            
+            const savedOmitted = sessionStorage.getItem(STORAGE_KEY_OMITTED);
+            console.log('Saved omitted:', savedOmitted);
+            if (savedOmitted) {
+                const ids = JSON.parse(savedOmitted);
+                omittedProductIds = new Set(ids);
+                console.log('Restored omitted product IDs:', omittedProductIds.size);
+            }
+            
+            // Load current products
+            const savedProducts = sessionStorage.getItem(STORAGE_KEY_CURRENT_PRODUCTS);
+            console.log('Saved products:', savedProducts ? `${savedProducts.length} chars` : 'none');
+            if (savedProducts) {
+                currentProducts = JSON.parse(savedProducts);
+                console.log('Restored products:', currentProducts.length);
+            }
+            
+            // Load filters
+            const savedFilters = sessionStorage.getItem(STORAGE_KEY_FILTERS);
+            console.log('Saved filters:', savedFilters);
+            if (savedFilters) {
+                const filters = JSON.parse(savedFilters);
+                currentSearchQuery = filters.searchQuery || '';
+                console.log('Restored search query:', currentSearchQuery);
+                
+                // Restore search query if present - wait for DOM
+                setTimeout(() => {
+                    const searchInput = document.getElementById('content-generator-product-search');
+                    if (searchInput && filters.searchQuery) {
+                        searchInput.value = filters.searchQuery;
+                        console.log('Restored search input:', filters.searchQuery);
+                    }
+                    
+                    // Restore title filter
+                    const titleInput = document.getElementById('title-filter-input');
+                    if (titleInput && filters.titleFilter) {
+                        titleInput.value = filters.titleFilter;
+                        console.log('Restored title filter:', filters.titleFilter);
+                    }
+                    
+                    // Restore title filter mode
+                    if (filters.titleFilterMode) {
+                        const modeInput = document.querySelector(`input[name="title-filter-mode"][value="${filters.titleFilterMode}"]`);
+                        if (modeInput) {
+                            modeInput.checked = true;
+                            console.log('Restored title filter mode:', filters.titleFilterMode);
+                        }
+                    }
+                }, 100);
+                
+                // Restore tag filters (will be restored when tag filter is initialized)
+                if (filters.tagFilters) {
+                    selectedTagFilters = filters.tagFilters;
+                    console.log('Restored tag filters:', Object.keys(filters.tagFilters));
+                }
+            }
+            
+            // If we have saved products, display them
+            if (currentProducts && currentProducts.length > 0) {
+                console.log('Displaying restored products:', currentProducts.length);
+                // Wait a bit for DOM to be ready
+                setTimeout(() => {
+                    displayProducts(currentProducts);
+                    
+                    // Re-render tag filter if it's been initialized
+                    if (allAvailableTags) {
+                        renderTagFilter();
+                        updateTagFilterBadges();
+                    }
+                }, 200);
+                return true; // Indicate we restored state
+            } else {
+                console.log('No saved products to restore');
+            }
+        } catch (error) {
+            console.error('Error loading state from session:', error);
+            console.error(error.stack);
+        }
+        return false;
+    }
     
     // Override product search select handler for this page
     window.onProductSearchSelect = function(productId, productName) {
@@ -228,7 +364,10 @@
                 console.log('Displaying products:', data.products.length);
                 // Apply title filter before displaying
                 applyTitleFilterToProducts(data.products).then(filteredProducts => {
+                    // Update current search query
+                    currentSearchQuery = query;
                     displayProducts(filteredProducts);
+                    saveStateToSession();
                     
                     // Show pagination if needed
                     const titleInput = document.getElementById('title-filter-input');
@@ -461,6 +600,9 @@
         container.innerHTML = html;
         console.log('Products HTML inserted, grid should be visible now');
         updateSelectionControls();
+        
+        // Save state to session
+        saveStateToSession();
     }
     
     // Omit a product from selection (remove it from display and selection)
@@ -482,6 +624,7 @@
         }
         
         updateSelectionControls();
+        saveStateToSession();
     };
     
     // Update selection controls
@@ -632,7 +775,7 @@
         
         // Apply button
         html += '<div class="bulk-tag-editor-actions">';
-        html += '<button type="button" class="btn-apply-tags" id="btn-apply-tags">Apply Tags to Selected Products</button>';
+        html += '<button type="button" class="btn-apply-tags" id="btn-apply-tags" onclick="applyBulkTags()">Apply Tags to Selected Products</button>';
         html += '<button type="button" class="btn-cancel-bulk" onclick="closeBulkTagEditor()">Cancel</button>';
         html += '</div>';
         
@@ -640,6 +783,16 @@
         
         // Initialize accordions
         initializeBulkTagEditorAccordions();
+        
+        // Attach event listener to apply button (in case onclick doesn't work)
+        const applyBtn = document.getElementById('btn-apply-tags');
+        if (applyBtn) {
+            // Remove any existing listeners
+            const newApplyBtn = applyBtn.cloneNode(true);
+            applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
+            // Add click listener
+            newApplyBtn.addEventListener('click', applyBulkTags);
+        }
     }
     
     // Create bulk tag group (similar to tag editor modal)
@@ -808,12 +961,84 @@
         }
     };
     
-    // Add new tag for bulk editor (placeholder - same as modal)
+    // Add new tag for bulk editor
     window.addNewBulkTag = function(tagType, label) {
-        const tagName = prompt(`Enter new ${label} tag name:`);
-        if (tagName && tagName.trim()) {
-            // TODO: Implement API call to add new tag
-            alert(`Adding new ${label} tag "${tagName}" is not yet implemented. This will be added in a future update.`);
+        const tagName = prompt(`Enter new ${label.toLowerCase()} tag name:`);
+        if (!tagName || !tagName.trim()) {
+            return;
+        }
+        
+        // Normalize tag name (lowercase, replace spaces with underscores)
+        const normalizedTag = tagName.trim().toLowerCase().replace(/\s+/g, '_');
+        
+        // Check if tag already exists in the UI
+        const existingTag = document.querySelector(`#bulk-tag-editor-body .bulk-tag[data-tag-type="${tagType}"][data-tag-value="${normalizedTag}"]`);
+        if (existingTag) {
+            alert('This tag already exists');
+            // Select it if it exists
+            existingTag.classList.add('selected');
+            existingTag.classList.remove('inactive');
+            // Scroll to it
+            existingTag.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        
+        // Find the appropriate tag container based on tagType
+        let container = null;
+        let tagDisplayName = normalizedTag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        
+        // Find container by looking for existing tags of the same type
+        const existingTagOfType = document.querySelector(`#bulk-tag-editor-body .bulk-tag[data-tag-type="${tagType}"]`);
+        if (existingTagOfType) {
+            container = existingTagOfType.closest('.tag-editor-tags');
+        }
+        
+        // If still not found, try to find by label text
+        if (!container) {
+            const labels = {
+                'product_form': 'Category',
+                'core_type': 'Product Group',
+                'subtype': 'Product Type',
+                'materials': 'Materials',
+                'patterns': 'Patterns',
+                'decorations': 'Motif',
+                'occasions': 'Occasions',
+                'styles': 'Styles'
+            };
+            
+            const labelText = labels[tagType];
+            if (labelText) {
+                const allLabels = document.querySelectorAll('#bulk-tag-editor-body .tag-editor-label');
+                for (const label of allLabels) {
+                    if (label.textContent.includes(labelText)) {
+                        const subgroup = label.closest('.tag-editor-subgroup');
+                        if (subgroup) {
+                            container = subgroup.querySelector('.tag-editor-tags');
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (container) {
+            // Create new tag element
+            const newTag = document.createElement('span');
+            newTag.className = 'tag-editor-tag selected bulk-tag';
+            newTag.setAttribute('data-tag-type', tagType);
+            newTag.setAttribute('data-tag-value', normalizedTag);
+            newTag.textContent = tagDisplayName;
+            newTag.onclick = function() {
+                toggleBulkTag(this, tagType, normalizedTag);
+            };
+            
+            // Insert at the beginning of the container
+            container.insertBefore(newTag, container.firstChild);
+            
+            // Scroll to the new tag
+            newTag.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            alert('Could not find tag container. Please refresh the editor and try again.');
         }
     };
     
@@ -859,7 +1084,10 @@
     }
     
     // Apply tags to selected products
-    async function applyBulkTags() {
+    window.applyBulkTags = async function() {
+        console.log('applyBulkTags called');
+        console.log('Selected product IDs:', selectedProductIds.size);
+        
         if (selectedProductIds.size === 0) {
             alert('No products selected');
             return;
@@ -870,11 +1098,22 @@
         
         // Get mode (add or replace)
         const mode = document.querySelector('input[name="bulk-tag-mode"]:checked')?.value || 'add';
+        console.log('Mode:', mode);
         
         // Collect all selected tags
-        document.querySelectorAll('#bulk-tag-editor-body .bulk-tag.selected').forEach(tag => {
+        const selectedTagElements = document.querySelectorAll('#bulk-tag-editor-body .bulk-tag.selected');
+        console.log('Selected tag elements:', selectedTagElements.length);
+        
+        selectedTagElements.forEach(tag => {
             const tagType = tag.getAttribute('data-tag-type');
-            const tagValue = tag.getAttribute('data-tag-value');
+            let tagValue = tag.getAttribute('data-tag-value');
+            
+            // Ensure tag value is normalized (lowercase, underscores)
+            if (tagValue) {
+                tagValue = tagValue.toLowerCase().replace(/\s+/g, '_');
+            }
+            
+            console.log(`Processing tag: type=${tagType}, value=${tagValue}`);
             
             if (tagType === 'product_form') {
                 if (!selectedTags.disambiguation) {
@@ -901,7 +1140,39 @@
         
         // Confirm action
         const action = mode === 'add' ? 'add' : 'replace';
-        const confirmMsg = `Are you sure you want to ${action} these tags to ${selectedProductIds.size} product(s)?`;
+        
+        // Build list of tag groups being modified
+        const modifiedGroups = [];
+        if (selectedTags.disambiguation && selectedTags.disambiguation.product_form) {
+            modifiedGroups.push('Product Category');
+        }
+        if (selectedTags.core_type) {
+            modifiedGroups.push('Product Group');
+        }
+        if (selectedTags.subtype) {
+            modifiedGroups.push('Product Type');
+        }
+        if (selectedTags.materials) {
+            modifiedGroups.push('Materials');
+        }
+        if (selectedTags.patterns) {
+            modifiedGroups.push('Patterns');
+        }
+        if (selectedTags.decorations) {
+            modifiedGroups.push('Motif');
+        }
+        if (selectedTags.occasions) {
+            modifiedGroups.push('Occasions');
+        }
+        if (selectedTags.styles) {
+            modifiedGroups.push('Styles');
+        }
+        
+        const groupsList = modifiedGroups.join(', ');
+        const confirmMsg = `Are you sure you want to ${action} tags in the following sections: ${groupsList}?\n\n` +
+                          `Note: Only the selected tag sections will be modified. Other sections (${modifiedGroups.length > 0 ? 'not listed above' : 'none selected'}) will remain unchanged.\n\n` +
+                          `This will affect ${selectedProductIds.size} product(s).`;
+        
         if (!confirm(confirmMsg)) {
             return;
         }
@@ -936,10 +1207,24 @@
         if (errorCount === 0) {
             alert(`Successfully ${action === 'add' ? 'added' : 'replaced'} tags for ${successCount} product(s)`);
             closeBulkTagEditor();
-            // Refresh product display
-            const searchInput = document.getElementById('content-generator-product-search');
-            if (searchInput && searchInput.value.trim().length >= 2) {
-                performSearch(searchInput.value.trim(), 1);
+            
+            // Refresh product display - reload current products from server to get updated tags
+            if (currentProducts && currentProducts.length > 0) {
+                // Reload the current products to show updated tags
+                const productIds = Array.from(selectedProductIds);
+                console.log('Reloading products after tag update:', productIds.length);
+                loadProductsByIds(productIds).then(() => {
+                    console.log('Products reloaded, tags should be updated');
+                });
+            } else {
+                // Fallback: refresh search if active
+                const searchInput = document.getElementById('content-generator-product-search');
+                if (searchInput && searchInput.value.trim().length >= 2) {
+                    performSearch(searchInput.value.trim(), 1);
+                } else {
+                    // No search - reload all products
+                    fetchAllProducts();
+                }
             }
         } else {
             alert(`Applied tags to ${successCount} product(s), ${errorCount} error(s)`);
@@ -949,6 +1234,8 @@
     // Apply tags to a single product
     async function applyTagsToProduct(productId, tags, mode) {
         try {
+            console.log(`Applying tags to product ${productId}:`, tags, 'mode:', mode);
+            
             const response = await fetch(`/products/tag-editor/api/bulk-tags`, {
                 method: 'POST',
                 headers: {
@@ -962,6 +1249,7 @@
             });
             
             const data = await response.json();
+            console.log(`Response for product ${productId}:`, data);
             
             if (!data.success) {
                 throw new Error(data.error || 'Failed to apply tags');
@@ -969,7 +1257,7 @@
             
             return data;
         } catch (error) {
-            console.error('Error applying tags:', error);
+            console.error(`Error applying tags to product ${productId}:`, error);
             throw error;
         }
     }
@@ -1029,6 +1317,7 @@
             
             if (data.success && data.products) {
                 displayProducts(data.products);
+                saveStateToSession();
                 
                 // Show pagination if needed
                 if (data.pagination && data.pagination.pages > 1) {
@@ -1052,6 +1341,7 @@
     // Handle category products loaded
     window.onCategoryProductsLoaded = function(products, pagination) {
         displayProducts(products);
+        saveStateToSession();
         if (pagination && pagination.pages > 1) {
             displayPagination(pagination, '*');
         } else {
@@ -1085,6 +1375,13 @@
             if (data.success && data.tags) {
                 allAvailableTags = data.tags;
                 renderTagFilter();
+                updateTagFilterBadges();
+                
+                // If we have saved products, make sure tag filter reflects saved state
+                if (currentProducts && currentProducts.length > 0 && Object.keys(selectedTagFilters).length > 0) {
+                    renderTagFilter();
+                    updateTagFilterBadges();
+                }
             }
         } catch (error) {
             console.error('Error loading tags for filter:', error);
@@ -1424,6 +1721,7 @@
                 // Include mode - fetch matching products
                 fetchProductsByTitle(titleFilter).then(filteredProducts => {
                     displayProducts(filteredProducts);
+                    saveStateToSession();
                     hidePagination();
                 }).catch(error => {
                     console.error('Error fetching products by title:', error);
@@ -1436,6 +1734,9 @@
             // No filters - show all products
             fetchAllProducts();
         }
+        
+        // Save state after applying filters
+        saveStateToSession();
     }
     
     // Initialize title filter
@@ -1724,6 +2025,16 @@
         if (searchResults) searchResults.innerHTML = '';
         if (smartSearchResults) smartSearchResults.innerHTML = '';
         
+        // Clear session storage
+        sessionStorage.removeItem(STORAGE_KEY_SELECTED);
+        sessionStorage.removeItem(STORAGE_KEY_OMITTED);
+        sessionStorage.removeItem(STORAGE_KEY_CURRENT_PRODUCTS);
+        sessionStorage.removeItem(STORAGE_KEY_FILTERS);
+        
+        // Clear selection
+        selectedProductIds.clear();
+        omittedProductIds.clear();
+        
         // Fetch and display all products
         fetchAllProducts();
     };
@@ -1739,6 +2050,7 @@
             
             if (data.success && data.products) {
                 displayProducts(data.products);
+                saveStateToSession();
                 hidePagination();
             } else {
                 const container = document.getElementById('products-container');
@@ -1846,12 +2158,19 @@
     // Initialize accordions on page load
     initializeFilterAccordions();
     
-    // Load all products on page load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', fetchAllProducts);
+    // Load state from session first
+    const stateRestored = loadStateFromSession();
+    
+    // Load all products on page load - only if no saved state
+    if (!stateRestored) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fetchAllProducts);
+        } else {
+            // DOM is already ready
+            fetchAllProducts();
+        }
     } else {
-        // DOM is already ready
-        fetchAllProducts();
+        console.log('State restored from session, skipping fetchAllProducts');
     }
     
     // Also add direct input listeners as backup (after component loads)

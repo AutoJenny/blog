@@ -416,6 +416,8 @@ def api_bulk_tags():
             if not isinstance(current_data, dict):
                 current_data = {}
             
+            logger.info(f"Updating product {product_id}: mode={mode}, tags={tags}, current_data keys={list(current_data.keys())}")
+            
             if mode == 'replace':
                 # Replace mode: replace entire groups
                 # For single-value tags, replace directly
@@ -450,7 +452,7 @@ def api_bulk_tags():
             
             else:  # mode == 'add'
                 # Add mode: merge with existing tags
-                # For single-value tags, only set if not already set
+                # For single-value tags, set them (overwrite if they exist)
                 if 'disambiguation' in tags and tags['disambiguation']:
                     if not current_data.get('disambiguation'):
                         current_data['disambiguation'] = {}
@@ -458,12 +460,12 @@ def api_bulk_tags():
                         current_data['disambiguation']['product_form'] = tags['disambiguation']['product_form']
                 
                 if 'core_type' in tags and tags['core_type']:
-                    if not current_data.get('core_type'):
-                        current_data['core_type'] = tags['core_type']
+                    # In add mode, we still overwrite core_type if provided
+                    current_data['core_type'] = tags['core_type']
                 
                 if 'subtype' in tags and tags['subtype']:
-                    if not current_data.get('subtype'):
-                        current_data['subtype'] = tags['subtype']
+                    # In add mode, we still overwrite subtype if provided
+                    current_data['subtype'] = tags['subtype']
                 
                 # For array tags, merge arrays (avoid duplicates)
                 for tag_type in ['materials', 'patterns', 'decorations', 'occasions', 'styles']:
@@ -476,6 +478,8 @@ def api_bulk_tags():
                         current_data[tag_type] = merged
             
             # Save updated product_type_data
+            logger.info(f"Saving product {product_id}: new core_type={current_data.get('core_type')}, new product_form={current_data.get('disambiguation', {}).get('product_form')}")
+            
             cursor.execute("""
                 UPDATE clan_products
                 SET product_type_data = %s
@@ -483,6 +487,16 @@ def api_bulk_tags():
             """, (json.dumps(current_data), product_id))
             
             db_manager.get_connection().commit()
+            
+            # Verify the update
+            cursor.execute("""
+                SELECT product_type_data->>'core_type' as core_type,
+                       product_type_data->'disambiguation'->>'product_form' as product_form
+                FROM clan_products
+                WHERE id = %s
+            """, (product_id,))
+            verify = cursor.fetchone()
+            logger.info(f"Verified product {product_id}: core_type={verify.get('core_type')}, product_form={verify.get('product_form')}")
             
             return jsonify({
                 'success': True,
