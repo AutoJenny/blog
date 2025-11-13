@@ -11,6 +11,8 @@
 
 {% block content %}
 <div class="tag-editor-container">
+    {% include 'includes/browser_tabs.html' %}
+    
     <div class="tag-editor-header">
         <div class="tag-editor-header-content">
             <div>
@@ -147,16 +149,6 @@
                         <i class="fas fa-info-circle"></i> <strong>Note:</strong> Only the tag sections you select below will be modified. Other sections will remain unchanged.
                     </p>
                     <p>Editing tags for <strong id="bulk-editor-product-count">0</strong> selected product(s)</p>
-                </div>
-                <div class="bulk-tag-editor-mode">
-                    <label class="bulk-tag-mode-label">
-                        <input type="radio" name="bulk-tag-mode" value="add" checked>
-                        <span>Add tags (keep existing)</span>
-                    </label>
-                    <label class="bulk-tag-mode-label">
-                        <input type="radio" name="bulk-tag-mode" value="replace">
-                        <span>Replace all tags in group</span>
-                    </label>
                 </div>
                 <div id="bulk-tag-editor-body" class="tag-editor-body">
                     <div class="bulk-tag-editor-loading">Loading tags...</div>
@@ -773,9 +765,21 @@
             html += createBulkTagGroup('usage', 'Usage', currentTags, availableTags);
         }
         
+        // Mode selector
+        html += '<div class="bulk-tag-editor-mode">';
+        html += '<label class="bulk-tag-mode-label">';
+        html += '<input type="radio" name="bulk-tag-mode" value="add" checked>';
+        html += '<span>Add tags (keep existing)</span>';
+        html += '</label>';
+        html += '<label class="bulk-tag-mode-label">';
+        html += '<input type="radio" name="bulk-tag-mode" value="replace">';
+        html += '<span>Replace all tags in group</span>';
+        html += '</label>';
+        html += '</div>';
+        
         // Apply button
         html += '<div class="bulk-tag-editor-actions">';
-        html += '<button type="button" class="btn-apply-tags" id="btn-apply-tags" onclick="applyBulkTags()">Apply Tags to Selected Products</button>';
+        html += '<button type="button" class="btn-apply-tags" id="btn-apply-tags">Apply Tags to Selected Products</button>';
         html += '<button type="button" class="btn-cancel-bulk" onclick="closeBulkTagEditor()">Cancel</button>';
         html += '</div>';
         
@@ -784,14 +788,21 @@
         // Initialize accordions
         initializeBulkTagEditorAccordions();
         
-        // Attach event listener to apply button (in case onclick doesn't work)
+        // Attach event listener to apply button - ensure only one listener
         const applyBtn = document.getElementById('btn-apply-tags');
         if (applyBtn) {
-            // Remove any existing listeners
+            // Remove ALL existing listeners by cloning
             const newApplyBtn = applyBtn.cloneNode(true);
             applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
-            // Add click listener
-            newApplyBtn.addEventListener('click', applyBulkTags);
+            // Add click listener with once: true to ensure it only fires once
+            newApplyBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                if (!isApplyingTags) {
+                    applyBulkTags();
+                }
+            }, { once: false });
         }
     }
     
@@ -1084,12 +1095,22 @@
     }
     
     // Apply tags to selected products
+    let isApplyingTags = false; // Prevent duplicate calls
+    let hasShownConfirmation = false; // Track if confirmation was shown
     window.applyBulkTags = async function() {
+        // Prevent duplicate calls
+        if (isApplyingTags) {
+            console.log('applyBulkTags already in progress, ignoring duplicate call');
+            return;
+        }
+        
+        isApplyingTags = true;
+        hasShownConfirmation = false;
         console.log('applyBulkTags called');
         console.log('Selected product IDs:', selectedProductIds.size);
         
         if (selectedProductIds.size === 0) {
-            alert('No products selected');
+            isApplyingTags = false;
             return;
         }
         
@@ -1134,7 +1155,7 @@
         });
         
         if (Object.keys(selectedTags).length === 0) {
-            alert('Please select at least one tag to apply');
+            isApplyingTags = false;
             return;
         }
         
@@ -1173,7 +1194,17 @@
                           `Note: Only the selected tag sections will be modified. Other sections (${modifiedGroups.length > 0 ? 'not listed above' : 'none selected'}) will remain unchanged.\n\n` +
                           `This will affect ${selectedProductIds.size} product(s).`;
         
+        // Only show confirmation ONCE
+        if (hasShownConfirmation) {
+            console.log('Confirmation already shown, skipping');
+            isApplyingTags = false;
+            return;
+        }
+        
+        hasShownConfirmation = true;
         if (!confirm(confirmMsg)) {
+            isApplyingTags = false;
+            hasShownConfirmation = false;
             return;
         }
         
@@ -1203,9 +1234,9 @@
             applyBtn.textContent = 'Apply Tags to Selected Products';
         }
         
-        // Show results
+        // Show results - no alert needed, just refresh
         if (errorCount === 0) {
-            alert(`Successfully ${action === 'add' ? 'added' : 'replaced'} tags for ${successCount} product(s)`);
+            // Silently refresh - user already confirmed the action
             closeBulkTagEditor();
             
             // Refresh product display - reload current products from server to get updated tags
@@ -1227,8 +1258,13 @@
                 }
             }
         } else {
-            alert(`Applied tags to ${successCount} product(s), ${errorCount} error(s)`);
+            // Silently handle errors - no alert
+            console.error(`Error: Applied tags to ${successCount} product(s), but ${errorCount} error(s) occurred.`);
         }
+        
+        // Reset flags
+        isApplyingTags = false;
+        hasShownConfirmation = false;
     }
     
     // Apply tags to a single product
@@ -1276,9 +1312,8 @@
             closeBtn.addEventListener('click', closeBulkTagEditor);
         }
         
-        if (applyBtn) {
-            applyBtn.addEventListener('click', applyBulkTags);
-        }
+        // Apply button listener is already set up in renderBulkTagEditor
+        // No need to add another listener here to avoid duplicate calls
     }, 500);
     
     // Restore omitted products

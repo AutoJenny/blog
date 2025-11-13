@@ -55,7 +55,8 @@
         <div class="intro-panel tags-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h3 style="margin: 0;">Tags</h3>
-                <button class="edit-tags-btn" onclick="openTagEditor({{ product_data.get('product_id') or current_product_id }})" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 0.375rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;" onmouseover="this.style.borderColor='#8b5cf6'; this.style.color='#8b5cf6';" onmouseout="this.style.borderColor='#475569'; this.style.color='#cbd5e1';">
+                {% set pid = product_data.get('product_id') or current_product_id or 0 %}
+                <button class="edit-tags-btn" onclick="if(window.openTagEditor){window.openTagEditor({{ pid }})}" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 0.375rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;" onmouseover="this.style.borderColor='#8b5cf6'; this.style.color='#8b5cf6';" onmouseout="this.style.borderColor='#475569'; this.style.color='#cbd5e1';">
                     Edit...
                 </button>
             </div>

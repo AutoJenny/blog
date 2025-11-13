@@ -1,0 +1,69 @@
+<!-- Browser Navigation Tabs -->
+<div class="browser-tabs-container">
+    <nav class="browser-tabs">
+        <a href="{{ url_for('product_browser.browser') }}" 
+           class="browser-tab {% if request.endpoint == 'product_browser.browser' %}active{% endif %}">
+            <i class="fas fa-box"></i>
+            <span>Product Browser</span>
+        </a>
+        <a href="{{ url_for('tag_browser.browser') }}" 
+           class="browser-tab {% if request.endpoint == 'tag_browser.browser' %}active{% endif %}">
+            <i class="fas fa-tags"></i>
+            <span>Tag Browser</span>
+        </a>
+        <a href="{{ url_for('product_tag_editor.editor') }}" 
+           class="browser-tab {% if request.endpoint == 'product_tag_editor.editor' %}active{% endif %}">
+            <i class="fas fa-edit"></i>
+            <span>Tag Editor</span>
+        </a>
+    </nav>
+</div>
+
+<style>
+.browser-tabs-container {
+    margin: 1.5rem 0 2rem 0;
+    border-bottom: 1px solid #334155;
+}
+
+.browser-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.browser-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    color: #94a3b8;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.browser-tab:hover {
+    color: #cbd5e1;
+    background: rgba(139, 92, 246, 0.1);
+    border-bottom-color: rgba(139, 92, 246, 0.3);
+}
+
+.browser-tab.active {
+    color: #8b5cf6;
+    border-bottom-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.browser-tab i {
+    font-size: 0.9rem;
+}
+
+.browser-tab span {
+    white-space: nowrap;
+}
+</style>
+
