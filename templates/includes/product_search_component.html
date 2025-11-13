@@ -4,6 +4,22 @@
 
 <!-- Product Search Component -->
 <div class="product-search-component">
+    <!-- Category Filter -->
+    <div class="category-filter-wrapper">
+        <div class="content-generator-form-group category-filter-group">
+            <label class="content-generator-label">
+                <i class="fas fa-filter"></i> Filter by Category
+            </label>
+            <div id="content-generator-category-filter-results" class="category-filter-results category-filter-always-visible"></div>
+            <div id="content-generator-selected-category" class="selected-category-badge" style="display: none;">
+                <span class="selected-category-name"></span>
+                <button type="button" class="selected-category-remove">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div class="content-generator-search-row">
         <div class="content-generator-form-group">
             <label for="content-generator-product-search" class="content-generator-label required">Search Products</label>
@@ -28,8 +44,427 @@
 (function() {
     'use strict';
     
+    // Category filter state
+    let allCategories = [];
+    let categoryTree = {};
+    let selectedCategoryId = null;
+    let currentPath = []; // Track the current selection path
+    
+    // Load categories and build tree
+    async function loadCategories() {
+        try {
+            // Try tag editor endpoint first, then product browser endpoint
+            let response = await fetch('/products/tag-editor/api/categories/tree');
+            if (!response.ok) {
+                response = await fetch('/products/api/categories/tree');
+            }
+            const data = await response.json();
+            
+            if (data.success && data.categories) {
+                allCategories = data.categories;
+                buildCategoryTree();
+            }
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
+    }
+    
+    // Build hierarchical tree structure
+    function buildCategoryTree() {
+        categoryTree = {};
+        
+        // First, create all nodes
+        allCategories.forEach(cat => {
+            categoryTree[cat.id] = {
+                id: cat.id,
+                name: cat.name,
+                level: cat.level,
+                parent_id: cat.parent_id,
+                children: [],
+                path: cat.path
+            };
+        });
+        
+        // Then, build parent-child relationships
+        allCategories.forEach(cat => {
+            if (cat.parent_id && categoryTree[cat.parent_id]) {
+                categoryTree[cat.parent_id].children.push(categoryTree[cat.id]);
+            }
+        });
+        
+        // Sort children by name
+        Object.values(categoryTree).forEach(node => {
+            node.children.sort((a, b) => a.name.localeCompare(b.name));
+        });
+    }
+    
+    // Get top-level categories (level 1 only - the actual top level)
+    function getTopLevelCategories() {
+        // Find categories that are level 1 (the actual top level in the hierarchy)
+        const topLevel = allCategories
+            .filter(cat => cat.level === 1)
+            .map(cat => categoryTree[cat.id])
+            .filter(Boolean);
+        
+        // Sort in specific order: Products, Departments, Collections
+        const order = ['Products', 'Departments', 'Collections'];
+        topLevel.sort((a, b) => {
+            const indexA = order.indexOf(a.name);
+            const indexB = order.indexOf(b.name);
+            
+            // If both are in the order list, sort by their position
+            if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+            }
+            // If only A is in the list, A comes first
+            if (indexA !== -1) return -1;
+            // If only B is in the list, B comes first
+            if (indexB !== -1) return 1;
+            // If neither is in the list, sort alphabetically
+            return a.name.localeCompare(b.name);
+        });
+        
+        console.log('Top level categories (level 1) found:', topLevel.length, topLevel.map(c => c.name));
+        return topLevel;
+    }
+    
+    // Initialize category filter
+    function initializeCategoryFilter() {
+        const categoryResults = document.getElementById('content-generator-category-filter-results');
+        const selectedBadge = document.getElementById('content-generator-selected-category');
+        const removeBtn = selectedBadge?.querySelector('.selected-category-remove');
+        
+        if (!categoryResults) return;
+        
+        // Load categories and display hierarchy immediately
+        if (allCategories.length === 0) {
+            loadCategories().then(() => {
+                displayCategoryHierarchy();
+            });
+        } else {
+            displayCategoryHierarchy();
+        }
+        
+        // Remove selected category
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                clearCategoryFilter();
+            });
+        }
+    }
+    
+    // Display hierarchical category browser
+    function displayCategoryHierarchy() {
+        const categoryResults = document.getElementById('content-generator-category-filter-results');
+        if (!categoryResults) {
+            console.error('categoryResults element not found');
+            return;
+        }
+        
+        // Make sure we have categories loaded
+        if (allCategories.length === 0 || Object.keys(categoryTree).length === 0) {
+            console.log('No categories loaded yet, loading...');
+            loadCategories().then(() => {
+                displayCategoryHierarchy();
+            });
+            return;
+        }
+        
+        currentPath = [];
+        let html = '<div class="category-hierarchy-container">';
+        html += '<div class="category-hierarchy-column" data-level="0">';
+        
+        const topLevel = getTopLevelCategories();
+        console.log('Displaying hierarchy with', topLevel.length, 'top-level categories');
+        
+        if (topLevel.length === 0) {
+            html += '<div class="category-filter-no-results">No categories found</div>';
+        } else {
+            topLevel.forEach(cat => {
+                html += renderCategoryItem(cat, 0);
+            });
+        }
+        
+        html += '</div>';
+        html += '</div>';
+        
+        categoryResults.innerHTML = html;
+        categoryResults.style.display = 'block';
+        
+        // Force layout recalculation
+        categoryResults.offsetHeight;
+        
+        // Verify the structure was created
+        const container = categoryResults.querySelector('.category-hierarchy-container');
+        const column = categoryResults.querySelector('.category-hierarchy-column');
+        console.log('Hierarchy created:', {
+            container: !!container,
+            column: !!column,
+            items: column ? column.querySelectorAll('.category-hierarchy-item').length : 0,
+            containerStyle: container ? window.getComputedStyle(container).display : 'none',
+            columnStyle: column ? window.getComputedStyle(column).display : 'none'
+        });
+        
+        // Force flex display if needed
+        if (container) {
+            container.style.display = 'flex';
+            container.style.flexDirection = 'row';
+        }
+        if (column) {
+            column.style.display = 'block';
+            column.style.width = '250px';
+            column.style.minWidth = '250px';
+            column.style.maxWidth = '250px';
+            column.style.flexShrink = '0';
+        }
+        
+        // Attach click handlers
+        attachCategoryHandlers();
+    }
+    
+    // Render a category item
+    function renderCategoryItem(cat, level) {
+        const hasChildren = cat.children && cat.children.length > 0;
+        return `
+            <div class="category-hierarchy-item ${hasChildren ? 'has-children' : 'leaf'}" 
+                 data-category-id="${cat.id}" 
+                 data-level="${level}"
+                 title="${hasChildren ? 'Click to expand, double-click or Ctrl+click to select' : 'Click to select'}">
+                <span class="category-hierarchy-item-name">${escapeHtml(cat.name)}</span>
+                ${hasChildren ? '<i class="fas fa-chevron-right category-hierarchy-arrow"></i>' : ''}
+            </div>
+        `;
+    }
+    
+    // Handle category item click
+    function handleCategoryClick(categoryId, level, event) {
+        const category = categoryTree[categoryId];
+        if (!category) return;
+        
+        // Check if double-click or Ctrl/Cmd+click to select non-leaf category
+        const isSelectAction = event.detail === 2 || event.ctrlKey || event.metaKey;
+        
+        // Update current path
+        currentPath = currentPath.slice(0, level + 1);
+        currentPath[level] = categoryId;
+        
+        // Remove columns after this level
+        const container = document.querySelector('.category-hierarchy-container');
+        if (!container) return;
+        
+        const columns = container.querySelectorAll('.category-hierarchy-column');
+        columns.forEach((col, idx) => {
+            if (idx > level) {
+                col.remove();
+            }
+        });
+        
+        // Highlight selected item
+        container.querySelectorAll('.category-hierarchy-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        const clickedItem = container.querySelector(`[data-category-id="${categoryId}"]`);
+        if (clickedItem) {
+            clickedItem.classList.add('selected');
+        }
+        
+        // If has children and not a select action, show next column
+        if (category.children && category.children.length > 0 && !isSelectAction) {
+            const nextLevel = level + 1;
+            const newColumn = document.createElement('div');
+            newColumn.className = 'category-hierarchy-column';
+            newColumn.setAttribute('data-level', nextLevel);
+            
+            category.children.forEach(child => {
+                newColumn.innerHTML += renderCategoryItem(child, nextLevel);
+            });
+            
+            container.appendChild(newColumn);
+            
+            // Scroll to show new column
+            newColumn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+            
+            // Attach handlers to new items
+            attachCategoryHandlers();
+        } else {
+            // Leaf category or select action - select it
+            selectCategory(category);
+        }
+    }
+    
+    // Attach click handlers to category items
+    function attachCategoryHandlers() {
+        document.querySelectorAll('.category-hierarchy-item').forEach(item => {
+            // Remove existing listeners to avoid duplicates
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
+            
+            newItem.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const categoryId = parseInt(newItem.getAttribute('data-category-id'));
+                const level = parseInt(newItem.getAttribute('data-level'));
+                handleCategoryClick(categoryId, level, e);
+            });
+        });
+    }
+    
+    // Display filtered categories (when user types)
+    function displayFilteredCategories(query) {
+        const categoryResults = document.getElementById('content-generator-category-filter-results');
+        if (!categoryResults) return;
+        
+        let filtered = allCategories.filter(cat => 
+            cat.name.toLowerCase().includes(query) || 
+            cat.path.toLowerCase().includes(query)
+        );
+        
+        if (filtered.length === 0) {
+            categoryResults.innerHTML = '<div class="category-filter-no-results">No categories found</div>';
+            categoryResults.style.display = 'block';
+            return;
+        }
+        
+        let html = '<div class="category-filter-list">';
+        filtered.slice(0, 50).forEach(cat => {
+            html += `
+                <div class="category-filter-item" data-category-id="${cat.id}">
+                    <div class="category-filter-item-name">${escapeHtml(cat.name)}</div>
+                    <div class="category-filter-item-path">${escapeHtml(cat.path)}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
+        categoryResults.innerHTML = html;
+        categoryResults.style.display = 'block';
+        
+        // Attach click handlers
+        categoryResults.querySelectorAll('.category-filter-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const categoryId = parseInt(item.getAttribute('data-category-id'));
+                const category = categoryTree[categoryId];
+                if (category) {
+                    selectCategory(category);
+                }
+            });
+        });
+    }
+    
+    // Select a category
+    function selectCategory(category) {
+        selectedCategoryId = category.id;
+        const selectedBadge = document.getElementById('content-generator-selected-category');
+        const categoryResults = document.getElementById('content-generator-category-filter-results');
+        
+        // Keep the hierarchy visible but highlight the selected category
+        if (categoryResults) {
+            // Highlight the selected item in the hierarchy
+            categoryResults.querySelectorAll('.category-hierarchy-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            const selectedItem = categoryResults.querySelector(`[data-category-id="${category.id}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('selected');
+            }
+        }
+        
+        if (selectedBadge) {
+            selectedBadge.querySelector('.selected-category-name').textContent = category.path;
+            selectedBadge.style.display = 'flex';
+        }
+        
+        // Trigger product filtering - either with search query or category-only
+        const searchInput = document.getElementById('content-generator-product-search');
+        const query = searchInput ? searchInput.value.trim() : '';
+        
+        if (query.length >= 2) {
+            // Has search query - use normal search
+            searchProducts(query);
+        } else {
+            // No search query - filter by category only
+            filterProductsByCategory(category.id);
+        }
+        
+        // Notify parent if callback exists
+        if (window.onCategoryFilterChange && typeof window.onCategoryFilterChange === 'function') {
+            window.onCategoryFilterChange(category.id, category);
+        }
+    }
+    
+    // Filter products by category only (no search query)
+    async function filterProductsByCategory(categoryId) {
+        // Check if there's a global override for category-only filtering
+        if (window.filterProductsByCategory && typeof window.filterProductsByCategory === 'function') {
+            return await window.filterProductsByCategory(categoryId);
+        }
+        
+        // Default: try to fetch products from tag editor endpoint
+        try {
+            const response = await fetch(`/products/tag-editor/api/search?q=*&category_id=${categoryId}&page=1&per_page=100`);
+            const data = await response.json();
+            
+            if (data.success && data.products) {
+                // Notify parent to display products
+                if (window.onCategoryProductsLoaded && typeof window.onCategoryProductsLoaded === 'function') {
+                    window.onCategoryProductsLoaded(data.products, data.pagination);
+                }
+            }
+        } catch (error) {
+            console.error('Error filtering products by category:', error);
+        }
+    }
+    
+    // Clear category filter
+    function clearCategoryFilter() {
+        selectedCategoryId = null;
+        const selectedBadge = document.getElementById('content-generator-selected-category');
+        const categoryResults = document.getElementById('content-generator-category-filter-results');
+        
+        // Remove selection highlights
+        if (categoryResults) {
+            categoryResults.querySelectorAll('.category-hierarchy-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+        
+        if (selectedBadge) {
+            selectedBadge.style.display = 'none';
+        }
+        
+        // Trigger search if there's a query, or clear products if no query
+        const searchInput = document.getElementById('content-generator-product-search');
+        if (searchInput && searchInput.value.trim().length >= 2) {
+            searchProducts(searchInput.value.trim());
+        } else {
+            // No search query - clear products display
+            if (window.onCategoryProductsCleared && typeof window.onCategoryProductsCleared === 'function') {
+                window.onCategoryProductsCleared();
+            }
+        }
+        
+        // Notify parent
+        if (window.onCategoryFilterChange && typeof window.onCategoryFilterChange === 'function') {
+            window.onCategoryFilterChange(null, null);
+        }
+    }
+    
+    // Get selected category ID
+    window.getSelectedCategoryId = function() {
+        return selectedCategoryId;
+    };
+    
+    // Escape HTML helper
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
     // Initialize product search functionality
     function initializeProductSearch() {
+        // Initialize category filter
+        initializeCategoryFilter();
+        
         // Product search - attach event listener
         const productSearch = document.getElementById('content-generator-product-search');
         if (productSearch) {
@@ -100,7 +535,13 @@
         }
         
         try {
-            const response = await fetch(`/products/api/search?q=${encodeURIComponent(query)}`);
+            // Include category filter if selected
+            let url = `/products/api/search?q=${encodeURIComponent(query)}`;
+            if (selectedCategoryId) {
+                url += `&category_id=${selectedCategoryId}`;
+            }
+            
+            const response = await fetch(url);
             const data = await response.json();
             
             const resultsDiv = document.getElementById('content-generator-product-search-results');
@@ -208,6 +649,214 @@
 /* Product Search Component Styles */
 .product-search-component {
     width: 100%;
+}
+
+.category-filter-wrapper {
+    margin-bottom: 1rem;
+}
+
+.category-filter-group {
+    position: relative;
+}
+
+.category-filter-container {
+    position: relative;
+}
+
+.category-filter-input {
+    padding-right: 2.5rem;
+}
+
+.category-filter-clear {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.category-filter-clear:hover {
+    color: #f1f5f9;
+}
+
+.category-filter-results {
+    position: relative;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    margin-top: 8px;
+    max-height: 400px;
+    overflow: hidden !important;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.category-filter-results.category-filter-always-visible {
+    display: block !important;
+}
+
+.category-filter-results .category-hierarchy-container {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+}
+
+.category-hierarchy-container {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    max-height: 400px;
+    width: 100%;
+    background: #1e293b;
+}
+
+.category-hierarchy-column {
+    min-width: 250px !important;
+    max-width: 250px !important;
+    width: 250px !important;
+    border-right: 1px solid #334155 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: 400px;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    display: block !important;
+    background: #1e293b;
+}
+
+.category-hierarchy-column:last-child {
+    border-right: none;
+}
+
+.category-hierarchy-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.category-hierarchy-item:hover {
+    background: #334155;
+}
+
+.category-hierarchy-item.selected {
+    background: #475569;
+    color: #8b5cf6;
+}
+
+.category-hierarchy-item.selected .category-hierarchy-item-name {
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+.category-hierarchy-item:last-child {
+    border-bottom: none;
+}
+
+.category-hierarchy-item-name {
+    color: #f1f5f9;
+    font-weight: 500;
+    flex: 1;
+}
+
+.category-hierarchy-item.leaf {
+    cursor: pointer;
+}
+
+.category-hierarchy-item.has-children {
+    cursor: pointer;
+}
+
+.category-hierarchy-arrow {
+    color: #64748b;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.category-filter-list {
+    padding: 4px;
+    display: block !important;
+}
+
+.category-filter-item {
+    padding: 10px;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: block !important;
+}
+
+.category-filter-item:hover {
+    background: #334155;
+}
+
+.category-filter-item:last-child {
+    border-bottom: none;
+}
+
+.category-filter-item-name {
+    color: #f1f5f9;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.category-filter-item-path {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+.category-filter-no-results {
+    padding: 12px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+.selected-category-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #334155;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.selected-category-name {
+    color: #cbd5e1;
+    flex: 1;
+}
+
+.selected-category-remove {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.selected-category-remove:hover {
+    color: #f1f5f9;
 }
 
 .content-generator-search-row {

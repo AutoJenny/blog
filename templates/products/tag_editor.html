@@ -15,9 +15,44 @@
         <p class="tag-editor-subtitle">Find products and manage tags in bulk</p>
     </div>
 
-    <!-- Product Search Component -->
-    <div class="tag-editor-search-section">
-        {% include 'includes/product_search_component.html' %}
+    <!-- Filter Accordions -->
+    <div class="filter-accordions-section">
+        <!-- Category Filter Accordion -->
+        <div class="filter-accordion" id="category-filter-accordion">
+            <div class="filter-accordion-header" onclick="toggleFilterAccordion('category-filter')">
+                <div class="filter-accordion-title">
+                    <i class="fas fa-chevron-down filter-accordion-icon"></i>
+                    <i class="fas fa-filter"></i>
+                    <span>Filter by Category</span>
+                </div>
+            </div>
+            <div class="filter-accordion-content" id="category-filter-content">
+                <div class="tag-editor-search-section">
+                    {% include 'includes/product_search_component.html' %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tag Filter Accordion -->
+        <div class="filter-accordion" id="tag-filter-accordion">
+            <div class="filter-accordion-header" onclick="toggleFilterAccordion('tag-filter')">
+                <div class="filter-accordion-title">
+                    <i class="fas fa-chevron-down filter-accordion-icon"></i>
+                    <i class="fas fa-tags"></i>
+                    <span>Filter by Tag</span>
+                </div>
+            </div>
+            <div class="filter-accordion-content" id="tag-filter-content">
+                <div class="tag-filter-section">
+                    <div class="tag-filter-wrapper">
+                        <div class="content-generator-form-group tag-filter-group">
+                            <div id="tag-filter-hierarchy" class="tag-filter-hierarchy-container"></div>
+                            <div id="tag-filter-selected" class="tag-filter-selected-badges"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Selection Controls -->
@@ -28,6 +63,35 @@
         <div class="selection-actions">
             <button type="button" class="btn-select-all" id="btn-select-all">Select All</button>
             <button type="button" class="btn-clear-selection" id="btn-clear-selection">Clear Selection</button>
+            <button type="button" class="btn-edit-tags" id="btn-edit-tags" style="display: none;">
+                <i class="fas fa-tags"></i> Edit Tags for Selected
+            </button>
+        </div>
+    </div>
+    
+    <!-- Bulk Tag Editor Panel -->
+    <div class="bulk-tag-editor-panel" id="bulk-tag-editor-panel" style="display: none;">
+        <div class="bulk-tag-editor-header">
+            <h3>Bulk Tag Editor</h3>
+            <button type="button" class="bulk-tag-editor-close" id="bulk-tag-editor-close">&times;</button>
+        </div>
+        <div class="bulk-tag-editor-content" id="bulk-tag-editor-content">
+            <div class="bulk-tag-editor-info">
+                <p>Editing tags for <strong id="bulk-editor-product-count">0</strong> selected product(s)</p>
+            </div>
+            <div class="bulk-tag-editor-mode">
+                <label class="bulk-tag-mode-label">
+                    <input type="radio" name="bulk-tag-mode" value="add" checked>
+                    <span>Add tags (keep existing)</span>
+                </label>
+                <label class="bulk-tag-mode-label">
+                    <input type="radio" name="bulk-tag-mode" value="replace">
+                    <span>Replace all tags in group</span>
+                </label>
+            </div>
+            <div id="bulk-tag-editor-body">
+                <div class="bulk-tag-editor-loading">Loading tags...</div>
+            </div>
         </div>
     </div>
 
@@ -75,7 +139,21 @@
     async function performSearch(query, page = 1) {
         console.log('Performing search:', query, 'page:', page);
         try {
-            const response = await fetch(`/products/tag-editor/api/search?q=${encodeURIComponent(query)}&page=${page}&per_page=100`);
+            // Include category filter if selected
+            let url = `/products/tag-editor/api/search?q=${encodeURIComponent(query)}&page=${page}&per_page=100`;
+            const categoryId = window.getSelectedCategoryId ? window.getSelectedCategoryId() : null;
+            if (categoryId) {
+                url += `&category_id=${categoryId}`;
+            }
+            
+            // Add tag filters
+            let tagIndex = 1;
+            for (const [category, value] of Object.entries(selectedTagFilters)) {
+                url += `&tag_category_${tagIndex}=${encodeURIComponent(category)}&tag_value_${tagIndex}=${encodeURIComponent(value)}`;
+                tagIndex++;
+            }
+            
+            const response = await fetch(url);
             const data = await response.json();
             
             console.log('Search response:', data);
@@ -235,15 +313,450 @@
         const controls = document.getElementById('selection-controls');
         const count = document.getElementById('selected-count');
         const plural = document.getElementById('selected-plural');
+        const editBtn = document.getElementById('btn-edit-tags');
         
         if (selectedProductIds.size > 0) {
             controls.style.display = 'flex';
             count.textContent = selectedProductIds.size;
             plural.textContent = selectedProductIds.size === 1 ? '' : 's';
+            if (editBtn) {
+                editBtn.style.display = 'inline-block';
+            }
         } else {
             controls.style.display = 'none';
+            if (editBtn) {
+                editBtn.style.display = 'none';
+            }
+            // Close bulk editor if open
+            closeBulkTagEditor();
         }
     }
+    
+    // Open bulk tag editor
+    function openBulkTagEditor() {
+        if (selectedProductIds.size === 0) {
+            alert('Please select at least one product');
+            return;
+        }
+        
+        const panel = document.getElementById('bulk-tag-editor-panel');
+        const countSpan = document.getElementById('bulk-editor-product-count');
+        
+        if (panel && countSpan) {
+            countSpan.textContent = selectedProductIds.size;
+            panel.style.display = 'block';
+            loadBulkTagEditor();
+        }
+    }
+    
+    // Close bulk tag editor
+    function closeBulkTagEditor() {
+        const panel = document.getElementById('bulk-tag-editor-panel');
+        if (panel) {
+            panel.style.display = 'none';
+        }
+    }
+    
+    // Load bulk tag editor
+    async function loadBulkTagEditor() {
+        const body = document.getElementById('bulk-tag-editor-body');
+        if (!body) return;
+        
+        body.innerHTML = '<div class="bulk-tag-editor-loading">Loading tags...</div>';
+        
+        try {
+            // Get all available tags
+            const tagsResponse = await fetch('/tags/api/all');
+            const tagsData = await tagsResponse.json();
+            
+            if (!tagsData.success) {
+                throw new Error(tagsData.error || 'Failed to load tags');
+            }
+            
+            const availableTags = tagsData.tags;
+            
+            // Render bulk tag editor (no current tags - we're setting new ones)
+            renderBulkTagEditor({}, availableTags);
+            
+        } catch (error) {
+            console.error('Error loading tags:', error);
+            body.innerHTML = `<div class="bulk-tag-editor-error">Error loading tags: ${error.message}</div>`;
+        }
+    }
+    
+    // Render bulk tag editor (similar to tag editor modal but for bulk operations)
+    function renderBulkTagEditor(currentTags, availableTags) {
+        const body = document.getElementById('bulk-tag-editor-body');
+        if (!body) return;
+        
+        let html = '';
+        
+        // Product Category
+        html += createBulkTagGroup('identity', 'Product Category', currentTags, availableTags);
+        
+        // Design
+        if (availableTags.physical_attributes) {
+            html += createBulkTagGroup('physical', 'Design', currentTags, availableTags);
+        }
+        
+        // Usage
+        if (availableTags.usage_context) {
+            html += createBulkTagGroup('usage', 'Usage', currentTags, availableTags);
+        }
+        
+        // Apply button
+        html += '<div class="bulk-tag-editor-actions">';
+        html += '<button type="button" class="btn-apply-tags" id="btn-apply-tags">Apply Tags to Selected Products</button>';
+        html += '<button type="button" class="btn-cancel-bulk" onclick="closeBulkTagEditor()">Cancel</button>';
+        html += '</div>';
+        
+        body.innerHTML = html;
+        
+        // Initialize accordions
+        initializeBulkTagEditorAccordions();
+    }
+    
+    // Create bulk tag group (similar to tag editor modal)
+    function createBulkTagGroup(groupId, groupName, currentTags, availableTags) {
+        const storageKey = `bulk-tag-editor-accordion-${groupId}`;
+        const savedState = localStorage.getItem(storageKey);
+        const isOpen = savedState === null ? true : savedState === 'open';
+        
+        let html = `<div class="tag-editor-group-accordion" data-group-id="${groupId}" data-accordion-state="${isOpen ? 'open' : 'closed'}">`;
+        html += `<div class="tag-editor-group-header" onclick="toggleBulkTagGroup('${groupId}')">`;
+        html += `<i class="fas fa-chevron-down tag-editor-accordion-icon"></i>`;
+        html += `<span class="tag-editor-group-name">${groupName}</span>`;
+        html += '</div>';
+        html += `<div class="tag-editor-group-content" ${!isOpen ? 'style="display: none;"' : ''}>`;
+        
+        if (groupId === 'identity') {
+            // Category (Product Form)
+            if (availableTags.identity_classification && availableTags.identity_classification.product_form) {
+                html += '<div class="tag-editor-subgroup">';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Category:</div></div>';
+                html += '<div class="tag-editor-tags">';
+                for (const form of availableTags.identity_classification.product_form) {
+                    html += `<span class="tag-editor-tag inactive bulk-tag" 
+                                   data-tag-type="product_form" 
+                                   data-tag-value="${form.tag}"
+                                   onclick="toggleBulkTag(this, 'product_form', '${form.tag}')">
+                              ${form.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>`;
+                }
+                html += '</div></div>';
+            }
+            
+            // Product Group (Core Type)
+            if (availableTags.identity_classification && availableTags.identity_classification.core_type) {
+                html += '<div class="tag-editor-subgroup">';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Product Group:</div></div>';
+                html += '<div class="tag-editor-tags">';
+                for (const coreType of availableTags.identity_classification.core_type) {
+                    html += `<span class="tag-editor-tag inactive bulk-tag" 
+                                   data-tag-type="core_type" 
+                                   data-tag-value="${coreType.tag}"
+                                   onclick="toggleBulkTag(this, 'core_type', '${coreType.tag}')">
+                              ${coreType.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>`;
+                }
+                html += '</div></div>';
+            }
+            
+            // Product Type
+            if (availableTags.identity_classification && availableTags.identity_classification.subtype) {
+                html += '<div class="tag-editor-subgroup">';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Product Type:</div></div>';
+                html += '<div class="tag-editor-tags">';
+                for (const subtype of availableTags.identity_classification.subtype) {
+                    html += `<span class="tag-editor-tag inactive bulk-tag" 
+                                   data-tag-type="subtype" 
+                                   data-tag-value="${subtype.tag}"
+                                   onclick="toggleBulkTag(this, 'subtype', '${subtype.tag}')">
+                              ${subtype.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>`;
+                }
+                html += '</div></div>';
+            }
+        } else if (groupId === 'physical') {
+            // Materials
+            if (availableTags.physical_attributes.materials) {
+                html += '<div class="tag-editor-subgroup">';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Materials:</div></div>';
+                html += '<div class="tag-editor-tags">';
+                for (const material of availableTags.physical_attributes.materials) {
+                    if (material.tag === '__missing__') continue;
+                    html += `<span class="tag-editor-tag inactive bulk-tag" 
+                                   data-tag-type="materials" 
+                                   data-tag-value="${material.tag}"
+                                   onclick="toggleBulkTag(this, 'materials', '${material.tag}')">
+                              ${material.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>`;
+                }
+                html += '</div></div>';
+            }
+            
+            // Patterns
+            if (availableTags.physical_attributes.patterns) {
+                html += '<div class="tag-editor-subgroup">';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Patterns:</div></div>';
+                html += '<div class="tag-editor-tags">';
+                for (const pattern of availableTags.physical_attributes.patterns) {
+                    html += `<span class="tag-editor-tag inactive bulk-tag" 
+                                   data-tag-type="patterns" 
+                                   data-tag-value="${pattern.tag}"
+                                   onclick="toggleBulkTag(this, 'patterns', '${pattern.tag}')">
+                              ${pattern.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>`;
+                }
+                html += '</div></div>';
+            }
+            
+            // Motif
+            if (availableTags.physical_attributes.decorations) {
+                html += '<div class="tag-editor-subgroup">';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Motif:</div></div>';
+                html += '<div class="tag-editor-tags">';
+                for (const decoration of availableTags.physical_attributes.decorations) {
+                    html += `<span class="tag-editor-tag inactive bulk-tag" 
+                                   data-tag-type="decorations" 
+                                   data-tag-value="${decoration.tag}"
+                                   onclick="toggleBulkTag(this, 'decorations', '${decoration.tag}')">
+                              ${decoration.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>`;
+                }
+                html += '</div></div>';
+            }
+        } else if (groupId === 'usage') {
+            // Occasions
+            if (availableTags.usage_context.occasions) {
+                html += '<div class="tag-editor-subgroup">';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Occasions:</div></div>';
+                html += '<div class="tag-editor-tags">';
+                for (const occasion of availableTags.usage_context.occasions) {
+                    html += `<span class="tag-editor-tag inactive bulk-tag" 
+                                   data-tag-type="occasions" 
+                                   data-tag-value="${occasion.tag}"
+                                   onclick="toggleBulkTag(this, 'occasions', '${occasion.tag}')">
+                              ${occasion.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>`;
+                }
+                html += '</div></div>';
+            }
+            
+            // Styles
+            if (availableTags.usage_context.styles) {
+                html += '<div class="tag-editor-subgroup">';
+                html += '<div class="tag-editor-label-row"><div class="tag-editor-label">Styles:</div></div>';
+                html += '<div class="tag-editor-tags">';
+                for (const style of availableTags.usage_context.styles) {
+                    html += `<span class="tag-editor-tag inactive bulk-tag" 
+                                   data-tag-type="styles" 
+                                   data-tag-value="${style.tag}"
+                                   onclick="toggleBulkTag(this, 'styles', '${style.tag}')">
+                              ${style.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>`;
+                }
+                html += '</div></div>';
+            }
+        }
+        
+        html += '</div></div>';
+        return html;
+    }
+    
+    // Toggle bulk tag selection
+    window.toggleBulkTag = function(element, tagType, tagValue) {
+        // Toggle selection
+        element.classList.toggle('selected');
+        element.classList.toggle('inactive');
+        
+        // For single-selection tags, deselect others
+        if (tagType === 'product_form' || tagType === 'core_type' || tagType === 'subtype') {
+            const allTagsOfType = document.querySelectorAll(`.bulk-tag[data-tag-type="${tagType}"]`);
+            allTagsOfType.forEach(tag => {
+                if (tag !== element) {
+                    tag.classList.remove('selected');
+                    tag.classList.add('inactive');
+                }
+            });
+        }
+    };
+    
+    // Toggle bulk tag group accordion
+    window.toggleBulkTagGroup = function(groupId) {
+        const accordion = document.querySelector(`#bulk-tag-editor-body .tag-editor-group-accordion[data-group-id="${groupId}"]`);
+        if (!accordion) return;
+        
+        const currentState = accordion.getAttribute('data-accordion-state');
+        const newState = currentState === 'open' ? 'closed' : 'open';
+        
+        accordion.setAttribute('data-accordion-state', newState);
+        const content = accordion.querySelector('.tag-editor-group-content');
+        const icon = accordion.querySelector('.tag-editor-accordion-icon');
+        
+        if (newState === 'closed') {
+            content.style.display = 'none';
+            icon.style.transform = 'rotate(-90deg)';
+        } else {
+            content.style.display = 'block';
+            icon.style.transform = 'rotate(0deg)';
+        }
+        
+        localStorage.setItem(`bulk-tag-editor-accordion-${groupId}`, newState);
+    };
+    
+    // Initialize bulk tag editor accordions
+    function initializeBulkTagEditorAccordions() {
+        const accordions = document.querySelectorAll('#bulk-tag-editor-body .tag-editor-group-accordion');
+        accordions.forEach(accordion => {
+            const state = accordion.getAttribute('data-accordion-state');
+            const content = accordion.querySelector('.tag-editor-group-content');
+            const icon = accordion.querySelector('.tag-editor-accordion-icon');
+            
+            if (state === 'closed') {
+                content.style.display = 'none';
+                icon.style.transform = 'rotate(-90deg)';
+            } else {
+                content.style.display = 'block';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        });
+    }
+    
+    // Apply tags to selected products
+    async function applyBulkTags() {
+        if (selectedProductIds.size === 0) {
+            alert('No products selected');
+            return;
+        }
+        
+        // Get selected tags from the bulk editor
+        const selectedTags = {};
+        
+        // Get mode (add or replace)
+        const mode = document.querySelector('input[name="bulk-tag-mode"]:checked')?.value || 'add';
+        
+        // Collect all selected tags
+        document.querySelectorAll('#bulk-tag-editor-body .bulk-tag.selected').forEach(tag => {
+            const tagType = tag.getAttribute('data-tag-type');
+            const tagValue = tag.getAttribute('data-tag-value');
+            
+            if (tagType === 'product_form') {
+                if (!selectedTags.disambiguation) {
+                    selectedTags.disambiguation = {};
+                }
+                selectedTags.disambiguation.product_form = tagValue;
+            } else if (tagType === 'core_type') {
+                selectedTags.core_type = tagValue;
+            } else if (tagType === 'subtype') {
+                selectedTags.subtype = tagValue;
+            } else {
+                // Array-based tags
+                if (!selectedTags[tagType]) {
+                    selectedTags[tagType] = [];
+                }
+                selectedTags[tagType].push(tagValue);
+            }
+        });
+        
+        if (Object.keys(selectedTags).length === 0) {
+            alert('Please select at least one tag to apply');
+            return;
+        }
+        
+        // Confirm action
+        const action = mode === 'add' ? 'add' : 'replace';
+        const confirmMsg = `Are you sure you want to ${action} these tags to ${selectedProductIds.size} product(s)?`;
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+        
+        // Apply to all selected products
+        const productIds = Array.from(selectedProductIds);
+        let successCount = 0;
+        let errorCount = 0;
+        
+        const applyBtn = document.getElementById('btn-apply-tags');
+        if (applyBtn) {
+            applyBtn.disabled = true;
+            applyBtn.textContent = 'Applying...';
+        }
+        
+        for (const productId of productIds) {
+            try {
+                await applyTagsToProduct(productId, selectedTags, mode);
+                successCount++;
+            } catch (error) {
+                console.error(`Error applying tags to product ${productId}:`, error);
+                errorCount++;
+            }
+        }
+        
+        if (applyBtn) {
+            applyBtn.disabled = false;
+            applyBtn.textContent = 'Apply Tags to Selected Products';
+        }
+        
+        // Show results
+        if (errorCount === 0) {
+            alert(`Successfully ${action === 'add' ? 'added' : 'replaced'} tags for ${successCount} product(s)`);
+            closeBulkTagEditor();
+            // Refresh product display
+            const searchInput = document.getElementById('content-generator-product-search');
+            if (searchInput && searchInput.value.trim().length >= 2) {
+                performSearch(searchInput.value.trim(), 1);
+            }
+        } else {
+            alert(`Applied tags to ${successCount} product(s), ${errorCount} error(s)`);
+        }
+    }
+    
+    // Apply tags to a single product
+    async function applyTagsToProduct(productId, tags, mode) {
+        try {
+            const response = await fetch(`/products/tag-editor/api/bulk-tags`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    tags: tags,
+                    mode: mode
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to apply tags');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Error applying tags:', error);
+            throw error;
+        }
+    }
+    
+    // Set up event listeners
+    setTimeout(() => {
+        const editBtn = document.getElementById('btn-edit-tags');
+        const closeBtn = document.getElementById('bulk-tag-editor-close');
+        const applyBtn = document.getElementById('btn-apply-tags');
+        
+        if (editBtn) {
+            editBtn.addEventListener('click', openBulkTagEditor);
+        }
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeBulkTagEditor);
+        }
+        
+        if (applyBtn) {
+            applyBtn.addEventListener('click', applyBulkTags);
+        }
+    }, 500);
     
     // Select all products
     document.getElementById('btn-select-all').addEventListener('click', function() {
@@ -271,6 +784,473 @@
         div.textContent = text;
         return div.innerHTML;
     }
+    
+    // Filter products by category only (no search query)
+    window.filterProductsByCategory = async function(categoryId) {
+        try {
+            const response = await fetch(`/products/tag-editor/api/search?q=*&category_id=${categoryId}&page=1&per_page=100`);
+            const data = await response.json();
+            
+            if (data.success && data.products) {
+                displayProducts(data.products);
+                
+                // Show pagination if needed
+                if (data.pagination && data.pagination.pages > 1) {
+                    displayPagination(data.pagination, '*');
+                } else {
+                    hidePagination();
+                }
+            } else {
+                const container = document.getElementById('products-container');
+                container.innerHTML = '<div class="no-products-message"><p>No products found in this category.</p></div>';
+                hidePagination();
+            }
+        } catch (error) {
+            console.error('Error filtering products by category:', error);
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="no-products-message"><p>Error loading products.</p></div>';
+            hidePagination();
+        }
+    };
+    
+    // Handle category products loaded
+    window.onCategoryProductsLoaded = function(products, pagination) {
+        displayProducts(products);
+        if (pagination && pagination.pages > 1) {
+            displayPagination(pagination, '*');
+        } else {
+            hidePagination();
+        }
+    };
+    
+    // Handle category products cleared
+    window.onCategoryProductsCleared = function() {
+        const container = document.getElementById('products-container');
+        container.innerHTML = '<div class="no-products-message"><p>Search for products to get started, or use the Tag Browser to find products by tags.</p></div>';
+        hidePagination();
+    };
+    
+    // Listen for category filter changes
+    window.onCategoryFilterChange = function(categoryId, category) {
+        // Re-trigger search with all filters
+        applyAllFilters();
+    };
+    
+    // Tag filter state
+    let selectedTagFilters = {}; // {tag_category: tag_value}
+    let allAvailableTags = null;
+    
+    // Initialize tag filter
+    async function initializeTagFilter() {
+        try {
+            const response = await fetch('/tags/api/all');
+            const data = await response.json();
+            
+            if (data.success && data.tags) {
+                allAvailableTags = data.tags;
+                renderTagFilter();
+            }
+        } catch (error) {
+            console.error('Error loading tags for filter:', error);
+        }
+    }
+    
+    // Get filtered tags based on current selections
+    async function getFilteredTags() {
+        try {
+            // Build filter params
+            let url = '/products/tag-editor/api/tags/filtered';
+            const params = [];
+            
+            if (selectedTagFilters.product_form) {
+                params.push(`product_form=${encodeURIComponent(selectedTagFilters.product_form)}`);
+            }
+            if (selectedTagFilters.core_type) {
+                params.push(`core_type=${encodeURIComponent(selectedTagFilters.core_type)}`);
+            }
+            if (selectedTagFilters.subtype) {
+                params.push(`subtype=${encodeURIComponent(selectedTagFilters.subtype)}`);
+            }
+            
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success && data.tags) {
+                return data.tags;
+            }
+            // Fallback to all tags if no filters
+            if (!selectedTagFilters.product_form && !selectedTagFilters.core_type && !selectedTagFilters.subtype) {
+                return allAvailableTags;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error fetching filtered tags:', error);
+            return allAvailableTags;
+        }
+    }
+    
+    // Render tag filter with columnar structure
+    async function renderTagFilter() {
+        const container = document.getElementById('tag-filter-hierarchy');
+        if (!container) return;
+        
+        // Show loading state
+        container.innerHTML = '<div style="padding: 2rem; text-align: center; color: #94a3b8;">Loading tags...</div>';
+        
+        // Get filtered tags based on current selections
+        let filteredTags = await getFilteredTags();
+        
+        // If no filtered tags and we have filters, use all tags as fallback
+        if (!filteredTags) {
+            if (!allAvailableTags) {
+                // Load all tags first
+                try {
+                    const response = await fetch('/tags/api/all');
+                    const data = await response.json();
+                    if (data.success && data.tags) {
+                        allAvailableTags = data.tags;
+                    }
+                } catch (error) {
+                    console.error('Error loading all tags:', error);
+                }
+            }
+            filteredTags = allAvailableTags;
+        }
+        
+        if (!filteredTags) return;
+        
+        let html = '<div class="tag-filter-columns">';
+        
+        // Product Category (hierarchical like category filter - but we'll show all product forms)
+        // Always show all product forms (use allAvailableTags for this)
+        if (allAvailableTags && allAvailableTags.identity_classification && allAvailableTags.identity_classification.product_form) {
+            html += '<div class="tag-filter-column">';
+            html += '<div class="tag-filter-column-header">Product Category</div>';
+            html += '<div class="tag-filter-column-content">';
+            for (const form of allAvailableTags.identity_classification.product_form) {
+                const isSelected = selectedTagFilters.product_form === form.tag;
+                html += `<div class="tag-filter-item ${isSelected ? 'selected' : ''}" 
+                               data-tag-category="product_form" 
+                               data-tag-value="${form.tag}"
+                               onclick="selectTagFilter('product_form', '${form.tag}')">
+                          ${form.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <span class="tag-filter-count">(${form.count})</span>
+                        </div>`;
+            }
+            html += '</div></div>';
+        }
+        
+        // Product Group (flat list) - filtered by product_form if selected
+        if (filteredTags.identity_classification && filteredTags.identity_classification.core_type) {
+            html += '<div class="tag-filter-column">';
+            html += '<div class="tag-filter-column-header">Product Group</div>';
+            html += '<div class="tag-filter-column-content">';
+            for (const coreType of filteredTags.identity_classification.core_type) {
+                const isSelected = selectedTagFilters.core_type === coreType.tag;
+                html += `<div class="tag-filter-item ${isSelected ? 'selected' : ''}" 
+                               data-tag-category="core_type" 
+                               data-tag-value="${coreType.tag}"
+                               onclick="selectTagFilter('core_type', '${coreType.tag}')">
+                          ${coreType.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <span class="tag-filter-count">(${coreType.count})</span>
+                        </div>`;
+            }
+            html += '</div></div>';
+        }
+        
+        // Product Type (flat list) - filtered by product_form and core_type if selected
+        if (filteredTags.identity_classification && filteredTags.identity_classification.subtype) {
+            html += '<div class="tag-filter-column">';
+            html += '<div class="tag-filter-column-header">Product Type</div>';
+            html += '<div class="tag-filter-column-content">';
+            for (const subtype of filteredTags.identity_classification.subtype) {
+                const isSelected = selectedTagFilters.subtype === subtype.tag;
+                html += `<div class="tag-filter-item ${isSelected ? 'selected' : ''}" 
+                               data-tag-category="subtype" 
+                               data-tag-value="${subtype.tag}"
+                               onclick="selectTagFilter('subtype', '${subtype.tag}')">
+                          ${subtype.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <span class="tag-filter-count">(${subtype.count})</span>
+                        </div>`;
+            }
+            html += '</div></div>';
+        }
+        
+        // Materials (flat list) - counts update based on filters
+        if (filteredTags.physical_attributes && filteredTags.physical_attributes.materials) {
+            html += '<div class="tag-filter-column">';
+            html += '<div class="tag-filter-column-header">Materials</div>';
+            html += '<div class="tag-filter-column-content">';
+            for (const material of filteredTags.physical_attributes.materials) {
+                if (material.tag === '__missing__') continue;
+                const isSelected = selectedTagFilters.materials === material.tag;
+                html += `<div class="tag-filter-item ${isSelected ? 'selected' : ''}" 
+                               data-tag-category="materials" 
+                               data-tag-value="${material.tag}"
+                               onclick="selectTagFilter('materials', '${material.tag}')">
+                          ${material.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <span class="tag-filter-count">(${material.count})</span>
+                        </div>`;
+            }
+            html += '</div></div>';
+        }
+        
+        // Patterns (flat list) - counts update based on filters
+        if (filteredTags.physical_attributes && filteredTags.physical_attributes.patterns) {
+            html += '<div class="tag-filter-column">';
+            html += '<div class="tag-filter-column-header">Patterns</div>';
+            html += '<div class="tag-filter-column-content">';
+            for (const pattern of filteredTags.physical_attributes.patterns) {
+                const isSelected = selectedTagFilters.patterns === pattern.tag;
+                html += `<div class="tag-filter-item ${isSelected ? 'selected' : ''}" 
+                               data-tag-category="patterns" 
+                               data-tag-value="${pattern.tag}"
+                               onclick="selectTagFilter('patterns', '${pattern.tag}')">
+                          ${pattern.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <span class="tag-filter-count">(${pattern.count})</span>
+                        </div>`;
+            }
+            html += '</div></div>';
+        }
+        
+        // Motif (flat list) - counts update based on filters
+        if (filteredTags.physical_attributes && filteredTags.physical_attributes.decorations) {
+            html += '<div class="tag-filter-column">';
+            html += '<div class="tag-filter-column-header">Motif</div>';
+            html += '<div class="tag-filter-column-content">';
+            for (const decoration of filteredTags.physical_attributes.decorations) {
+                const isSelected = selectedTagFilters.decorations === decoration.tag;
+                html += `<div class="tag-filter-item ${isSelected ? 'selected' : ''}" 
+                               data-tag-category="decorations" 
+                               data-tag-value="${decoration.tag}"
+                               onclick="selectTagFilter('decorations', '${decoration.tag}')">
+                          ${decoration.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <span class="tag-filter-count">(${decoration.count})</span>
+                        </div>`;
+            }
+            html += '</div></div>';
+        }
+        
+        // Occasions (flat list) - counts update based on filters
+        if (filteredTags.usage_context && filteredTags.usage_context.occasions) {
+            html += '<div class="tag-filter-column">';
+            html += '<div class="tag-filter-column-header">Occasions</div>';
+            html += '<div class="tag-filter-column-content">';
+            for (const occasion of filteredTags.usage_context.occasions) {
+                const isSelected = selectedTagFilters.occasions === occasion.tag;
+                html += `<div class="tag-filter-item ${isSelected ? 'selected' : ''}" 
+                               data-tag-category="occasions" 
+                               data-tag-value="${occasion.tag}"
+                               onclick="selectTagFilter('occasions', '${occasion.tag}')">
+                          ${occasion.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <span class="tag-filter-count">(${occasion.count})</span>
+                        </div>`;
+            }
+            html += '</div></div>';
+        }
+        
+        // Styles (flat list) - counts update based on filters
+        if (filteredTags.usage_context && filteredTags.usage_context.styles) {
+            html += '<div class="tag-filter-column">';
+            html += '<div class="tag-filter-column-header">Styles</div>';
+            html += '<div class="tag-filter-column-content">';
+            for (const style of filteredTags.usage_context.styles) {
+                const isSelected = selectedTagFilters.styles === style.tag;
+                html += `<div class="tag-filter-item ${isSelected ? 'selected' : ''}" 
+                               data-tag-category="styles" 
+                               data-tag-value="${style.tag}"
+                               onclick="selectTagFilter('styles', '${style.tag}')">
+                          ${style.tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <span class="tag-filter-count">(${style.count})</span>
+                        </div>`;
+            }
+            html += '</div></div>';
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+        // Update selected badges
+        updateTagFilterBadges();
+    }
+    
+    // Select a tag filter
+    window.selectTagFilter = function(tagCategory, tagValue) {
+        // Toggle selection (clicking same tag deselects it)
+        if (selectedTagFilters[tagCategory] === tagValue) {
+            delete selectedTagFilters[tagCategory];
+            
+            // If deselecting product_form, also clear core_type and subtype
+            if (tagCategory === 'product_form') {
+                delete selectedTagFilters.core_type;
+                delete selectedTagFilters.subtype;
+            }
+            // If deselecting core_type, also clear subtype
+            if (tagCategory === 'core_type') {
+                delete selectedTagFilters.subtype;
+            }
+        } else {
+            // For single-selection categories, replace existing
+            if (tagCategory === 'product_form' || tagCategory === 'core_type' || tagCategory === 'subtype') {
+                selectedTagFilters[tagCategory] = tagValue;
+                
+                // If selecting product_form, clear core_type and subtype
+                if (tagCategory === 'product_form') {
+                    delete selectedTagFilters.core_type;
+                    delete selectedTagFilters.subtype;
+                }
+                // If selecting core_type, clear subtype
+                if (tagCategory === 'core_type') {
+                    delete selectedTagFilters.subtype;
+                }
+            } else {
+                // For multi-selection categories, toggle
+                if (selectedTagFilters[tagCategory] === tagValue) {
+                    delete selectedTagFilters[tagCategory];
+                } else {
+                    selectedTagFilters[tagCategory] = tagValue;
+                }
+            }
+        }
+        
+        // Re-render to update selection state and filtered tags
+        renderTagFilter();
+        
+        // Trigger search with tag filters
+        applyAllFilters();
+    };
+    
+    // Update selected tag badges
+    function updateTagFilterBadges() {
+        const badgesContainer = document.getElementById('tag-filter-selected');
+        if (!badgesContainer) return;
+        
+        if (Object.keys(selectedTagFilters).length === 0) {
+            badgesContainer.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        for (const [category, value] of Object.entries(selectedTagFilters)) {
+            const displayValue = value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const categoryLabel = category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            html += `<div class="tag-filter-badge">
+                        <span class="tag-filter-badge-label">${categoryLabel}:</span>
+                        <span class="tag-filter-badge-value">${displayValue}</span>
+                        <button type="button" class="tag-filter-badge-remove" onclick="clearTagFilter('${category}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                     </div>`;
+        }
+        badgesContainer.innerHTML = html;
+    }
+    
+    // Clear a specific tag filter
+    window.clearTagFilter = function(tagCategory) {
+        delete selectedTagFilters[tagCategory];
+        renderTagFilter();
+        applyAllFilters();
+    };
+    
+    // Apply all filters (search, category, tags)
+    function applyAllFilters() {
+        const searchInput = document.getElementById('content-generator-product-search');
+        const query = searchInput ? searchInput.value.trim() : '';
+        
+        // Get category filter
+        const categoryId = window.getSelectedCategoryId ? window.getSelectedCategoryId() : null;
+        
+        // Build search with all filters
+        if (query.length >= 2) {
+            performSearch(query, 1);
+        } else if (categoryId || Object.keys(selectedTagFilters).length > 0) {
+            // Category or tag filter only
+            performSearch('*', 1);
+        } else {
+            // No filters
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="no-products-message"><p>Search for products to get started, or use the Tag Browser to find products by tags.</p></div>';
+            hidePagination();
+        }
+    }
+    
+    // Initialize tag filter on page load
+    initializeTagFilter();
+    
+    // Initialize filter accordions
+    function initializeFilterAccordions() {
+        // Category filter accordion
+        const categoryState = sessionStorage.getItem('category-filter-accordion-state');
+        const categoryAccordion = document.getElementById('category-filter-accordion');
+        const categoryContent = document.getElementById('category-filter-content');
+        const categoryIcon = categoryAccordion?.querySelector('.filter-accordion-icon');
+        
+        if (categoryAccordion && categoryContent) {
+            const isOpen = categoryState === null ? true : categoryState === 'open';
+            categoryAccordion.setAttribute('data-state', isOpen ? 'open' : 'closed');
+            
+            if (!isOpen) {
+                categoryContent.style.display = 'none';
+                if (categoryIcon) {
+                    categoryIcon.style.transform = 'rotate(-90deg)';
+                }
+            }
+        }
+        
+        // Tag filter accordion
+        const tagState = sessionStorage.getItem('tag-filter-accordion-state');
+        const tagAccordion = document.getElementById('tag-filter-accordion');
+        const tagContent = document.getElementById('tag-filter-content');
+        const tagIcon = tagAccordion?.querySelector('.filter-accordion-icon');
+        
+        if (tagAccordion && tagContent) {
+            const isOpen = tagState === null ? true : tagState === 'open';
+            tagAccordion.setAttribute('data-state', isOpen ? 'open' : 'closed');
+            
+            if (!isOpen) {
+                tagContent.style.display = 'none';
+                if (tagIcon) {
+                    tagIcon.style.transform = 'rotate(-90deg)';
+                }
+            }
+        }
+    }
+    
+    // Toggle filter accordion
+    window.toggleFilterAccordion = function(accordionId) {
+        const accordion = document.getElementById(`${accordionId}-accordion`);
+        const content = document.getElementById(`${accordionId}-content`);
+        const icon = accordion?.querySelector('.filter-accordion-icon');
+        
+        if (!accordion || !content) return;
+        
+        const currentState = accordion.getAttribute('data-state');
+        const newState = currentState === 'open' ? 'closed' : 'open';
+        
+        accordion.setAttribute('data-state', newState);
+        
+        if (newState === 'closed') {
+            content.style.display = 'none';
+            if (icon) {
+                icon.style.transform = 'rotate(-90deg)';
+            }
+        } else {
+            content.style.display = 'block';
+            if (icon) {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Save state to sessionStorage
+        sessionStorage.setItem(`${accordionId}-accordion-state`, newState);
+    };
+    
+    // Initialize accordions on page load
+    initializeFilterAccordions();
     
     // Also add direct input listeners as backup (after component loads)
     setTimeout(() => {

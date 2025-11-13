@@ -11024,3 +11024,641 @@ LINE 17:                         INNER JOIN calendar_week_posts cwp O...
 2025-11-13 11:28:29,885 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:28:29] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100 HTTP/1.1" 200 -
 2025-11-13 11:28:30,179 - config.database - INFO - Database connection established
 2025-11-13 11:28:30,355 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:28:30] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 11:37:23,559 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-13 11:37:23,836 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 11:37:24,153 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 11:37:24,173 - config.database - INFO - Database connection established
+2025-11-13 11:37:24,177 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 11:37:24,177 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 11:37:24,177 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 11:37:24,178 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 11:37:24,178 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 11:37:24,178 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 11:37:24,178 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 11:37:25,001 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 11:37:25,011 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 11:37:25,019 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 11:37:25,041 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 11:37:25,052 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 11:37:42,155 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 11:37:42,359 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 11:37:42,635 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 11:37:42,654 - config.database - INFO - Database connection established
+2025-11-13 11:37:42,656 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 11:37:42,656 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 11:37:42,656 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 11:37:42,657 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 11:37:42,657 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 11:37:42,657 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 11:37:42,657 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 11:37:43,447 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 11:37:43,454 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 11:37:43,462 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 11:37:43,486 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 11:37:43,495 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 11:39:06,751 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-13 11:39:07,000 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 11:39:07,303 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 11:39:07,322 - config.database - INFO - Database connection established
+2025-11-13 11:39:07,325 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 11:39:07,325 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 11:39:07,326 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 11:39:07,326 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 11:39:07,326 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 11:39:07,326 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 11:39:07,326 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 11:39:08,166 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 11:39:08,175 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 11:39:08,183 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 11:39:08,204 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 11:39:08,214 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 11:39:33,802 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 11:39:33,835 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,835 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,836 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,836 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,838 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,840 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,840 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,841 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,842 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 11:39:33,842 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 11:39:39,172 - config.database - INFO - Database connection established
+2025-11-13 11:39:39,195 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:39] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 11:39:39,471 - config.database - INFO - Database connection established
+2025-11-13 11:39:39,485 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:39] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 11:39:40,667 - config.database - INFO - Database connection established
+2025-11-13 11:39:40,672 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:40] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 11:39:48,825 - config.database - INFO - Database connection established
+2025-11-13 11:39:48,827 - config.database - INFO - Database connection established
+2025-11-13 11:39:48,842 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:48] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100&category_id=21 HTTP/1.1" 200 -
+2025-11-13 11:39:48,844 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:48] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100&category_id=21 HTTP/1.1" 200 -
+2025-11-13 11:39:56,949 - config.database - INFO - Database connection established
+2025-11-13 11:39:56,950 - config.database - INFO - Database connection established
+2025-11-13 11:39:56,960 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:56] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100&category_id=100 HTTP/1.1" 200 -
+2025-11-13 11:39:56,960 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:39:56] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100&category_id=100 HTTP/1.1" 200 -
+2025-11-13 11:40:09,573 - config.database - INFO - Database connection established
+2025-11-13 11:40:09,573 - config.database - INFO - Database connection established
+2025-11-13 11:40:09,584 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:40:09] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 11:40:09,585 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:40:09] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 11:45:05,106 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 11:45:05,135 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,139 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,139 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,142 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,144 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,145 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,147 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,148 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,148 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 11:45:05,151 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:05] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 11:45:07,634 - config.database - INFO - Database connection established
+2025-11-13 11:45:07,640 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:07] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 11:45:26,734 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 11:45:26,753 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/shared/dark-theme.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,755 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,757 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/shared/site-header.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,757 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/nav.dist.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,758 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/shared/dark-theme.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,758 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/tags/browser.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,759 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/products/tag-editor.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,762 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/js/shared/site-header.js HTTP/1.1" 200 -
+2025-11-13 11:45:26,762 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-11-13 11:45:26,763 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/js/workflow-nav.js HTTP/1.1" 200 -
+2025-11-13 11:45:26,765 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+2025-11-13 11:45:26,891 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/shared/dark-theme.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,892 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,894 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/nav.dist.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,900 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/tags/browser.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,901 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/shared/dark-theme.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,903 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/products/tag-editor.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,905 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/css/shared/site-header.css HTTP/1.1" 200 -
+2025-11-13 11:45:26,907 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/js/shared/site-header.js HTTP/1.1" 200 -
+2025-11-13 11:45:26,909 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+2025-11-13 11:45:26,913 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-11-13 11:45:26,919 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:26] "GET /static/js/workflow-nav.js HTTP/1.1" 200 -
+2025-11-13 11:45:28,684 - config.database - INFO - Database connection established
+2025-11-13 11:45:28,694 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:28] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 11:45:36,989 - config.database - INFO - Database connection established
+2025-11-13 11:45:37,005 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:37] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100&category_id=301 HTTP/1.1" 200 -
+2025-11-13 11:45:37,283 - config.database - INFO - Database connection established
+2025-11-13 11:45:37,293 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:45:37] "GET /products/tag-editor/api/search?q=kilt&page=1&per_page=100&category_id=301 HTTP/1.1" 200 -
+2025-11-13 11:47:02,317 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 11:47:02,581 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 11:47:02,914 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 11:47:02,933 - config.database - INFO - Database connection established
+2025-11-13 11:47:02,935 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 11:47:02,936 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 11:47:02,936 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 11:47:02,936 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 11:47:02,936 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 11:47:02,936 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 11:47:02,937 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 11:47:03,785 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 11:47:03,793 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 11:47:03,801 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 11:47:03,822 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 11:47:03,832 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 11:47:11,341 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 11:47:11,603 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 11:47:11,925 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 11:47:11,945 - config.database - INFO - Database connection established
+2025-11-13 11:47:11,949 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 11:47:11,949 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 11:47:11,949 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 11:47:11,950 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 11:47:11,950 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 11:47:11,950 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 11:47:11,950 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 11:47:12,836 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 11:47:12,844 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 11:47:12,852 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 11:47:12,876 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 11:47:12,888 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 11:48:11,854 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 11:48:12,125 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 11:48:12,437 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 11:48:12,458 - config.database - INFO - Database connection established
+2025-11-13 11:48:12,461 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 11:48:12,462 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 11:48:12,462 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 11:48:12,462 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 11:48:12,462 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 11:48:12,462 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 11:48:12,462 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 11:48:13,289 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 11:48:13,296 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 11:48:13,304 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 11:48:13,325 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 11:48:13,335 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 11:48:14,648 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 11:48:14,677 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,678 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,679 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,680 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,681 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,682 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,683 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,683 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,685 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 11:48:14,685 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:14] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 11:48:16,270 - config.database - INFO - Database connection established
+2025-11-13 11:48:16,276 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:16] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 11:48:20,720 - config.database - INFO - Database connection established
+2025-11-13 11:48:20,721 - config.database - INFO - Database connection established
+2025-11-13 11:48:20,734 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:20] "GET /products/tag-editor/api/search?q=*&category_id=340&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 11:48:20,735 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:48:20] "GET /products/tag-editor/api/search?q=*&category_id=340&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 11:52:47,179 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 11:52:47,200 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,202 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,202 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,204 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,204 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,205 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,205 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,206 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,207 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 11:52:47,208 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 11:52:48,999 - config.database - INFO - Database connection established
+2025-11-13 11:52:49,000 - config.database - INFO - Database connection established
+2025-11-13 11:52:49,005 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:49] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 11:52:49,008 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:52:49] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 11:53:44,042 - config.database - INFO - Database connection established
+2025-11-13 11:53:44,049 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:53:44] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 11:59:55,453 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 11:59:55,484 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,489 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,490 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,490 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,490 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,491 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,491 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,497 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,497 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 11:59:55,497 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:55] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 11:59:59,709 - config.database - INFO - Database connection established
+2025-11-13 11:59:59,710 - config.database - INFO - Database connection established
+2025-11-13 11:59:59,712 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:59] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 11:59:59,713 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 11:59:59] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 12:00:20,558 - config.database - INFO - Database connection established
+2025-11-13 12:00:20,559 - config.database - INFO - Database connection established
+2025-11-13 12:00:20,573 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:00:20] "GET /products/tag-editor/api/search?q=*&category_id=340&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 12:00:20,575 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:00:20] "GET /products/tag-editor/api/search?q=*&category_id=340&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 12:01:57,430 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 12:01:57,459 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,461 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,463 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,463 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,463 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,464 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,464 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,465 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,466 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,467 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 12:01:57,480 - config.database - INFO - Database connection established
+2025-11-13 12:01:57,483 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:01:57] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 12:02:30,107 - config.database - INFO - Database connection established
+2025-11-13 12:02:30,108 - config.database - INFO - Database connection established
+2025-11-13 12:02:30,121 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:02:30] "GET /products/tag-editor/api/search?q=*&category_id=336&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 12:02:30,122 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:02:30] "GET /products/tag-editor/api/search?q=*&category_id=336&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 12:02:36,945 - config.database - INFO - Database connection established
+2025-11-13 12:02:36,948 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:02:36] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 12:02:50,097 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 12:02:50,385 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 12:02:50,689 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 12:02:50,709 - config.database - INFO - Database connection established
+2025-11-13 12:02:50,712 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 12:02:50,712 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 12:02:50,712 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 12:02:50,713 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 12:02:50,713 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 12:02:50,713 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 12:02:50,713 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 12:02:51,538 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 12:02:51,546 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 12:02:51,554 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 12:02:51,576 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 12:02:51,586 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 12:03:07,456 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-13 12:03:07,692 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 12:03:07,979 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 12:03:07,998 - config.database - INFO - Database connection established
+2025-11-13 12:03:08,000 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 12:03:08,000 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 12:03:08,001 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 12:03:08,001 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 12:03:08,001 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 12:03:08,001 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 12:03:08,001 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 12:03:08,844 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 12:03:08,853 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 12:03:08,862 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 12:03:08,885 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 12:03:08,896 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 12:03:17,502 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 12:03:17,526 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,527 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,529 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,529 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,530 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,531 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,532 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,532 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,533 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,533 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 12:03:17,548 - config.database - INFO - Database connection established
+2025-11-13 12:03:17,553 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:17] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 12:03:17,648 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 12:03:17,904 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 12:03:18,217 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 12:03:18,238 - config.database - INFO - Database connection established
+2025-11-13 12:03:18,241 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 12:03:18,241 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 12:03:18,241 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 12:03:18,242 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 12:03:18,242 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 12:03:18,242 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 12:03:18,242 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 12:03:19,087 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 12:03:19,097 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 12:03:19,104 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 12:03:19,126 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 12:03:19,136 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 12:03:34,782 - config.database - INFO - Database connection established
+2025-11-13 12:03:34,783 - config.database - INFO - Database connection established
+2025-11-13 12:03:34,797 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:34] "GET /products/tag-editor/api/search?q=*&category_id=173&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 12:03:34,798 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:03:34] "GET /products/tag-editor/api/search?q=*&category_id=173&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 12:04:36,539 - config.database - INFO - Database connection established
+2025-11-13 12:04:36,547 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 12:04:36] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 13:12:48,565 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 13:12:48,599 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,601 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,601 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,601 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,602 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,602 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,603 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,604 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,605 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,605 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 13:12:48,626 - config.database - INFO - Database connection established
+2025-11-13 13:12:48,631 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:48] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 13:12:54,606 - config.database - INFO - Database connection established
+2025-11-13 13:12:54,607 - config.database - INFO - Database connection established
+2025-11-13 13:12:54,616 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:54] "GET /products/tag-editor/api/search?q=*&category_id=334&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 13:12:54,617 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:12:54] "GET /products/tag-editor/api/search?q=*&category_id=334&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 13:14:11,586 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-13 13:14:11,587 - faiss.loader - INFO - Loading faiss.
+2025-11-13 13:14:11,638 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-13 13:14:11,650 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 13:14:11,651 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 13:14:11,662 - config.database - INFO - Database connection established
+2025-11-13 13:14:11,671 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:14:11] "GET /products/api/1013/full HTTP/1.1" 200 -
+2025-11-13 13:14:11,685 - config.database - INFO - Database connection established
+2025-11-13 13:14:11,726 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:14:11] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 13:14:38,243 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:14:38] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-13 13:14:38,244 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:14:38] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-13 13:14:38,246 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:14:38] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-13 13:14:38,252 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:14:38] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-13 13:14:38,252 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:14:38] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-13 13:14:38,253 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:14:38] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-13 13:19:38,682 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 13:19:38,971 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 13:19:39,359 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 13:19:39,380 - config.database - INFO - Database connection established
+2025-11-13 13:19:39,383 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 13:19:39,384 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 13:19:39,384 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 13:19:39,385 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 13:19:39,385 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 13:19:39,386 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 13:19:39,386 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 13:19:40,618 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 13:19:40,630 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 13:19:40,638 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 13:19:40,661 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 13:19:40,672 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 13:23:06,339 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 13:23:06,586 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 13:23:06,887 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 13:23:06,906 - config.database - INFO - Database connection established
+2025-11-13 13:23:06,909 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 13:23:06,909 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 13:23:06,909 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 13:23:06,909 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 13:23:06,910 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 13:23:06,910 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 13:23:06,910 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 13:23:07,751 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 13:23:07,760 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 13:23:07,768 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 13:23:07,789 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 13:23:07,799 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 13:26:03,427 - config.database - INFO - Database connection established
+2025-11-13 13:26:03,511 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "GET /tags/browser?product_form=pets HTTP/1.1" 200 -
+2025-11-13 13:26:03,558 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:03,559 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:03,560 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:03,561 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:03,562 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:03,563 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 13:26:03,563 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 13:26:03,564 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 13:26:03,565 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:03] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,605 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 13:26:10,643 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,649 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,650 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,651 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,652 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,652 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,652 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "GET /static/css/products/tag-editor.css HTTP/1.1" 200 -
+2025-11-13 13:26:10,654 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,655 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,656 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 13:26:10,674 - config.database - INFO - Database connection established
+2025-11-13 13:26:10,682 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:10] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 13:26:13,283 - config.database - INFO - Database connection established
+2025-11-13 13:26:13,284 - config.database - INFO - Database connection established
+2025-11-13 13:26:13,299 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:13] "GET /products/tag-editor/api/search?q=*&category_id=328&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 13:26:13,300 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:13] "GET /products/tag-editor/api/search?q=*&category_id=328&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 13:26:18,287 - config.database - INFO - Database connection established
+2025-11-13 13:26:18,289 - config.database - INFO - Database connection established
+2025-11-13 13:26:18,302 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:18] "GET /products/tag-editor/api/search?q=*&category_id=244&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 13:26:18,303 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:26:18] "GET /products/tag-editor/api/search?q=*&category_id=244&page=1&per_page=100 HTTP/1.1" 200 -
+2025-11-13 13:38:18,572 - config.database - INFO - Database connection established
+2025-11-13 13:38:18,617 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "GET / HTTP/1.1" 200 -
+2025-11-13 13:38:18,626 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:18,628 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:18,629 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:18,629 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:18,631 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 13:38:18,633 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 13:38:18,634 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 13:38:18,635 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 13:38:18,648 - config.database - INFO - Database connection established
+2025-11-13 13:38:18,656 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:18] "GET /launchpad/api/queue HTTP/1.1" 200 -
+2025-11-13 13:38:22,425 - config.database - INFO - Database connection established
+2025-11-13 13:38:22,463 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "GET /tags/browser HTTP/1.1" 200 -
+2025-11-13 13:38:22,466 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:22,482 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:22,484 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:22,485 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:22,485 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 13:38:22,486 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 13:38:22,486 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 13:38:22,486 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 13:38:22,488 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:38:22] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 13:39:45,426 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:39:45] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-13 13:39:45,427 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:39:45] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-13 13:39:45,427 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:39:45] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-13 13:39:45,431 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:39:45] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-13 13:39:45,431 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:39:45] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-13 13:39:45,431 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:39:45] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-13 13:43:00,568 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 13:43:00,836 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 13:43:01,300 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 13:43:01,324 - config.database - INFO - Database connection established
+2025-11-13 13:43:01,327 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 13:43:01,328 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 13:43:01,328 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 13:43:01,329 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 13:43:01,329 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 13:43:01,330 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 13:43:01,330 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 13:43:02,652 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 13:43:02,665 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 13:43:02,674 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 13:43:02,698 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 13:43:02,713 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 13:44:36,205 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 13:44:36,434 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 13:44:36,780 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 13:44:36,802 - config.database - INFO - Database connection established
+2025-11-13 13:44:36,806 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 13:44:36,807 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 13:44:36,807 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 13:44:36,808 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 13:44:36,808 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 13:44:36,808 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 13:44:36,808 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 13:44:38,005 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 13:44:38,015 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 13:44:38,023 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 13:44:38,047 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 13:44:38,057 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 13:44:51,994 - config.database - INFO - Database connection established
+2025-11-13 13:44:52,101 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "GET /tags/browser HTTP/1.1" 200 -
+2025-11-13 13:44:52,135 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 13:44:52,136 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 13:44:52,138 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 13:44:52,138 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 13:44:52,138 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 13:44:52,139 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 13:44:52,139 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 13:44:52,140 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 13:44:52,141 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:44:52] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,291 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 13:48:02,315 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "GET /static/css/products/tag-editor.css HTTP/1.1" 200 -
+2025-11-13 13:48:02,320 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,321 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,322 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,322 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,323 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,324 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,324 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,324 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,325 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 13:48:02,340 - config.database - INFO - Database connection established
+2025-11-13 13:48:02,345 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 13:48:02] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 14:01:31,900 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 14:01:31,935 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,940 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,940 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,940 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,941 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,941 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,941 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,945 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,947 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,947 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 14:01:31,961 - config.database - INFO - Database connection established
+2025-11-13 14:01:31,962 - config.database - INFO - Database connection established
+2025-11-13 14:01:31,967 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 14:01:31,992 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:31] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 14:01:39,062 - config.database - INFO - Database connection established
+2025-11-13 14:01:39,082 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:01:39] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=clothing HTTP/1.1" 200 -
+2025-11-13 14:02:13,540 - config.database - INFO - Database connection established
+2025-11-13 14:02:13,557 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:02:13] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=jewellery HTTP/1.1" 200 -
+2025-11-13 14:02:15,830 - config.database - INFO - Database connection established
+2025-11-13 14:02:15,847 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:02:15] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=homeware HTTP/1.1" 200 -
+2025-11-13 14:02:17,825 - config.database - INFO - Database connection established
+2025-11-13 14:02:17,839 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:02:17] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=bags HTTP/1.1" 200 -
+2025-11-13 14:02:18,979 - config.database - INFO - Database connection established
+2025-11-13 14:02:18,998 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:02:18] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=haberdashery HTTP/1.1" 200 -
+2025-11-13 14:02:19,943 - config.database - INFO - Database connection established
+2025-11-13 14:02:19,962 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:02:19] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=pets HTTP/1.1" 200 -
+2025-11-13 14:02:21,457 - config.database - INFO - Database connection established
+2025-11-13 14:02:21,479 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:02:21] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=jewellery HTTP/1.1" 200 -
+2025-11-13 14:02:22,542 - config.database - INFO - Database connection established
+2025-11-13 14:02:22,559 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:02:22] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=clothing HTTP/1.1" 200 -
+2025-11-13 14:04:37,399 - config.database - INFO - Database connection established
+2025-11-13 14:04:37,421 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:04:37] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=clothing&tag_category_2=core_type&tag_value_2=kilt HTTP/1.1" 200 -
+2025-11-13 14:04:56,192 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 14:04:56,462 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 14:04:56,800 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 14:04:56,819 - config.database - INFO - Database connection established
+2025-11-13 14:04:56,823 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 14:04:56,824 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 14:04:56,824 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 14:04:56,825 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 14:04:56,825 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 14:04:56,826 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 14:04:56,826 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 14:04:58,010 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 14:04:58,022 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 14:04:58,030 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 14:04:58,052 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 14:04:58,063 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 14:06:44,018 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_tag_editor.py', reloading
+2025-11-13 14:06:44,261 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 14:06:44,573 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 14:06:44,592 - config.database - INFO - Database connection established
+2025-11-13 14:06:44,594 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 14:06:44,595 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 14:06:44,595 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 14:06:44,595 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 14:06:44,595 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 14:06:44,595 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 14:06:44,595 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 14:06:45,454 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 14:06:45,463 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 14:06:45,471 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 14:06:45,493 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 14:06:45,504 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 14:07:10,946 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:07:10] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-13 14:07:10,947 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:07:10] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-13 14:07:10,947 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:07:10] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-13 14:07:10,954 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:07:10] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-13 14:07:10,954 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:07:10] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-13 14:07:10,954 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:07:10] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-13 14:09:07,794 - config.database - INFO - Database connection established
+2025-11-13 14:09:07,904 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "GET /tags/browser?product_form=pets HTTP/1.1" 200 -
+2025-11-13 14:09:07,963 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:07,966 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "GET /static/css/tags/browser.css HTTP/1.1" 200 -
+2025-11-13 14:09:07,967 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:07,968 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:07,968 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:07,969 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:07,969 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:07,971 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:07,971 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:07] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,963 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 14:09:09,968 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,968 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,970 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,970 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,971 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/css/products/tag-editor.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,973 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,975 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,976 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,978 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:09,979 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:09] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,021 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,025 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,025 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,026 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,028 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,028 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,029 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,032 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,032 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 14:09:10,044 - config.database - INFO - Database connection established
+2025-11-13 14:09:10,046 - config.database - INFO - Database connection established
+2025-11-13 14:09:10,049 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 14:09:10,075 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 14:09:10,084 - config.database - INFO - Database connection established
+2025-11-13 14:09:10,119 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:10] "GET /products/tag-editor/api/tags/filtered HTTP/1.1" 200 -
+2025-11-13 14:09:18,952 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:18] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-13 14:09:18,954 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:18] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-13 14:09:18,955 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:18] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-13 14:09:18,955 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:18] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-13 14:09:18,955 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:18] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-13 14:09:18,956 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:09:18] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-13 14:13:00,650 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "GET /products/tag-editor HTTP/1.1" 200 -
+2025-11-13 14:13:00,688 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,690 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,691 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,691 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,692 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,692 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "GET /static/css/products/tag-editor.css HTTP/1.1" 200 -
+2025-11-13 14:13:00,693 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,694 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,695 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,695 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 14:13:00,709 - config.database - INFO - Database connection established
+2025-11-13 14:13:00,711 - config.database - INFO - Database connection established
+2025-11-13 14:13:00,715 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "GET /products/tag-editor/api/categories/tree HTTP/1.1" 200 -
+2025-11-13 14:13:00,744 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 14:13:00,754 - config.database - INFO - Database connection established
+2025-11-13 14:13:00,777 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:00] "GET /products/tag-editor/api/tags/filtered HTTP/1.1" 200 -
+2025-11-13 14:13:07,391 - config.database - INFO - Database connection established
+2025-11-13 14:13:07,392 - config.database - INFO - Database connection established
+2025-11-13 14:13:07,429 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:07] "GET /products/tag-editor/api/tags/filtered?product_form=clothing HTTP/1.1" 200 -
+2025-11-13 14:13:07,430 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:07] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=clothing HTTP/1.1" 200 -
+2025-11-13 14:13:10,811 - config.database - INFO - Database connection established
+2025-11-13 14:13:10,812 - config.database - INFO - Database connection established
+2025-11-13 14:13:10,837 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:10] "GET /products/tag-editor/api/tags/filtered?product_form=jewellery HTTP/1.1" 200 -
+2025-11-13 14:13:10,838 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:10] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=jewellery HTTP/1.1" 200 -
+2025-11-13 14:13:12,506 - config.database - INFO - Database connection established
+2025-11-13 14:13:12,508 - config.database - INFO - Database connection established
+2025-11-13 14:13:12,529 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:12] "GET /products/tag-editor/api/tags/filtered?product_form=homeware HTTP/1.1" 200 -
+2025-11-13 14:13:12,530 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:12] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=homeware HTTP/1.1" 200 -
+2025-11-13 14:13:14,791 - config.database - INFO - Database connection established
+2025-11-13 14:13:14,792 - config.database - INFO - Database connection established
+2025-11-13 14:13:14,814 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:14] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=clothing HTTP/1.1" 200 -
+2025-11-13 14:13:14,828 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:14] "GET /products/tag-editor/api/tags/filtered?product_form=clothing HTTP/1.1" 200 -
+2025-11-13 14:13:18,410 - config.database - INFO - Database connection established
+2025-11-13 14:13:18,413 - config.database - INFO - Database connection established
+2025-11-13 14:13:18,428 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:18] "GET /products/tag-editor/api/tags/filtered?product_form=clothing&core_type=sporran HTTP/1.1" 200 -
+2025-11-13 14:13:18,437 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 14:13:18] "GET /products/tag-editor/api/search?q=*&page=1&per_page=100&tag_category_1=product_form&tag_value_1=clothing&tag_category_2=core_type&tag_value_2=sporran HTTP/1.1" 200 -

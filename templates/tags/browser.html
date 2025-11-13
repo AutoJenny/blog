@@ -10,8 +10,15 @@
 {% block content %}
 <div class="tag-browser-container">
     <div class="tag-browser-header">
-        <h1 class="tag-browser-title">Tag Browser</h1>
-        <p class="tag-browser-subtitle">Browse products by tags from Product Type Identifiers</p>
+        <div class="tag-browser-header-content">
+            <div>
+                <h1 class="tag-browser-title">Tag Browser</h1>
+                <p class="tag-browser-subtitle">Browse products by tags from Product Type Identifiers</p>
+            </div>
+            <a href="{{ url_for('product_tag_editor.editor') }}" class="btn-edit-tags-header">
+                <i class="fas fa-tags"></i> Edit Tags...
+            </a>
+        </div>
     </div>
 
     {% if selected_category and selected_tag %}

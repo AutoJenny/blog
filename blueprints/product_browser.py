@@ -203,10 +203,64 @@ def api_product_full(product_id):
             'error': str(e)
         }), 500
 
+@bp.route('/api/categories/tree')
+def api_categories_tree():
+    """Get category tree for filtering"""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get all categories including level 1 (top level)
+            cursor.execute("""
+                SELECT id, name, parent_id, level
+                FROM clan_categories
+                WHERE level >= 1
+                ORDER BY level, name
+            """)
+            
+            categories = cursor.fetchall()
+            
+            # Build tree structure
+            category_dict = {cat['id']: dict(cat) for cat in categories}
+            tree = []
+            
+            # Build paths for each category
+            for cat in categories:
+                path = []
+                current_id = cat['id']
+                visited = set()
+                
+                while current_id and current_id not in visited:
+                    visited.add(current_id)
+                    if current_id in category_dict:
+                        cat_data = category_dict[current_id]
+                        path.insert(0, cat_data['name'])
+                        current_id = cat_data.get('parent_id')
+                    else:
+                        break
+                
+                tree.append({
+                    'id': cat['id'],
+                    'name': cat['name'],
+                    'level': cat.get('level', 0),
+                    'path': ' > '.join(path),
+                    'parent_id': cat.get('parent_id')
+                })
+            
+            return jsonify({
+                'success': True,
+                'categories': tree
+            })
+    except Exception as e:
+        logger.error(f"Error fetching category tree: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/api/search')
 def api_search():
-    """Search products by name, SKU, or producer"""
+    """Search products by name, SKU, or producer, optionally filtered by category"""
     query = request.args.get('q', '').strip()
+    category_id = request.args.get('category_id', type=int)
     
     if not query or len(query) < 2:
         return jsonify({
@@ -216,15 +270,30 @@ def api_search():
     
     try:
         with db_manager.get_cursor() as cursor:
-            cursor.execute("""
+            # Build base query
+            base_conditions = [
+                "LOWER(name) LIKE %s",
+                "LOWER(sku) LIKE %s",
+                "LOWER(supplier_name) LIKE %s"
+            ]
+            params = [f'%{query.lower()}%', f'%{query.lower()}%', f'%{query.lower()}%']
+            
+            # Add category filter if provided
+            if category_id:
+                base_conditions.append("category_ids @> %s::jsonb")
+                params.append(json.dumps([category_id]))
+            
+            where_clause = " OR ".join(base_conditions[:3])
+            if category_id:
+                where_clause = f"({where_clause}) AND {base_conditions[3]}"
+            
+            cursor.execute(f"""
                 SELECT id, name, sku, supplier_name
                 FROM clan_products
-                WHERE LOWER(name) LIKE %s
-                   OR LOWER(sku) LIKE %s
-                   OR LOWER(supplier_name) LIKE %s
+                WHERE {where_clause}
                 ORDER BY name
                 LIMIT 20
-            """, (f'%{query.lower()}%', f'%{query.lower()}%', f'%{query.lower()}%'))
+            """, tuple(params))
             
             products = cursor.fetchall()
             
