@@ -86,18 +86,20 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% if type_data.subtype %}
                     <div class="tag-row">
                         <div class="tag-label">Product Type:</div>
                         <div class="tag-icons">
+                            {% if type_data.subtype %}
                             <span class="attribute-tag attribute-tag-primary" 
                                   data-attribute-type="subtype" 
                                   data-attribute-value="{{ type_data.subtype }}">
                                 {{ type_data.subtype|replace('_', ' ')|title }}
                             </span>
+                            {% else %}
+                            <span class="attribute-tag" style="opacity: 0.5; font-style: italic;">Not set</span>
+                            {% endif %}
                         </div>
                     </div>
-                    {% endif %}
                     <div class="tag-row">
                         <div class="tag-label">Product Level:</div>
                         <div class="tag-icons">
