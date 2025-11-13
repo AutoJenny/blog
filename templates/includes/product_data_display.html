@@ -48,48 +48,123 @@
             {% endif %}
         </div>
         
-        <!-- Category Hierarchy Panel (Right) -->
-        {% if category_routes and (category_routes.primary or category_routes.others) %}
-        <div class="intro-panel category-hierarchy-panel">
-            <h3>Category Routes</h3>
+        <!-- Tags Panel (Right) - Simplified Product Type Identifiers -->
+        {% if product_data.product_type_data %}
+        {% set type_data = product_data.product_type_data %}
+        {% set product_level = product_data.get('product_level', 'classic') %}
+        <div class="intro-panel tags-panel">
+            <h3>Tags</h3>
             
-            <!-- Primary Route -->
-            {% if category_routes.primary %}
-            <div class="category-route primary-route">
-                <div class="route-label" style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 500;">Primary Route</div>
-                <div class="route-breadcrumbs">
-                    {% for crumb in category_routes.primary %}
-                    <div class="breadcrumb-step" style="padding-left: {{ (crumb.level - 2) * 1.5 }}rem; margin-bottom: 0.25rem;">
-                        <a href="/products/browser?category_id={{ crumb.id }}" 
-                           style="color: #cbd5e1; text-decoration: none; display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; transition: all 0.2s;"
-                           onmouseover="this.style.background='#334155'; this.style.color='#8b5cf6';"
-                           onmouseout="this.style.background='transparent'; this.style.color='#cbd5e1';">
-                            {{ crumb.name }}
-                        </a>
+            <!-- Group 1: Identity & Classification -->
+            <div class="tags-group">
+                <div class="tags-group-name">Identity & Classification</div>
+                <div class="tags-group-content">
+                    {% if type_data.disambiguation and type_data.disambiguation.product_form %}
+                    <div class="tag-row">
+                        <div class="tag-label">Category:</div>
+                        <div class="tag-icons">
+                            <span class="attribute-tag attribute-tag-form" data-attribute-type="product_form" data-attribute-value="{{ type_data.disambiguation.product_form }}">
+                                {{ type_data.disambiguation.product_form|replace('_', ' ')|title }}
+                            </span>
+                        </div>
                     </div>
-                    {% endfor %}
+                    {% endif %}
+                    {% if type_data.core_type %}
+                    <div class="tag-row">
+                        <div class="tag-label">Product Group:</div>
+                        <div class="tag-icons">
+                            <span class="attribute-tag attribute-tag-primary" 
+                                  data-attribute-type="core_type" 
+                                  data-attribute-value="{{ type_data.core_type }}"
+                                  {% if type_data.subtype %}data-subtype="{{ type_data.subtype }}"{% endif %}>
+                                {{ type_data.core_type|replace('_', ' ')|title }}{% if type_data.subtype %} ({{ type_data.subtype|replace('_', ' ')|title }}){% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="tag-row">
+                        <div class="tag-label">Product Level:</div>
+                        <div class="tag-icons">
+                            <span class="product-level-indicator">
+                                <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
+                                      title="Standard quality products made to traditional standards">Classic</span>
+                                <span class="level-separator">|</span>
+                                <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
+                                      title="Premium quality products with enhanced features and materials">Luxury</span>
+                                <span class="level-separator">|</span>
+                                <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
+                                      title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group 2: Physical Attributes -->
+            {% if type_data.materials or type_data.patterns or type_data.decorations %}
+            <div class="tags-group">
+                <div class="tags-group-name">Physical Attributes</div>
+                <div class="tags-group-content">
+                    {% if type_data.materials %}
+                    <div class="tag-row">
+                        <div class="tag-label">Materials:</div>
+                        <div class="tag-icons">
+                            {% for material in type_data.materials %}
+                            <span class="attribute-tag" data-attribute-type="material" data-attribute-value="{{ material }}">{{ material|replace('_', ' ')|title }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.patterns %}
+                    <div class="tag-row">
+                        <div class="tag-label">Patterns:</div>
+                        <div class="tag-icons">
+                            {% for pattern in type_data.patterns %}
+                            <span class="attribute-tag" data-attribute-type="pattern" data-attribute-value="{{ pattern }}">{{ pattern|replace('_', ' ')|title }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if type_data.decorations %}
+                    <div class="tag-row">
+                        <div class="tag-label">Decorations:</div>
+                        <div class="tag-icons">
+                            {% for decoration in type_data.decorations %}
+                            <span class="attribute-tag" data-attribute-type="decoration" data-attribute-value="{{ decoration }}">{{ decoration|replace('_', ' ')|title }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
-            
-            <!-- Other Routes -->
-            {% if category_routes.others %}
-            <div class="category-route other-routes" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #334155;">
-                <div class="route-label" style="color: #94a3b8; font-size: 0.75rem; margin-bottom: 0.5rem; font-weight: 500;">Other Routes</div>
-                {% for route in category_routes.others %}
-                <div class="route-breadcrumbs" style="margin-bottom: 0.75rem;">
-                    {% for crumb in route %}
-                    <div class="breadcrumb-step" style="padding-left: {{ (crumb.level - 2) * 1.2 }}rem; margin-bottom: 0.15rem;">
-                        <a href="/products/browser?category_id={{ crumb.id }}" 
-                           style="color: #64748b; text-decoration: none; display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.875rem; transition: all 0.2s;"
-                           onmouseover="this.style.background='#334155'; this.style.color='#8b5cf6';"
-                           onmouseout="this.style.background='transparent'; this.style.color='#64748b';">
-                            {{ crumb.name }}
-                        </a>
+
+            <!-- Group 3: Usage Context -->
+            {% if type_data.occasions or type_data.styles %}
+            <div class="tags-group">
+                <div class="tags-group-name">Usage Context</div>
+                <div class="tags-group-content">
+                    {% if type_data.occasions %}
+                    <div class="tag-row">
+                        <div class="tag-label">Occasions:</div>
+                        <div class="tag-icons">
+                            {% for occasion in type_data.occasions %}
+                            <span class="attribute-tag" data-attribute-type="occasion" data-attribute-value="{{ occasion }}">{{ occasion|replace('_', ' ')|title }}</span>
+                            {% endfor %}
+                        </div>
                     </div>
-                    {% endfor %}
+                    {% endif %}
+                    {% if type_data.styles %}
+                    <div class="tag-row">
+                        <div class="tag-label">Styles:</div>
+                        <div class="tag-icons">
+                            {% for style in type_data.styles %}
+                            <span class="attribute-tag" data-attribute-type="style" data-attribute-value="{{ style }}">{{ style|replace('_', ' ')|title }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
             </div>
             {% endif %}
         </div>
@@ -252,162 +327,64 @@
         </div>
     </div>
 
-    <!-- Product Type Identifiers (Moved Below Description) -->
-    {% if product_data.product_type_data %}
-    {% set type_data = product_data.product_type_data %}
-    {% set product_level = product_data.get('product_level', 'classic') %}
-    <div class="data-section accordion-section" data-accordion-id="product-type-identifiers">
-        <h3 class="accordion-header" data-accordion-target="product-type-identifiers">
+    <!-- Category Routes (Full Width Accordion) -->
+    {% if category_routes and (category_routes.primary or category_routes.others) %}
+    <div class="data-section accordion-section" data-accordion-id="category-routes">
+        <h3 class="accordion-header" data-accordion-target="category-routes">
             <i class="fas fa-chevron-down accordion-icon"></i>
-            Product Type Identifiers
+            Category Routes
         </h3>
-        <div class="accordion-preview" data-accordion-preview="product-type-identifiers">
-            <!-- First data element preview will be inserted here by JavaScript -->
-        </div>
-        <div class="accordion-content" data-accordion-content="product-type-identifiers">
-        <div class="data-grid">
-            <!-- Group 1: Identity & Classification -->
-            <div class="identifier-group">
-                <h4 class="identifier-group-title">Identity & Classification</h4>
-                <div class="identifier-group-content">
-                    {% if type_data.core_type %}
-                    <div class="data-item">
-                        <label>Core Type:</label>
-                        <div class="data-value has-data">
-                            <div class="attribute-tags">
-                                <span class="attribute-tag attribute-tag-primary" 
-                                      data-attribute-type="core_type" 
-                                      data-attribute-value="{{ type_data.core_type }}"
-                                      {% if type_data.subtype %}data-subtype="{{ type_data.subtype }}"{% endif %}>
-                                    {{ type_data.core_type|replace('_', ' ')|title }}{% if type_data.subtype %} ({{ type_data.subtype|replace('_', ' ')|title }}){% endif %}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.disambiguation and type_data.disambiguation.product_form %}
-                    <div class="data-item">
-                        <label>Product Form:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                <span class="attribute-tag attribute-tag-form" data-attribute-type="product_form" data-attribute-value="{{ type_data.disambiguation.product_form }}">
-                                    {{ type_data.disambiguation.product_form|replace('_', ' ')|title }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="data-item">
-                        <label>Product Level:</label>
-                        <div class="data-value has-data">
-                            <span class="product-level-indicator">
-                                <span class="level-word {% if product_level == 'classic' %}active{% else %}inactive{% endif %}" 
-                                      title="Standard quality products made to traditional standards">Classic</span>
-                                <span class="level-separator">|</span>
-                                <span class="level-word {% if product_level == 'luxury' %}active{% else %}inactive{% endif %}" 
-                                      title="Premium quality products with enhanced features and materials">Luxury</span>
-                                <span class="level-separator">|</span>
-                                <span class="level-word {% if product_level == 'essential' %}active{% else %}inactive{% endif %}" 
-                                      title="Budget-friendly options made to proper traditional standards, may have limited choices">Essential</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
+        <div class="accordion-preview" data-accordion-preview="category-routes">
+            {% if category_routes.primary and category_routes.primary|length > 0 %}
+            <div style="color: #cbd5e1;">
+                <span style="color: #94a3b8;">Primary: </span>{{ category_routes.primary[-1].name }}
             </div>
-
-            <!-- Group 2: Physical Attributes -->
-            {% if type_data.materials or type_data.patterns or type_data.decorations %}
-            <div class="identifier-group">
-                <h4 class="identifier-group-title">Physical Attributes</h4>
-                <div class="identifier-group-content">
-                    {% if type_data.materials %}
-                    <div class="data-item">
-                        <label>Materials:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for material in type_data.materials %}
-                                <span class="attribute-tag" data-attribute-type="material" data-attribute-value="{{ material }}">{{ material|replace('_', ' ')|title }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.patterns %}
-                    <div class="data-item">
-                        <label>Patterns:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for pattern in type_data.patterns %}
-                                <span class="attribute-tag" data-attribute-type="pattern" data-attribute-value="{{ pattern }}">{{ pattern|replace('_', ' ')|title }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.decorations %}
-                    <div class="data-item">
-                        <label>Decorations:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for decoration in type_data.decorations %}
-                                <span class="attribute-tag" data-attribute-type="decoration" data-attribute-value="{{ decoration }}">{{ decoration|replace('_', ' ')|title }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Group 3: Usage Context -->
-            {% if type_data.occasions or type_data.styles %}
-            <div class="identifier-group">
-                <h4 class="identifier-group-title">Usage Context</h4>
-                <div class="identifier-group-content">
-                    {% if type_data.occasions %}
-                    <div class="data-item">
-                        <label>Occasions:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for occasion in type_data.occasions %}
-                                <span class="attribute-tag" data-attribute-type="occasion" data-attribute-value="{{ occasion }}">{{ occasion|replace('_', ' ')|title }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if type_data.styles %}
-                    <div class="data-item">
-                        <label>Styles:</label>
-                        <div class="data-value">
-                            <div class="attribute-tags">
-                                {% for style in type_data.styles %}
-                                <span class="attribute-tag" data-attribute-type="style" data-attribute-value="{{ style }}">{{ style|replace('_', ' ')|title }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
+            {% elif category_routes.others and category_routes.others|length > 0 and category_routes.others[0]|length > 0 %}
+            <div style="color: #cbd5e1;">
+                <span style="color: #94a3b8;">Route: </span>{{ category_routes.others[0][-1].name }}
             </div>
             {% endif %}
         </div>
-        <div class="type-identifiers-footer">
-            {% if type_data.confidence is defined %}
-            <span class="footer-meta">
-                Confidence: {{ "%.0f"|format(type_data.confidence * 100) }}%
-                <span class="confidence-badge {% if type_data.confidence >= 0.7 %}high{% elif type_data.confidence >= 0.5 %}medium{% else %}low{% endif %}">
-                    {% if type_data.confidence >= 0.7 %}✓ High{% elif type_data.confidence >= 0.5 %}⚠ Medium{% else %}✗ Low{% endif %}
-                </span>
-            </span>
+        <div class="accordion-content" data-accordion-content="category-routes">
+            <!-- Primary Route -->
+            {% if category_routes.primary %}
+            <div class="category-route primary-route">
+                <div class="route-label" style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 500;">Primary Route</div>
+                <div class="route-breadcrumbs">
+                    {% for crumb in category_routes.primary %}
+                    <div class="breadcrumb-step" style="padding-left: {{ (crumb.level - 2) * 1.5 }}rem; margin-bottom: 0.25rem;">
+                        <a href="/products/browser?category_id={{ crumb.id }}" 
+                           style="color: #cbd5e1; text-decoration: none; display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; transition: all 0.2s;"
+                           onmouseover="this.style.background='#334155'; this.style.color='#8b5cf6';"
+                           onmouseout="this.style.background='transparent'; this.style.color='#cbd5e1';">
+                            {{ crumb.name }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
             {% endif %}
-            {% if type_data.parsing_method %}
-            <span class="footer-meta">
-                Parsing Method: {{ type_data.parsing_method|title }}
-            </span>
+            
+            <!-- Other Routes -->
+            {% if category_routes.others %}
+            <div class="category-route other-routes" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #334155;">
+                <div class="route-label" style="color: #94a3b8; font-size: 0.75rem; margin-bottom: 0.5rem; font-weight: 500;">Other Routes</div>
+                {% for route in category_routes.others %}
+                <div class="route-breadcrumbs" style="margin-bottom: 0.75rem;">
+                    {% for crumb in route %}
+                    <div class="breadcrumb-step" style="padding-left: {{ (crumb.level - 2) * 1.2 }}rem; margin-bottom: 0.15rem;">
+                        <a href="/products/browser?category_id={{ crumb.id }}" 
+                           style="color: #64748b; text-decoration: none; display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.875rem; transition: all 0.2s;"
+                           onmouseover="this.style.background='#334155'; this.style.color='#8b5cf6';"
+                           onmouseout="this.style.background='transparent'; this.style.color='#64748b';">
+                            {{ crumb.name }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
             {% endif %}
-        </div>
         </div>
     </div>
     {% endif %}

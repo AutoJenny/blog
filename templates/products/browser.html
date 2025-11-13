@@ -654,14 +654,23 @@ function extractFirstDataElement(content, preview, accordionId) {
                       content.querySelector('.description-main .main-text') ||
                       content.querySelector('.description-bullets') ||
                       content.querySelector('.description-content');
-    } else if (accordionId === 'product-type-identifiers') {
-        // Get first identifier group's first item with label
-        const firstDataItem = content.querySelector('.identifier-group .data-item:first-child') ||
-                             content.querySelector('.data-item:first-child');
-        if (firstDataItem) {
-            const label = firstDataItem.querySelector('label');
-            labelText = label ? label.textContent.trim() + ': ' : '';
-            firstElement = firstDataItem.querySelector('.data-value, .attribute-tags');
+    } else if (accordionId === 'category-routes') {
+        // Get leaf category name
+        const primaryRoute = content.querySelector('.primary-route .route-breadcrumbs');
+        if (primaryRoute) {
+            const lastBreadcrumb = primaryRoute.querySelector('.breadcrumb-step:last-child a');
+            if (lastBreadcrumb) {
+                preview.innerHTML = `<div style="color: #cbd5e1;"><span style="color: #94a3b8;">Primary: </span>${lastBreadcrumb.textContent.trim()}</div>`;
+                return;
+            }
+        }
+        const otherRoute = content.querySelector('.other-routes .route-breadcrumbs:first-child');
+        if (otherRoute) {
+            const lastBreadcrumb = otherRoute.querySelector('.breadcrumb-step:last-child a');
+            if (lastBreadcrumb) {
+                preview.innerHTML = `<div style="color: #cbd5e1;"><span style="color: #94a3b8;">Route: </span>${lastBreadcrumb.textContent.trim()}</div>`;
+                return;
+            }
         }
     } else if (accordionId === 'supplier-producer') {
         // Get supplier name with label
