@@ -1,0 +1,4292 @@
+[
+  {
+    "product_id": 3,
+    "product_name": "Flat Oxhorn Shoehorn",
+    "current_core_type": "shoehorn",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The Flat Oxhorn Shoehorn is a tool used for organizing clothing and can be considered an accessory due to its function.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 4,
+    "product_name": "Oxhorn Bugle",
+    "current_core_type": "Oxhorn Bugle",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a unique homeware item and it's described as a great traditional gift idea, which makes it an accessory rather than a specific type like flask or mug. However, the exact subtype within accessory can't be determined with certainty based on the provided information.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5,
+    "product_name": "Oxhorn Double Tooth Dress Comb",
+    "current_core_type": "dress_comb",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a comb, which falls under the 'accessory' category in homeware due to its function as a stylish addition to a dressing table.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 6,
+    "product_name": "Oxhorn Broad Tooth Dress Comb",
+    "current_core_type": "comb",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product is a comb, which is an accessory typically used with haircare products. However, it belongs to the 'homeware' category, so we consider this as a misassignment.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 7,
+    "product_name": "Oxhorn Moustache Comb With Handle",
+    "current_core_type": "comb",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a moustache comb, which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 8,
+    "product_name": "Oxhorn Single Narrow Tooth Dress Comb",
+    "current_core_type": "comb",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a comb which is categorized under the 'accessory' type in homeware. Although it has specific uses related to grooming and personal care, its primary function as an item for fashion or decoration aligns with the accessory category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 9,
+    "product_name": "Rough Drinking Horn With Stand",
+    "current_core_type": "drinking_horn",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a drinking implement and does not fit within any of the specified subcategories for homeware. However, since it's primarily used as a drink container, 'drinkware' is the most appropriate category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 12,
+    "product_name": "Oxhorn Single Broad Tooth Wallet/Purse Comb",
+    "current_core_type": "wallet/purse comb",
+    "new_core_type": "bag",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a wallet/purse comb which falls under the category of bags.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 14,
+    "product_name": "Oxhorn Drinking Horn With Pewter Insert And Stand",
+    "current_core_type": "drinking_horn",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a drinking horn with a pewter insert and stand, which falls under the drinkware category.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 15,
+    "product_name": "Oxhorn Orange Peeler",
+    "current_core_type": "peeler",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a kitchen accessory and the current core_type 'peeler' doesn't match the product name or description. However, considering it's a timeless kitchen gadget, it fits under the category of accessories.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 18,
+    "product_name": "Stag Antler Buttons (Set of Six) Small",
+    "current_core_type": "button",
+    "new_core_type": "jewellery",
+    "product_form": "haberdashery",
+    "confidence": 0.8,
+    "reasoning": "The product is a decorative item, and its use in garments and home decor suggests it falls under the category of jewellery, specifically charms or pendants. The product's natural feel also supports this classification.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 19,
+    "product_name": "Stag Antler Buttons (Set of Six) Medium",
+    "current_core_type": "antler_button",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a decorative item used for homeware and it is described as an accessory in the description.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 20,
+    "product_name": "Stag Antler Buttons (Set of Six) Large",
+    "current_core_type": "button",
+    "new_core_type": "accessory",
+    "product_form": "haberdashery",
+    "confidence": 0.8,
+    "reasoning": "The product is not a specific type of button but rather a decorative item made from stag antlers, which falls under the category of accessories.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 21,
+    "product_name": "Stag Antler Sgian Dubh, horn cap",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Stag Antler Sgian Dubh, horn cap, which can be considered an accessory due to its non-functionality as a knife and its decorative purpose.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 22,
+    "product_name": "Stag Antler Sgian Dubh, Crown End",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a ceremonial item, which falls under the category of accessories.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 24,
+    "product_name": "Stag Antler Sgian Dubh, pewter deer emblem",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sgian Dubh, which is traditionally worn as an accessory. Although it can be considered a knife (tool), its unique design and presentation make it more appropriate to categorize it as an accessory.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 25,
+    "product_name": "Stag Antler Sgian Dubh, pewter thistle emblem",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a traditional Scottish accessory known as Sgian Dubh, which typically serves as a pocket knife or ceremonial item. It's not directly associated with any of the given homeware core types.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 28,
+    "product_name": "Oxhorn Mustard Dab",
+    "current_core_type": "utensil",
+    "new_core_type": "condiment_container",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a container for a condiment (mustard), even though it's classified as an utensil. However, in the context of homeware, it's more appropriate to classify it under 'condiment_container'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 29,
+    "product_name": "Stag Antler Cheese Knife",
+    "current_core_type": "knife",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a cheese knife which is commonly classified as an accessory in homeware category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 30,
+    "product_name": "Stag Antler Bottle Opener",
+    "current_core_type": "bottle_opener",
+    "new_core_type": "drink_accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a bottle opener used for drinks and it falls under the drink-related accessories category",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 31,
+    "product_name": "Stag Antler Handled Letter Opener",
+    "current_core_type": "letter_opener",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Stag Antler Handled Letter Opener' is described as a desk accessory, and it doesn't fit into any specific homeware category such as flask, quaich, mug, glass, drink_coaster, cushion, rug or common homeware items like top, bag, etc. However, it can be considered an accessory.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 34,
+    "product_name": "Oxhorn Porridge Spoon",
+    "current_core_type": "spoon",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a traditional Scottish porridge spoon with an emblem, which is typically categorized as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 35,
+    "product_name": "Oxhorn Child's Spoon With Whistle",
+    "current_core_type": "spoon",
+    "new_core_type": "toy",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a child's spoon with a whistle feature, which is typically used for entertainment purposes, making it a toy.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 36,
+    "product_name": "Polished Oxhorn Tot",
+    "current_core_type": "drinking_horn",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product is designed for holding and consuming drinks, although not traditionally classified as such in the provided core types.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 37,
+    "product_name": "Our Warmest Softest Scottish Cashmere Blanket",
+    "current_core_type": "blanket",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a blanket, but it's categorized under homeware. Given the description, it appears to be an accessory due to its association with Scottish Cashmere, which suggests a connection to traditional Scottish items like kilts or sporrans. The product form does not provide enough specificity for a more precise core_type.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 39,
+    "product_name": "Our Warmest Softest Scottish Cashmere Baby Blanket",
+    "current_core_type": "blanket",
+    "new_core_type": "cushion",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a soft and practical item designed for seating, making it suitable to be categorized as a cushion.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 45,
+    "product_name": "Luxury Scottish Cashmere Stole",
+    "current_core_type": "stole",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Luxury Scottish Cashmere Stole', which is described as an 'accessory'. Although the current core_type is 'stole', it can be considered a subtype of 'accessory' in this context.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 64,
+    "product_name": "Clan Crest Buckle",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a buckle which is an accessory typically worn with kilt clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 67,
+    "product_name": "Clan Crest Kilt Accessory Gift Set",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'Gift Set' and includes multiple accessories such as kilt pin, sporran, and tie. However, without more specific details about the contents of the set, it's difficult to assign a more granular core_type.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 68,
+    "product_name": "Clan Crest Key Fob",
+    "current_core_type": "keyring",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a key fob, which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 75,
+    "product_name": "Piper's Sword Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin which is an accessory typically worn with kilts, and it's designed for bagpipe players who wear kilts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 79,
+    "product_name": "Claymore Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which is an accessory typically worn with kilts. Although it could be categorized as jewellery due to its ornamental nature, the product description and form suggest it's more appropriately classified as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 102,
+    "product_name": "Shamrock Badge",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "brooch",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product is an accessory and the description suggests it's used for showcasing Irish heritage, which aligns with brooches being a common type of jewelry worn as a badge or pin. However, this is not definitive, hence the lower confidence.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 103,
+    "product_name": "Stag handle Clan Crest Sgian Dubh",
+    "current_core_type": "quaich",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is not a specific homeware item listed in the valid core types for homeware but it falls under the category of 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 126,
+    "product_name": "Black Jacobite Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a shirt, and 'top' includes shirts as a subcategory under clothing.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 128,
+    "product_name": "Boy's Calico Jacobite Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a shirt and in the clothing category. 'Top' is the appropriate canonical core type for shirts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129,
+    "product_name": "Cream Calico Jacobite Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a shirt and shirts fall under the top category in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 136,
+    "product_name": "Clan Crest Night Cap Decanter Set",
+    "current_core_type": "decanter",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a spirit decanter which belongs to the drinkware category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 139,
+    "product_name": "Clan Crest Pint Tankard",
+    "current_core_type": "tankard",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "Product is a drink-holding container and it doesn't fit any specific category among homeware subtypes; drinkware is the most general and appropriate category for this product",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 153,
+    "product_name": "The Strathearn Royal Scarf, in wool",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf which is an accessory typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 162,
+    "product_name": "Golf Scene Hip Flask",
+    "current_core_type": "flask",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a flask used for drinking purposes and falls under the category of drinkware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 168,
+    "product_name": "Essential Belt and Buckle",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an 'Essential Belt and Buckle', which falls under the category of 'accessories' in this context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 177,
+    "product_name": "Essential Black Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "dress",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a black dress sporran, and 'sporran' is a type of accessory often worn with clothing. However, since the primary item here seems to be the dress, we're normalizing it to 'dress'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 178,
+    "product_name": "Essential Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a sporran which is classified as an accessory in our taxonomy.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 179,
+    "product_name": "Essential Semi Dress Sporran",
+    "current_core_type": "quaichs",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Essential Semi Dress Sporran' is a type of accessory used in traditional Scottish Highland dress. While it can be classified as a specific subtype within the accessory category, a more general term like 'accessory' is appropriate given its function.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 182,
+    "product_name": "Essential Tartan Sash",
+    "current_core_type": "sash",
+    "new_core_type": "scarf",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a lightweight tartan sash that adds a touch of sophistication to any evening outfit, which matches the characteristics of a scarf.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 191,
+    "product_name": "Classic Kilt Belt, Celtic Knot design",
+    "current_core_type": "kilt_belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an 'accessory' and it does not have a more specific subcategory mentioned in the description.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 193,
+    "product_name": "Clan Crest Belt Buckle",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'belt' and 'buckle', which aligns with the 'accessory' category. However, it doesn't have a specific subtype in the provided categories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 198,
+    "product_name": "Classic Clan Crest Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a personal accessory for kilts or traditional Scottish attire and does not fit into any specific homeware category.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 203,
+    "product_name": "Irish Clan Crest Belt Buckle",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a belt buckle, which is an accessory often worn with clothing. Although it's not explicitly listed under the specific subcategories of accessories, belt and buckle are generally categorized together.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 204,
+    "product_name": "Irish Clan Crest Daywear Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is an accessory typically worn with Scottish traditional clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 205,
+    "product_name": "Irish Clan Crest Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an accessory and the core_type 'sporran' falls under accessories in the given product context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 206,
+    "product_name": "Irish Clan Crest Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name suggests it's an accessory rather than a specific type of clothing or jewellery. The description also supports this classification.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 207,
+    "product_name": "Irish Clan Crest Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product is a ceremonial blade with an Irish Clan Crest emblem, which is typically associated with accessories rather than flask, quaich, mug, glass, drink_coaster, letter_opener, cushion, or rug.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 231,
+    "product_name": "Stag Antler Sgian Dubh, daywear style",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a traditional Scottish accessory typically worn with Highland dress.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 232,
+    "product_name": "The Officer Clan Crest Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sgian dubh, which is traditionally used as an accessory in Scottish culture.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 236,
+    "product_name": "Antique Silver Wallace Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sgian dubh, which is traditionally used as an accessory in highland dress outfits.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 264,
+    "product_name": "Highland Swirl Belt Buckle",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle which falls under the category 'accessory'. It's not explicitly a ring, necklace, bracelet, earrings, brooch, charm, pendant, cufflinks, but it shares the same category as these items.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 265,
+    "product_name": "Celtic Stag Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Celtic Stag Kilt Pin' is described as an accessory in the description. Although it could be considered a type of jewellery or clothing, the context provided suggests it is more appropriately classified as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 266,
+    "product_name": "Kilt Belt, Celtic Serpent design",
+    "current_core_type": "kilt_belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'belt', which falls under the category of accessories in this context.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 267,
+    "product_name": "Kilt Belt, Celtic Thistle design",
+    "current_core_type": "kilt_belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a Kilt Belt, which is classified as an accessory in the given context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 271,
+    "product_name": "Fancy Square Link Antiqued Sporran Chain Strap",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a chain strap for a sporran, which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 272,
+    "product_name": "Fancy Square Link Sporran Chain Strap",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a strap accessory for a sporran, which is typically worn with a kilt outfit. However, the core type 'sporran' was used instead of 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 275,
+    "product_name": "Antique Thistle Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Antique Thistle Kilt Pin' is listed under the category 'accessory' in the description and it does not fit any other canonical forms for clothing. However, since 'kilt_pin' is a more specific term, it will be normalized to 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 286,
+    "product_name": "Celtic Stag Belt Buckle",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product 'Celtic Stag Belt Buckle' is a type of accessory that is worn with belts, and it does not fit into the core types of jewellery as defined in the rules.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 288,
+    "product_name": "Highland Saltire Buckle with All Over Antique Finish",
+    "current_core_type": "buckle",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product description suggests it's an accessory, and 'buckle' is a subtype of accessory.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 290,
+    "product_name": "Highland Saltire Buckle With Antique Finish",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle which falls under the category of accessories.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 291,
+    "product_name": "Highland Saltire Buckle With Chrome Finish",
+    "current_core_type": "quaich",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product name mentions 'buckle', which is typically associated with accessories such as belts or sporrans. However, without a more specific description, it's hard to pinpoint the exact accessory type.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 292,
+    "product_name": "Serpent Kilt Pin (Antique)",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which is an accessory typically worn with kilts.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 303,
+    "product_name": "Plain Black Trews Belt",
+    "current_core_type": "belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an accessory, and 'belt' falls under the accessory category in the given context.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 304,
+    "product_name": "The Haggis Whistle",
+    "current_core_type": "whistle",
+    "new_core_type": "accessory",
+    "product_form": "recreation",
+    "confidence": 0.8,
+    "reasoning": "The product is described as mimicking the mating call of a Haggis, which aligns with traditional Scottish accessories such as kilt pins or sporrans. The given core type 'whistle' is appropriate for the product form 'recreation', but it doesn't capture the cultural and regional context.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 310,
+    "product_name": "Luxury Solid Colour Flashes",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Luxury Solid Colour Flashes' which is traditionally used as an accessory for kilts in the Scottish culture. Although it could be considered a 'homeware', its primary function lies within the accessory category.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 316,
+    "product_name": "Classic Plain Wool Tie, Medium Weight",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a tie, which is an accessory that is typically worn with clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 317,
+    "product_name": "Irish Tartan Luxury Lambswool Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product description mentions that it is a scarf which is an accessory item typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 338,
+    "product_name": "Military Diced Full Hose",
+    "current_core_type": "hose",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is described as a 'Military Diced Full Hose', which doesn't align with any of the typical clothing items or accessories. However, given its description and the fact that it's associated with clothing, it seems most appropriate to classify it as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 339,
+    "product_name": "Merino Rannoch Luxury Country Socks",
+    "current_core_type": "socks",
+    "new_core_type": "footwear",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is socks which are a type of footwear.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 342,
+    "product_name": "Full Tartan Hose",
+    "current_core_type": "hose",
+    "new_core_type": "kilt",
+    "product_form": "clothing",
+    "confidence": 0.75,
+    "reasoning": "The product is a Tartan Hose which is traditionally a type of kilt. However, it's important to note that the term 'Hose' in this context might be an alternative spelling or regional variation for 'Tartan'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 343,
+    "product_name": "Boy's Tartan Wing Collar Bow Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a bow tie, which is traditionally categorized as an accessory. Its function is to complement clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 344,
+    "product_name": "Essential Tartan Self Bow Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a bow tie which falls under the 'accessory' category for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 345,
+    "product_name": "Essential Tartan Adjustable Bow Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a bow tie, which is typically classified as an accessory for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 346,
+    "product_name": "Luxury Tartan Self Bow Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a bow tie, which falls under the category of accessories. Its tartan design and personalization options further support this classification.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 347,
+    "product_name": "Luxury Tartan Cravat",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Luxury Tartan Cravat' is an accessory typically worn with clothing, and it's not included in the list of specific clothing types. However, since it's a type of tie, it fits well under the 'accessory' category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 351,
+    "product_name": "Luxury Tartan Rouche",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product description suggests it's an accessory that is attached to clothing (highland wear), and its purpose seems to enhance the look of a tie. However, there is no specific subtype mentioned in the given details.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 354,
+    "product_name": "Essential Tartan Cravat",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The Essential Tartan Cravat is a type of accessory worn with clothing and it does not have a more specific subtype in the given context.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 355,
+    "product_name": "Tartan Wool Braces",
+    "current_core_type": "braces",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a type of accessory that is worn with clothing (braces or suspenders). Although it's not explicitly mentioned in the description as a specific garment, it functions as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 356,
+    "product_name": "Essential Tartan Cummerbund",
+    "current_core_type": "cummerbund",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Cummerbund, which is traditionally considered an accessory for highland clothing. However, it doesn't fit perfectly into any of the subcategories like kilt_pin, tie, or sporran.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 357,
+    "product_name": "Essential Cummerbund & Bow Tie Set",
+    "current_core_type": "cummerbund",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Cummerbund & Bow Tie Set, which are both accessories typically worn with clothing. While cummerbund can be classified as a waistcoat or garment, the bow tie isn't directly categorized under any of our given types. Therefore, we group them both under 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 358,
+    "product_name": "Boy's Cummerbund",
+    "current_core_type": "cummerbund",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The cummerbund is traditionally a part of highland formal outfits and can be considered an accessory worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 365,
+    "product_name": "Essential Boy's Tartan Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tie which is an accessory typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 366,
+    "product_name": "Essential Tartan Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Essential Tartan Tie' is described as an accessory in the provided description and it doesn't have a more specific subcategory within the clothing product form.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 367,
+    "product_name": "Essential Plain Wool Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tie, which is an accessory typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 368,
+    "product_name": "Satin Rouche",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Satin Rouche' is described as an accessory that adds to the outfit, and it doesn't fit well into any specific clothing subcategory (kilt, shirt, jacket, waistcoat, sporran, tie, scarf, headwear, trousers, skirt, dress).",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 369,
+    "product_name": "Essential Tartan Wool Rouche",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'tie', which is an accessory in our given taxonomy. Although it falls under the clothing category, it is typically worn with clothing but considered an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 370,
+    "product_name": "Essential Lambswool Tartan Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Essential Lambswool Tartan Scarf' is described as an accessory and does not have a specific subtype mentioned in the provided rules.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 372,
+    "product_name": "Essential Mini Rosette Tartan Sash",
+    "current_core_type": "sash",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sash which is classified as an accessory in this context.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 373,
+    "product_name": "Essential Fine Wool Tartan Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf, which is an accessory typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 375,
+    "product_name": "Essential Tartan Shawl",
+    "current_core_type": "shawl",
+    "new_core_type": "scarf",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a shawl which is a type of clothing accessory that falls under the category of scarves.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 386,
+    "product_name": "Essential Brushed Wool Tartan Serape",
+    "current_core_type": "serape",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is described as a serape, which is an accessory often worn with clothing. However, since 'serape' is not among the valid core types for clothing, we categorize it under 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 387,
+    "product_name": "Tartan Wedding Garter",
+    "current_core_type": "garter",
+    "new_core_type": "jewellery",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "Bridal garters are often seen as a type of jewellery due to their ornamental nature and the fact they are worn during weddings.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 388,
+    "product_name": "Essential Tartan Poncho",
+    "current_core_type": "poncho",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Poncho, which is an accessory typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 389,
+    "product_name": "Tartan Scrunchie",
+    "current_core_type": "headwear",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Tartan Scrunchie', which is an accessory typically worn with clothing. Although it falls under the category of 'headwear' in a broader sense, its design and function make it more appropriately classified as an 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 390,
+    "product_name": "Plain Colour Tie for Boys",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Plain Colour Tie for Boys' is an accessory typically worn with clothing, and it is not a garment itself.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 430,
+    "product_name": "Knitted Classic Scottish Cashmere Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf which falls under the 'accessory' category in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 431,
+    "product_name": "Gents Luxury Scottish Cashmere Gloves",
+    "current_core_type": "gloves",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'Gents Luxury Scottish Cashmere Gloves' which fall under the category of accessories in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 432,
+    "product_name": "Ladies Luxury Scottish Cashmere Gloves With Short Cuff",
+    "current_core_type": "gloves",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a luxury item and it's not typically classified as a clothing garment but rather an accessory that complements the clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 437,
+    "product_name": "Large Classic Scottish Cashmere Tartan Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf, which falls under the 'accessory' category for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 446,
+    "product_name": "Scottish Quartz Celtic Thistle Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin which is an accessory typically worn with kilts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 456,
+    "product_name": "Classic Tartan Serape",
+    "current_core_type": "serape",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product 'Classic Tartan Serape' is described as a wrap and typically associated with clothing accessories. Although it doesn't exactly match any of the listed core types for clothing, it seems to fit best under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 457,
+    "product_name": "Classic Fine Wool Tartan Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Classic Fine Wool Tartan Scarf' is described as an accessory in the description, and it doesn't fall under a specific clothing item category.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 463,
+    "product_name": "Classic Tartan Shawl",
+    "current_core_type": "shawl",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a shawl, which is considered an accessory in the homeware category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 469,
+    "product_name": "Classic Tartan Cummerbund",
+    "current_core_type": "cummerbund",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a formal clothing accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 470,
+    "product_name": "Boy's Kilt Flashes",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "kilt",
+    "product_form": "clothing",
+    "confidence": 0.6,
+    "reasoning": "The product is a Boy's Kilt Flashes, which are accessories traditionally worn with kilts.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 471,
+    "product_name": "Classic Solid Colour Flashes",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name 'Classic Solid Colour Flashes' implies it's an accessory for clothing, and it doesn't fit any specific clothing category based on the provided description.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 472,
+    "product_name": "Mini Fly Plaid",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an accessory for a kilt, but the current core_type 'kilt_accessory' is not a canonical form. It is more appropriate to categorize it under the parent type 'accessory'.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 474,
+    "product_name": "Classic Lambswool Tartan Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf which falls under the 'accessory' category for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 475,
+    "product_name": "Luxury Tartan Skinny Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Luxury Tartan Skinny Tie' is a type of accessory typically worn with clothing. The description also supports this classification.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 478,
+    "product_name": "Classic Mini Rosette Tartan Sash",
+    "current_core_type": "sash",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sash, which is an accessory typically worn with kilts or other traditional Scottish clothing. It does not fit neatly into any of the more specific clothing categories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 480,
+    "product_name": "Lambswool Tartan Serape",
+    "current_core_type": "serape",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Lambswool Tartan Serape', which is traditionally worn as an accessory with clothing. Although 'serape' is not explicitly listed in the valid core types for clothing, it can be categorized as an accessory due to its purpose and description.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 482,
+    "product_name": "Classic Tartan Adjustable Bow Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Classic Tartan Adjustable Bow Tie', which is an accessory typically worn with clothing. Although the current core_type is 'tie', it is more appropriate to categorize this product as an 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 483,
+    "product_name": "Classic Plain Wool Tie, Lightweight",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tie which is an accessory worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 484,
+    "product_name": "Classic Tartan Tie, lightweight",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'tie' which is an accessory and not a garment or subtype of headwear.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 485,
+    "product_name": "Classic Boy's Tartan Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tie, which is an accessory typically worn with clothing. However, since the product specifically mentions it's a tartan tie representing family heritage, it might be considered a more unique or specialized accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 673,
+    "product_name": "Tartan Napkins (Set of 4)",
+    "current_core_type": "napkins (set_of_4)",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product is a set of napkins which falls under the category 'homeware' and has no specific canonical form in this category. However, since it is not a typical homeware item (like flask, mug, etc.), it can be considered as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 680,
+    "product_name": "Lion of Scotland Quaich",
+    "current_core_type": "quaich",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a cup (Quaich) used for drinking, which makes it a type of drinkware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 681,
+    "product_name": "Brass Rim Pewter Quaich",
+    "current_core_type": "quaich",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The Brass Rim Pewter Quaich is a traditional Scottish drinking cup often worn as an accessory, making it more appropriate to categorize it under 'accessory' rather than 'clothing'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 682,
+    "product_name": "Robert Burns Quaich",
+    "current_core_type": "quaich",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Quaich, which is traditionally used for drinking and its function aligns with the 'homeware' product form. However, since Quaich is not explicitly listed in the given valid core types for homeware, we have categorized it under drinkware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 684,
+    "product_name": "Celtic Gold Quaich",
+    "current_core_type": "quaich",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a cup used for drinking and its purpose aligns with drinkware categories such as mug, glass, flask or drink_coaster.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 692,
+    "product_name": "Celtic candlestick",
+    "current_core_type": "candlestick",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Celtic candlestick which falls under the category of homeware and we do not have specific core types for candlesticks in the provided list. However, considering it's an accessory that complements home decor, 'accessory' is the most appropriate core type.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 693,
+    "product_name": "Lion of Scotland Hip Flask",
+    "current_core_type": "flask",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a hip flask used for drinking, making it a type of drinkware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 703,
+    "product_name": "Sporran Flask with Engraved Clan Crest",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a unique Sporran Flask, which can be considered an accessory. The flask's engraved Clan Crest also supports this classification as it is a distinctive item that would typically be categorized as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 704,
+    "product_name": "Kells Sporran Flask",
+    "current_core_type": "flask",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran flask which is classified as an accessory in the product context and form.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 705,
+    "product_name": "Sporran Flask",
+    "current_core_type": "flask",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Sporran Flask' is a unique item that doesn't fit any of the specified core types for homeware. However, given its description as an addition to a home and potential gifting, it is most appropriate to classify it under the broader category 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 708,
+    "product_name": "Clan Crest Trinket Box",
+    "current_core_type": "trinket_box",
+    "new_core_type": "jewellery",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Clan Crest Trinket Box' is a box used for storing jewellery items such as this crest, making it appropriate to classify it under 'jewellery'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 712,
+    "product_name": "Double Celtic Band Tankard",
+    "current_core_type": "tankard",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a tankard used for drinking, which falls under the drinkware category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 721,
+    "product_name": "Luxury Adjustable Tartan Bow Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a bow tie which is an accessory worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 722,
+    "product_name": "Luxury Tartan Wool Braces",
+    "current_core_type": "braces",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a type of accessory (braces) and it is associated with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 723,
+    "product_name": "Luxury Wool Tartan Cummerbund",
+    "current_core_type": "cummerbund",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Luxury Wool Tartan Cummerbund' is a type of formal accessory commonly worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 724,
+    "product_name": "Girls Luxury Tartan Sash",
+    "current_core_type": "sash",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sash which can be considered an accessory. Although it's primarily used with clothing, it isn't typically classified as a specific garment type.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 767,
+    "product_name": "Ghillie Brogues Laces And Tassels Set",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Ghillie Brogues Laces And Tassels Set which can be considered an accessory for kilts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 769,
+    "product_name": "Stretch Kilt Hose",
+    "current_core_type": "kilt",
+    "new_core_type": "skirt",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt, which is traditionally classified as a type of skirt in the context of clothing.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 778,
+    "product_name": "Boy's Tartan Kilt Flashes",
+    "current_core_type": "kilt_flash",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Boy's Tartan Kilt Flashes' is an accessory typically worn with kilts, and they are used to personalize the kilt outfit. Although 'kilt_flash' was the initial core_type, it is more appropriate to categorize this product as 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 789,
+    "product_name": "Luxury Tartan Poncho",
+    "current_core_type": "poncho",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a versatile clothing accessory that can be paired with different outfits.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 791,
+    "product_name": "Denim Casual Kilt",
+    "current_core_type": "kilt",
+    "new_core_type": "skirt",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt, which is traditionally considered a type of skirt. Although it's made of denim and modernized, its overall design still aligns with the skirt category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 796,
+    "product_name": "Extra Long Tartan Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tartan tie which is considered an accessory in clothing. Although it could be synonym unified to 'tie', the broader category 'accessory' is more appropriate as it includes other items such as belts and sporrans.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 798,
+    "product_name": "Classic Fly Plaid",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name 'Classic Fly Plaid' suggests a type of accessory or clothing item that is not typically worn on its own and usually accompanies a kilt. However, since no specific subtype can be determined from the given information, it's classified as 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 799,
+    "product_name": "Boy's Fly Plaid",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Boy's Fly Plaid', which is traditionally used as an accessory for kilts. However, since the provided core_type 'kilt' does not match the product form 'clothing', we correct it to 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 803,
+    "product_name": "Classic Kilt Hanger",
+    "current_core_type": "kilt hanger",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt hanger which falls under the category of 'accessories'. Although it's not explicitly listed as an accessory type in the given examples, it fits the definition since it's an item designed to be used with a kilt, but not a part of the kilt itself.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 804,
+    "product_name": "High\u2011Waisted Tartan Trews",
+    "current_core_type": "kilt",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a bottom-wear piece resembling trousers with a traditional Scottish design. Despite not being a direct synonym, the 'trews' in the product name implies a trousers-like item.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 826,
+    "product_name": "Buttons for Prince Charlie and Argyll Jacket (set of 5)",
+    "current_core_type": "button",
+    "new_core_type": "jacket",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a set of buttons for an Argyll Jacket, which falls under the category of jackets in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 827,
+    "product_name": "Classic Fly Plaid, Purled",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an accessory and not a specific type of clothing.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 838,
+    "product_name": "Luxury Tartan Flashes",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Luxury Tartan Flashes' is described as an accessory that can be added to a kilt, and they are not a garment. However, the more specific type 'kilt_accessory' provided currently is a subtype of 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 839,
+    "product_name": "Luxury Handmade Tartan Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tie which is an accessory typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 840,
+    "product_name": "Fishtail Back Tartan Trews",
+    "current_core_type": "trews",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as 'trews', which are traditionally a type of trousers in Scottish culture. However, 'trews' is not explicitly listed in the given valid core types for clothing. To make it more inclusive, we can categorize this product under 'trousers'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 850,
+    "product_name": "Cashmere Cardigan",
+    "current_core_type": "cardigan",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a cardigan, which is a type of sweater or top.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 851,
+    "product_name": "Cashmere Cable Crew Neck Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater, which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 853,
+    "product_name": "Cashmere Roll Neck Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The given product is a sweater, which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 854,
+    "product_name": "Cashmere Twin Set",
+    "current_core_type": "knitwear",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Cashmere Twin Set' is a set of coordinated clothing items typically consisting of a sweater and a blouse or cardigan. While knitwear is a type of top, it is more specific than what the product entails, thus we categorize it as a 'top'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 856,
+    "product_name": "Scotweb Original Cashmere Cardigan",
+    "current_core_type": "cardigan",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a cardigan, which falls under the top category as it's a type of sweater. However, the exact synonym 'cardigan' was used instead of 'sweater'.",
+    "change_type": "synonym"
+  },
+  {
+    "product_id": 857,
+    "product_name": "Cashmere Crew Neck Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater and it falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 859,
+    "product_name": "Cashmere V Neck Sleeveless Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sleeveless sweater which falls under the category of tops.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 860,
+    "product_name": "Cashmere V\u2011Neck Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater, which falls under the top category as it's a clothing item worn on the upper body.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 906,
+    "product_name": "Welsh Lambswool Tartan Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf which falls under the category of accessories worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 912,
+    "product_name": "Luxury Scottish Cashmere Golfer Cardigan, Charlotte",
+    "current_core_type": "cardigan",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'cardigan', which falls under the category of 'top' in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 913,
+    "product_name": "Luxury Scottish Cashmere Sweater, Roll Neck",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater and sweaters fall under the category 'top' in clothing",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 915,
+    "product_name": "Luxury Scottish Cashmere V\u2011Neck Cardigan, Charlotte",
+    "current_core_type": "cardigan",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a cardigan, which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 916,
+    "product_name": "Luxury Scottish Cashmere Sweater, V\u2011Neck",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater and sweaters are considered a type of top in clothing",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 923,
+    "product_name": "Tartan Ribbon, 70mm wide",
+    "current_core_type": "ribbon",
+    "new_core_type": "accessory",
+    "product_form": "haberdashery",
+    "confidence": 0.8,
+    "reasoning": "The product is a ribbon, which is typically categorized as an accessory in the context of haberdashery.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 925,
+    "product_name": "Classic Kilt Belt, adjustable",
+    "current_core_type": "kilt_belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt, which falls under the 'accessory' category in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 926,
+    "product_name": "Classic Kilt Belt, plain",
+    "current_core_type": "kilt_belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Classic Kilt Belt, plain' is an accessory worn with clothing. Although it is specified as a kilt_belt, the product description does not explicitly indicate that it is a type of kilt or any other specific garment.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 929,
+    "product_name": "Celtic Chrome\u2011Finish Buckle",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a buckle and it's described as an accessory in the description.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 933,
+    "product_name": "Masonic Belt Buckle with Engraved Surround",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle, which is considered an accessory in the given taxonomy.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 935,
+    "product_name": "Plain Antique Stag Belt Buckle",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 938,
+    "product_name": "Boy's Leather Belt with Buckle",
+    "current_core_type": "belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt, which can be considered an accessory in the context of clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 939,
+    "product_name": "Thistle Belt Buckle With Velcro Leather Belt",
+    "current_core_type": "belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt accessory and doesn't fit into any of the specific clothing types like kilt, shirt, jacket, etc. However, it does not appear to be a jewelry item or a bag, so it falls under the 'accessory' category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 940,
+    "product_name": "Zoomorphic Belt Buckle With Velcro Leather Belt",
+    "current_core_type": "belt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Zoomorphic Belt Buckle With Velcro Leather Belt', which falls under the category of 'accessories' as it's an addition to clothing rather than being clothing itself.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 943,
+    "product_name": "Plain Stag Head Belt Buckle",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'belt buckle' which falls under the category of 'accessories'. Although it is not an exact match with any of the valid core types for 'jewellery', it is more appropriate to classify it as an accessory because belt buckles are worn with belts, which are accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 944,
+    "product_name": "Plain St Andrews Cross Belt Buckle",
+    "current_core_type": "kilt_belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a buckle, which is an accessory typically worn with clothing. It doesn't have a specific subcategory within clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 947,
+    "product_name": "Dress Sporran with Celtic Bird Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sporran, which is an accessory traditionally worn with kilts. However, since 'sporran' is the current core_type, no hierarchical normalization or synonym unification was performed.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 948,
+    "product_name": "Dress Sporran with Celtic Dog Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sporran, which is traditionally considered an accessory in the context of clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 949,
+    "product_name": "Dress Sporran with Celtic Oval Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is categorized as an accessory in the clothing context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 950,
+    "product_name": "Dress Sporran with Celtic Stag Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which falls under the 'accessory' category for clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 951,
+    "product_name": "Dress Sporran with Thistle Detail Cantle and Chrome Balls",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is an accessory typically worn with a kilt. Although it's not explicitly stated that the sporran is for a kilt, given its design and context, it's highly likely that it is.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 952,
+    "product_name": "Dress Sporran with Torq Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Dress Sporran with Torq Cantle' is described as an accessory that complements clothing. Although it can be considered a specific type of sporran, which is a subtype under accessories, the primary function of this product lies in enhancing formal highland outfits rather than serving as a standalone garment.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 955,
+    "product_name": "Chrome Leather Chain Strap",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Chrome Leather Chain Strap' is a belt-like accessory typically worn with kilts, and it does not fit into the other clothing categories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 956,
+    "product_name": "Chrome Brown Leather Chain Strap",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'quality kilt accessory'. Although the current core_type is 'sporran', it's a subtype of accessory and more appropriate given the product form (clothing) and description.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 958,
+    "product_name": "Khaki Leather Chain Strap",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Khaki Leather Chain Strap' is an accessory, despite not being a direct match in the provided valid core types for clothing. However, considering it's related to clothing and doesn't have a specific garment counterpart, it falls under the 'accessory' category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 959,
+    "product_name": "Dress Sporran with Thistle Design Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Dress Sporran with Thistle Design Cantle' is not a garment but an accessory worn with clothing. It is a traditional Scottish item used in Highland dress outfits.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 962,
+    "product_name": "Celtic Square Buckle",
+    "current_core_type": "buckle",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a Celtic Square Buckle which is described as an 'accessory' in the description and is not explicitly one of the canonical forms for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 963,
+    "product_name": "Stag Belt Buckle",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle which is an accessory, even though it is specifically designed for kilts.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 964,
+    "product_name": "Torq Belt Buckle",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle, which is an accessory often worn with clothing. The description also supports this classification.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 966,
+    "product_name": "Celtic Dog Buckle",
+    "current_core_type": "buckle",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle which falls under the 'accessory' category for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 967,
+    "product_name": "Celtic Bird Buckle",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a buckle which falls under the category of accessories in homeware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 970,
+    "product_name": "Stag and Hounds Buckle",
+    "current_core_type": "belt_buckle",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle which is an accessory, and it's not specifically assigned to any sub-category in the provided list.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 976,
+    "product_name": "Dress Sporran with Leather Studded Targe",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sporran, which is traditionally an accessory for Scottish Highland dress and kilts.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 977,
+    "product_name": "Luxury Rabbit Dress Sporran with Studded Targe",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a unique type of accessory (sporran) traditionally worn with kilts in Scottish formal events.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 978,
+    "product_name": "Dress Sporran with Diamond and Thistle Design Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an accessory that finishes a highland dress outfit, and sporran is considered an accessory within the clothing context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 979,
+    "product_name": "Dress Sporran with Lattice Tassels",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is classified as an accessory in the given context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 980,
+    "product_name": "Synthetic Dress Sporran & Celtic Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "dress",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a garment typically worn by women and designed to cover the body from the waist to the ankles. The sporran, which is a pouch traditionally worn with the kilt, can also be attached to a dress.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 981,
+    "product_name": "Semi Dress Sporran, Lion Rampant emblem",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Semi Dress Sporran, which is classified as an accessory in the clothing context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 982,
+    "product_name": "Semi Dress Sporran, stag head emblem",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Semi Dress Sporran, which is an accessory typically worn with traditional Scottish clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 985,
+    "product_name": "Stag Head Crest Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 986,
+    "product_name": "Thistle Crest Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Thistle Crest Kilt Pin' is listed as an accessory under clothing, and it does not fit into any of the other clothing type categories.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 988,
+    "product_name": "Boy's Sword Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'kilt pin', which falls under the category of accessories that are worn with clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 989,
+    "product_name": "Dress Sporran with Knotwork Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Dress Sporran with Knotwork Cantle' is not explicitly classified as a specific type of accessory, but it falls under the category 'accessory'. It is an ornamental piece worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 995,
+    "product_name": "Semi Dress Sporran with Studs",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Semi Dress Sporran with Studs', which is an accessory typically worn with traditional clothing outfits.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 997,
+    "product_name": "Classic Clan Crest Semi\u2011Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an accessory and it's a sporran which is a type of accessory traditionally worn with kilts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 998,
+    "product_name": "Semi Dress Sporran, studded targe",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is classified as an accessory in the clothing context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 1000,
+    "product_name": "Dummy Sgian Dubh with ball top",
+    "current_core_type": "top",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Dummy Sgian Dubh' which is traditionally used as an accessory, specifically a letter opener or knife. It doesn't fall under any of the listed core types for homeware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1002,
+    "product_name": "Shamrock Crest Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sgian Dubh, which is traditionally worn as an accessory with highland wear.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 1003,
+    "product_name": "Stag Antler Effect Sgian Dubh, with thistle top",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Stag Antler Sgian Dubh, which is traditionally considered an accessory in Scottish culture.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 1006,
+    "product_name": "Semi\u2011Dress Sporran, plain with leather tassels",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sporran, which is an accessory typically worn with kilts, and it has leather tassels that are often associated with traditional Scottish attire.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 1008,
+    "product_name": "Celtic Tooled Semi Dress Black Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Celtic Tooled Semi Dress Black Sporran' is a type of accessory traditionally worn with clothing. Although it is specifically called a sporran, its context suggests that it serves as an ornamental piece rather than a primary garment.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 1009,
+    "product_name": "Daywear Sporran, Celtic Tooled and Studded Flap",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Sporran' is an accessory that is typically worn with clothing. The description further emphasizes its role as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1011,
+    "product_name": "Semi Dress Sporran, Celtic tooled and studded flap with full tassels",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is an accessory typically worn with a kilt. While it's also categorized under clothing due to its function as a pouch, its traditional association and design make it more fitting within the 'accessory' category.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 1014,
+    "product_name": "Stag Head Plain Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The 'Stag Head Plain Dress Sporran' is a traditional Scottish accessory that is typically worn with highland dresses. Although it can be considered as a garment, its primary function is an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1015,
+    "product_name": "Full Dress Mink Deluxe Sporran with Silver Plated Dragon Cantle",
+    "current_core_type": "quaichs (similar to a small bowl)",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Sporran' is an accessory typically used with kilts in Scotland, making it fit under the category of 'accessory'.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 1017,
+    "product_name": "Masonic Plain Top Full Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'Sporran' which falls under the category of 'accessories'. Although it is not explicitly stated, based on the context and convention, it can be inferred that this Sporran is worn with the Masonic attire which aligns with the 'clothing' product form.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 1018,
+    "product_name": "Thistle Top Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is an accessory traditionally worn with Scottish highland dress. It does not fit directly into any specific clothing category such as kilt, shirt, jacket, etc.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1019,
+    "product_name": "Dress Sporran with Stag and Hounds Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Dress Sporran', which is categorized as an accessory in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1020,
+    "product_name": "Studded Daywear Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is categorized as an accessory under clothing. While it's made of casual material, the shape and traditional elements of the sporran suggest that it falls under the accessory category.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 1110,
+    "product_name": "Oxhorn Tea Caddy Spoon",
+    "current_core_type": "spoon",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a handcrafted Oxhorn Tea Caddy Spoon, which can be considered an accessory due to its use in homeware and not clothing, jewellery or bags.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1123,
+    "product_name": "Charles Rennie MacKintosh Glasgow Bouquet 4&quot; Quaich",
+    "current_core_type": "quaich",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a traditional drinking cup, and it fits the description of drinkware which includes items such as mugs, glasses, and quaichs.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1127,
+    "product_name": "Stirrup Cup",
+    "current_core_type": "cup",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is used for drinking, and while it's not a common homeware item like mug or glass, stirrup cups can be classified under drinkware due to their function.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1129,
+    "product_name": "Rolled Celtic 1 Pint Tankard",
+    "current_core_type": "tankard",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a tankard used for drinking and it falls under the category of drinkware which includes mugs, glasses, etc.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1134,
+    "product_name": "Made to Measure Montrose Doublet",
+    "current_core_type": "doublet",
+    "new_core_type": "jacket",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a doublet which is a type of jacket in the context of highland clothing.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 1166,
+    "product_name": "Luxury Cashmere Roll Neck Jumper",
+    "current_core_type": "jumper",
+    "new_core_type": "sweater",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a knitted garment designed to be worn on the upper body, making it a sweater.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1167,
+    "product_name": "Luxury Cashmere &#39;Golf Style&#39; V\u2011Neck Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater and it's designed in a style typically associated with golf (V-neck). This style can be found under the 'top' category as it covers garments such as shirts, sweaters, cardigans, tank tops, and crop tops.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 1237,
+    "product_name": "Gents Cashmere Argyle V\u2011Neck Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater, which falls under the category 'top' as it is a type of clothing garment.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1376,
+    "product_name": "Classic Prince Charlie Kilt Outfit",
+    "current_core_type": "kilt",
+    "new_core_type": "outfit",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product description suggests it is a complete set of clothing items (head to toe), hence 'outfit' is the appropriate core type.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1380,
+    "product_name": "Clan Crest Silver Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Clan Crest Silver Kilt Pin' is a decorative item worn with traditional Scottish clothing and falls under the category of 'accessories'. Although it could be considered as a subcategory of 'jewellery', given its similarity to brooches or pendants, it is more appropriate to classify it under 'accessory' due to its specific association with kilts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 1385,
+    "product_name": "Essential Prince Charlie Kilt Outfit",
+    "current_core_type": "kilt",
+    "new_core_type": "kilt_outfit",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt outfit which includes multiple items like a kilt and possibly other accessories. The core type should be a combination of these components.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 1388,
+    "product_name": "Essential Argyll Kilt Outfit",
+    "current_core_type": "kilt",
+    "new_core_type": "outfit",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a set of multiple clothing items and accessories, thus it's more appropriate to categorize it as an 'outfit'",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 1391,
+    "product_name": "Classic Tweed Day Kilt Outfit",
+    "current_core_type": "kilt",
+    "new_core_type": "kilt_outfit",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name and description suggest a combination of multiple clothing items forming an outfit, rather than a single item. The main component is a kilt, but accessories like sporran or tie might also be included.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 4370,
+    "product_name": "Thistle Kilt Pin \u2011 B105",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Thistle Kilt Pin' is a type of accessory that is often worn with kilt attire.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 4373,
+    "product_name": "Thistle Kilt Pin \u2011 B536",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Thistle Kilt Pin' is a decorative item worn with kilts, which falls under the 'accessory' category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5709,
+    "product_name": "Classic Scottish Cashmere Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a scarf which falls under the category of accessories typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5936,
+    "product_name": "Clan Crest Rectangular Fridge Magnet",
+    "current_core_type": "magnet",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a fridge magnet, which is typically considered an accessory in the homeware category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5973,
+    "product_name": "Derby Tweed Chatsworth Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a knitted sweater which falls under the category 'top' in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5975,
+    "product_name": "Navy and Ecru Dover Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Navy and Ecru Dover Sweater' is a type of clothing item often referred to as a 'sweater'. However, in the taxonomy provided, 'sweater' falls under the category 'top', which includes shirts, sweaters, cardigans, tank tops, crop tops. Although sweater and top are not synonyms, for product categorization purposes, it is appropriate to classify this product as 'top'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5978,
+    "product_name": "Moss Green Drover Vee\u2011Neck Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater, which is classified as a top in the clothing category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5980,
+    "product_name": "Forrester Wooly Pully Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater and the product form is clothing. The sweater can be considered a top due to its classification as a garment worn on the upper body.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5982,
+    "product_name": "Black Ghillie Sweater with Harris Tweed Patches",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater which falls under the top category in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5988,
+    "product_name": "Light Grey Welsh Southwold Cardigan",
+    "current_core_type": "cardigan",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a cardigan, which is a type of top clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5990,
+    "product_name": "Ecru Submariner Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 5991,
+    "product_name": "Heather Mix York Crew Neck Sweater",
+    "current_core_type": "sweater",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweater which falls under the 'top' category as it covers the upper body.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 6048,
+    "product_name": "Classic Prince Charlie Trews Outfit",
+    "current_core_type": "trews",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as 'trews', which are a type of trousers, and the product form is clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 6049,
+    "product_name": "Essential Argyll Trews Outfit",
+    "current_core_type": "kilt",
+    "new_core_type": "trews",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is an outfit consisting of trews (a type of knee-length trousers traditionally worn by Scots). Although the term 'kilt' might be a synonym for trews in some contexts, kilt is usually associated with a specific style of Scottish dress. The product description supports this interpretation.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 6057,
+    "product_name": "Essential Prince Charlie Trews Outfit",
+    "current_core_type": "trews",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name indicates it is a type of pants, but in Scottish terms it's called trews. Trousers are the canonical form for pants.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 6189,
+    "product_name": "Sporran 6oz Flask",
+    "current_core_type": "hip_flask",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran flask, which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 6201,
+    "product_name": "Welsh Dragon Sword Cilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a decorative item worn with clothing, and it's not explicitly a garment or jewelry. Its function aligns more with the 'accessory' category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 7521,
+    "product_name": "Bruce Sword Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which falls under the 'accessory' category for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 7524,
+    "product_name": "Claymore Sword Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin and it's part of the clothing accessory category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 7527,
+    "product_name": "Interlace Sword Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a kilt pin which falls under the 'accessory' category for clothing. Although it could be more specific like 'kilt_pin', the provided core_type is acceptable given the context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 7530,
+    "product_name": "Rampant Lion Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which is an accessory typically worn with kilts. Although it's specific to Scottish attire, it doesn't fit into any of the more precise clothing categories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 7531,
+    "product_name": "Rampant Lion Sword Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin which is an accessory typically worn with kilts. While 'kilt_pin' was the original core_type, it's more appropriate to categorize it under 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 7534,
+    "product_name": "Sword and Thistle Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which is an accessory typically worn with kilts. Although it doesn't exactly match the given core types for clothing, it is still an accessory related to clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 7537,
+    "product_name": "Thistle Motif Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Thistle Motif Sgian Dubh, which is traditionally used as an accessory for kilts and doesn't fit into any other homeware categories.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 7548,
+    "product_name": "Celtic Knot Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product is a Sgian Dubh which is traditionally worn as an accessory with a kilt outfit.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 7611,
+    "product_name": "Rampant Lion Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Rampant Lion Kilt Pin' which is categorized as an 'accessory' in clothing. While it can be more specifically referred to as 'kilt_pin', the broader category 'accessory' is appropriate for this product.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 7632,
+    "product_name": "Sword Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Sword Kilt Pin' is an accessory and not a garment. It does not match any of the canonical forms for clothing but fits the 'accessory' category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 7641,
+    "product_name": "Thistle Twist Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which is an accessory typically worn with kilts in the context of Scottish attire.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 7891,
+    "product_name": "Tartan Oddments Bag",
+    "current_core_type": "oddments bag",
+    "new_core_type": "fabric",
+    "product_form": "haberdashery",
+    "confidence": 0.8,
+    "reasoning": "The product is a bag full of quality fabrics and the product form is haberdashery which includes fabric as a valid core type.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 8041,
+    "product_name": "Full Tweed Day Outfit",
+    "current_core_type": "kilt",
+    "new_core_type": "outfit",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a complete clothing ensemble and not an individual piece.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 8049,
+    "product_name": "Shawl Collar Camel Hair Cardigan",
+    "current_core_type": "cardigan",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a cardigan, which falls under the category of tops.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 8067,
+    "product_name": "Luxury Mini Rosette Tartan Sash",
+    "current_core_type": "sash",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a sash, which is an accessory. Although the term 'sash' is not explicitly listed as a subtype under 'accessory', it is generally understood to be one due to its function as an adornment.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 8094,
+    "product_name": "Celtic Dog Design Scarf, Charcoal",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Celtic Dog Design Scarf' is a type of accessory and does not fit into the other clothing categories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 8129,
+    "product_name": "Fleece\u2011lined Checked Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a shirt with fleece lining, making it a type of top clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 8426,
+    "product_name": "Rob Roy Tartan Soft Wool Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf which falls under the category of 'accessories' in clothing. It doesn't have a specific subtype in the given list.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 9028,
+    "product_name": "Stag Dress Sporran with Chrome Finished Full Dress Cantles",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Stag Dress Sporran' is a traditional Scottish accessory often worn with kilts. While it can be considered a specific type of sporran (full dress cantles), the broader category 'accessory' is more appropriate given its function and context.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 14071,
+    "product_name": "Claddagh Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Claddagh Kilt Pin' is an accessory that complements clothing and it doesn't fit any of the specific clothing subtypes.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 15005,
+    "product_name": "Green Shamrock Sword Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin which is an accessory typically worn with kilts, and it's not listed in the valid core types for clothing. However, since it's related to clothing, it falls under 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 15665,
+    "product_name": "Clan Crest Round Fridge Magnet",
+    "current_core_type": "magnet",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Clan Crest Round Fridge Magnet which falls under the category of 'homeware'. However, the core type 'magnet' is not appropriate as it doesn't match any valid subtype for homeware. Instead, it can be categorized as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 15667,
+    "product_name": "Clan Crest Tea Spoon",
+    "current_core_type": "teaspoon",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Clan Crest Tea Spoon' is a versatile accessory or a great gift for your family members. It doesn't fit any of the valid homeware types listed, but it falls under the category of 'accessories'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 16500,
+    "product_name": "Boy's Tweed Argyll Kilt Outfit",
+    "current_core_type": "kilt",
+    "new_core_type": "kilt_outfit",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name and description suggest a set that includes multiple pieces of clothing, not just a single kilt. The canonical form for this kind of ensemble is 'kilt_outfit'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 16855,
+    "product_name": "Suede Lined Clan Crest Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran, which is an accessory typically worn with kilts. It's not a garment or a type of clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 16863,
+    "product_name": "Stag Dress Sporran",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name mentions 'sporran' which is an accessory typically worn with a kilt. However, the current core_type is only 'sporran'. To make it more comprehensive and encompassing of all possible accessories related to this product, we are normalizing it to 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 25942,
+    "product_name": "Essential Tartan Tube Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'tube scarf' which is an accessory typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 28446,
+    "product_name": "Chinese Scottish Tartan Lambswool Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf which is typically considered an accessory. While it can be worn as part of clothing, it's primarily used to complement and add style to the outfit.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 35552,
+    "product_name": "Classic Tartan Face Mask",
+    "current_core_type": "face_mask",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a tartan face mask, which can be considered an accessory worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 48558,
+    "product_name": "Boy's Semi\u2011Dress Sporran with Chrome Ball Tassels",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a sporran, which is an accessory commonly worn with traditional Scottish clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 54223,
+    "product_name": "Dress Sporran with Viking Knotwork Cantle",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sporran, which is an accessory typically worn with traditional Scottish clothing such as kilts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 61838,
+    "product_name": "Oxhorn Broad Tooth Dress Comb With Handle",
+    "current_core_type": "comb",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a comb, which can be classified as an accessory due to its function and usage",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 62208,
+    "product_name": "Family or Clan Mini\u2011Book",
+    "current_core_type": "book",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a unique mini-book related to family or clan heritage, which falls under the accessory category in homeware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 62784,
+    "product_name": "Highland Cow Kilt Belt Buckle",
+    "current_core_type": "kilt",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a belt buckle which can be considered an accessory for the kilt. However, there isn't a specific canonical form for this type of accessory in the provided list, so 'accessory' was used.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 63465,
+    "product_name": "Ladies Cashmere V\u2011Neck Cardigan",
+    "current_core_type": "cardigan",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a cardigan and falls under the category of 'top' as it is a garment typically worn on the upper body.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 63471,
+    "product_name": "Ladies Cashmere Golfer Cardigan",
+    "current_core_type": "cardigan",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Ladies Cashmere Golfer Cardigan, which falls under the category of tops as it is a sweater.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 63672,
+    "product_name": "Masonic Dress Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Masonic Dress Sgian Dubh' is described as a 'High quality Masonic Dress Sgian Dubh', which indicates it serves an accessory function in this context. However, the specific core_type for Sgian Dubh is not provided within the given valid types for homeware.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 70346,
+    "product_name": "Tonag Beag, Small Poncho",
+    "current_core_type": "poncho",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product 'Tonag Beag, Small Poncho' is a type of accessory worn with clothing and does not have a specific subtype within the clothing category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 73681,
+    "product_name": "Estate Check Wool Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tie, which is an accessory typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 74694,
+    "product_name": "Faith Wool/Angora Knitted Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a knitted scarf, which falls under the category of accessories in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 76312,
+    "product_name": "Georgia Lambswool Poncho",
+    "current_core_type": "poncho",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a poncho, which is typically considered an accessory for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 76347,
+    "product_name": "Scottish Tartan Cashmere Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf which is classified as an accessory in the given context.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 76352,
+    "product_name": "Tartan Tam Purse",
+    "current_core_type": "purse",
+    "new_core_type": "accessory",
+    "product_form": "bags",
+    "confidence": 0.8,
+    "reasoning": "The product is a traditional Scottish keepsake and adds to a collection, which aligns with the definition of an accessory.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 77441,
+    "product_name": "Khaki Chain Strap (Free with sporrans)",
+    "current_core_type": "chain_strap",
+    "new_core_type": "accessory",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product is a sporran accessory, which is included in the 'accessory' category.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 79947,
+    "product_name": "Chain Strap (Free with sporrans)",
+    "current_core_type": "strap",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The chain strap is a type of accessory and it's often used with clothing such as sporrans.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 86790,
+    "product_name": "Clan Crest Key Fob",
+    "current_core_type": "keyring",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a key fob which can be classified as an accessory due to its function as a versatile homeware item or gift.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 86808,
+    "product_name": "Clan Crest Leather Key Fob",
+    "current_core_type": "keyring",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a leather key fob which can be considered an accessory worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 86987,
+    "product_name": "Essential Scotweb Flashes",
+    "current_core_type": "kilt_accessory",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product name indicates it's an accessory for a kilt, and the description mentions it as an accessory, however, the more specific 'kilt_accessory' is not in our predefined homeware core types",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 104766,
+    "product_name": "Unicorn Rampant Kilt Pin In Pewter",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which is typically classified as an accessory in the context of clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 108975,
+    "product_name": "Handmade Tartan Dog Collar",
+    "current_core_type": "collar",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a handmade tartan collar, which can be classified as an accessory for pets.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 109407,
+    "product_name": "Handmade Tartan Dog Lead",
+    "current_core_type": "lead",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a lead for pets, which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 110073,
+    "product_name": "Handmade Tartan Dog Bandana",
+    "current_core_type": "bandana",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a fashion accessory for pets, and it does not fit clearly into specific categories like pet_bowl, collar, lead or treat_bag. However, as it's not a garment, it falls under the broader category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 110076,
+    "product_name": "Handmade Tartan Dog Scrunchy Bandana",
+    "current_core_type": "bandana",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a bandana accessory for pets, which aligns with the 'accessory' category. Although it could be more specific (e.g., 'pet_accessory'), the context provided does not allow for such granularity.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 110078,
+    "product_name": "Handmade Tartan Dog Bow Tie",
+    "current_core_type": "dog_tie",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a dog bow tie which is an accessory for pets.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 112071,
+    "product_name": "Oxhorn Handle Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a sock knife that adds finishing touches to kilted dress uniforms, which suggests it's an accessory rather than a specific type of homeware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 112101,
+    "product_name": "Handmade Tartan Dog Accessories",
+    "current_core_type": "Handmade Tartan Dog Accessories",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is 'Handmade Tartan Dog Accessories' and the product description mentions 'collar', which suggests that this product might be an accessory rather than a specific type such as 'pet_bowl', 'bandana', 'treat_bag', or 'lead'. However, since there isn't a clear subtype in the provided information, the core_type remains 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 114776,
+    "product_name": "Classic Lambswool Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf, which is classified as an accessory in the given context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 120854,
+    "product_name": "Tartan Car Mats \u2011 Set of 2",
+    "current_core_type": "tartan car mats",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product is related to car accessories rather than homeware. Although the product can be used in a home setting, its primary function is as an automobile accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 121101,
+    "product_name": "Unicorn Rampant Kilt Pin Antique Style",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin which is an accessory typically worn with kilts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 122530,
+    "product_name": "Clan Map Of Ireland",
+    "current_core_type": "picture",
+    "new_core_type": "poster",
+    "product_form": "artwork",
+    "confidence": 0.8,
+    "reasoning": "The product is a printed representation of a map, which aligns well with the 'print' core type. However, considering it's an artwork and given that 'poster' is commonly used for art prints, we choose 'poster'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 122533,
+    "product_name": "Clan Map Of Loch Lomond",
+    "current_core_type": "picture",
+    "new_core_type": "print",
+    "product_form": "artwork",
+    "confidence": 0.8,
+    "reasoning": "The product is described as an 'unique piece of art' which typically refers to a print or graphic reproduction. No hierarchical normalization was needed in this case.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 122577,
+    "product_name": "Cross Stitch Red Squirrel Magnet",
+    "current_core_type": "cross_stitch_kit",
+    "new_core_type": "embroidery_kit",
+    "product_form": "recreation",
+    "confidence": 0.8,
+    "reasoning": "The product 'Cross Stitch Red Squirrel Magnet' is a kit used for embroidery and the product_form is recreation.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 124332,
+    "product_name": "Tartan Design Tea Towel",
+    "current_core_type": "tea towel",
+    "new_core_type": "cushion",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a cotton tea towel used for decorative purposes in the kitchen which can be considered similar to a cushion in terms of homeware accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 124603,
+    "product_name": "Worsted Bow Tie",
+    "current_core_type": "tie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Worsted Bow Tie' is a type of accessory that is typically worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 124735,
+    "product_name": "Tartan Pocket Square, set of 4",
+    "current_core_type": "pocket_square",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Tartan Pocket Square, which is considered an accessory in the given context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 124941,
+    "product_name": "Celtic Loop Scarf Ring",
+    "current_core_type": "ring",
+    "new_core_type": "accessory",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf ring and belongs to the 'accessory' category, as it is not a typical clothing item or a common type of jewellery.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 124948,
+    "product_name": "Celtic Scarf Ring",
+    "current_core_type": "ring",
+    "new_core_type": "accessory",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product 'Celtic Scarf Ring' is a unique combination of an accessory (scarf) and jewellery (ring). The main category it belongs to is accessories.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 125061,
+    "product_name": "Never Ending Knot Hair Bobble",
+    "current_core_type": "bobble",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a unique hair accessory, which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 126192,
+    "product_name": "Custom Tartan Dog Bow Tie",
+    "current_core_type": "dog_bandana",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a dog accessory and the description mentions it adds an accessory to your dog's collar.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 126194,
+    "product_name": "Custom Tartan Dog Bandana",
+    "current_core_type": "dog_bandana",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a bandana for pets, which can be classified as an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 126519,
+    "product_name": "Yorkshire Terrier Pin",
+    "current_core_type": "pin",
+    "new_core_type": "brooch",
+    "product_form": "jewellery",
+    "confidence": 0.8,
+    "reasoning": "The product is a Yorkshire Terrier Pin which is typically worn as an accessory and resembles a brooch. In our taxonomy, brooch is the appropriate core_type for accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 127645,
+    "product_name": "Chrome Finish Thistle Crested Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is not a specific homeware item listed in the rules. However, given its description as a 'letter opener', it falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 128134,
+    "product_name": "Clan Crest Magnetic Bottle Opener",
+    "current_core_type": "magnet",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a bottle opener, which is categorized as an accessory in the given context.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 128977,
+    "product_name": "Clan Crest Sgian Brew",
+    "current_core_type": "bottle_opener",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'highlandwear accessory', which aligns with the 'accessory' category. However, since there isn't an exact match in the provided valid core types for homeware, we choose the most appropriate parent category.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 129014,
+    "product_name": "Clan Crest Thistle Sporran Flask",
+    "current_core_type": "sporran",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Sporran Flask', which is an accessory typically worn with a kilt. The flask itself is not a type of clothing item or garment.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129335,
+    "product_name": "Clan Crest Tea Towel",
+    "current_core_type": "towel",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a tea towel with a clan crest, which is typically an accessory associated with Scottish homeware.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 129376,
+    "product_name": "Tartan Design 500ml Water Bottle",
+    "current_core_type": "water_bottle",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a drink container (water bottle) and the product form is homeware, which includes drink-related items. However, 'water_bottle' is not one of the valid core types for homeware provided. 'drinkware' is a broader category that includes water bottles.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129377,
+    "product_name": "Clan Crest 500ml Water Bottle",
+    "current_core_type": "water bottle",
+    "new_core_type": "flask",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a double-walled insulated bottle that can keep drinks hot or cold, making it most suitable for the 'flask' category. The product form being homeware also supports this classification as flasks are often used for beverages in home settings.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129381,
+    "product_name": "Tartan 500ml Water Bottle",
+    "current_core_type": "water_bottle",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a container for drinks and it does not fit any of the provided homeware categories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129382,
+    "product_name": "Tartan Design Travel Mug",
+    "current_core_type": "mug",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a container designed for holding liquids (travel mug), therefore it falls under the drinkware category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129384,
+    "product_name": "Tartan Travel Mug",
+    "current_core_type": "mug",
+    "new_core_type": "drinkware",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a mug used for drinking beverages, and the product form is homeware which typically includes items related to household or personal use. Although 'mug' was initially provided as the core_type, 'drinkware' is a more general category that encompasses various drink-related items like mugs, glasses, etc.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129389,
+    "product_name": "Tartan Design Shopping Bag",
+    "current_core_type": "shopping_bag",
+    "new_core_type": "tote_bag",
+    "product_form": "bags",
+    "confidence": 0.8,
+    "reasoning": "The product is a large shopping bag used for carrying goods, which falls under the category of tote bags.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129399,
+    "product_name": "Tartan Design Hoodie",
+    "current_core_type": "hoodie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The Tartan Design Hoodie is a clothing item adorned with Scottish designs, and since the main focus of the design is not the hoodie itself but the tartan patterns, it falls under the 'accessory' category. The term 'accessory' encompasses items like sporran, tie, scarf, belt, buckle, which are all worn with clothing.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 129402,
+    "product_name": "Clan Crest Hoodie",
+    "current_core_type": "hoodie",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product description mentions 'sporran' which is an accessory typically worn with clothing.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 129405,
+    "product_name": "Clan Crest Sweatshirt",
+    "current_core_type": "sweatshirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a sweatshirt which falls under the category 'top' as it covers the upper body.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129425,
+    "product_name": "Tartan Design Ceramic Ornament",
+    "current_core_type": "ornament",
+    "new_core_type": "decorative_item",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is an ornament and does not fit into any of the specific homeware categories provided. However, 'decorative_item' seems to be a more suitable category for this type of product.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129426,
+    "product_name": "Clan Crest Ceramic Ornament",
+    "current_core_type": "ornament",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a decorative item typically associated with traditional Scottish attire, making it an accessory.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 129708,
+    "product_name": "Clan Crest Flag",
+    "current_core_type": "flag",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product is a unique clan flag, which can be considered an accessory in the context of homeware. It doesn't fit any specific subcategory of homeware such as flask, quaich, mug, glass, drink_coaster, letter_opener, cushion, or rug.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 129716,
+    "product_name": "Tartan Beach Towel",
+    "current_core_type": "towel",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a towel used for wrapping oneself and it's described as having traditional and comforting qualities, which are typical of accessories. It also fits the product form 'clothing'. However, there isn't a specific subtype defined in the given rules.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 130739,
+    "product_name": "Tartan Sherpa Blanket",
+    "current_core_type": "blanket",
+    "new_core_type": "cushion",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a blanket that serves as seating or decorative purpose, and it fits the category of 'cushion'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 131148,
+    "product_name": "Horn Sgian Brew",
+    "current_core_type": "bottle_opener",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Sgian Dubh, which is traditionally considered an accessory in highlandwear. Its function as a bottle opener also aligns with the definition of accessory.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 131149,
+    "product_name": "Horn Sgian Dubh",
+    "current_core_type": "sgian_dubh",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a traditional Scottish accessory and falls under the category of homeware, but it doesn't fit any of the specific subtypes listed for homeware. 'Sgian Dubh' is often considered an accessory in this context.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 131150,
+    "product_name": "Horn Kilt Pin",
+    "current_core_type": "kilt_pin",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a kilt pin, which falls under the category of accessories in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 131256,
+    "product_name": "6oz Matt Black Hip Flask Lion Rampant",
+    "current_core_type": "flask",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product description mentions it as an 'intricately engraved traditional emblem', which suggests it is a decorative item or accessory rather than a garment. However, without further details about the specific engraving or usage, it's difficult to narrow down the core_type further.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 133055,
+    "product_name": "Premium Tartan Design Men's Crew Neck T\u2011shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a crew neck t-shirt which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 133056,
+    "product_name": "Premium Clan Crest Men's Crew Neck T\u2011shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a type of clothing and is described as a 'crew neck t-shirt'. The term 'shirt' is mentioned in the description, which aligns with our list of valid core types for clothing.",
+    "change_type": "none"
+  },
+  {
+    "product_id": 135160,
+    "product_name": "Premium Clan Crest Women's Crew Neck T\u2011shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a crew neck t-shirt, which falls under the 'top' category in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 143451,
+    "product_name": "Tartan Scrunchie",
+    "current_core_type": "headwear",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Tartan Scrunchie' is not a typical clothing item or homeware product but more of an accessory. It can be worn as an addition to the headwear, making it fall under the 'accessory' category.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 143502,
+    "product_name": "Tartan Boxer Briefs",
+    "current_core_type": "boxer_briefs",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "Boxer briefs are a type of trousers that are designed to be worn underneath outer clothing. They have a design similar to briefs but with an additional front flap and back panel for extra coverage.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 143511,
+    "product_name": "Premium Tartan Sweatshirt",
+    "current_core_type": "sweatshirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "Sweatshirt is a type of top, given it's worn on the upper body.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152533,
+    "product_name": "Classic Tartan Tube Scarf",
+    "current_core_type": "scarf",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a scarf which falls under the category of accessories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152534,
+    "product_name": "Tartan Bandana",
+    "current_core_type": "bandana",
+    "new_core_type": "scarf",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a versatile accessory worn around the neck, which matches the definition of a scarf.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152535,
+    "product_name": "Tartan Short\u2011Sleeved Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a shirt and shirts fall under the category of 'top' in clothing. However, it is not explicitly a tank top or crop top.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152537,
+    "product_name": "Tartan Kids T\u2011Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Kids T-Shirt, which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152539,
+    "product_name": "Tartan Design Kids T\u2011Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Kids crew neck t-shirt, which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152541,
+    "product_name": "Clan Crest Youth T\u2011Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a T-shirt which falls under the 'top' category of clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152543,
+    "product_name": "Tartan Athletic Long Shorts",
+    "current_core_type": "shorts",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name 'Long Shorts' suggests a type of trouser, despite being an unconventional length. In this context, the product can still be classified as trousers.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152544,
+    "product_name": "Tartan Athletic Shorts",
+    "current_core_type": "shorts",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name is 'Tartan Athletic Shorts' and the description mentions 'shorts'. Given that it's a clothing item, 'shorts' falls under the category of 'trousers'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152545,
+    "product_name": "Tartan Mesh Shorts",
+    "current_core_type": "shorts",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a type of tartan patterned short, which can be considered an accessory item worn with clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152546,
+    "product_name": "Tartan Basketball Jersey",
+    "current_core_type": "jersey",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a stylish, comfy vest with a tartan design, which is typically associated with accessories rather than clothing or garments. In this case, 'vest' can be considered a synonym for 'waistcoat', which falls under the category of 'accessory'.",
+    "change_type": "synonym"
+  },
+  {
+    "product_id": 152547,
+    "product_name": "Clan Crest Basketball Jersey",
+    "current_core_type": "jersey",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product's description mentions that it is a vest with your family crest, which suggests an accessory or something worn with clothing but not necessarily a garment. The product form is also 'clothing'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152548,
+    "product_name": "Tartan Design Basketball Jersey",
+    "current_core_type": "jersey",
+    "new_core_type": "shirt",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a basketball jersey, which typically falls under the category of 'shirts' as it is a garment designed for the upper body and often has a specific design for sports.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152549,
+    "product_name": "Tartan Tank Top",
+    "current_core_type": "tank_top",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a Tartan Tank Top which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152555,
+    "product_name": "Mens Tartan Athletic T\u2011Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a T-shirt which falls under the clothing category and can be considered a type of top.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152556,
+    "product_name": "Mens Clan Crest Athletic T\u2011Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a T-shirt and falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152565,
+    "product_name": "Clan Crest Crop Top",
+    "current_core_type": "crop_top",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a crop top that features a tartan and crest, which are traditionally associated with accessories in Scottish clothing. While it's not a direct match, 'crop_top' doesn't have a specific canonical form among the given categories, so we categorize it under 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152567,
+    "product_name": "Womens Tartan Athletic T\u2011Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a t-shirt, which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152568,
+    "product_name": "Womens Clan Crest Athletic T\u2011Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is an athletic T-shirt, which falls under the category of 'tops' in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152569,
+    "product_name": "Womens Tartan Design Athletic T\u2011Shirt",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a T-shirt, which falls under the category of 'tops' in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152570,
+    "product_name": "Womens Tartan Tank Top",
+    "current_core_type": "tank_top",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tank top which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152571,
+    "product_name": "Womens Clan Crest Tank Top",
+    "current_core_type": "tank_top",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a tank top, which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152573,
+    "product_name": "Tartan Long Sleeve Crop Top",
+    "current_core_type": "crop_top",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a long sleeve crop top which falls under the category of tops, despite not being a common type of top.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152574,
+    "product_name": "Clan Crest Long Sleeve Crop Top",
+    "current_core_type": "crop_top",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a long sleeve garment that can be worn for active or casual days, making it fall under the category of 'top'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152575,
+    "product_name": "Tartan Design Long Sleeve Crop Top",
+    "current_core_type": "crop_top",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a long sleeve crop top which falls under the 'top' category in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152576,
+    "product_name": "Tartan Crop Tee",
+    "current_core_type": "shirt",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a crop tee which falls under the category of tops in clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152577,
+    "product_name": "Clan Crest Crop Tee",
+    "current_core_type": "crop_tee",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product features a family tartan and crest, which are often associated with accessories in traditional Scottish clothing. However, the term 'crop tee' suggests it may be a garment rather than an accessory. The context provided does not definitively assign this product to a specific subtype within the accessory category.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 152579,
+    "product_name": "Tartan Leggings",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is leggings which falls under the category of trousers.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152580,
+    "product_name": "Tartan Capri Leggings",
+    "current_core_type": "capri_leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a pair of leggings which fall under the category of trousers as they cover the legs.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152581,
+    "product_name": "Tartan Youth Leggings",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as 'leggings' which falls under the category of 'trousers'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152582,
+    "product_name": "Tartan Kids Leggings",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is leggings which can be considered a subtype of trousers in the clothing category.",
+    "change_type": "hierarchy"
+  },
+  {
+    "product_id": 152583,
+    "product_name": "Tartan Flare Leggings",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Tartan Flare Leggings' are a type of flared trousers, which is a common style in the 'trousers' category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152584,
+    "product_name": "Tartan Plus Size Leggings",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is leggings which are a type of trousers.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152585,
+    "product_name": "Tartan Yoga Capri Leggings",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product name and description suggest 'leggings', which falls under the category of 'trousers'. However, 'Tartan Yoga Capri' is a specific type of trousers.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152586,
+    "product_name": "Tartan Leggings with Pockets",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Tartan Leggings with Pockets' is a type of lower body clothing that resembles trousers in their design and function, despite the tartan pattern which is traditionally associated with kilts.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152587,
+    "product_name": "Tartan Yoga Leggings",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Tartan Yoga Leggings' falls under the category of 'trousers', a type of clothing, as they cover the lower body and are designed to be worn during physical activities.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152588,
+    "product_name": "Tartan Crossover Leggings with Pockets",
+    "current_core_type": "leggings",
+    "new_core_type": "trousers",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product description mentions 'leggings', which is a type of trousers. Although they have pockets and a crossover design, these elements do not change the core type as they are common features in many trousers.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152589,
+    "product_name": "Mens Tartan Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a rash guard that features a tartan design, which is typically associated with accessories in the context of clothing. Although it's not explicitly listed as an accessory type for this product, its unique design suggests it falls under this category.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 152590,
+    "product_name": "Mens Clan Crest Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a rash guard, which is typically considered an accessory for clothing. The presence of the clan crest and tartan pattern also supports this classification.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152592,
+    "product_name": "Womens Tartan Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product 'Womens Tartan Rash Guard' is a protective garment designed for adventure and activities, similar to other tops such as shirts or tank tops.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152593,
+    "product_name": "Womens Clan Crest Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a protective clothing item with an added purpose of displaying unique tartan and crest, which falls under the category 'accessory' in our taxonomy as it serves to enhance or add features to the main clothing piece.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152594,
+    "product_name": "Womens Tartan Design Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a protective clothing item that covers the upper body, similar to a shirt or tank top. However, due to its unique design and association with adventure activities, it can be considered a type of 'tartan top' or 'tartan shirt'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152595,
+    "product_name": "Youth Tartan Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a rash guard, which is typically considered an accessory worn with clothing. However, in this case, it has a tartan pattern usually associated with kilts or other Scottish attire, making it more of an accessory.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152596,
+    "product_name": "Youth Clan Crest Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.7,
+    "reasoning": "The product is a rash guard, which is an accessory often worn with clothing. However, the term 'rash guard' isn't explicitly included in the given valid core types for clothing, so we've classified it as an 'accessory'.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152597,
+    "product_name": "Youth Tartan Design Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is described as a 'Rash Guard' which is an accessory that is worn with clothing, and it features a tartan design that could be associated with Scottish accessories like kilts or sporrans. However, in this case, the rash guard doesn't seem to fit any specific subtype of the given valid core types for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152598,
+    "product_name": "Kids Tartan Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "top",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a protective garment designed for kids' outdoor activities, which aligns with the definition of 'top'. Although not an exact match, it is the closest option available for clothing products.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152599,
+    "product_name": "Kids Clan Crest Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a rash guard, which is an accessory worn with clothing. It features a crest and tartan design that are typically found on Scottish accessories like kilts or sporrans.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152600,
+    "product_name": "Kids Tartan Design Rash Guard",
+    "current_core_type": "rash_guard",
+    "new_core_type": "tops",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "Rash guards are typically considered a type of top in clothing line. Although rash guard is not listed specifically as a subtype, it's an accessory worn with tops.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152603,
+    "product_name": "Tartan High Waisted Bikini",
+    "current_core_type": "bikini",
+    "new_core_type": "skirt",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a bikini bottom which resembles a skirt due to its high-waisted design.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152607,
+    "product_name": "Tartan Duffle Bag",
+    "current_core_type": "duffle_bag",
+    "new_core_type": "tote_bag",
+    "product_form": "bags",
+    "confidence": 0.8,
+    "reasoning": "The product is a bag with a roomy design suitable for gym, travel, or everyday use, which matches the characteristics of tote bags.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152611,
+    "product_name": "Tartan Drawstring Bag",
+    "current_core_type": "drawstring_bag",
+    "new_core_type": "tote_bag",
+    "product_form": "bags",
+    "confidence": 0.8,
+    "reasoning": "The product is a bag that can be used for gym or casual days, and it resembles a tote bag due to its lightweight and casual nature.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152612,
+    "product_name": "Clan Crest Drawstring Bag",
+    "current_core_type": "drawstring_bag",
+    "new_core_type": "tote_bag",
+    "product_form": "bags",
+    "confidence": 0.8,
+    "reasoning": "The product is a bag used for gym or casual days, resembling a tote bag in its description. However, the current core_type 'drawstring_bag' is not an exact match but covers the intended category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152613,
+    "product_name": "Tartan Design Drawstring Bag",
+    "current_core_type": "drawstring_bag",
+    "new_core_type": "tote_bag",
+    "product_form": "bags",
+    "confidence": 0.8,
+    "reasoning": "The product is a bag that can carry multiple items, making it suitable for tote bags.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152800,
+    "product_name": "Tartan Sports Bra",
+    "current_core_type": "sports_bra",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The Tartan Sports Bra is a unique garment that can be considered an accessory due to its distinctive tartan design and potential for everyday wear.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 152816,
+    "product_name": "Tartan Padded Sports Bra",
+    "current_core_type": "sports_bra",
+    "new_core_type": "accessory",
+    "product_form": "clothing",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Tartan Padded Sports Bra', which is an accessory worn with clothing. However, it does not have a specific canonical core type within the given list for clothing.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 153211,
+    "product_name": "Tartan Bum Bag",
+    "current_core_type": "bumbag",
+    "new_core_type": "accessory",
+    "product_form": "bags",
+    "confidence": 0.8,
+    "reasoning": "The product is a 'Tartan Bum Bag', which is an accessory that holds items and can have various designs like tartan. It's not typically considered clothing or a specific bag subtype.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 156261,
+    "product_name": "Tartan Pet Bowl",
+    "current_core_type": "pet_bowl",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a Tartan Pet Bowl which is an accessory for pets. Though it's not explicitly mentioned as a kilt pin, tie, scarf, belt, buckle or sporran in the description, its purpose seems to be related to pet accessories.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 156262,
+    "product_name": "Clan Crest Pet Bowl",
+    "current_core_type": "pet_bowl",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a pet-related item that is not specific to any of the predefined core types for pets (pet_bowl, bandana, treat_bag, collar, lead). It can be considered an accessory due to its unique tartan design which is usually associated with clothing or decorative items. However, since it's designed for pets and their owners, it falls under the 'accessory' category.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 156263,
+    "product_name": "Tartan Design Pet Bowl",
+    "current_core_type": "pet_bowl",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a pet-related accessory, and while it's primarily used for feeding pets, its unique tartan design aligns more with pet-themed accessories such as kilt pins or sporran. Therefore, we categorize it under 'accessory'.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 156270,
+    "product_name": "Tartan Laptop Sleeve",
+    "current_core_type": "laptop_sleeve",
+    "new_core_type": "bag",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Tartan Laptop Sleeve' is a protective case for laptops and is categorized as a bag due to its function of carrying an item. Although not explicitly mentioned in the description, the product's purpose aligns with the characteristics of bags.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 156271,
+    "product_name": "Clan Crest Laptop Sleeve",
+    "current_core_type": "laptop_sleeve",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product 'Clan Crest Laptop Sleeve' is a protective case used for laptops, which falls under the category of accessories in our context.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 156272,
+    "product_name": "Tartan Design Laptop Sleeve",
+    "current_core_type": "laptop_sleeve",
+    "new_core_type": "bag",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a protective case for a laptop, which can be considered as a type of bag. Although not explicitly mentioned in the product name or description, the function of protecting and carrying the laptop aligns with the concept of a bag.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 156273,
+    "product_name": "Tartan Mouse Mat",
+    "current_core_type": "mouse_mat",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a tartan mouse pad which can be considered an accessory for the home. It's not possible to determine a more specific category based on the given description.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 156274,
+    "product_name": "Clan Crest Mouse Mat",
+    "current_core_type": "mouse_mat",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.75,
+    "reasoning": "The product is a mouse mat with a clan crest design, which can be considered as an accessory in the homeware category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 156275,
+    "product_name": "Tartan Design Mouse Mat",
+    "current_core_type": "mouse_mat",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a mouse mat, but it's also an accessory for a computer setup. The term 'mouse mat' does not have a specific canonical form in the provided homeware categories.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157022,
+    "product_name": "Tartan Large Mouse Mat",
+    "current_core_type": "mouse_mat",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a mouse mat which falls under the category of homeware, but it has an accessory-like feature as it shines with unique tartan, making it stylish and functional. However, no specific subtype in 'accessory' category fits this product exactly.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 157023,
+    "product_name": "Clan Crest Large Mouse Mat",
+    "current_core_type": "mouse_mat",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a mouse mat which falls under the homeware category, but its description suggests that it serves as an accessory for gaming or work. The core_type was not found in the provided valid options for homeware; however, since this product does not fit into any of the standard categories (flask, quaich, mug, glass, drink_coaster, letter_opener, cushion, rug), we are classifying it as an accessory.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 157024,
+    "product_name": "Tartan Design Large Mouse Mat",
+    "current_core_type": "mouse_mat",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a mouse mat that is stylish and functional with a tartan design, which can be considered an accessory for the computer setup.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157025,
+    "product_name": "Tartan Place Mat",
+    "current_core_type": "place_mat",
+    "new_core_type": "table_accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a cork-backed tartan place mat, which can be considered a table accessory due to its function and purpose.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157026,
+    "product_name": "Clan Crest Place Mat",
+    "current_core_type": "place_mat",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a Clan Crest Place Mat, which is typically considered an accessory. Although it doesn't perfectly fit into any of the given homeware subtypes, its purpose seems to be decorative and complementary to other table items.",
+    "change_type": "misassignment"
+  },
+  {
+    "product_id": 157027,
+    "product_name": "Tartan Design Place Mat",
+    "current_core_type": "place_mat",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a place mat which falls under the homeware category. However, since there's no direct match for 'place_mat' in the given core types for homeware, we categorize it as an accessory due to its addition to home decor.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157028,
+    "product_name": "Tartan Indoor Door Mat",
+    "current_core_type": "door_mat",
+    "new_core_type": "cushion",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a door mat but it serves the purpose of providing comfort when standing, making it suitable for the 'cushion' category under homeware.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157029,
+    "product_name": "Clan Crest Indoor Door Mat",
+    "current_core_type": "door_mat",
+    "new_core_type": "rug",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a door mat which belongs to the homeware category, and rugs are common types of indoor floor coverings.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157030,
+    "product_name": "Tartan Design Indoor Door Mat",
+    "current_core_type": "door_mat",
+    "new_core_type": "cushion",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is an indoor door mat that serves as a cushioned seating area for guests, making it a suitable match for the 'cushion' core type.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157031,
+    "product_name": "Tartan Bar Runner / Pet Bowl Mat",
+    "current_core_type": "pet_bowl_mat",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.7,
+    "reasoning": "The product is a versatile tartan bar runner or pet bowl mat that can serve multiple purposes such as a runner for decoration and a mat for pets, suggesting it's an accessory rather than a specific subtype like pet_bowl, bandana, collar, lead, or treat_bag.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157032,
+    "product_name": "Clan Crest Bar Runner / Pet Bowl Mat",
+    "current_core_type": "pet_bowl_mat",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.8,
+    "reasoning": "The product is a pet-related item (pet bowl mat) that serves as an accessory for pets. It does not fit into any of the specific categories such as pet_bowl, bandana, treat_bag, collar, or lead.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157033,
+    "product_name": "Tartan Design Bar Runner / Pet Bowl Mat",
+    "current_core_type": "pet_bowl_mat",
+    "new_core_type": "accessory",
+    "product_form": "pets",
+    "confidence": 0.7,
+    "reasoning": "The product is a versatile bar runner or pet bowl mat, which can be considered an accessory for pets.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157034,
+    "product_name": "Tartan Glass Chopping Board",
+    "current_core_type": "chopping_board",
+    "new_core_type": "drink_coaster",
+    "product_form": "homeware",
+    "confidence": 0.7,
+    "reasoning": "The product is a chopping board made of glass, which can also function as a drink coaster when not in use for chopping. However, since it's primarily marketed as a chopping board, the core_type remains 'chopping_board'. But given that it has a potential secondary use as a drink coaster, it aligns more with the 'drink_coaster' category.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157035,
+    "product_name": "Clan Crest Glass Chopping Board",
+    "current_core_type": "chopping_board",
+    "new_core_type": "accessory",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a chopping board which is not a typical item under homeware category. However, since it has a clan crest, a historical reference, and it's used in the kitchen (a part of home), we can categorize it as an accessory for the kitchen.",
+    "change_type": "form_correction"
+  },
+  {
+    "product_id": 157036,
+    "product_name": "Tartan Design Glass Chopping Board",
+    "current_core_type": "chopping_board",
+    "new_core_type": "drink_coaster",
+    "product_form": "homeware",
+    "confidence": 0.8,
+    "reasoning": "The product is a chopping board with a tartan design which can double as a drink coaster when not in use. It's durable and practical like a drink coaster should be.",
+    "change_type": "form_correction"
+  }
+]

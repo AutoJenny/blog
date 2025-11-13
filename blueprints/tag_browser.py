@@ -16,6 +16,7 @@ def extract_all_tags(product_form_filter=None):
     """
     Extract all unique tags from product_type_data, organized by category.
     If product_form_filter is provided, only extract core_types for that form.
+    Note: product_form_filter only affects core_type extraction, not other categories.
     
     Args:
         product_form_filter: Optional product form to filter core types by
@@ -24,22 +25,13 @@ def extract_all_tags(product_form_filter=None):
         Dictionary with category -> list of tags with counts.
     """
     with db_manager.get_cursor() as cursor:
-        # Build query with optional product_form filter
-        if product_form_filter:
-            query = """
-                SELECT product_type_data
-                FROM clan_products
-                WHERE product_type_data IS NOT NULL
-                  AND product_type_data->'disambiguation'->>'product_form' = %s
-            """
-            cursor.execute(query, (product_form_filter,))
-        else:
-            query = """
-                SELECT product_type_data
-                FROM clan_products
-                WHERE product_type_data IS NOT NULL
-            """
-            cursor.execute(query)
+        # Always fetch all products (product_form_filter only affects which core_types we count)
+        query = """
+            SELECT product_type_data
+            FROM clan_products
+            WHERE product_type_data IS NOT NULL
+        """
+        cursor.execute(query)
         
         products = cursor.fetchall()
         
@@ -67,10 +59,23 @@ def extract_all_tags(product_form_filter=None):
                 continue
             
             # Identity & Classification
+            # Only count core_type if product_form_filter matches (or no filter)
             if type_data.get('core_type'):
-                core_type = type_data['core_type']
-                tags['identity_classification']['core_type'][core_type] = \
-                    tags['identity_classification']['core_type'].get(core_type, 0) + 1
+                # Check if product_form_filter applies
+                if product_form_filter:
+                    product_form = None
+                    if type_data.get('disambiguation') and isinstance(type_data['disambiguation'], dict):
+                        product_form = type_data['disambiguation'].get('product_form')
+                    # Only count if product form matches filter
+                    if product_form == product_form_filter:
+                        core_type = type_data['core_type']
+                        tags['identity_classification']['core_type'][core_type] = \
+                            tags['identity_classification']['core_type'].get(core_type, 0) + 1
+                else:
+                    # No filter, count all core types
+                    core_type = type_data['core_type']
+                    tags['identity_classification']['core_type'][core_type] = \
+                        tags['identity_classification']['core_type'].get(core_type, 0) + 1
             
             if type_data.get('subtype'):
                 subtype = type_data['subtype']

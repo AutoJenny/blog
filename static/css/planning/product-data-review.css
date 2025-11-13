@@ -102,6 +102,60 @@ body {
     /* Inherits from .intro-panel */
 }
 
+/* Tags Panel (Right) - Simplified */
+.tags-panel {
+    /* Inherits from .intro-panel */
+}
+
+.tags-group {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+}
+
+.tags-group:last-child {
+    margin-bottom: 0;
+}
+
+.tags-group-name {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.75rem;
+    text-align: center;
+}
+
+.tags-group-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tag-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.tag-label {
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    font-weight: 500;
+    padding-top: 0.25rem;
+}
+
+.tag-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 .category-route {
     margin-bottom: 0.5rem;
 }
