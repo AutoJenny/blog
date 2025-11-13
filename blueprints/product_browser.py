@@ -304,3 +304,88 @@ def api_next_product(product_id):
             'error': str(e)
         }), 500
 
+@bp.route('/api/<int:product_id>/tags', methods=['POST'])
+def api_update_tags(product_id):
+    """Update product tags"""
+    try:
+        update_data = request.get_json()
+        if not update_data:
+            return jsonify({
+                'success': False,
+                'error': 'No update data provided'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get current product_type_data
+            cursor.execute("""
+                SELECT product_type_data
+                FROM clan_products
+                WHERE id = %s
+            """, (product_id,))
+            
+            product = cursor.fetchone()
+            if not product:
+                return jsonify({
+                    'success': False,
+                    'error': 'Product not found'
+                }), 404
+            
+            # Merge update data into existing product_type_data
+            current_data = product['product_type_data'] or {}
+            if not isinstance(current_data, dict):
+                current_data = {}
+            
+            # Update disambiguation (product_form)
+            if 'disambiguation' in update_data:
+                if not current_data.get('disambiguation'):
+                    current_data['disambiguation'] = {}
+                current_data['disambiguation'].update(update_data['disambiguation'])
+                # Remove product_form if set to None
+                if current_data['disambiguation'].get('product_form') is None:
+                    current_data['disambiguation'].pop('product_form', None)
+            
+            # Update core_type
+            if 'core_type' in update_data:
+                if update_data['core_type']:
+                    current_data['core_type'] = update_data['core_type']
+                else:
+                    current_data.pop('core_type', None)
+            
+            # Update subtype
+            if 'subtype' in update_data:
+                if update_data['subtype']:
+                    current_data['subtype'] = update_data['subtype']
+                else:
+                    current_data.pop('subtype', None)
+            
+            # Update array-based tags
+            for tag_type in ['materials', 'patterns', 'decorations', 'occasions', 'styles']:
+                if tag_type in update_data:
+                    if update_data[tag_type] and len(update_data[tag_type]) > 0:
+                        current_data[tag_type] = update_data[tag_type]
+                    else:
+                        current_data.pop(tag_type, None)
+            
+            # Save updated product_type_data
+            cursor.execute("""
+                UPDATE clan_products
+                SET product_type_data = %s
+                WHERE id = %s
+            """, (json.dumps(current_data), product_id))
+            
+            db_manager.get_connection().commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Tags updated successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating tags for product {product_id}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+

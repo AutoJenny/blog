@@ -10182,3 +10182,483 @@ NameError: name 'redirect' is not defined
 2025-11-13 09:41:44,688 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:41:44] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
 2025-11-13 09:41:44,690 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:41:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
 2025-11-13 09:41:44,690 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:41:44] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 09:45:21,011 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:45:21] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-13 09:45:21,012 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:45:21] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-13 09:45:21,014 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:45:21] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-13 09:45:21,015 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:45:21] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-13 09:45:21,015 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:45:21] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-13 09:45:21,015 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:45:21] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-13 09:49:09,829 - config.database - INFO - Database connection established
+2025-11-13 09:49:09,891 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "GET /tags/browser?product_form=recreation HTTP/1.1" 200 -
+2025-11-13 09:49:09,915 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 09:49:09,918 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 09:49:09,920 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 09:49:09,920 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 09:49:09,920 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 09:49:09,921 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 09:49:09,921 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 09:49:09,921 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 09:49:09,923 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:49:09] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 09:49:35,839 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/tag_browser.py', reloading
+2025-11-13 09:49:36,113 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 09:49:36,432 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 09:49:36,451 - config.database - INFO - Database connection established
+2025-11-13 09:49:36,455 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 09:49:36,455 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 09:49:36,455 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 09:49:36,455 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 09:49:36,456 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 09:49:36,456 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 09:49:36,456 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 09:49:37,318 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 09:49:37,327 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 09:49:37,335 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 09:49:37,356 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 09:49:37,368 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 09:50:00,513 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/product_browser.py', reloading
+2025-11-13 09:50:00,775 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 09:50:01,085 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 09:50:01,105 - config.database - INFO - Database connection established
+2025-11-13 09:50:01,107 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 09:50:01,107 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 09:50:01,107 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 09:50:01,108 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 09:50:01,108 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 09:50:01,108 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 09:50:01,108 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 09:50:01,994 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 09:50:02,003 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 09:50:02,011 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 09:50:02,033 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 09:50:02,046 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 09:50:56,975 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/tag_browser.py', reloading
+2025-11-13 09:50:57,250 - werkzeug - INFO -  * Restarting with stat
+2025-11-13 09:50:57,574 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-13 09:50:57,594 - config.database - INFO - Database connection established
+2025-11-13 09:50:57,597 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-13 09:50:57,597 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-13 09:50:57,597 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-13 09:50:57,597 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-13 09:50:57,597 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-13 09:50:57,598 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-13 09:50:57,598 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-13 09:50:58,490 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-13 09:50:58,499 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-13 09:50:58,507 - __main__ - INFO - ✅ Registered preview routes
+2025-11-13 09:50:58,526 - werkzeug - WARNING -  * Debugger is active!
+2025-11-13 09:50:58,536 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-13 09:51:06,598 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-13 09:51:06,599 - faiss.loader - INFO - Loading faiss.
+2025-11-13 09:51:06,626 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-13 09:51:06,632 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 09:51:06,633 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 09:51:06,639 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,652 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,659 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,666 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,673 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,682 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,687 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,691 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,697 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,704 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,712 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,720 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,727 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,736 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,744 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,753 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,761 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,770 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,779 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,788 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,864 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "GET /products/browser?product_id=7157 HTTP/1.1" 200 -
+2025-11-13 09:51:06,927 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,928 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,928 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,930 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,931 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,931 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,933 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,933 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,934 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,935 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 09:51:06,949 - config.database - INFO - Database connection established
+2025-11-13 09:51:06,957 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:06] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-13 09:51:20,791 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 09:51:20,792 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 09:51:20,799 - config.database - INFO - Database connection established
+2025-11-13 09:51:20,804 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:20] "GET /products/api/7157/full HTTP/1.1" 200 -
+2025-11-13 09:51:20,812 - config.database - INFO - Database connection established
+2025-11-13 09:51:20,863 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:51:20] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 09:57:41,764 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 09:57:41,768 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 09:57:41,779 - config.database - INFO - Database connection established
+2025-11-13 09:57:41,796 - config.database - INFO - Database connection established
+2025-11-13 09:57:41,809 - config.database - INFO - Database connection established
+2025-11-13 09:57:41,821 - config.database - INFO - Database connection established
+2025-11-13 09:57:41,832 - config.database - INFO - Database connection established
+2025-11-13 09:57:41,841 - config.database - INFO - Database connection established
+2025-11-13 09:57:41,850 - config.database - INFO - Database connection established
+2025-11-13 09:57:41,859 - config.database - INFO - Database connection established
+2025-11-13 09:57:41,876 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:57:41] "GET /products/browser?product_id=7520 HTTP/1.1" 200 -
+2025-11-13 09:58:14,685 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 09:58:14,686 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 09:58:14,693 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,708 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,717 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,723 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,733 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,742 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,752 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,761 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,770 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,779 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,790 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,798 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,807 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,816 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,825 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,835 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,846 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,856 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,866 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,877 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,899 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "GET /products/browser?product_id=7157 HTTP/1.1" 200 -
+2025-11-13 09:58:14,946 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,949 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,950 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,951 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,951 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,953 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,956 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,957 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,958 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,958 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 09:58:14,973 - config.database - INFO - Database connection established
+2025-11-13 09:58:14,984 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:14] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-13 09:58:16,998 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 09:58:16,999 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 09:58:17,006 - config.database - INFO - Database connection established
+2025-11-13 09:58:17,013 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:17] "GET /products/api/7157/full HTTP/1.1" 200 -
+2025-11-13 09:58:17,023 - config.database - INFO - Database connection established
+2025-11-13 09:58:17,067 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:17] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 09:58:50,456 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:50] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-13 09:58:50,458 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:50] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-13 09:58:50,460 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:50] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-13 09:58:50,461 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:50] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-13 09:58:50,461 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:50] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-13 09:58:50,461 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 09:58:50] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-13 10:06:02,423 - config.database - INFO - Database connection established
+2025-11-13 10:06:02,480 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "GET /tags/browser?product_form=recreation HTTP/1.1" 200 -
+2025-11-13 10:06:02,510 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 10:06:02,512 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:06:02,513 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:06:02,513 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:06:02,513 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:06:02,513 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:06:02,513 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:06:02,516 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:06:02,516 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:06:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,334 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:08:33,335 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:08:33,340 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,351 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,359 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,366 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,373 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,380 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,387 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,392 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,396 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,401 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,405 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,409 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,413 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,417 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,420 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,424 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,427 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,430 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,435 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,439 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,479 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "GET /products/browser?product_id=7157 HTTP/1.1" 200 -
+2025-11-13 10:08:33,525 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,529 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,531 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,531 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,532 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,532 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,532 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,533 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,534 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,534 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:08:33,548 - config.database - INFO - Database connection established
+2025-11-13 10:08:33,559 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:33] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-13 10:08:35,857 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:08:35,857 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:08:35,865 - config.database - INFO - Database connection established
+2025-11-13 10:08:35,868 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:35] "GET /products/api/7157/full HTTP/1.1" 200 -
+2025-11-13 10:08:35,876 - config.database - INFO - Database connection established
+2025-11-13 10:08:35,904 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:08:35] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:10:43,723 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:10:43,725 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:10:43,733 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,752 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,765 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,779 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,791 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,802 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,813 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,825 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,835 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,848 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,860 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,870 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,880 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,891 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,901 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,915 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,928 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,938 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,949 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,960 - config.database - INFO - Database connection established
+2025-11-13 10:10:43,987 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:43] "GET /products/browser?product_id=7157 HTTP/1.1" 200 -
+2025-11-13 10:10:44,052 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,055 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,056 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,056 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,057 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,060 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,061 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,062 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,064 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,066 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:10:44,077 - config.database - INFO - Database connection established
+2025-11-13 10:10:44,090 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:44] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-13 10:10:46,360 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:10:46,361 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:10:46,371 - config.database - INFO - Database connection established
+2025-11-13 10:10:46,379 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:46] "GET /products/api/7157/full HTTP/1.1" 200 -
+2025-11-13 10:10:46,395 - config.database - INFO - Database connection established
+2025-11-13 10:10:46,444 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:10:46] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:11:44,506 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:11:44,509 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:11:44,520 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,539 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,550 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,559 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,569 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,582 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,596 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,607 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,617 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,628 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,639 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,650 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,661 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,672 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,682 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,694 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,705 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,715 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,727 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,738 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,760 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "GET /products/browser?product_id=7157 HTTP/1.1" 200 -
+2025-11-13 10:11:44,821 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,823 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,824 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,825 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,825 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,825 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,827 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,830 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,832 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,833 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:11:44,845 - config.database - INFO - Database connection established
+2025-11-13 10:11:44,859 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:44] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-13 10:11:46,474 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:11:46,475 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:11:46,481 - config.database - INFO - Database connection established
+2025-11-13 10:11:46,486 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:46] "GET /products/api/7157/full HTTP/1.1" 200 -
+2025-11-13 10:11:46,495 - config.database - INFO - Database connection established
+2025-11-13 10:11:46,525 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:11:46] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:12:02,513 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:12:02,514 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:12:02,526 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,542 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,552 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,564 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,579 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,591 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,603 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,614 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,627 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,639 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,653 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,666 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,679 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,691 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,700 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,711 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,722 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,733 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,745 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,758 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,778 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "GET /products/browser?product_id=7157 HTTP/1.1" 200 -
+2025-11-13 10:12:02,853 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,856 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,857 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,857 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,857 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,858 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,858 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,863 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,864 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,865 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:12:02,877 - config.database - INFO - Database connection established
+2025-11-13 10:12:02,890 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:02] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-13 10:12:04,577 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:12:04,578 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:12:04,587 - config.database - INFO - Database connection established
+2025-11-13 10:12:04,593 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:04] "GET /products/api/7157/full HTTP/1.1" 200 -
+2025-11-13 10:12:04,606 - config.database - INFO - Database connection established
+2025-11-13 10:12:04,650 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:04] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:12:36,265 - config.database - INFO - Database connection established
+2025-11-13 10:12:36,310 - config.database - INFO - Database connection established
+2025-11-13 10:12:36,325 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "GET /tags/browser?category=subtype&tag=dress HTTP/1.1" 200 -
+2025-11-13 10:12:36,334 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:36,336 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:36,336 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:36,338 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/css/tags/browser.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:36,338 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:36,339 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:36,341 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:36,341 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:36,342 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,009 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:12:45,009 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:12:45,015 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,026 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,035 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,042 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,048 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,055 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,062 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,067 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,072 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,078 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,083 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,087 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,095 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "GET /products/browser?product_id=1013 HTTP/1.1" 200 -
+2025-11-13 10:12:45,111 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,112 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,113 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,114 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,114 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,114 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,114 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,116 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,117 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,117 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:12:45,155 - config.database - INFO - Database connection established
+2025-11-13 10:12:45,166 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:45] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-13 10:12:48,413 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:12:48,414 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:12:48,425 - config.database - INFO - Database connection established
+2025-11-13 10:12:48,433 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:48] "GET /products/api/1013/full HTTP/1.1" 200 -
+2025-11-13 10:12:48,449 - config.database - INFO - Database connection established
+2025-11-13 10:12:48,505 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:12:48] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:13:17,755 - config.database - INFO - Database connection established
+2025-11-13 10:13:17,772 - config.database - INFO - Database connection established
+2025-11-13 10:13:17,773 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:13:17] "POST /products/api/1013/tags HTTP/1.1" 200 -
+2025-11-13 10:13:20,232 - config.database - INFO - Database connection established
+2025-11-13 10:13:20,251 - config.database - INFO - Database connection established
+2025-11-13 10:13:20,251 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:13:20] "POST /products/api/1013/tags HTTP/1.1" 200 -
+2025-11-13 10:13:26,022 - config.database - INFO - Database connection established
+2025-11-13 10:13:26,039 - config.database - INFO - Database connection established
+2025-11-13 10:13:26,040 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:13:26] "POST /products/api/1013/tags HTTP/1.1" 200 -
+2025-11-13 10:13:42,713 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:13:42,715 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:13:42,725 - config.database - INFO - Database connection established
+2025-11-13 10:13:42,733 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:13:42] "GET /products/api/1013/full HTTP/1.1" 200 -
+2025-11-13 10:13:42,745 - config.database - INFO - Database connection established
+2025-11-13 10:13:42,803 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:13:42] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:13:46,953 - config.database - INFO - Database connection established
+2025-11-13 10:13:46,978 - config.database - INFO - Database connection established
+2025-11-13 10:13:46,979 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:13:46] "POST /products/api/1013/tags HTTP/1.1" 200 -
+2025-11-13 10:14:24,829 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:14:24,832 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:14:24,845 - config.database - INFO - Database connection established
+2025-11-13 10:14:24,855 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:14:24] "GET /products/api/1013/full HTTP/1.1" 200 -
+2025-11-13 10:14:24,867 - config.database - INFO - Database connection established
+2025-11-13 10:14:24,965 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:14:24] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:28:21,984 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:28:21,985 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:28:21,994 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,011 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,023 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,031 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,044 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,056 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,065 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,074 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,086 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,097 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,108 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,120 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,144 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "GET /products/browser?product_id=1013 HTTP/1.1" 200 -
+2025-11-13 10:28:22,180 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,182 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,184 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,184 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,187 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,188 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,190 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,192 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,193 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,194 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:28:22,214 - config.database - INFO - Database connection established
+2025-11-13 10:28:22,224 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:22] "GET /products/api/list HTTP/1.1" 200 -
+2025-11-13 10:28:25,797 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:28:25,798 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:28:25,808 - config.database - INFO - Database connection established
+2025-11-13 10:28:25,818 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:25] "GET /products/api/1013/full HTTP/1.1" 200 -
+2025-11-13 10:28:25,832 - config.database - INFO - Database connection established
+2025-11-13 10:28:25,883 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:25] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:28:37,913 - config.database - INFO - Database connection established
+2025-11-13 10:28:37,936 - config.database - INFO - Database connection established
+2025-11-13 10:28:37,936 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:37] "POST /products/api/1013/tags HTTP/1.1" 200 -
+2025-11-13 10:28:37,941 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:28:37,942 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:28:37,948 - config.database - INFO - Database connection established
+2025-11-13 10:28:37,953 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:37] "GET /products/api/1013/full HTTP/1.1" 200 -
+2025-11-13 10:28:37,962 - config.database - INFO - Database connection established
+2025-11-13 10:28:37,991 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:28:37] "GET /tags/api/all HTTP/1.1" 200 -
+2025-11-13 10:52:46,008 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-13 10:52:46,011 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2112 chunks
+2025-11-13 10:52:46,020 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,034 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,048 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,060 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,071 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,082 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,092 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,102 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,115 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,128 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,139 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,151 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,229 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "GET /products/browser?product_id=1013 HTTP/1.1" 200 -
+2025-11-13 10:52:46,265 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/css/planning/content-generator-modal.css HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,268 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,269 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,270 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,270 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,270 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/css/planning/product-data-review.css HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,271 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,273 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,274 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,275 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-13 10:52:46,290 - config.database - INFO - Database connection established
+2025-11-13 10:52:46,298 - werkzeug - INFO - 127.0.0.1 - - [13/Nov/2025 10:52:46] "GET /products/api/list HTTP/1.1" 200 -

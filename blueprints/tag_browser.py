@@ -284,3 +284,19 @@ def api_products():
             'error': str(e)
         }), 500
 
+@bp.route('/api/all')
+def api_all_tags():
+    """Get all available tags organized by category"""
+    try:
+        all_tags = extract_all_tags()
+        return jsonify({
+            'success': True,
+            'tags': all_tags
+        })
+    except Exception as e:
+        logger.error(f"Error fetching all tags: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
