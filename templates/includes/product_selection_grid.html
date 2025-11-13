@@ -1,0 +1,45 @@
+{# Product Selection Grid Include #}
+{# Reusable product grid with selection checkboxes #}
+{# Requires: products (list of product dicts), selected_ids (set of selected product IDs) #}
+
+<div class="products-grid" id="product-selection-grid">
+    {% for product in products %}
+    <div class="product-card" data-product-id="{{ product.id }}">
+        <div class="product-checkbox-wrapper">
+            <input type="checkbox" 
+                   class="product-checkbox" 
+                   id="product-checkbox-{{ product.id }}"
+                   data-product-id="{{ product.id }}"
+                   {% if product.id in selected_ids %}checked{% endif %}>
+            <label for="product-checkbox-{{ product.id }}" class="product-checkbox-label"></label>
+        </div>
+        <a href="{{ url_for('product_browser.browser', product_id=product.id) }}" 
+           class="product-link" 
+           target="_blank">
+            <div class="product-image">
+                {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+                {% else %}
+                <div class="product-image-placeholder">
+                    <i class="fa-solid fa-image"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <h3 class="product-name">{{ product.name }}</h3>
+                <p class="product-sku">SKU: {{ product.sku }}</p>
+                {% if product.price %}
+                <p class="product-price">£{{ "%.2f"|format(product.price) }}</p>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if products|length == 0 %}
+<div class="no-products-message">
+    <p>No products found. Try searching or selecting a tag.</p>
+</div>
+{% endif %}
+

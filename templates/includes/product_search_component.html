@@ -1,0 +1,327 @@
+{# Product Search Component Include #}
+{# Standalone reusable component for product search (Search Products and Smart Search) #}
+{# Includes all HTML, JavaScript, and CSS #}
+
+<!-- Product Search Component -->
+<div class="product-search-component">
+    <div class="content-generator-search-row">
+        <div class="content-generator-form-group">
+            <label for="content-generator-product-search" class="content-generator-label required">Search Products</label>
+            <input type="text" id="content-generator-product-search" class="content-generator-input" 
+                   placeholder="Search by product name, SKU, or producer...">
+            <div id="content-generator-product-search-results" class="search-results"></div>
+        </div>
+        
+        <div class="content-generator-form-group">
+            <label for="content-generator-product-smart-search" class="content-generator-label">
+                <i class="fas fa-lightbulb"></i> Smart Search
+            </label>
+            <input type="text" id="content-generator-product-smart-search" class="content-generator-input" 
+                   placeholder="Search by meaning...">
+            <div id="content-generator-product-smart-search-results" class="search-results"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Product Search Component JavaScript
+(function() {
+    'use strict';
+    
+    // Initialize product search functionality
+    function initializeProductSearch() {
+        // Product search - attach event listener
+        const productSearch = document.getElementById('content-generator-product-search');
+        if (productSearch) {
+            let searchTimeout;
+            productSearch.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+                if (query.length >= 2) {
+                    searchTimeout = setTimeout(() => {
+                        searchProducts(query);
+                    }, 300);
+                } else {
+                    // Clear results if query is too short
+                    const resultsDiv = document.getElementById('content-generator-product-search-results');
+                    if (resultsDiv) resultsDiv.innerHTML = '';
+                }
+            });
+            
+            // Also add a keypress handler for Enter key
+            productSearch.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    const query = e.target.value.trim();
+                    if (query.length >= 2) {
+                        searchProducts(query);
+                    }
+                }
+            });
+        }
+        
+        // Smart search (semantic) - attach event listener
+        const smartSearch = document.getElementById('content-generator-product-smart-search');
+        if (smartSearch) {
+            let smartSearchTimeout;
+            smartSearch.addEventListener('input', (e) => {
+                clearTimeout(smartSearchTimeout);
+                const query = e.target.value.trim();
+                if (query.length >= 3) {
+                    smartSearchTimeout = setTimeout(() => {
+                        searchProductsSemantic(query);
+                    }, 500);
+                } else {
+                    const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+                    if (resultsDiv) resultsDiv.innerHTML = '';
+                }
+            });
+            
+            smartSearch.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(smartSearchTimeout);
+                    const query = e.target.value.trim();
+                    if (query.length >= 3) {
+                        searchProductsSemantic(query);
+                    }
+                }
+            });
+        }
+    }
+    
+    // Search products function
+    // Check for global override first (for tag editor page)
+    async function searchProducts(query) {
+        // If there's a global override, use it instead
+        if (typeof window.searchProducts === 'function' && window.searchProducts !== searchProducts) {
+            return await window.searchProducts(query);
+        }
+        
+        try {
+            const response = await fetch(`/products/api/search?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            const resultsDiv = document.getElementById('content-generator-product-search-results');
+            if (!resultsDiv) return;
+            
+            if (data.success && data.products && data.products.length > 0) {
+                let html = '<div class="search-results-list">';
+                data.products.slice(0, 10).forEach(product => {
+                    html += `
+                        <div class="search-result-item" data-product-id="${product.id}" onclick="window.productSearchSelectProduct(${product.id}, '${product.name.replace(/'/g, "\\'")}')">
+                            <strong>${product.name}</strong>
+                            ${product.sku ? `<span class="search-result-sku">SKU: ${product.sku}</span>` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.innerHTML = '<div class="search-no-results">No products found</div>';
+            }
+        } catch (error) {
+            console.error('Error searching products:', error);
+            const resultsDiv = document.getElementById('content-generator-product-search-results');
+            if (resultsDiv) resultsDiv.innerHTML = '<div class="search-error">Error searching products</div>';
+        }
+    }
+    
+    // Semantic search function
+    // Check for global override first (for tag editor page)
+    async function searchProductsSemantic(query) {
+        // If there's a global override, use it instead
+        if (typeof window.searchProductsSemantic === 'function' && window.searchProductsSemantic !== searchProductsSemantic) {
+            return await window.searchProductsSemantic(query);
+        }
+        
+        try {
+            const response = await fetch('/api/products/semantic-search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            });
+            const data = await response.json();
+            
+            const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+            if (!resultsDiv) return;
+            
+            if (data.success && data.results && data.results.length > 0) {
+                let html = '<div class="search-results-list">';
+                data.results.slice(0, 10).forEach(product => {
+                    const escapedName = (product.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    html += `
+                        <div class="search-result-item" data-product-id="${product.id}" onclick="window.productSearchSelectProduct(${product.id}, '${escapedName}')" style="cursor: pointer; padding: 8px; border-bottom: 1px solid #334155;">
+                            <strong style="color: #f1f5f9;">${product.name || 'Unnamed Product'}</strong>
+                            ${product.sku ? `<br><small style="color: #94a3b8;">SKU: ${product.sku}</small>` : ''}
+                            ${product.relevance_score ? `<br><small style="color: #8b5cf6;">Relevance: ${(product.relevance_score * 100).toFixed(0)}%</small>` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.innerHTML = '<div class="search-no-results" style="color: #94a3b8; padding: 8px;">No products found</div>';
+            }
+        } catch (error) {
+            console.error('Error in semantic product search:', error);
+            const resultsDiv = document.getElementById('content-generator-product-smart-search-results');
+            if (resultsDiv) resultsDiv.innerHTML = '<div class="search-error" style="color: #ef4444; padding: 8px;">Error searching products</div>';
+        }
+    }
+    
+    // Clear search results
+    function clearSearchResults() {
+        const searchResults = document.getElementById('content-generator-product-search-results');
+        const smartSearchResults = document.getElementById('content-generator-product-smart-search-results');
+        const searchInput = document.getElementById('content-generator-product-search');
+        const smartSearchInput = document.getElementById('content-generator-product-smart-search');
+        
+        if (searchResults) searchResults.innerHTML = '';
+        if (smartSearchResults) smartSearchResults.innerHTML = '';
+        if (searchInput) searchInput.value = '';
+        if (smartSearchInput) smartSearchInput.value = '';
+    }
+    
+    // Expose functions globally for onclick handlers
+    window.productSearchSelectProduct = function(productId, productName) {
+        // Default handler - can be overridden by parent page
+        if (window.onProductSearchSelect && typeof window.onProductSearchSelect === 'function') {
+            window.onProductSearchSelect(productId, productName);
+        }
+        clearSearchResults();
+    };
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeProductSearch);
+    } else {
+        initializeProductSearch();
+    }
+})();
+</script>
+
+<style>
+/* Product Search Component Styles */
+.product-search-component {
+    width: 100%;
+}
+
+.content-generator-search-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.content-generator-form-group {
+    position: relative;
+}
+
+.content-generator-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.content-generator-label.required::after {
+    content: ' *';
+    color: #ef4444;
+}
+
+.content-generator-label i {
+    margin-right: 0.5rem;
+    color: #8b5cf6;
+}
+
+.content-generator-input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.content-generator-input::placeholder {
+    color: #94a3b8;
+}
+
+.content-generator-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    margin-top: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.search-results-list {
+    padding: 4px;
+}
+
+.search-result-item {
+    padding: 8px;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: #334155;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item strong {
+    color: #f1f5f9;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.search-result-sku {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.search-no-results,
+.search-error {
+    padding: 12px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+.search-error {
+    color: #ef4444;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .content-generator-search-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
