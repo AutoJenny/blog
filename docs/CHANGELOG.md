@@ -1,5 +1,19 @@
 # Changelog
 
+## 2025-01-XX - Product Tag Editor Enhancements
+
+### Fixed
+- **Title Filter**: Fixed title filter to work on currently displayed products with Enter key support
+- **Product Count Display**: Fixed spacing in "products selected" text and count accuracy
+- **Page Load**: Fixed automatic product loading on page initialization
+- **API Endpoint**: Fixed `/products/tag-editor/api/search` to accept '*' query for fetching all products
+
+### Improved
+- Added `applyTitleFilterToCurrentProducts()` function for client-side filtering
+- Improved title filter integration with other filters (search, category, tags)
+- Increased pagination limit to 10000 products for better coverage
+- Enhanced selected product count to reflect actual displayed products
+
 ## 2025-11-11 - Knowledge Base Integration
 
 ### Added
