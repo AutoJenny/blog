@@ -210,6 +210,10 @@ def create_app(config_name=None):
     from blueprints.product_browser import bp as product_browser_bp
     app.register_blueprint(product_browser_bp)
     
+    # Register product tag editor blueprint
+    from blueprints.product_tag_editor import bp as product_tag_editor_bp
+    app.register_blueprint(product_tag_editor_bp)
+    
     # Register KB browser blueprint
     from blueprints.kb_browser import bp as kb_browser_bp
     app.register_blueprint(kb_browser_bp)
