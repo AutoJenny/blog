@@ -12,9 +12,53 @@ class ModelSelectionPanel {
         console.log('[Model Selection] Initializing model selection panel');
         
         this.setupEventListeners();
+        this.setupAccordion();
         this.loadModelSpecs().then(() => {
             this.loadSavedConfiguration();
         });
+    }
+
+    setupAccordion() {
+        this.restoreAccordionState();
+    }
+
+    restoreAccordionState() {
+        const savedState = sessionStorage.getItem('model-selection-accordion-state');
+        const content = document.getElementById('model-selection-accordion-content');
+        const icon = document.getElementById('model-selection-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+    }
+
+    toggleAccordion() {
+        const content = document.getElementById('model-selection-accordion-content');
+        const icon = document.getElementById('model-selection-accordion-icon');
+        
+        if (!content || !icon) return;
+        
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
+        
+        if (isCollapsed) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            sessionStorage.setItem('model-selection-accordion-state', 'open');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            sessionStorage.setItem('model-selection-accordion-state', 'closed');
+        }
     }
 
     async loadModelSpecs() {
@@ -80,11 +124,7 @@ class ModelSelectionPanel {
             });
         }
         
-        // Generate button handler
-        const generateBtn = document.getElementById('generate-image-btn');
-        if (generateBtn) {
-            generateBtn.addEventListener('click', () => this.handleGenerateImage());
-        }
+        // Generate button handler - removed (handled by image-generation-handler.js)
     }
 
     updateModelParameters() {
@@ -215,167 +255,14 @@ class ModelSelectionPanel {
     }
 
     async handleGenerateImage() {
-        console.log('[Model Selection] Generate image button clicked');
-        
-        // Check if a section is selected
-        if (!window.currentSectionId) {
-            alert('Please select a section first');
-            return;
-        }
-        
-        // Collect current parameters
-        this.collectParameters();
-        
-        try {
-            // Disable button during generation
-            const generateBtn = document.getElementById('generate-image-btn');
-            if (generateBtn) {
-                generateBtn.disabled = true;
-                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-            }
-            
-            // Call the imaging API to generate image with retry logic
-            const data = await this.generateImageWithRetry();
-            
-            if (data.success) {
-                console.log('[Model Selection] Image generated successfully');
-                console.log('[Model Selection] Debug info:', data.debug_info);
-                
-                // Update output panel with new image
-                if (window.imagingOutputPanel) {
-                    window.imagingOutputPanel.onImageGenerated({ 
-                        image_path: data.image_path,
-                        debug_info: data.debug_info,
-                        generation_time_ms: data.generation_time_ms
-                    });
-                }
-                
-                // Show success message with renderer info
-                const source = data.debug_info?.source || 'unknown';
-                const charCount = data.debug_info?.char_count || 0;
-                const maxChars = data.debug_info?.max_chars || 0;
-                
-                alert(`Image generated successfully!\n\nRenderer: ${source}\nPrompt length: ${charCount}/${maxChars} chars\nGeneration time: ${data.generation_time_ms}ms`);
-                
-                // Emit event to update sections panel status
-                const imageGeneratedEvent = new CustomEvent('imageGenerated', {
-                    detail: {
-                        sectionId: window.currentSectionId,
-                        success: true,
-                        imagePath: data.image_path,
-                        generationTime: data.generation_time_ms
-                    }
-                });
-                document.dispatchEvent(imageGeneratedEvent);
-            } else {
-                throw new Error(data.error || 'Failed to generate image');
-            }
-            
-        } catch (error) {
-            console.error('[Model Selection] Error generating image:', error);
-            
-            // Provide more helpful error messages
-            let errorMessage = 'Error generating image: ';
-            if (error.message.includes('timeout')) {
-                errorMessage += 'The image generation is taking longer than expected. This might be due to high demand on the image generation service. Please try again in a moment.';
-            } else if (error.message.includes('rate limit')) {
-                errorMessage += 'Too many requests. Please wait a moment before trying again.';
-            } else if (error.message.includes('network')) {
-                errorMessage += 'Network connection issue. Please check your internet connection and try again.';
-            } else {
-                errorMessage += error.message;
-            }
-            
-            alert(errorMessage);
-            
-            // Emit event to update sections panel status for error
-            const imageGeneratedEvent = new CustomEvent('imageGenerated', {
-                detail: {
-                    sectionId: window.currentSectionId,
-                    success: false,
-                    error: error.message
-                }
-            });
-            document.dispatchEvent(imageGeneratedEvent);
-        } finally {
-            // Re-enable button
-            const generateBtn = document.getElementById('generate-image-btn');
-            if (generateBtn) {
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Image';
-            }
-        }
+        // Image generation - REMOVED
+        alert('Image generation has been removed');
+        return;
     }
     
     async generateImageWithRetry(maxRetries = 3) {
-        const endpoint = `/imaging/api/image-generation/posts/${window.postId}/sections/${window.currentSectionId}/generate-image`;
-        const requestBody = {
-            model_name: this.currentModel,
-            parameters: this.parameters,
-            use_renderer: true
-        };
-        
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                console.log(`[Model Selection] Attempt ${attempt}/${maxRetries} - Generating image...`);
-                
-                // Update button text to show retry attempt
-                const generateBtn = document.getElementById('generate-image-btn');
-                if (generateBtn && attempt > 1) {
-                    generateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Retrying... (${attempt}/${maxRetries})`;
-                }
-                
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                // Check if response is HTML (404 error page)
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('text/html')) {
-                    throw new Error('Image generation API not implemented yet. Please check backend implementation.');
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    console.log(`[Model Selection] Image generated successfully on attempt ${attempt}`);
-                    return data;
-                } else {
-                    // Check if this is a retryable error
-                    const errorMsg = data.error || 'Failed to generate image';
-                    if (this.isRetryableError(errorMsg)) {
-                        console.log(`[Model Selection] Retryable error on attempt ${attempt}: ${errorMsg}`);
-                        if (attempt < maxRetries) {
-                            const delay = this.getRetryDelay(attempt);
-                            console.log(`[Model Selection] Waiting ${delay}ms before retry...`);
-                            await this.sleep(delay);
-                            continue;
-                        }
-                    }
-                    throw new Error(errorMsg);
-                }
-                
-            } catch (error) {
-                console.log(`[Model Selection] Attempt ${attempt} failed:`, error.message);
-                
-                // Check if this is a retryable error
-                if (this.isRetryableError(error.message) && attempt < maxRetries) {
-                    const delay = this.getRetryDelay(attempt);
-                    console.log(`[Model Selection] Retryable error, waiting ${delay}ms before retry...`);
-                    await this.sleep(delay);
-                    continue;
-                }
-                
-                // If this is the last attempt or non-retryable error, throw it
-                throw error;
-            }
-        }
-        
-        throw new Error('Max retries exceeded');
+        // Image generation - REMOVED
+        throw new Error('Image generation has been removed');
     }
     
     isRetryableError(errorMessage) {

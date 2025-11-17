@@ -1,58 +1,7 @@
 /**
  * Styles Panel CSS - Self-contained styling for post-wide image styles management
- * Follows the same pattern as other authoring panels
+ * Panel container, header, and content use base styling from authoring-workspace.css
  */
-
-.styles-panel {
-    background: #1e293b;
-    border: 1px solid #475569;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-}
-
-.styles-panel .panel-header {
-    background: #0f172a;
-    color: #e2e8f0;
-    padding: 0.75rem 1rem;
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    border-bottom: 1px solid #475569;
-    border-radius: 8px 8px 0 0;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.2s ease;
-}
-
-.styles-panel .panel-header:hover {
-    background: #1e293b;
-}
-
-.styles-panel .panel-header h4 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.styles-panel .panel-name-green {
-    color: #10b981;
-}
-
-.styles-panel .header-actions {
-    display: flex;
-    align-items: center;
-}
-
-.styles-panel .header-actions i {
-    color: #94a3b8;
-    transition: color 0.2s ease;
-}
-
-.styles-panel .panel-content {
-    padding: 1rem;
-}
 
 .style-row {
     display: flex;

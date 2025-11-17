@@ -27,9 +27,8 @@
     }
     {% endif %}
     </script>
-    {% include 'shared/blog_pipeline_header.html' %}
     
-    {% block process_content %}
+    {% set process_content_html %}
     <div class="page-main">
         <div class="ideas-main">
         <!-- Category Indicator Banner -->
@@ -92,7 +91,6 @@
             </div>
         </div>
     </div>
-    {% endblock %}
 </div>
 
 <style>
@@ -638,6 +636,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
         </div>
     </div>
-    {% endblock %}
+    {% endset %}
+    
+    {% include 'shared/blog_pipeline_header.html' %}
 </div>
 {% endblock %}

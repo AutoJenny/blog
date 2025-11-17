@@ -19,7 +19,7 @@ class ContextPanel {
 
     init() {
         this.setupEventListeners();
-        this.restoreAccordionState();
+        this.setupAccordion();
     }
 
     setupEventListeners() {
@@ -197,16 +197,46 @@ class ContextPanel {
         }
     }
 
+    setupAccordion() {
+        this.restoreAccordionState();
+    }
+
     restoreAccordionState() {
-        const savedState = localStorage.getItem('context-accordion-state');
-        if (savedState === 'open') {
-            const content = document.getElementById('context-accordion-content');
-            const icon = document.getElementById('context-accordion-icon');
-            if (content && icon) {
+        const savedState = sessionStorage.getItem('context-accordion-state');
+        const content = document.getElementById('context-accordion-content');
+        const icon = document.getElementById('context-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
                 content.style.display = 'block';
                 icon.classList.remove('fa-chevron-up');
                 icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
             }
+        }
+    }
+
+    toggleAccordion() {
+        const content = document.getElementById('context-accordion-content');
+        const icon = document.getElementById('context-accordion-icon');
+        
+        if (!content || !icon) return;
+        
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
+        
+        if (isCollapsed) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            sessionStorage.setItem('context-accordion-state', 'open');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            sessionStorage.setItem('context-accordion-state', 'closed');
         }
     }
 

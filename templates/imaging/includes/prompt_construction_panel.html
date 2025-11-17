@@ -15,6 +15,18 @@
     </div>
     
     <div class="panel-content" id="prompt-accordion-content" style="display: none;">
+        <!-- Image Orientation Checkboxes -->
+        <div id="image-orientation-controls" style="padding: 0.75rem; border-bottom: 1px solid #334155; margin-bottom: 0.75rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; color: #e2e8f0; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                <input type="checkbox" id="landscape-checkbox" checked style="cursor: pointer;">
+                <span>Landscape</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; color: #e2e8f0; font-size: 0.9rem;">
+                <input type="checkbox" id="portrait-checkbox" checked style="cursor: pointer;">
+                <span>Portrait</span>
+            </label>
+        </div>
+        
         <!-- Generated Prompts Display -->
         <div id="generated-prompts-container">
             <div class="no-selection-message">

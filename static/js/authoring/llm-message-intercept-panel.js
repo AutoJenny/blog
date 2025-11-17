@@ -16,6 +16,7 @@ class LLMMessageInterceptPanel {
     init() {
         this.bindElements();
         this.setupEventListeners();
+        this.setupAccordion();
         this.updateStatus('No message ready', false);
         this.loadAllSectionsLLMData(); // Load LLM data for all sections on init
         
@@ -23,6 +24,49 @@ class LLMMessageInterceptPanel {
         setTimeout(() => {
             this.autoLoadCurrentSectionData();
         }, 1000);
+    }
+
+    setupAccordion() {
+        this.restoreAccordionState();
+    }
+
+    restoreAccordionState() {
+        const savedState = sessionStorage.getItem('llm-message-accordion-state');
+        const content = document.getElementById('llm-message-accordion-content');
+        const icon = document.getElementById('llm-message-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+    }
+
+    toggleAccordion() {
+        const content = document.getElementById('llm-message-accordion-content');
+        const icon = document.getElementById('llm-message-accordion-icon');
+        
+        if (!content || !icon) return;
+        
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
+        
+        if (isCollapsed) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            sessionStorage.setItem('llm-message-accordion-state', 'open');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            sessionStorage.setItem('llm-message-accordion-state', 'closed');
+        }
     }
     
     bindElements() {

@@ -15,66 +15,161 @@ class ImageGenerationHandler {
 
     setupEventListeners() {
         // Listen for section selection changes
-        document.addEventListener('sectionSelected', (event) => {
+        const sectionHandler = (event) => {
             this.currentSectionId = event.detail.sectionId;
+            window.currentSectionId = event.detail.sectionId;
             console.log('[Image Generation Handler] Section selected:', this.currentSectionId);
-            // Attempt to show any existing generated image for this section immediately
-            this.displayExistingIfAny();
-        });
+        };
+        document.addEventListener('sectionSelected', sectionHandler);
 
-        // Set up generate button
+        // Set up generate button - remove any existing listeners first
         const generateBtn = document.getElementById('generate-image-btn');
         if (generateBtn) {
-            generateBtn.addEventListener('click', () => this.handleGenerateImage());
+            // Remove all existing listeners by cloning
+            const newBtn = generateBtn.cloneNode(true);
+            generateBtn.parentNode.replaceChild(newBtn, generateBtn);
+            
+            // Add single listener with preventDefault and stopPropagation
+            newBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                if (!this._handlingClick) {
+                    this._handlingClick = true;
+                    this.handleGenerateImage().finally(() => {
+                        this._handlingClick = false;
+                    });
+                }
+            }, true); // Use capture phase
         }
     }
 
-    async handleGenerateImage() {
-        if (!this.currentSectionId) {
-            this.showError('Please select a section first');
+    showTransientMessage(message, duration = 3000) {
+        // Remove any existing transient message
+        const existing = document.getElementById('transient-message');
+        if (existing) {
+            existing.remove();
+        }
+        
+        // Create new transient message
+        const msg = document.createElement('div');
+        msg.id = 'transient-message';
+        msg.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            font-size: 0.9rem;
+            max-width: 400px;
+        `;
+        msg.textContent = message;
+        document.body.appendChild(msg);
+        
+        // Auto-remove after duration
+        setTimeout(() => {
+            if (msg.parentNode) {
+                msg.parentNode.removeChild(msg);
+            }
+        }, duration);
+    }
+
+    async handleGenerateImage(sectionId = null) {
+        // Get current section ID from parameter, window or event listener
+        const targetSectionId = sectionId || this.currentSectionId || window.currentSectionId;
+        
+        if (!targetSectionId) {
+            this.showTransientMessage('Please select a section first', 2000);
             return;
         }
 
+        // Get checkbox states
+        const landscapeChecked = document.getElementById('landscape-checkbox')?.checked ?? true;
+        const portraitChecked = document.getElementById('portrait-checkbox')?.checked ?? true;
+
+        if (!landscapeChecked && !portraitChecked) {
+            this.showTransientMessage('Please select at least one orientation (Landscape or Portrait)', 2000);
+            return;
+        }
+
+        // Get model and parameters from Model Selection Panel
+        let model_name = 'gpt-image-1';
+        let parameters = {};
+        
+        if (window.modelSelectionPanel) {
+            // Ensure parameters are collected from the UI
+            if (typeof window.modelSelectionPanel.collectParameters === 'function') {
+                window.modelSelectionPanel.collectParameters();
+            }
+            
+            model_name = window.modelSelectionPanel.currentModel || 'gpt-image-1';
+            parameters = window.modelSelectionPanel.parameters || {};
+        }
+
+        // Show progress message
+        let progressMsg = `Generating images for Section ${targetSectionId}`;
+        if (landscapeChecked && portraitChecked) {
+            progressMsg += ' (Landscape + Portrait)';
+        } else if (landscapeChecked) {
+            progressMsg += ' (Landscape)';
+        } else {
+            progressMsg += ' (Portrait)';
+        }
+        this.showTransientMessage(progressMsg, 5000);
+
+        // Call API
         try {
-            console.log('[Image Generation Handler] Starting image generation for section:', this.currentSectionId);
-            
-            // Debug: Check if prompt elements exist
-            const promptTextEl = document.querySelector(`[data-section-id="${this.currentSectionId}"] .prompt-text`);
-            console.log('[Image Generation Handler] Prompt text element found:', promptTextEl);
-            if (promptTextEl) {
-                console.log('[Image Generation Handler] Prompt text content:', promptTextEl.textContent.trim());
+            const response = await fetch(`/imaging/api/image-generation/posts/${this.currentPostId}/sections/${targetSectionId}/generate-image`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model_name: model_name,
+                    parameters: parameters,
+                    generate_landscape: landscapeChecked,
+                    generate_portrait: portraitChecked
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
             }
+
+            const result = await response.json();
             
-            // Collect all selections
-            const selections = await this.collectAllSelections();
-            console.log('[Image Generation Handler] Collected selections:', selections);
-
-            // Validate selections
-            this.validateSelections(selections);
-
-            // Show loading state
-            this.setLoadingState(true);
-
-            // Generate image
-            const result = await this.callImageGenerationAPI(selections);
-
             if (result.success) {
-                this.showSuccess('Image generated successfully!');
-                this.updateImageDisplay(result.image_path);
+                let successMsg = `Section ${targetSectionId}: `;
+                const parts = [];
+                if (result.landscape_generated) parts.push('Landscape');
+                if (result.portrait_generated) parts.push('Portrait');
+                successMsg += parts.join(' + ') + ' generated';
+                this.showTransientMessage(successMsg, 3000);
                 
-                // Don't auto-reload immediately - let user see the new image
-                // setTimeout(() => {
-                //     window.location.reload();
-                // }, 2000); // Wait 2 seconds to show success message
+                // Notify output panel with full result data
+                if (window.imagingOutputPanel && typeof window.imagingOutputPanel.onImageGenerated === 'function') {
+                    window.imagingOutputPanel.onImageGenerated({
+                        section_id: targetSectionId,
+                        landscape_path: result.landscape_path,
+                        portrait_path: result.portrait_path,
+                        landscape_generated: result.landscape_generated,
+                        portrait_generated: result.portrait_generated,
+                        // For backward compatibility
+                        image_path: result.landscape_path || result.portrait_path
+                    });
+                }
             } else {
-                this.showError(result.error || 'Image generation failed');
+                this.showTransientMessage(`Error: ${result.error || 'Generation failed'}`, 5000);
             }
-
         } catch (error) {
             console.error('[Image Generation Handler] Error:', error);
-            this.showError(error.message || 'Image generation failed');
-        } finally {
-            this.setLoadingState(false);
+            this.showTransientMessage(`Error: ${error.message}`, 5000);
         }
     }
 
@@ -252,38 +347,17 @@ class ImageGenerationHandler {
     }
 
     async callImageGenerationAPI(selections) {
-        const response = await fetch(`/imaging/api/image-generation/posts/${selections.postId}/sections/${selections.sectionId}/generate-image`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model_name: selections.model,
-                parameters: selections.parameters,
-                image_prompt: selections.finalPrompt
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return await response.json();
+        // Image generation API - REMOVED
+        throw new Error('Image generation endpoint has been removed');
     }
 
     updateImageDisplay(imagePath) {
         console.log('[Image Generation Handler] Updating image display with path:', imagePath);
         
-        // Update the imaging output panel (uses #image-display-area in the imaging templates)
         const displayArea = document.getElementById('image-display-area');
-        console.log('[Image Generation Handler] Display area element:', displayArea);
-        
         if (displayArea) {
-            // Add aggressive cache-busting parameter to prevent browser caching
             const cacheBuster = `?v=${Date.now()}&r=${Math.random().toString(36).substr(2, 9)}`;
             const imageUrl = `${imagePath}${cacheBuster}`;
-            
-            console.log('[Image Generation Handler] Image URL with cache buster:', imageUrl);
             
             displayArea.innerHTML = `
                 <div class="image-display">
@@ -292,12 +366,9 @@ class ImageGenerationHandler {
                     <p class="image-timestamp">Generated: ${new Date().toLocaleString()}</p>
                 </div>
             `;
-            
-            console.log('[Image Generation Handler] Display area updated');
-        } else {
-            console.error('[Image Generation Handler] Could not find image-display-area element');
         }
     }
+
 
     setLoadingState(loading) {
         const generateBtn = document.getElementById('generate-image-btn');

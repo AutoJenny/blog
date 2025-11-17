@@ -1,46 +1,8 @@
 /* Context Panel Styles */
 
-.context-panel {
-    background: #1e293b;
-    border-radius: 8px;
-    border: 1px solid #334155;
-    padding: 1rem;
-}
+/* Panel container uses base styling from authoring-workspace.css */
 
-.context-panel .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #334155;
-    cursor: pointer;
-}
-
-.context-panel .panel-header h4 {
-    color: #f1f5f9;
-    margin: 0;
-    font-size: 1rem;
-}
-
-.context-panel .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.context-panel .header-actions i {
-    color: #94a3b8;
-    transition: color 0.2s ease;
-}
-
-.context-panel .header-actions i:hover {
-    color: #e2e8f0;
-}
-
-.context-panel .panel-content {
-    margin-top: 1rem;
-}
+/* Panel header and content use base styling from authoring-workspace.css */
 
 .context-panel h5 {
     color: #a5b4fc;

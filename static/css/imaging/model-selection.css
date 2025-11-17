@@ -1,41 +1,8 @@
-.model-selection-panel {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-}
-
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    cursor: pointer;
-    border-bottom: 1px solid #334155;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
+/* Panel container, header, and content use base styling from authoring-workspace.css */
 
 .model-selection-panel .panel-header h4#model-title .panel-name-green {
     color: #10b981 !important;
     font-weight: 600 !important;
-}
-
-.panel-header i {
-    color: #94a3b8;
-    transition: transform 0.2s ease;
-}
-
-.panel-content {
-    padding: 1rem;
-}
-
-.panel-content.collapsed {
-    display: none;
 }
 
 .image-model-selection {

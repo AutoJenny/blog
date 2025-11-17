@@ -87,7 +87,96 @@
     transition: all 0.3s ease;
 }
 
-/* Input Details Accordion Styles */
+/* Nested Accordion Styling - Second level accordions within debugging-panel accordion-content */
+.debugging-panel .accordion-content .accordion-header {
+    background: #1e3a5f !important; /* Blue-tinted background - clearly different */
+    border: 2px solid #3b82f6 !important; /* Blue border - very distinct */
+    border-left: 4px solid #3b82f6 !important; /* Thick left border as indicator */
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    margin-left: 1rem; /* More indentation */
+    margin-right: 0.5rem;
+}
+
+.debugging-panel .accordion-content .accordion-header h5 {
+    color: #93c5fd !important; /* Light blue text - no green! */
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.debugging-panel .accordion-content .accordion-header:hover {
+    background: #1e40af !important; /* Darker blue on hover */
+    border-color: #60a5fa !important;
+}
+
+.debugging-panel .accordion-content .accordion-content {
+    background: #1e293b !important; /* Different background */
+    border: 2px solid #3b82f6 !important; /* Blue border to match header */
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 1rem;
+    margin: 0 1rem 0.75rem 0.5rem; /* Match left margin with header */
+    margin-top: -2px;
+}
+
+.debugging-panel .accordion-content .accordion-toggle {
+    color: #60a5fa !important; /* Blue icon */
+    font-size: 0.85rem;
+}
+
+.debugging-panel .accordion-content .accordion-toggle:hover {
+    color: #93c5fd !important; /* Lighter blue on hover */
+}
+
+/* Input Details Accordion Styles - Nested accordion styling */
+/* Make them clearly distinct with blue colors - no green! */
+.input-details-accordion {
+    margin: 0.75rem 0;
+}
+
+.input-details-accordion .accordion-header {
+    background: #1e3a5f !important; /* Blue-tinted background */
+    border: 2px solid #3b82f6 !important; /* Blue border */
+    border-left: 4px solid #3b82f6 !important; /* Thick left border */
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    margin-left: 1rem; /* Indentation */
+}
+
+.input-details-accordion .accordion-header h5 {
+    color: #93c5fd !important; /* Light blue text - no green! */
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.input-details-accordion .accordion-header:hover {
+    background: #1e40af !important; /* Darker blue on hover */
+    border-color: #60a5fa !important;
+}
+
+.input-details-accordion .accordion-content {
+    background: #1e293b !important; /* Different background */
+    border: 2px solid #3b82f6 !important; /* Blue border */
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 1rem;
+    margin-top: -2px;
+    margin-left: 1rem; /* Match header indentation */
+}
+
+.input-details-accordion .accordion-toggle {
+    color: #60a5fa !important; /* Blue icon */
+    font-size: 0.85rem;
+}
+
+.input-details-accordion .accordion-toggle:hover {
+    color: #93c5fd !important; /* Lighter blue on hover */
+}
+
 .input-data-panel h5{ color:#e2e8f0; margin:.75rem 0; font-size:.9rem; }
 .context-item{ margin-bottom:.5rem; }
 .context-item label{ color:#94a3b8; font-size:.8rem; font-weight:500; display:block; margin-bottom:.2rem; }

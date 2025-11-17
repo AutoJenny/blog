@@ -189,7 +189,11 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             onBatchComplete: (result) => {
                 console.log('[Imaging Workspace] Batch generation complete:', result);
-                alert(`Batch generation complete! Generated ${result.successCount} of ${result.totalSections} images.`);
+                if (result.totalImages) {
+                    showTransientMessage(`Batch generation complete! Generated ${result.totalImages} images across ${result.totalSections} section${result.totalSections !== 1 ? 's' : ''}.`, 5000);
+                } else {
+                    showTransientMessage(`Batch generation complete! Generated ${result.successCount} of ${result.totalSections} sections.`, 5000);
+                }
             }
         });
         
@@ -203,6 +207,42 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('All imaging panels initialized successfully');
 });
+
+// Transient message function
+function showTransientMessage(message, duration = 3000) {
+    // Remove any existing transient message
+    const existing = document.getElementById('transient-message');
+    if (existing) {
+        existing.remove();
+    }
+    
+    // Create new transient message
+    const msg = document.createElement('div');
+    msg.id = 'transient-message';
+    msg.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        color: #e2e8f0;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        font-size: 0.9rem;
+        max-width: 400px;
+    `;
+    msg.textContent = message;
+    document.body.appendChild(msg);
+    
+    // Auto-remove after duration
+    setTimeout(() => {
+        if (msg.parentNode) {
+            msg.parentNode.removeChild(msg);
+        }
+    }, duration);
+}
 
 // Batch progress UI functions
 let batchProgressContainer = null;

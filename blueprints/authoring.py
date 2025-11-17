@@ -255,9 +255,13 @@ def authoring_sections_drafting(post_id):
                                  post_id=post_id,
                                  post=post,
                                  post_type=post_type,
+                                 post_title=post.get('title'),
+                                 post_status=post.get('status'),
+                                 post_created=post.get('created_at'),
+                                 post_updated=post.get('updated_at'),
+                                 content_type_name=content_type_name,
                                  page_title="Drafting",
-                                 blueprint_name='authoring',
-                                 content_type_name=content_type_name)
+                                 blueprint_name='authoring')
             
     except Exception as e:
         logger.error(f"Error in authoring_sections_drafting: {e}")
@@ -284,9 +288,28 @@ def authoring_sections_overview(post_id):
             if not post:
                 return "Post not found", 404
             
+            # Get post_type and content_type_name for header
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+            
             return render_template('authoring/sections/overview.html', 
                                  post_id=post_id,
                                  post=post,
+                                 post_type=post_type,
+                                 post_title=post.get('title'),
+                                 post_status=post.get('status'),
+                                 post_created=post.get('created_at'),
+                                 post_updated=post.get('updated_at'),
+                                 content_type_name=content_type_name,
                                  page_title="Sections Overview",
                                  blueprint_name='authoring')
             
@@ -310,9 +333,28 @@ def authoring_sections_ideas_to_include(post_id):
             if not post:
                 return "Post not found", 404
             
+            # Get post_type and content_type_name for header
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+            
             return render_template('authoring/sections/ideas_to_include.html', 
                                  post_id=post_id,
                                  post=post,
+                                 post_type=post_type,
+                                 post_title=post.get('title'),
+                                 post_status=post.get('status'),
+                                 post_created=post.get('created_at'),
+                                 post_updated=post.get('updated_at'),
+                                 content_type_name=content_type_name,
                                  page_title="Ideas to Include",
                                  blueprint_name='authoring')
             
@@ -336,9 +378,28 @@ def authoring_sections_fix_language(post_id):
             if not post:
                 return "Post not found", 404
             
+            # Get post_type and content_type_name for header
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+            
             return render_template('authoring/sections/fix_language.html', 
                                  post_id=post_id,
                                  post=post,
+                                 post_type=post_type,
+                                 post_title=post.get('title'),
+                                 post_status=post.get('status'),
+                                 post_created=post.get('created_at'),
+                                 post_updated=post.get('updated_at'),
+                                 content_type_name=content_type_name,
                                  page_title="Fix Language",
                                  blueprint_name='authoring')
             

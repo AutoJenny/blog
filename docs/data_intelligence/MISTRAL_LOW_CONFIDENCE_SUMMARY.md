@@ -228,3 +228,4 @@ python scripts/review_product_types.py --mistral-only --threshold 0.7
 Expected result: Most or all 33 products should have proper `core_type` values and higher confidence scores.
 
 
+

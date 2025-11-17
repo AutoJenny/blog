@@ -13,14 +13,92 @@ logger = logging.getLogger(__name__)
 
 def planning_calendar(post_id):
     """Content Calendar main stage"""
+    from utils.taxonomy_helpers import get_post_type
+    
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                   p.content_type_id
+            FROM post p
+            WHERE p.id = %s
+        """, (post_id,))
+        post = cursor.fetchone()
+        
+        if not post:
+            return render_template('planning/calendar.html', 
+                                  post_id=post_id,
+                                  blueprint_name='planning',
+                                  error='Post not found')
+        
+        post_type = get_post_type(post_id)
+        
+        cursor.execute("""
+            SELECT ti.display_name as content_type_name
+            FROM post p
+            LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+            WHERE p.id = %s
+        """, (post_id,))
+        result = cursor.fetchone()
+        content_type_name = result.get('content_type_name') if result else None
+    
     return render_template('planning/calendar.html', 
                           post_id=post_id,
+                          post=post,
+                          post_type=post_type,
+                          post_title=post.get('title'),
+                          post_status=post.get('status'),
+                          post_created=post.get('created_at'),
+                          post_updated=post.get('updated_at'),
+                          content_type_name=content_type_name,
                           blueprint_name='planning')
 
 def planning_calendar_view(post_id):
     """Calendar View sub-stage"""
+    from utils.taxonomy_helpers import get_post_type
+    from datetime import datetime
+    
+    year = datetime.now().year
+    week_number = datetime.now().isocalendar()[1]
+    
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                   p.content_type_id
+            FROM post p
+            WHERE p.id = %s
+        """, (post_id,))
+        post = cursor.fetchone()
+        
+        if not post:
+            return render_template('planning/calendar/view.html',
+                                  post_id=post_id,
+                                  year=year,
+                                  week_number=week_number,
+                                  blueprint_name='planning',
+                                  error='Post not found')
+        
+        post_type = get_post_type(post_id)
+        
+        cursor.execute("""
+            SELECT ti.display_name as content_type_name
+            FROM post p
+            LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+            WHERE p.id = %s
+        """, (post_id,))
+        result = cursor.fetchone()
+        content_type_name = result.get('content_type_name') if result else None
+    
     return render_template('planning/calendar/view.html',
                           post_id=post_id,
+                          post=post,
+                          post_type=post_type,
+                          post_title=post.get('title'),
+                          post_status=post.get('status'),
+                          post_created=post.get('created_at'),
+                          post_updated=post.get('updated_at'),
+                          content_type_name=content_type_name,
+                          year=year,
+                          week_number=week_number,
                           blueprint_name='planning')
 
 def planning_calendar_week_view(post_id):
@@ -48,11 +126,45 @@ def planning_calendar_week_view(post_id):
     # Get post type for template (use original if recipe/profile, otherwise use resolved)
     post_type = original_post_type if original_post_type in ('recipe', 'profile') else get_post_type(resolved_post_id)
     
+    # Get post data with all required fields for header
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                   p.content_type_id
+            FROM post p
+            WHERE p.id = %s
+        """, (resolved_post_id,))
+        post = cursor.fetchone()
+        
+        if not post:
+            return render_template('planning/calendar/week_view.html',
+                                  post_id=resolved_post_id,
+                                  year=year,
+                                  week=week,
+                                  post_type=post_type,
+                                  blueprint_name='planning',
+                                  error='Post not found')
+        
+        cursor.execute("""
+            SELECT ti.display_name as content_type_name
+            FROM post p
+            LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+            WHERE p.id = %s
+        """, (resolved_post_id,))
+        result = cursor.fetchone()
+        content_type_name = result.get('content_type_name') if result else None
+    
     return render_template('planning/calendar/week_view.html',
                           post_id=resolved_post_id,
+                          post=post,
+                          post_type=post_type,
+                          post_title=post.get('title'),
+                          post_status=post.get('status'),
+                          post_created=post.get('created_at'),
+                          post_updated=post.get('updated_at'),
+                          content_type_name=content_type_name,
                           year=year,
                           week=week,
-                          post_type=post_type,
                           blueprint_name='planning')
 
 def planning_calendar_ideas(post_id):
@@ -88,55 +200,111 @@ def planning_calendar_ideas(post_id):
             year = now.year
             week_number = now.isocalendar()[1]
         
-        # Get content type name for category banner
+        # Resolve post for week if needed
+        target_post_id = post_id
+        if url_year and url_week:
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+        
+        # Get post data with all required fields for header
         content_type_name = None
         with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id
+                FROM post p
+                WHERE p.id = %s
+            """, (target_post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return render_template('planning/calendar/ideas.html', 
+                                      post_id=post_id,
+                                      year=year,
+                                      week_number=week_number,
+                                      blueprint_name='planning',
+                                      mode='post-based',
+                                      error='Post not found')
+            
+            # Get content type name for category banner
             cursor.execute("""
                 SELECT ti.display_name as content_type_name
                 FROM post p
                 LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
                 WHERE p.id = %s
-            """, (post_id,))
+            """, (target_post_id,))
             result = cursor.fetchone()
             if result:
                 content_type_name = result.get('content_type_name')
         
         return render_template('planning/calendar/ideas.html', 
                                post_id=post_id,
+                               post=post,
+                               post_type=post_type,
+                               post_title=post.get('title'),
+                               post_status=post.get('status'),
+                               post_created=post.get('created_at'),
+                               post_updated=post.get('updated_at'),
+                               content_type_name=content_type_name,
                                year=year,
                                week_number=week_number,
                                blueprint_name='planning',
-                               mode='post-based',
-                               content_type_name=content_type_name)
+                               mode='post-based')
     except Exception as e:
         logger.error(f"Error in planning_calendar_ideas: {e}")
         from datetime import datetime
         year = datetime.now().year
         week_number = datetime.now().isocalendar()[1]
         
-        # Get content type name for category banner
+        # Get post data with all required fields for header
         content_type_name = None
+        post = None
         try:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT ti.display_name as content_type_name
+                    SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                           p.content_type_id
                     FROM post p
-                    LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
                     WHERE p.id = %s
                 """, (post_id,))
-                result = cursor.fetchone()
-                if result:
-                    content_type_name = result.get('content_type_name')
+                post = cursor.fetchone()
+                
+                if post:
+                    # Get content type name for category banner
+                    cursor.execute("""
+                        SELECT ti.display_name as content_type_name
+                        FROM post p
+                        LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                        WHERE p.id = %s
+                    """, (post_id,))
+                    result = cursor.fetchone()
+                    if result:
+                        content_type_name = result.get('content_type_name')
         except:
             pass
         
+        # Get post_type for header
+        try:
+            post_type = get_post_type(post_id)
+        except:
+            post_type = None
+        
         return render_template('planning/calendar/ideas.html', 
                                post_id=post_id,
+                               post=post,
+                               post_type=post_type,
+                               post_title=post.get('title') if post else None,
+                               post_status=post.get('status') if post else None,
+                               post_created=post.get('created_at') if post else None,
+                               post_updated=post.get('updated_at') if post else None,
+                               content_type_name=content_type_name,
                                year=year,
                                week_number=week_number,
                                blueprint_name='planning',
                                mode='post-based',
-                               content_type_name=content_type_name)
+                               error=str(e) if 'e' in locals() else None)
 
 def planning_calendar_ideas_week(week_number):
     """Week-based idea generation - creates new posts as needed"""

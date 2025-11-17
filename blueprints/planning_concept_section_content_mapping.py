@@ -103,17 +103,32 @@ def planning_concept_section_content_mapping(post_id):
         year = request.args.get('year', type=int)
         week = request.args.get('week', type=int)
         
+        # Get post data with all required fields for header
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id
+                FROM post p
+                WHERE p.id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+        
         return render_template('planning/concept/section_content_mapping.html',
-                              post_id=post_id,
-                              year=year,
-                              week=week,
-                              post_type=post_type,
-                              product_data=product_data,
-                              product_id=product_id,
-                              section_mapping=section_mapping,
-                              validation=validation,
-                              content_type_name=content_type_name,
-                              blueprint_name='planning')
+                             post_id=post_id,
+                             post=post,
+                             post_type=post_type,
+                             post_title=post.get('title') if post else None,
+                             post_status=post.get('status') if post else None,
+                             post_created=post.get('created_at') if post else None,
+                             post_updated=post.get('updated_at') if post else None,
+                             content_type_name=content_type_name,
+                             year=year,
+                             week=week,
+                             product_data=product_data,
+                             product_id=product_id,
+                             section_mapping=section_mapping,
+                             validation=validation,
+                             blueprint_name='planning')
     
     except Exception as e:
         logger.error(f"Error in section_content_mapping for post {post_id}: {e}")
