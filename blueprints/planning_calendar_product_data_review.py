@@ -105,13 +105,28 @@ def planning_calendar_product_data_review(post_id):
             if result:
                 content_type_name = result.get('content_type_name')
         
+        # Get post data with all required fields for header
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id
+                FROM post p
+                WHERE p.id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+        
         return render_template('planning/calendar/product_data_review.html',
                              post_id=post_id,
+                             post=post,
+                             post_type=post_type,
+                             post_title=post.get('title') if post else None,
+                             post_status=post.get('status') if post else None,
+                             post_created=post.get('created_at') if post else None,
+                             post_updated=post.get('updated_at') if post else None,
+                             content_type_name=content_type_name,
                              product_id=product_id,
                              product_data=product_data,
                              validation=validation,
-                             content_type_name=content_type_name,
-                             post_type=post_type,  # Required for header template conditional logic
                              blueprint_name='planning')
     except Exception as e:
         logger.error(f"Error in planning_calendar_product_data_review: {e}")

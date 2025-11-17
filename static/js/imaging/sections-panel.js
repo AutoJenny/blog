@@ -251,14 +251,18 @@ class ImagingSectionsPanel {
         
         if (selectedIds.length === 0) {
             console.warn('[ImagingSectionsPanel] No sections selected');
-            alert('Please select at least one section to generate images for.');
+            if (window.imageGenerationHandler && typeof window.imageGenerationHandler.showTransientMessage === 'function') {
+                window.imageGenerationHandler.showTransientMessage('Please select at least one section to generate images for.', 2000);
+            }
             return;
         }
 
         const btn = document.getElementById('batch-generate-btn');
         if (!btn) {
             console.error('[ImagingSectionsPanel] batch-generate-btn not found!');
-            alert('Generate button not found. Please refresh the page.');
+            if (window.imageGenerationHandler && typeof window.imageGenerationHandler.showTransientMessage === 'function') {
+                window.imageGenerationHandler.showTransientMessage('Generate button not found. Please refresh the page.', 3000);
+            }
             return;
         }
         
@@ -282,7 +286,14 @@ class ImagingSectionsPanel {
                 const sectionTitle = section ? (section.section_heading || section.title || `Section ${sectionId}`) : `Section ${sectionId}`;
 
                 currentItem++;
-                this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'generating' });
+                
+                // On image-generation page, show dialog for each section
+                if (window.currentSubstage === 'image-generation' || window.location.pathname.includes('/image-generation')) {
+                    if (window.imageGenerationHandler) {
+                        await window.imageGenerationHandler.handleGenerateImage(sectionId);
+                    }
+                    continue;
+                }
 
                 // Obtain prompt for this specific section
                 let image_prompt = '';
@@ -332,9 +343,8 @@ class ImagingSectionsPanel {
                     }
                 }
                 
-                if (!image_prompt) {
+                if (!image_prompt && window.currentSubstage === 'image-generation') {
                     console.warn(`[ImagingSectionsPanel] No prompt found for section ${sectionId}, skipping`);
-                    this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: 'No image prompt found for this section. Please generate prompts first.' });
                     continue;
                 }
 
@@ -468,76 +478,9 @@ class ImagingSectionsPanel {
                         data = { success: false, error: 'Failed to select photos' };
                     }
                 } else {
-                    // On image-generation page, call image generation API
-                    // Get current model and parameters from model selection panel
-                    let model_name = 'gpt-image-1';
-                    let parameters = {};
-                    
-                    if (window.modelSelectionPanel) {
-                        model_name = window.modelSelectionPanel.currentModel || 'gpt-image-1';
-                        parameters = window.modelSelectionPanel.parameters || {};
-                    }
-                    
-                    // For recipe posts, ensure landscape dimensions
-                    if (window.postType === 'recipe') {
-                        if (model_name === 'gpt-image-1') {
-                            parameters.size = '1536x1024';  // Landscape (max supported by GPT-Image-1)
-                        } else if (model_name.startsWith('dall-e') || model_name.startsWith('openai')) {
-                            parameters.size = '1792x1024';  // Landscape (DALL-E supports this)
-                        } else if (model_name.startsWith('sdxl')) {
-                            parameters.width = 1792;
-                            parameters.height = 1024;
-                        }
-                    }
-                    
-                    const payload = {
-                        model_name,
-                        parameters
-                    };
-                    console.log(`[ImagingSectionsPanel] Generating image for section ${sectionId} with model ${model_name}`, payload);
-                    
-                    // Create AbortController for timeout handling
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
-                    
-                    try {
-                        resp = await fetch(`/imaging/api/image-generation/posts/${this.postId}/sections/${sectionId}/generate-image`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload),
-                            signal: controller.signal
-                        });
-                        clearTimeout(timeoutId);
-                    } catch (fetchError) {
-                        clearTimeout(timeoutId);
-                        if (fetchError.name === 'AbortError') {
-                            throw new Error('Request timed out after 5 minutes');
-                        } else if (fetchError.message && fetchError.message.includes('Failed to fetch')) {
-                            throw new Error('Network connection lost. Please check your connection and try again.');
-                        } else {
-                            throw fetchError;
-                        }
-                    }
-                    
-                    if (!resp.ok) {
-                        const errorText = await resp.text();
-                        console.error(`[ImagingSectionsPanel] HTTP error ${resp.status} for section ${sectionId}:`, errorText);
-                        this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: `HTTP ${resp.status}: ${errorText}` });
-                        continue;
-                    }
-                    
-                    try {
-                        const responseText = await resp.text();
-                        if (!responseText) {
-                            throw new Error('Empty response from server');
-                        }
-                        data = JSON.parse(responseText);
-                        console.log(`[ImagingSectionsPanel] Image generation response for section ${sectionId}:`, data);
-                    } catch (parseError) {
-                        console.error(`[ImagingSectionsPanel] Failed to parse JSON response for section ${sectionId}:`, parseError);
-                        this.callbacks.onBatchProgress({ current: currentItem, total: totalItems, sectionId, sectionTitle, status: 'error', error: `Failed to parse response: ${parseError.message}` });
-                        continue;
-                    }
+                    // Image generation batch - not yet implemented
+                    console.log(`[ImagingSectionsPanel] Batch image generation not yet implemented for section ${sectionId}`);
+                    continue;
                 }
 
                 if (data.success) {
@@ -562,14 +505,28 @@ class ImagingSectionsPanel {
             }
 
             const totalGenerated = totalItems;
+            
+            // Count actual images based on checkbox states
+            const landscapeChecked = document.getElementById('landscape-checkbox')?.checked ?? true;
+            const portraitChecked = document.getElementById('portrait-checkbox')?.checked ?? true;
+            const imagesPerSection = (landscapeChecked ? 1 : 0) + (portraitChecked ? 1 : 0);
+            const totalImages = totalGenerated * imagesPerSection;
+            
             console.log('[ImagingSectionsPanel] Batch generation complete, calling onBatchComplete');
-            this.callbacks.onBatchComplete({ totalSections: totalGenerated, successCount: totalGenerated });
+            this.callbacks.onBatchComplete({ 
+                totalSections: totalGenerated, 
+                successCount: totalGenerated,
+                totalImages: totalImages,
+                imagesPerSection: imagesPerSection
+            });
         } catch (err) {
             console.error('[ImagingSectionsPanel] Batch generation error:', err);
             console.error('[ImagingSectionsPanel] Error stack:', err.stack);
             const errorMessage = err.message || (typeof err === 'string' ? err : 'Unknown error');
             console.error('[ImagingSectionsPanel] Error message:', errorMessage);
-            alert(`Error during batch generation: ${errorMessage}`);
+            if (window.imageGenerationHandler && typeof window.imageGenerationHandler.showTransientMessage === 'function') {
+                window.imageGenerationHandler.showTransientMessage(`Error during batch generation: ${errorMessage}`, 5000);
+            }
         } finally {
             const btn = document.getElementById('batch-generate-btn');
             if (btn) {

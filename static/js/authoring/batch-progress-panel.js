@@ -34,7 +34,7 @@ class BatchProgressPanel {
     init() {
         this.bindElements();
         this.setupEventListeners();
-        this.restoreAccordionState();
+        this.setupAccordion();
     }
 
     bindElements() {
@@ -300,16 +300,46 @@ class BatchProgressPanel {
         return `${minutes}m ${remainingSeconds}s`;
     }
 
+    setupAccordion() {
+        this.restoreAccordionState();
+    }
+
     restoreAccordionState() {
-        const savedState = localStorage.getItem('batch-progress-accordion-state');
-        if (savedState === 'open') {
-            const content = document.getElementById('batch-progress-accordion-content');
-            const icon = document.getElementById('batch-progress-accordion-icon');
-            if (content && icon) {
+        const savedState = sessionStorage.getItem('batch-progress-accordion-state');
+        const content = document.getElementById('batch-progress-accordion-content');
+        const icon = document.getElementById('batch-progress-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
                 content.style.display = 'block';
                 icon.classList.remove('fa-chevron-up');
                 icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
             }
+        }
+    }
+
+    toggleAccordion() {
+        const content = document.getElementById('batch-progress-accordion-content');
+        const icon = document.getElementById('batch-progress-accordion-icon');
+        
+        if (!content || !icon) return;
+        
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
+        
+        if (isCollapsed) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            sessionStorage.setItem('batch-progress-accordion-state', 'open');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            sessionStorage.setItem('batch-progress-accordion-state', 'closed');
         }
     }
 

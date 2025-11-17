@@ -13,6 +13,50 @@ class StylesPanel {
         console.log('[Styles Panel] Initializing...');
         this.setupEventListeners();
         this.setupButtonHandlers();
+        this.setupAccordion();
+    }
+
+    setupAccordion() {
+        this.restoreAccordionState();
+    }
+
+    restoreAccordionState() {
+        const savedState = sessionStorage.getItem('styles-accordion-state');
+        const content = document.getElementById('styles-accordion-content');
+        const icon = document.getElementById('styles-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+    }
+
+    toggleAccordion() {
+        const content = document.getElementById('styles-accordion-content');
+        const icon = document.getElementById('styles-accordion-icon');
+        
+        if (!content || !icon) return;
+        
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
+        
+        if (isCollapsed) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            sessionStorage.setItem('styles-accordion-state', 'open');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            sessionStorage.setItem('styles-accordion-state', 'closed');
+        }
     }
 
     setupEventListeners() {

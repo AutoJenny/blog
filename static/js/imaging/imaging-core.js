@@ -350,16 +350,8 @@ async function startBatchImageGeneration() {
                     throw new Error('No image prompt found for section');
                 }
 
-                // Call imaging generation API sequentially
-                const resp = await fetch(`/imaging/api/image-generation/posts/${currentPostId}/sections/${id}/generate-image`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model_name: modelName,
-                        parameters,
-                        image_prompt: imagePrompt
-                    })
-                });
+                // Image generation API - REMOVED
+                throw new Error('Image generation endpoint has been removed');
 
                 if (!resp.ok) {
                     throw new Error('HTTP ' + resp.status);

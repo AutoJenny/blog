@@ -34,7 +34,7 @@ class LLMSettingsPanel {
         this.setupSliderDisplays();
         this.loadSettings();
         this.updateProviderInfo();
-        this.restoreAccordionState();
+        this.setupAccordion();
     }
 
     bindElements() {
@@ -188,16 +188,46 @@ class LLMSettingsPanel {
         }
     }
 
+    setupAccordion() {
+        this.restoreAccordionState();
+    }
+
     restoreAccordionState() {
-        const savedState = localStorage.getItem('llm-settings-accordion-state');
-        if (savedState === 'open') {
-            const content = document.getElementById('settings-accordion-content');
-            const icon = document.getElementById('settings-accordion-icon');
-            if (content && icon) {
+        const savedState = sessionStorage.getItem('llm-settings-accordion-state');
+        const content = document.getElementById('llm-settings-accordion-content');
+        const icon = document.getElementById('llm-settings-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
                 content.style.display = 'block';
                 icon.classList.remove('fa-chevron-up');
                 icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
             }
+        }
+    }
+
+    toggleAccordion() {
+        const content = document.getElementById('llm-settings-accordion-content');
+        const icon = document.getElementById('llm-settings-accordion-icon');
+        
+        if (!content || !icon) return;
+        
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
+        
+        if (isCollapsed) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            sessionStorage.setItem('llm-settings-accordion-state', 'open');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            sessionStorage.setItem('llm-settings-accordion-state', 'closed');
         }
     }
 

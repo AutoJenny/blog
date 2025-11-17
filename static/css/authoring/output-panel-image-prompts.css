@@ -1,45 +1,8 @@
 /* Image Prompts Output Panel - Simplified Results Display */
 
-.output-panel {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    overflow: hidden;
-}
+/* Panel container uses base styling from authoring-workspace.css */
 
-.output-panel .panel-header {
-    background: #0f172a;
-    padding: 1rem;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #334155;
-    transition: background-color 0.2s ease;
-}
-
-.output-panel .panel-header:hover {
-    background: #1e293b;
-}
-
-.output-panel .panel-header h4 {
-    margin: 0;
-    color: #f1f5f9;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.output-panel .panel-name-green {
-    color: #10b981;
-    font-weight: 700;
-}
-
-.output-panel .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+/* Panel header uses base styling from authoring-workspace.css */
 
 .output-panel .btn-primary {
     background: #3b82f6;
@@ -81,10 +44,7 @@
     cursor: not-allowed;
 }
 
-.output-panel .panel-content {
-    padding: 1rem;
-    background: #1e293b;
-}
+/* Panel content uses base styling from authoring-workspace.css */
 
 .output-panel .panel-content h5 {
     color: #e2e8f0;
@@ -167,17 +127,6 @@
     font-size: 0.875rem;
 }
 
-/* Accordion Animation */
-.output-panel .panel-content {
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
-
-.output-panel .panel-content.collapsed {
-    max-height: 0;
-    padding: 0 1rem;
-    border-top: none;
-}
 
 .output-panel .fa-chevron-down {
     transition: transform 0.3s ease;
@@ -190,13 +139,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .output-panel .panel-header {
-        padding: 0.75rem;
-    }
-    
-    .output-panel .panel-content {
-        padding: 0.75rem;
-    }
+    /* Panel header and content use base styling from authoring-workspace.css */
     
     .output-panel .metadata-grid {
         grid-template-columns: 1fr;

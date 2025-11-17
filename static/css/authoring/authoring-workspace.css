@@ -20,16 +20,23 @@
     gap: 1rem;
 }
 
-/* Panel Styles */
+/* Panel Styles - All panels use consistent base styling */
 .llm-prompts-panel,
 .context-panel,
-.batch-progress-panel {
+.batch-progress-panel,
+.styles-panel,
+.prompt-builder-panel,
+.llm-settings-panel,
+.llm-message-intercept-panel,
+.output-panel,
+.model-selection-panel {
     background: #1e293b;
     border-radius: 8px;
     border: 1px solid #334155;
     padding: 1rem;
 }
 
+/* Base panel header styling - applies to ALL panels */
 .panel-header {
     display: flex;
     justify-content: space-between;
@@ -44,6 +51,12 @@
     color: #f1f5f9;
     margin: 0;
     font-size: 1rem;
+    font-weight: 600;
+}
+
+.panel-header .panel-name-green {
+    color: #10b981;
+    font-weight: 700;
 }
 
 .header-actions {
@@ -61,8 +74,109 @@
     color: #e2e8f0;
 }
 
+/* Base panel content styling - applies to ALL panels */
 .panel-content {
     margin-top: 1rem;
+}
+
+/* Nested Accordion Styling - Second level accordions within panel-content */
+/* Make them clearly distinct with different colors and styling */
+.panel-content .accordion-header,
+.panel-content .input-details-accordion .accordion-header {
+    background: #1e3a5f !important; /* Blue-tinted background - clearly different */
+    border: 2px solid #3b82f6 !important; /* Blue border - very distinct */
+    border-left: 4px solid #3b82f6 !important; /* Thick left border as indicator */
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    margin-left: 1rem; /* More indentation */
+    margin-right: 0.5rem;
+}
+
+.panel-content .accordion-header h5,
+.panel-content .input-details-accordion .accordion-header h5 {
+    color: #93c5fd !important; /* Light blue text - no green! */
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Remove green styling from nested accordions */
+.panel-content .accordion-header .panel-name-green,
+.panel-content .input-details-accordion .accordion-header .panel-name-green {
+    color: #60a5fa !important; /* Blue instead of green */
+}
+
+.panel-content .accordion-header:hover,
+.panel-content .input-details-accordion .accordion-header:hover {
+    background: #1e40af !important; /* Darker blue on hover */
+    border-color: #60a5fa !important;
+}
+
+.panel-content .accordion-content,
+.panel-content .input-details-accordion .accordion-content {
+    background: #1e293b !important; /* Different background */
+    border: 2px solid #3b82f6 !important; /* Blue border to match header */
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 1rem;
+    margin: 0 1rem 0.75rem 0.5rem; /* Match left margin with header */
+    margin-top: -2px;
+}
+
+.panel-content .accordion-toggle,
+.panel-content .input-details-accordion .accordion-toggle {
+    color: #60a5fa !important; /* Blue icon */
+    font-size: 0.85rem;
+}
+
+.panel-content .accordion-toggle:hover,
+.panel-content .input-details-accordion .accordion-toggle:hover {
+    color: #93c5fd !important; /* Lighter blue on hover */
+}
+
+/* Third level accordions (accordions within accordions within panel-content) */
+/* Make them even more distinct with purple/indigo colors */
+.panel-content .accordion-content .accordion-header,
+.panel-content .input-details-accordion .accordion-content .accordion-header {
+    background: #312e81 !important; /* Purple/indigo background */
+    border: 2px solid #6366f1 !important; /* Indigo border */
+    border-left: 5px solid #818cf8 !important; /* Thicker purple left border */
+    margin-left: 1.5rem; /* Even more indentation */
+    margin-right: 1rem;
+    padding: 0.625rem 0.875rem;
+}
+
+.panel-content .accordion-content .accordion-header h5,
+.panel-content .input-details-accordion .accordion-content .accordion-header h5 {
+    font-size: 0.85rem;
+    color: #c7d2fe !important; /* Light purple text */
+    font-weight: 500;
+}
+
+/* Remove green styling from third level */
+.panel-content .accordion-content .accordion-header .panel-name-green,
+.panel-content .input-details-accordion .accordion-content .accordion-header .panel-name-green {
+    color: #a5b4fc !important; /* Purple instead of green */
+}
+
+.panel-content .accordion-content .accordion-header:hover {
+    background: #4338ca !important; /* Darker purple on hover */
+    border-color: #818cf8 !important;
+}
+
+.panel-content .accordion-content .accordion-content,
+.panel-content .input-details-accordion .accordion-content .accordion-content {
+    background: #1e1b4b !important; /* Dark purple background */
+    border: 2px solid #6366f1 !important; /* Indigo border */
+    border-left: 5px solid #818cf8 !important;
+    margin-left: 1.5rem;
+    margin-right: 1rem;
+    padding: 0.875rem;
+}
+
+.panel-content .accordion-content .accordion-toggle {
+    color: #818cf8 !important; /* Purple icon */
 }
 
 /* Batch Progress Panel Styles */

@@ -112,17 +112,80 @@ def get_post_sections_with_images(post_id):
             section_dict = dict(section)
             print(f"DEBUG: Processing section {section_dict.get('id')} with heading: {section_dict.get('section_heading', 'No heading')}")  # Debug print
             
-            # Get section image if exists - handle image_filename field
-            if section.get('image_filename'):
-                # Construct the image path from the filename
+            # Get section image - check post_images table for optimized images first
+            image_path = None
+            caption_text = section.get('image_captions') or ''
+            alt_text = section.get('image_alt_text') or f"Image for {section.get('section_heading', 'section')}"
+            
+            # Priority 1: Check post_images table for optimized images (after optimization)
+            cur.execute("""
+                SELECT i.file_path as path, i.filename, i.alt_text, i.caption
+                FROM post_images pi
+                JOIN images i ON pi.image_id = i.id
+                WHERE pi.section_id = %s AND pi.image_type = 'section_optimized'
+                LIMIT 1
+            """, (section['id'],))
+            db_image = cur.fetchone()
+            if db_image and db_image.get('path'):
+                image_path = db_image['path']
+                if db_image.get('caption'):
+                    caption_text = db_image['caption']
+                if db_image.get('alt_text'):
+                    alt_text = db_image['alt_text']
+                print(f"DEBUG: Found image in post_images table for section {section['id']}: {image_path}")
+            
+            # Priority 2: Fallback to filesystem for optimized images
+            if not image_path:
+                import os
+                # Try multiple possible paths
+                candidate = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
+                filesystem_path = candidate.lstrip('/')
+                
+                # Try multiple base directories
+                possible_bases = [
+                    os.getcwd(),  # Current working directory
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),  # Blog directory
+                ]
+                
+                # Also try with Flask's instance_path if available
+                try:
+                    from flask import current_app
+                    if current_app and hasattr(current_app, 'instance_path'):
+                        possible_bases.insert(0, os.path.dirname(current_app.instance_path))
+                    if current_app and hasattr(current_app, 'root_path'):
+                        possible_bases.insert(0, current_app.root_path)
+                except:
+                    pass
+                
+                found = False
+                for base in possible_bases:
+                    test_path = os.path.join(base, filesystem_path)
+                    if os.path.exists(test_path):
+                        image_path = candidate
+                        found = True
+                        print(f"DEBUG: Found image in filesystem for section {section['id']}: {image_path} (base: {base})")
+                        break
+                
+                if not found:
+                    print(f"DEBUG: Image NOT found for section {section['id']} (tried bases: {possible_bases})")
+            
+            # Priority 3: Legacy image_filename field (deprecated)
+            if not image_path and section.get('image_filename'):
                 image_path = f"/static/uploads/images/{section['image_filename']}"
+                print(f"DEBUG: Found image via legacy image_filename for section {section['id']}: {image_path}")
+            
+            if image_path:
                 section_dict['image'] = {
                     'path': image_path,
-                    'alt_text': section.get('image_captions') or 'Section image',
+                    'alt_text': alt_text,
+                    'caption': caption_text,
                     'title': section.get('image_title'),
                     'width': section.get('image_width'),
                     'height': section.get('image_height')
                 }
+                print(f"DEBUG: Set image for section {section['id']}: {section_dict['image']}")
+            else:
+                print(f"DEBUG: No image found for section {section['id']} (heading: {section.get('section_heading', 'No heading')})")
             
             # Add content priority analysis
             section_dict['content_priority'] = analyze_content_priority(section_dict)

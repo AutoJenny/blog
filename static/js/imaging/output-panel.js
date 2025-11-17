@@ -53,9 +53,19 @@ class ImagingOutputPanel {
             const response = await fetch(apiEndpoint);
             const data = await response.json();
             
-            if (data.success && data.path) {
-                console.log('[Imaging Output Panel] Found image:', data.path);
-                this.displayPersistedImage(data.path, data.type);
+            if (data.success) {
+                // Check for both landscape and portrait images
+                if (data.landscape_path || data.portrait_path) {
+                    console.log('[Imaging Output Panel] Found images - landscape:', data.landscape_path, 'portrait:', data.portrait_path);
+                    this.displayImagesWithTabs(data.landscape_path, data.portrait_path, data.type);
+                } else if (data.path) {
+                    // Fallback to old format
+                    console.log('[Imaging Output Panel] Found image (old format):', data.path);
+                    this.displayPersistedImage(data.path, data.type);
+                } else {
+                    console.log('[Imaging Output Panel] No image found, showing placeholder');
+                    this.displayNoImages();
+                }
             } else {
                 console.log('[Imaging Output Panel] No image found, showing placeholder');
                 this.displayNoImages();
@@ -78,6 +88,104 @@ class ImagingOutputPanel {
                 </div>
             </div>
         `;
+    }
+
+    displayImagesWithTabs(landscapePath, portraitPath, imageType) {
+        const displayArea = document.getElementById('image-display-area');
+        if (!displayArea) return;
+
+        // Determine which images are available
+        const hasLandscape = !!landscapePath;
+        const hasPortrait = !!portraitPath;
+        
+        if (!hasLandscape && !hasPortrait) {
+            this.displayNoImages();
+            return;
+        }
+
+        // If only one image, display it directly without tabs
+        if (hasLandscape && !hasPortrait) {
+            this.displayPersistedImage(landscapePath, imageType);
+            return;
+        }
+        if (hasPortrait && !hasLandscape) {
+            this.displayPersistedImage(portraitPath, imageType);
+            return;
+        }
+
+        // Both images available - show tabs
+        displayArea.innerHTML = `
+            <div class="image-tabs-container" style="margin-bottom: 1rem;">
+                <div class="image-tabs" style="display: flex; gap: 0.5rem; border-bottom: 2px solid #334155; margin-bottom: 1rem;">
+                    <button class="image-tab active" data-tab="landscape" style="
+                        background: none;
+                        border: none;
+                        padding: 0.75rem 1.5rem;
+                        color: #e2e8f0;
+                        cursor: pointer;
+                        border-bottom: 2px solid #10b981;
+                        margin-bottom: -2px;
+                        font-size: 0.9rem;
+                        font-weight: 500;
+                    ">Landscape</button>
+                    <button class="image-tab" data-tab="portrait" style="
+                        background: none;
+                        border: none;
+                        padding: 0.75rem 1.5rem;
+                        color: #94a3b8;
+                        cursor: pointer;
+                        border-bottom: 2px solid transparent;
+                        margin-bottom: -2px;
+                        font-size: 0.9rem;
+                        font-weight: 500;
+                    ">Portrait</button>
+                </div>
+                <div class="image-tab-content" id="landscape-tab-content" style="display: block;">
+                    <div class="image-grid">
+                        <div class="image-card">
+                            <img src="${landscapePath}" alt="Landscape Image" style="max-width: 100%; height: auto;">
+                            <p class="image-caption">Landscape Image (${imageType})</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-tab-content" id="portrait-tab-content" style="display: none;">
+                    <div class="image-grid">
+                        <div class="image-card">
+                            <img src="${portraitPath}" alt="Portrait Image" style="max-width: 100%; height: auto;">
+                            <p class="image-caption">Portrait Image (${imageType})</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add tab switching functionality
+        const tabs = displayArea.querySelectorAll('.image-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                // Update tab styles
+                tabs.forEach(t => {
+                    t.style.color = '#94a3b8';
+                    t.style.borderBottomColor = 'transparent';
+                });
+                tab.style.color = '#e2e8f0';
+                tab.style.borderBottomColor = '#10b981';
+                
+                // Show/hide content
+                const landscapeContent = displayArea.querySelector('#landscape-tab-content');
+                const portraitContent = displayArea.querySelector('#portrait-tab-content');
+                
+                if (tabName === 'landscape') {
+                    landscapeContent.style.display = 'block';
+                    portraitContent.style.display = 'none';
+                } else {
+                    landscapeContent.style.display = 'none';
+                    portraitContent.style.display = 'block';
+                }
+            });
+        });
     }
 
     displayImages(images) {
@@ -160,21 +268,28 @@ class ImagingOutputPanel {
     onImageGenerated(imageData) {
         console.log('[Imaging Output Panel] New image generated:', imageData);
         
-        if (imageData && imageData.image_path) {
-            // Display the new image
-            const displayArea = document.getElementById('image-display-area');
-            if (displayArea) {
-                displayArea.innerHTML = `
-                    <div class="image-grid">
-                        <div class="image-card">
-                            <img src="${imageData.image_path}" alt="Generated Image" style="max-width: 100%; height: auto;">
-                            <p class="image-caption">Generated Image</p>
+        if (imageData) {
+            // Use the new tabbed display if both landscape and portrait are available
+            if (imageData.landscape_path || imageData.portrait_path) {
+                this.displayImagesWithTabs(imageData.landscape_path, imageData.portrait_path, 'raw');
+            } else if (imageData.image_path) {
+                // Fallback to single image display
+                const displayArea = document.getElementById('image-display-area');
+                if (displayArea) {
+                    displayArea.innerHTML = `
+                        <div class="image-grid">
+                            <div class="image-card">
+                                <img src="${imageData.image_path}" alt="Generated Image" style="max-width: 100%; height: auto;">
+                                <p class="image-caption">Generated Image</p>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
+            } else {
+                console.error('[Imaging Output Panel] Invalid image data received:', imageData);
             }
         } else {
-            console.error('[Imaging Output Panel] Invalid image data received:', imageData);
+            console.error('[Imaging Output Panel] No image data received');
         }
     }
 }

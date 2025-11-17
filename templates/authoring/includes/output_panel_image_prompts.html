@@ -2,17 +2,17 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/output-panel-image-prompts.css') }}">
 
 <div class="output-panel" id="image-prompts-output-panel">
-    <div class="panel-header" onclick="toggleImagePromptsOutputAccordion()">
-        <h4><span class="panel-name-green">Output:</span> <span id="current-section-title">Select a section to generate image prompts</span></h4>
+    <div class="panel-header">
+        <h4 onclick="window.imagePromptsOutputPanel?.toggleAccordion()"><span class="panel-name-green">Output:</span> <span id="current-section-title">Select a section to generate image prompts</span></h4>
         <div class="header-actions">
+            <i class="fas fa-chevron-up" id="image-prompts-accordion-icon" onclick="window.imagePromptsOutputPanel?.toggleAccordion()"></i>
             <button class="btn-primary" id="generate-image-prompt-btn" disabled>Generate</button>
             <button class="btn-primary" id="save-prompt-btn" disabled>Save</button>
             <button class="btn-secondary" id="regenerate-prompt-btn" disabled>Regenerate</button>
-            <i class="fas fa-chevron-down" id="image-prompts-accordion-icon"></i>
         </div>
     </div>
     
-    <div class="panel-content" id="image-prompts-accordion-content" style="display: block;">
+    <div class="panel-content" id="image-prompts-accordion-content" style="display: none;">
         <!-- Generated Prompt Display -->
         <div class="prompt-display">
             <h5>Generated Image Prompt</h5>

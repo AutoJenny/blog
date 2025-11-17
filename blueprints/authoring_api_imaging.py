@@ -64,9 +64,29 @@ def authoring_sections_image_concepts(post_id):
             if target_post_id != post_id:
                 logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
             
+            # Get post_type for header
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(target_post_id)
+            
+            # Get content_type_name for header
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (target_post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+            
             return render_template('authoring/sections/image_concepts.html', 
                                  post_id=post_id,  # Keep original post_id for URL consistency
                                  post=post,
+                                 post_type=post_type,
+                                 post_title=post.get('title'),
+                                 post_status=post.get('status'),
+                                 post_created=post.get('created_at'),
+                                 post_updated=post.get('updated_at'),
+                                 content_type_name=content_type_name,
                                  page_title="Image Concepts",
                                  blueprint_name='authoring',
                                  illustration_method=illustration_method,
@@ -117,6 +137,20 @@ def authoring_sections_image_prompts(post_id):
             # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
             illustration_method = post.get('illustration_method') or 'LLM-creation'
             
+            # Get post_type for header
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(target_post_id)
+            
+            # Get content type name for category banner
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (target_post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+            
             # Log which post and illustration method are being used
             if target_post_id != post_id:
                 logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
@@ -124,6 +158,12 @@ def authoring_sections_image_prompts(post_id):
             return render_template('authoring/sections/image_prompts.html', 
                                  post_id=post_id,  # Keep original post_id for URL consistency
                                  post=post,
+                                 post_type=post_type,
+                                 post_title=post.get('title'),
+                                 post_status=post.get('status'),
+                                 post_created=post.get('created_at'),
+                                 post_updated=post.get('updated_at'),
+                                 content_type_name=content_type_name,
                                  page_title="Image Prompts",
                                  blueprint_name='authoring',
                                  illustration_method=illustration_method)
@@ -136,21 +176,53 @@ def authoring_sections_image_prompts(post_id):
 def authoring_sections_image_captions(post_id):
     """Image captions step - Step 55"""
     try:
+        # CRITICAL: Check for week context in URL params to determine correct post
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        
+        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
+        target_post_id = post_id
+        if url_year and url_week:
+            from utils.week_post_resolver import resolve_post_for_week
+            resolved_post_id = resolve_post_for_week(url_year, url_week)
+            if resolved_post_id:
+                target_post_id = resolved_post_id
+        
         with db_manager.get_cursor() as cursor:
             # Get post details
             cursor.execute("""
-                SELECT id, title, status, created_at, updated_at
+                SELECT id, title, status, created_at, updated_at, content_type_id
                 FROM post 
                 WHERE id = %s
-            """, (post_id,))
+            """, (target_post_id,))
             post = cursor.fetchone()
             
             if not post:
                 return "Post not found", 404
             
+            # Get post_type for header
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(target_post_id)
+            
+            # Get content_type_name for header
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (target_post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+            
             return render_template('authoring/sections/image_captions.html', 
                                  post_id=post_id,
                                  post=post,
+                                 post_type=post_type,
+                                 post_title=post.get('title'),
+                                 post_status=post.get('status'),
+                                 post_created=post.get('created_at'),
+                                 post_updated=post.get('updated_at'),
+                                 content_type_name=content_type_name,
                                  page_title="Image Captions",
                                  blueprint_name='authoring')
             

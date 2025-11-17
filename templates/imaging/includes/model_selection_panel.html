@@ -2,14 +2,14 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/model-selection.css') }}">
 <script src="{{ url_for('static', filename='js/imaging/model-selection.js') }}"></script>
 <div class="model-selection-panel" id="model-selection-panel">
-    <div class="panel-header" onclick="toggleModelSelectionAccordion()">
+    <div class="panel-header" onclick="window.modelSelectionPanel?.toggleAccordion()">
         <h4 id="model-title"><span class="panel-name-green">Modal Selection:</span> Loading...</h4>
         <div class="header-actions">
             <i class="fas fa-chevron-up" id="model-selection-accordion-icon"></i>
         </div>
     </div>
     
-    <div class="panel-content" id="model-selection-accordion-content">
+    <div class="panel-content" id="model-selection-accordion-content" style="display: none;">
         <!-- Model Selection -->
         <div class="image-model-selection" id="image-model-selection">
             <label for="image-model-select">Image Generation Model:</label>

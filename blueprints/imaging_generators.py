@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 
-def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
-    """Generate image using DALL-E API - generates both landscape and portrait versions"""
+def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters, orientation='landscape'):
+    """Generate image using DALL-E API - generates one image (landscape or portrait)"""
     try:
         # RELOAD .env file directly before checking - ensure we get the latest values
         env_absolute = '/Users/autojenny/Documents/projects/blog/.env'
@@ -80,108 +80,69 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
             'Content-Type': 'application/json'
         }
         
-        # Create directory structure
-        if section_id == 'header':
-            landscape_dir = f"static/content/posts/{post_id}/header/raw"
-            portrait_dir = f"static/content/posts/{post_id}/header/portrait/raw"
-            landscape_filename = "header.png"
-            portrait_filename = "header_portrait.png"
-        else:
-            landscape_dir = f"static/content/posts/{post_id}/sections/{section_id}/raw"
-            portrait_dir = f"static/content/posts/{post_id}/sections/{section_id}/portrait/raw"
-            landscape_filename = f"{section_id}.png"
-            portrait_filename = f"{section_id}_portrait.png"
-        
-        os.makedirs(landscape_dir, exist_ok=True)
-        os.makedirs(portrait_dir, exist_ok=True)
-        
-        landscape_path = f"{landscape_dir}/{landscape_filename}"
-        
-        # Always generate and overwrite existing image (don't skip if file exists)
-        landscape_data = {
-            'model': 'dall-e-3',
-            'prompt': image_prompt,
-            'n': 1,
-            'size': landscape_size,
-            'quality': quality,
-            'style': style
-        }
-        
-        logger.info(f"DALL-E landscape API request: {landscape_data}")
-        landscape_response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=landscape_data, timeout=120)
-        
-        if landscape_response.status_code != 200:
-            return {'success': False, 'error': f'DALL-E landscape API error: {landscape_response.status_code} - {landscape_response.text}'}
-        
-        landscape_result = landscape_response.json()
-        if 'data' not in landscape_result or not landscape_result['data']:
-            return {'success': False, 'error': 'No image data returned from DALL-E landscape'}
-        
-        # Download landscape image
-        landscape_url = landscape_result['data'][0]['url']
-        landscape_image_response = requests.get(landscape_url, timeout=30)
-        if landscape_image_response.status_code != 200:
-            return {'success': False, 'error': f'Failed to download landscape image: {landscape_image_response.status_code}'}
-        
-        # Always overwrite existing file
-        with open(landscape_path, 'wb') as f:
-            f.write(landscape_image_response.content)
-        logger.info(f"Generated and saved landscape image: {landscape_path} (overwrote existing if present)")
-        
-        # Generate portrait version with same prompt but portrait dimensions
-        portrait_data = {
-            'model': 'dall-e-3',
-            'prompt': image_prompt,
-            'n': 1,
-            'size': portrait_size,
-            'quality': quality,
-            'style': style
-        }
-        
-        logger.info(f"DALL-E portrait API request: {portrait_data}")
-        portrait_response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=portrait_data, timeout=120)
-        
-        portrait_success = False
-        portrait_path = None
-        if portrait_response.status_code == 200:
-            portrait_result = portrait_response.json()
-            if 'data' in portrait_result and portrait_result['data']:
-                # Download portrait image
-                portrait_url = portrait_result['data'][0]['url']
-                portrait_image_response = requests.get(portrait_url, timeout=30)
-                if portrait_image_response.status_code == 200:
-                    portrait_path = f"{portrait_dir}/{portrait_filename}"
-                    logger.info(f"Saving portrait image to: {portrait_path} (size: {len(portrait_image_response.content)} bytes)")
-                    try:
-                        with open(portrait_path, 'wb') as f:
-                            f.write(portrait_image_response.content)
-                        portrait_success = True
-                        logger.info(f"Portrait image saved successfully to: {portrait_path}")
-                    except Exception as e:
-                        logger.error(f"Failed to save portrait image to {portrait_path}: {e}")
-                        portrait_success = False
-                    logger.info(f"Successfully generated portrait: {portrait_path}")
-                else:
-                    error_msg = f"Failed to download portrait image: {portrait_image_response.status_code}"
-                    logger.warning(error_msg)
-                    print(f"ERROR: {error_msg}")  # Also print for script visibility
+        # Create directory structure based on orientation
+        if orientation == 'portrait':
+            if section_id == 'header':
+                image_dir = f"static/content/posts/{post_id}/header/portrait/raw"
+                filename = "header_portrait.png"
             else:
-                error_msg = "No image data returned from DALL-E portrait"
-                logger.warning(error_msg)
-                print(f"ERROR: {error_msg}")
+                image_dir = f"static/content/posts/{post_id}/sections/{section_id}/portrait/raw"
+                filename = f"{section_id}_portrait.png"
+            image_size = parameters.get('portrait_size', portrait_size)
+        else:  # landscape
+            if section_id == 'header':
+                image_dir = f"static/content/posts/{post_id}/header/landscape/raw"
+                filename = "header.png"
+            else:
+                image_dir = f"static/content/posts/{post_id}/sections/{section_id}/landscape/raw"
+                filename = f"{section_id}.png"
+            image_size = parameters.get('size', landscape_size)
+        
+        os.makedirs(image_dir, exist_ok=True)
+        image_path = f"{image_dir}/{filename}"
+        
+        # Generate image
+        api_data = {
+            'model': 'dall-e-3',
+            'prompt': image_prompt,
+            'n': 1,
+            'size': image_size,
+            'quality': quality,
+            'style': style
+        }
+        
+        logger.info(f"DALL-E {orientation} API request: {api_data}")
+        response = requests.post('https://api.openai.com/v1/images/generations', 
+                               headers=headers, json=api_data, timeout=120)
+        
+        if response.status_code != 200:
+            return {'success': False, 'error': f'DALL-E {orientation} API error: {response.status_code} - {response.text}'}
+        
+        result = response.json()
+        if 'data' not in result or not result['data']:
+            return {'success': False, 'error': f'No image data returned from DALL-E {orientation}'}
+        
+        # Download image
+        image_url = result['data'][0]['url']
+        image_response = requests.get(image_url, timeout=30)
+        if image_response.status_code != 200:
+            return {'success': False, 'error': f'Failed to download {orientation} image: {image_response.status_code}'}
+        
+        # Save image
+        with open(image_path, 'wb') as f:
+            f.write(image_response.content)
+        logger.info(f"Generated and saved {orientation} image: {image_path}")
+        
+        # Return path
+        if section_id == 'header':
+            web_path = f"/static/content/posts/{post_id}/header/{orientation}/raw/{filename}"
         else:
-            error_msg = f"DALL-E portrait API error: {portrait_response.status_code} - {portrait_response.text}"
-            logger.warning(error_msg)
-            print(f"ERROR: {error_msg}")  # Print for visibility when called from script
+            web_path = f"/static/content/posts/{post_id}/sections/{section_id}/{orientation}/raw/{filename}"
         
         return {
             'success': True,
-            'image_path': f"/static/content/posts/{post_id}/header/raw/{landscape_filename}" if section_id == 'header' else f"/static/content/posts/{post_id}/sections/{section_id}/raw/{landscape_filename}",
-            'local_path': landscape_path,
-            'portrait_generated': portrait_success,
-            'portrait_path': f"/static/content/posts/{post_id}/header/portrait/raw/{portrait_filename}" if section_id == 'header' and portrait_success else (f"/static/content/posts/{post_id}/sections/{section_id}/portrait/raw/{portrait_filename}" if portrait_success else None)
+            'image_path': web_path,
+            'local_path': image_path
         }
         
     except Exception as e:
@@ -189,8 +150,8 @@ def imaging_generate_dalle_image(image_prompt, post_id, section_id, parameters):
         return {'success': False, 'error': str(e)}
 
 
-def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
-    """Generate image using GPT-Image-1 API - generates both landscape and portrait versions"""
+def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters, orientation='landscape'):
+    """Generate image using GPT-Image-1 API - generates one image (landscape or portrait)"""
     try:
         # RELOAD .env file directly before checking - ensure we get the latest values
         env_absolute = '/Users/autojenny/Documents/projects/blog/.env'
@@ -248,122 +209,91 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
             return {'success': False, 'error': 'Invalid OPENAI_API_KEY format. API keys should start with "sk-".'}
         
         # Extract parameters
+        quality = parameters.get('quality', 'high')
+        portrait_size = parameters.get('portrait_size', '1024x1536')  # Default portrait for GPT-Image-1
         landscape_size = parameters.get('size', '1536x1024')  # Default landscape for GPT-Image-1
-        quality = parameters.get('quality', 'hd')
-        style = parameters.get('style', 'natural')
-        portrait_size = parameters.get('portrait_size', '1024x1792')  # Default portrait
         
         headers = {
             'Authorization': f'Bearer {api_key}',
             'Content-Type': 'application/json'
         }
         
-        # Create directory structure
-        if section_id == 'header':
-            landscape_dir = f"static/content/posts/{post_id}/header/raw"
-            portrait_dir = f"static/content/posts/{post_id}/header/portrait/raw"
-            landscape_filename = "header.png"
-            portrait_filename = "header_portrait.png"
-        else:
-            landscape_dir = f"static/content/posts/{post_id}/sections/{section_id}/raw"
-            portrait_dir = f"static/content/posts/{post_id}/sections/{section_id}/portrait/raw"
-            landscape_filename = f"{section_id}.png"
-            portrait_filename = f"{section_id}_portrait.png"
+        # Create directory structure based on orientation
+        if orientation == 'portrait':
+            if section_id == 'header':
+                image_dir = f"static/content/posts/{post_id}/header/portrait/raw"
+                filename = "header_portrait.png"
+            else:
+                image_dir = f"static/content/posts/{post_id}/sections/{section_id}/portrait/raw"
+                filename = f"{section_id}_portrait.png"
+            image_size = parameters.get('portrait_size', portrait_size)
+        else:  # landscape
+            if section_id == 'header':
+                image_dir = f"static/content/posts/{post_id}/header/landscape/raw"
+                filename = "header.png"
+            else:
+                image_dir = f"static/content/posts/{post_id}/sections/{section_id}/landscape/raw"
+                filename = f"{section_id}.png"
+            image_size = parameters.get('size', landscape_size)
         
-        os.makedirs(landscape_dir, exist_ok=True)
-        os.makedirs(portrait_dir, exist_ok=True)
-        
-        landscape_path = f"{landscape_dir}/{landscape_filename}"
+        os.makedirs(image_dir, exist_ok=True)
+        image_path = f"{image_dir}/{filename}"
         
         # GPT-Image-1 API endpoint
         # NOTE: GPT-Image-1 does NOT support 'style' or 'response_format' parameters (only DALL-E does)
-        # GPT-Image-1 always returns URLs by default
-        landscape_data = {
+        api_data = {
             'model': 'gpt-image-1',
             'prompt': image_prompt,
             'n': 1,
-            'size': landscape_size,
+            'size': image_size,
             'quality': quality
-            # 'style' and 'response_format' parameters removed - GPT-Image-1 doesn't support them
         }
         
-        logger.info(f"GPT-Image-1 landscape API request: {landscape_data}")
-        landscape_response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=landscape_data, timeout=120)
+        logger.info(f"GPT-Image-1 {orientation} API request: {api_data}")
+        response = requests.post('https://api.openai.com/v1/images/generations', 
+                               headers=headers, json=api_data, timeout=120)
         
-        if landscape_response.status_code != 200:
-            return {'success': False, 'error': f'GPT-Image-1 landscape API error: {landscape_response.status_code} - {landscape_response.text}'}
+        if response.status_code != 200:
+            return {'success': False, 'error': f'GPT-Image-1 {orientation} API error: {response.status_code} - {response.text}'}
         
-        landscape_result = landscape_response.json()
-        if 'data' not in landscape_result or not landscape_result['data']:
-            return {'success': False, 'error': 'No image data returned from GPT-Image-1 landscape'}
+        result = response.json()
+        if 'data' not in result or not result['data']:
+            return {'success': False, 'error': f'No image data returned from GPT-Image-1 {orientation}'}
         
-        # Check response structure - GPT-Image-1 may return different format
-        first_item = landscape_result['data'][0]
-        if 'url' not in first_item:
-            # Log the actual response structure for debugging
-            logger.error(f"GPT-Image-1 response missing 'url' key. Response structure: {landscape_result}")
-            # Check if it's b64_json instead
-            if 'b64_json' in first_item:
-                return {'success': False, 'error': 'GPT-Image-1 returned b64_json instead of url. Please set response_format to "url" in parameters.'}
-            return {'success': False, 'error': f"GPT-Image-1 response missing 'url' key. Response: {landscape_result}"}
+        # Check response structure - GPT-Image-1 may return b64_json or url
+        first_item = result['data'][0]
+        if 'b64_json' in first_item:
+            # Decode base64 and save directly
+            import base64
+            try:
+                image_data = base64.b64decode(first_item['b64_json'])
+                with open(image_path, 'wb') as f:
+                    f.write(image_data)
+                logger.info(f"Generated and saved {orientation} image from b64_json: {image_path}")
+            except Exception as e:
+                return {'success': False, 'error': f'Failed to decode b64_json image: {str(e)}'}
+        elif 'url' in first_item:
+            # Download image from URL
+            image_url = first_item['url']
+            image_response = requests.get(image_url, timeout=30)
+            if image_response.status_code != 200:
+                return {'success': False, 'error': f'Failed to download {orientation} image: {image_response.status_code}'}
+            with open(image_path, 'wb') as f:
+                f.write(image_response.content)
+            logger.info(f"Generated and saved {orientation} image from URL: {image_path}")
+        else:
+            return {'success': False, 'error': f"GPT-Image-1 response missing both 'url' and 'b64_json' keys. Response: {result}"}
         
-        # Download landscape image
-        landscape_url = first_item['url']
-        landscape_image_response = requests.get(landscape_url, timeout=30)
-        if landscape_image_response.status_code != 200:
-            return {'success': False, 'error': f'Failed to download landscape image: {landscape_image_response.status_code}'}
-        
-        # Always overwrite existing file
-        with open(landscape_path, 'wb') as f:
-            f.write(landscape_image_response.content)
-        logger.info(f"Generated and saved landscape image: {landscape_path} (overwrote existing if present)")
-        
-        # Generate portrait version
-        # NOTE: GPT-Image-1 does NOT support 'style' or 'response_format' parameters (only DALL-E does)
-        # GPT-Image-1 always returns URLs by default
-        portrait_data = {
-            'model': 'gpt-image-1',
-            'prompt': image_prompt,
-            'n': 1,
-            'size': portrait_size,
-            'quality': quality
-            # 'style' and 'response_format' parameters removed - GPT-Image-1 doesn't support them
-        }
-        
-        logger.info(f"GPT-Image-1 portrait API request: {portrait_data}")
-        portrait_response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=portrait_data, timeout=120)
-        
-        portrait_success = False
-        portrait_path = None
-        if portrait_response.status_code == 200:
-            portrait_result = portrait_response.json()
-            if 'data' in portrait_result and portrait_result['data']:
-                first_item = portrait_result['data'][0]
-                if 'url' not in first_item:
-                    logger.error(f"GPT-Image-1 portrait response missing 'url' key. Response structure: {portrait_result}")
-                    # Continue without portrait - landscape is the main image
-                    portrait_success = False
-                else:
-                    portrait_url = first_item['url']
-                    portrait_image_response = requests.get(portrait_url, timeout=30)
-                    if portrait_image_response.status_code == 200:
-                        portrait_path = f"{portrait_dir}/{portrait_filename}"
-                        with open(portrait_path, 'wb') as f:
-                            f.write(portrait_image_response.content)
-                        portrait_success = True
-                        logger.info(f"Successfully generated portrait: {portrait_path}")
-                    else:
-                        logger.warning(f"Failed to download portrait image: {portrait_image_response.status_code}")
-                        portrait_success = False
+        # Return path
+        if section_id == 'header':
+            web_path = f"/static/content/posts/{post_id}/header/{orientation}/raw/{filename}"
+        else:
+            web_path = f"/static/content/posts/{post_id}/sections/{section_id}/{orientation}/raw/{filename}"
         
         return {
             'success': True,
-            'image_path': f"/static/content/posts/{post_id}/header/raw/{landscape_filename}" if section_id == 'header' else f"/static/content/posts/{post_id}/sections/{section_id}/raw/{landscape_filename}",
-            'local_path': landscape_path,
-            'portrait_generated': portrait_success,
-            'portrait_path': f"/static/content/posts/{post_id}/header/portrait/raw/{portrait_filename}" if section_id == 'header' and portrait_success else (f"/static/content/posts/{post_id}/sections/{section_id}/portrait/raw/{portrait_filename}" if portrait_success else None)
+            'image_path': web_path,
+            'local_path': image_path
         }
         
     except Exception as e:
@@ -371,18 +301,22 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters):
         return {'success': False, 'error': str(e)}
 
 
-def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters):
-    """Generate image using SDXL - generates both landscape and portrait versions"""
+def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters, orientation='landscape'):
+    """Generate image using SDXL - generates one image (landscape or portrait)"""
     try:
         # Extract parameters
-        landscape_width = parameters.get('width', 1024)
-        landscape_height = parameters.get('height', 1024)
-        portrait_width = parameters.get('portrait_width', 1024)
-        portrait_height = parameters.get('portrait_height', 1792)
         steps = parameters.get('steps', 20)
         cfg = parameters.get('cfg', 7.5)
         lora_scale = parameters.get('lora_scale', 0.85)
         seed = parameters.get('seed', None)
+        
+        # Get dimensions based on orientation
+        if orientation == 'portrait':
+            image_width = parameters.get('portrait_width', 1024)
+            image_height = parameters.get('portrait_height', 1792)
+        else:  # landscape
+            image_width = parameters.get('width', 1792)
+            image_height = parameters.get('height', 1024)
         
         # Call SDXL script
         import subprocess
@@ -392,88 +326,66 @@ def imaging_generate_sdxl_image(image_prompt, post_id, section_id, parameters):
         if not os.path.exists(venv_python):
             return {'success': False, 'error': 'SDXL virtual environment not found. Please run setup_sdxl.sh first.'}
         
-        # Create directory structure
-        if section_id == 'header':
-            landscape_dir = f"static/content/posts/{post_id}/header/raw"
-            portrait_dir = f"static/content/posts/{post_id}/header/portrait/raw"
-            landscape_filename = "header.png"
-            portrait_filename = "header_portrait.png"
-        else:
-            landscape_dir = f"static/content/posts/{post_id}/sections/{section_id}/raw"
-            portrait_dir = f"static/content/posts/{post_id}/sections/{section_id}/portrait/raw"
-            landscape_filename = f"{section_id}.png"
-            portrait_filename = f"{section_id}_portrait.png"
+        # Create directory structure based on orientation
+        if orientation == 'portrait':
+            if section_id == 'header':
+                image_dir = f"static/content/posts/{post_id}/header/portrait/raw"
+                filename = "header_portrait.png"
+            else:
+                image_dir = f"static/content/posts/{post_id}/sections/{section_id}/portrait/raw"
+                filename = f"{section_id}_portrait.png"
+        else:  # landscape
+            if section_id == 'header':
+                image_dir = f"static/content/posts/{post_id}/header/landscape/raw"
+                filename = "header.png"
+            else:
+                image_dir = f"static/content/posts/{post_id}/sections/{section_id}/landscape/raw"
+                filename = f"{section_id}.png"
         
-        os.makedirs(landscape_dir, exist_ok=True)
-        os.makedirs(portrait_dir, exist_ok=True)
+        os.makedirs(image_dir, exist_ok=True)
+        image_path = os.path.join(image_dir, filename)
         
-        # Generate landscape version
-        landscape_cmd = [
+        # Generate image
+        cmd = [
             venv_python, 'scripts/generate_sdxl_lora_integrated.py',
             '--subject', image_prompt,
             '--post_id', str(post_id),
             '--section_id', str(section_id),
-            '--width', str(landscape_width),
-            '--height', str(landscape_height),
+            '--width', str(image_width),
+            '--height', str(image_height),
             '--steps', str(steps),
             '--cfg', str(cfg),
             '--lora_scale', str(lora_scale)
         ]
         
         if seed:
-            landscape_cmd.extend(['--seed', str(seed)])
+            cmd.extend(['--seed', str(seed)])
         
-        landscape_result = subprocess.run(landscape_cmd, capture_output=True, text=True, timeout=300)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         
-        if landscape_result.returncode != 0:
-            return {'success': False, 'error': f'SDXL landscape generation failed: {landscape_result.stderr}'}
+        if result.returncode != 0:
+            return {'success': False, 'error': f'SDXL {orientation} generation failed: {result.stderr}'}
         
-        landscape_path = os.path.join(landscape_dir, landscape_filename)
-        if not os.path.exists(landscape_path):
-            return {'success': False, 'error': 'SDXL landscape generated but image file not found'}
-        
-        # Generate portrait version
-        portrait_cmd = [
-            venv_python, 'scripts/generate_sdxl_lora_integrated.py',
-            '--subject', image_prompt,
-            '--post_id', str(post_id),
-            '--section_id', f"{section_id}_portrait",
-            '--width', str(portrait_width),
-            '--height', str(portrait_height),
-            '--steps', str(steps),
-            '--cfg', str(cfg),
-            '--lora_scale', str(lora_scale)
-        ]
-        
-        if seed:
-            portrait_cmd.extend(['--seed', str(seed)])
-        
-        portrait_result = subprocess.run(portrait_cmd, capture_output=True, text=True, timeout=300)
-        
-        portrait_success = False
-        portrait_path = None
-        if portrait_result.returncode == 0:
-            # Check if the script created the portrait file (it might use a different naming)
-            portrait_temp_path = os.path.join(portrait_dir, portrait_filename)
-            # Try to find the generated file
-            portrait_candidate = f"static/content/posts/{post_id}/sections/{section_id}_portrait/raw/{section_id}_portrait.png"
-            if os.path.exists(portrait_candidate):
-                # Move/copy to the correct location
-                os.makedirs(portrait_dir, exist_ok=True)
+        # Check if file was created (SDXL script might save to a different location)
+        if not os.path.exists(image_path):
+            # Try alternative location
+            alt_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{filename}"
+            if os.path.exists(alt_path):
                 import shutil
-                shutil.move(portrait_candidate, portrait_temp_path)
-                portrait_path = portrait_temp_path
-                portrait_success = True
-            elif os.path.exists(portrait_temp_path):
-                portrait_path = portrait_temp_path
-                portrait_success = True
+                shutil.move(alt_path, image_path)
+            else:
+                return {'success': False, 'error': f'SDXL {orientation} generated but image file not found'}
+        
+        # Return path
+        if section_id == 'header':
+            web_path = f"/static/content/posts/{post_id}/header/{orientation}/raw/{filename}"
+        else:
+            web_path = f"/static/content/posts/{post_id}/sections/{section_id}/{orientation}/raw/{filename}"
         
         return {
             'success': True,
-            'image_path': f"/static/content/posts/{post_id}/header/raw/{landscape_filename}" if section_id == 'header' else f"/static/content/posts/{post_id}/sections/{section_id}/raw/{landscape_filename}",
-            'local_path': landscape_path,
-            'portrait_generated': portrait_success,
-            'portrait_path': f"/static/content/posts/{post_id}/header/portrait/raw/{portrait_filename}" if section_id == 'header' and portrait_success else (f"/static/content/posts/{post_id}/sections/{section_id}/portrait/raw/{portrait_filename}" if portrait_success else None)
+            'image_path': web_path,
+            'local_path': image_path
         }
         
     except Exception as e:

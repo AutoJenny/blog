@@ -3,14 +3,14 @@
 
 <!-- LLM Settings Panel - Self-contained include -->
 <div class="llm-settings-panel" id="llm-settings-panel">
-    <div class="panel-header" onclick="toggleLLMSettingsAccordion()">
+    <div class="panel-header" onclick="window.llmSettingsPanel?.toggleAccordion()">
         <h4><span class="panel-name-green">LLM Settings:</span> <span id="settings-title">Loading...</span></h4>
         <div class="header-actions">
-            <i class="fas fa-chevron-up" id="settings-accordion-icon"></i>
+            <i class="fas fa-chevron-up" id="llm-settings-accordion-icon"></i>
         </div>
     </div>
     
-    <div class="panel-content" id="settings-accordion-content" style="display: none;">
+    <div class="panel-content" id="llm-settings-accordion-content" style="display: none;">
         <!-- Active Settings Display -->
         <div id="llm-provider-info" class="provider-info">
             <!-- LLM provider, model, and settings will appear here -->

@@ -89,17 +89,29 @@ def register_routes(bp):
                 # Get post type for recipe-specific handling
                 post_type = get_post_type(target_post_id)
                 
+            # Get content_type_name for header
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (target_post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+            
             return render_template('imaging/sections/image_generation.html', 
                                  post_id=post_id,
+                                 post=post,
                                  page_title='Image Generation',
-                                 post_title=post['title'],
-                                 post_status=post['status'],
+                                 post_type=post_type,
+                                 post_title=post.get('title'),
+                                 post_status=post.get('status'),
                                  post_created=post_created,
                                  post_updated=post_updated,
+                                 content_type_name=content_type_name,
                                  currentStage='imaging',
                                  currentSubstage='image-generation',
-                                 illustration_method=illustration_method,
-                                 post_type=post_type)
+                                 illustration_method=illustration_method)
         except Exception as e:
             logger.error(f"Error rendering image generation page: {str(e)}")
             return f"Error: {str(e)}", 500
@@ -147,15 +159,27 @@ def register_routes(bp):
 
                 post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'
                 post_updated = post['updated_at'].strftime('%Y-%m-%d %H:%M') if post['updated_at'] else 'Unknown'
+                
+                # Get content_type_name for header
+                cursor.execute("""
+                    SELECT ti.display_name as content_type_name
+                    FROM post p
+                    LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                    WHERE p.id = %s
+                """, (target_post_id,))
+                result = cursor.fetchone()
+                content_type_name = result.get('content_type_name') if result else None
 
             return render_template('imaging/sections/optimise.html',
                                    post_id=post_id,
+                                   post=post,
                                    page_title='Optimise',
-                                   post_title=post['title'],
-                                   post_status=post['status'],
+                                   post_type=post_type,
+                                   post_title=post.get('title'),
+                                   post_status=post.get('status'),
                                    post_created=post_created,
                                    post_updated=post_updated,
-                                   post_type=post_type,
+                                   content_type_name=content_type_name,
                                    currentStage='imaging',
                                    currentSubstage='optimise',
                                    illustration_method=illustration_method)

@@ -2,14 +2,14 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/prompt-builder-panel-image-prompts.css') }}">
 
 <div class="prompt-builder-panel" id="prompt-builder-panel">
-    <div class="panel-header">
+    <div class="panel-header" onclick="window.promptBuilderPanel?.toggleAccordion()">
         <h4><span class="panel-name-green">Image Prompt Builder:</span> <span id="prompt-builder-section-title">Select a section to build prompts</span></h4>
         <div class="header-actions">
-            <i class="fas fa-chevron-down" id="prompt-builder-accordion-icon"></i>
+            <i class="fas fa-chevron-up" id="prompt-builder-accordion-icon"></i>
         </div>
     </div>
     
-    <div class="panel-content" id="prompt-builder-accordion-content" style="display: block;">
+    <div class="panel-content" id="prompt-builder-accordion-content" style="display: none;">
         <!-- Selected Concept Display -->
         <div class="selected-concept-section">
             <h5>Selected Concept:</h5>

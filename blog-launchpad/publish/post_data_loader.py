@@ -183,7 +183,7 @@ def get_post_sections_with_images(post_id):
             caption_text = section.get('image_captions') or ''
             alt_text = f"Image for {section.get('section_heading', 'section')}"
             
-            # ONLY use post_images table - NO FALLBACKS
+            # Check post_images table first
             cur.execute("""
                 SELECT i.file_path as path, i.filename, i.alt_text, i.caption
                 FROM post_images pi
@@ -198,6 +198,32 @@ def get_post_sections_with_images(post_id):
                     caption_text = db_image['caption']
                 if db_image.get('alt_text'):
                     alt_text = db_image['alt_text']
+            
+            # Priority 2: Fallback to filesystem for optimized images (if not in database yet)
+            if not image_path:
+                import os
+                candidate = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
+                filesystem_path = candidate.lstrip('/')
+                
+                # Try multiple base directories
+                possible_bases = [
+                    os.getcwd(),  # Current working directory
+                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),  # Blog directory
+                ]
+                
+                # Also try with Flask's instance_path if available
+                try:
+                    from flask import current_app
+                    if current_app and hasattr(current_app, 'root_path'):
+                        possible_bases.insert(0, current_app.root_path)
+                except:
+                    pass
+                
+                for base in possible_bases:
+                    test_path = os.path.join(base, filesystem_path)
+                    if os.path.exists(test_path):
+                        image_path = candidate
+                        break
             
             if image_path:
                 # Found image in post_images table

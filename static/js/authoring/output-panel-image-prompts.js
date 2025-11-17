@@ -52,28 +52,48 @@ class ImagePromptsOutputPanel {
         window.addEventListener('sections:batch-generate', (event) => {
             this.onBatchGenerate(event.detail.ids);
         });
-
-        // Listen for changes to the compiled prompt in Prompt Builder Panel
-        const compiledPromptTextarea = document.getElementById('compiled-prompt-textarea');
-        if (compiledPromptTextarea) {
-            compiledPromptTextarea.addEventListener('input', () => {
-                // Update output panel when compiled prompt changes
-                if (this.currentSection) {
-                    this.loadExistingPrompt(this.currentSection);
-                }
-            });
-        }
     }
 
     setupAccordion() {
-        const header = document.querySelector('#image-prompts-output-panel .panel-header');
+        this.restoreAccordionState();
+    }
+
+    restoreAccordionState() {
+        const savedState = sessionStorage.getItem('image-prompts-output-accordion-state');
         const content = document.getElementById('image-prompts-accordion-content');
         const icon = document.getElementById('image-prompts-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+    }
 
-        if (header && content && icon) {
-            // Keep output panel permanently open (no accordion functionality)
+    toggleAccordion() {
+        const content = document.getElementById('image-prompts-accordion-content');
+        const icon = document.getElementById('image-prompts-accordion-icon');
+        
+        if (!content || !icon) return;
+        
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
+        
+        if (isCollapsed) {
             content.style.display = 'block';
-            icon.style.display = 'none'; // Hide the chevron icon since it's not functional
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            sessionStorage.setItem('image-prompts-output-accordion-state', 'open');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            sessionStorage.setItem('image-prompts-output-accordion-state', 'closed');
         }
     }
 
@@ -98,19 +118,7 @@ class ImagePromptsOutputPanel {
         
         if (!textarea || !charCount) return;
 
-        // PRIORITY 1: Use compiled prompt from Prompt Builder Panel (approved words)
-        const compiledPromptTextarea = document.getElementById('compiled-prompt-textarea');
-        if (compiledPromptTextarea && compiledPromptTextarea.value.trim()) {
-            const compiledPrompt = compiledPromptTextarea.value.trim();
-            textarea.value = compiledPrompt;
-            charCount.textContent = `${compiledPrompt.length} chars`;
-            this.currentPrompt = compiledPrompt;
-            console.log('[ImagePromptsOutputPanel] Loaded compiled prompt from Prompt Builder Panel');
-            this.updateButtonStates();
-            return;
-        }
-
-        // PRIORITY 2: Check if section has existing saved image prompts
+        // Check if section has existing image prompts
         if (section.image_prompts) {
             let promptText = '';
             
@@ -125,22 +133,12 @@ class ImagePromptsOutputPanel {
                 promptText = section.image_prompts.image_prompt || section.image_prompts.prompt || '';
             }
             
-            // Only use stored prompt if it's not a raw concept description
-            // Raw concepts often start with action words like "cyclist pedaling"
-            if (promptText && !promptText.toLowerCase().startsWith('cyclist') && 
-                !promptText.toLowerCase().match(/^(pedaling|walking|running|riding|swimming)/)) {
-                textarea.value = promptText;
-                charCount.textContent = `${promptText.length} chars`;
-                this.currentPrompt = promptText;
-                
-                // Update metadata if available
-                this.updateMetadata(section.image_prompts);
-            } else {
-                // Stored prompt looks like a raw concept, clear it
-                textarea.value = '';
-                charCount.textContent = '0 chars';
-                this.clearMetadata();
-            }
+            textarea.value = promptText;
+            charCount.textContent = `${promptText.length} chars`;
+            
+            // Update metadata if available
+            this.updateMetadata(section.image_prompts);
+            
         } else {
             textarea.value = '';
             charCount.textContent = '0 chars';

@@ -62,7 +62,8 @@ def register_routes(bp):
 
     @bp.route('/api/posts/<int:post_id>/sections/<section_id>/raw-image')
     def imaging_get_raw_image(post_id, section_id):
-        """Get raw image path for a section, accepting both numeric and string section IDs"""
+        """Get raw image path(s) for a section, accepting both numeric and string section IDs.
+        Returns both landscape and portrait images if available."""
         try:
             # Resolve section_id: if numeric, use directly; if like section_1, map to section_order = 1
             resolved_section_id = None
@@ -88,15 +89,35 @@ def register_routes(bp):
             if resolved_section_id is None:
                 return jsonify({'success': False, 'error': f'Unable to resolve section id: {section_id}'}), 400
 
-            # Check for raw image
-            raw_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png"
+            # Check for landscape image (new structure)
+            landscape_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/landscape/raw/{resolved_section_id}.png"
+            portrait_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/portrait/raw/{resolved_section_id}_portrait.png"
             
-            if os.path.exists(raw_path):
-                return jsonify({
-                    'success': True,
-                    'path': f"/static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png",
-                    'type': 'raw'
-                })
+            # Also check old structure for backward compatibility
+            old_raw_path = f"static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png"
+            
+            result = {
+                'success': True,
+                'landscape_path': None,
+                'portrait_path': None,
+                'path': None,  # For backward compatibility
+                'type': 'raw'
+            }
+            
+            if os.path.exists(landscape_path):
+                result['landscape_path'] = f"/static/content/posts/{post_id}/sections/{resolved_section_id}/landscape/raw/{resolved_section_id}.png"
+                result['path'] = result['landscape_path']  # Default to landscape for backward compatibility
+            
+            if os.path.exists(portrait_path):
+                result['portrait_path'] = f"/static/content/posts/{post_id}/sections/{resolved_section_id}/portrait/raw/{resolved_section_id}_portrait.png"
+            
+            # Fallback to old structure if new structure doesn't exist
+            if not result['landscape_path'] and os.path.exists(old_raw_path):
+                result['path'] = f"/static/content/posts/{post_id}/sections/{resolved_section_id}/raw/{resolved_section_id}.png"
+                result['landscape_path'] = result['path']
+            
+            if result['landscape_path'] or result['portrait_path']:
+                return jsonify(result)
             else:
                 return jsonify({'success': False, 'message': 'No raw image found for this section'})
 

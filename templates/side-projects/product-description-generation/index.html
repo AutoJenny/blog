@@ -1,0 +1,1692 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block head %}
+<style>
+/* Custom Dropdown Styles - Built with divs, fully controlled */
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.custom-dropdown-button {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background-color: #374151;
+    color: #ffffff;
+    border: 1px solid #4b5563;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.custom-dropdown-button:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+}
+
+.custom-dropdown-button.open {
+    border-color: #8b5cf6;
+    background-color: #4b5563;
+}
+
+.custom-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.25rem;
+    margin-top: 0.25rem;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.custom-dropdown-menu.open {
+    display: block;
+}
+
+.custom-dropdown-item {
+    padding: 0.75rem;
+    color: #ffffff;
+    background-color: #374151;
+    cursor: pointer;
+    border-bottom: 1px solid #4b5563;
+    transition: background-color 0.2s;
+}
+
+.custom-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.custom-dropdown-item:hover {
+    background-color: #4b5563;
+}
+
+.custom-dropdown-item.selected {
+    background-color: #8b5cf6;
+    color: #ffffff;
+}
+
+/* Accordion Styles */
+.accordion-section {
+    margin-bottom: 1rem;
+}
+
+.accordion-header {
+    padding: 1rem;
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.accordion-header:hover {
+    background-color: #4b5563;
+}
+
+.accordion-header.active {
+    background-color: #4b5563;
+    border-color: #8b5cf6;
+}
+
+.accordion-content {
+    display: none;
+    padding: 1rem;
+    background-color: #1f2937;
+    border: 1px solid #4b5563;
+    border-top: none;
+    border-radius: 0 0 0.375rem 0.375rem;
+}
+
+.accordion-content.active {
+    display: block;
+}
+
+/* Product item styles */
+.product-item {
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    background-color: #1f2937;
+}
+
+.product-item:hover {
+    background-color: #374151;
+    border-color: #8b5cf6;
+}
+
+.product-item.active {
+    background-color: #4b5563;
+    border-color: #8b5cf6;
+}
+
+.generation-item {
+    border-left: 3px solid #8b5cf6;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Input styles */
+input[type="text"],
+input[type="number"] {
+    color: #ffffff;
+    background-color: #374151;
+}
+
+input[type="text"]::placeholder,
+input[type="number"]::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-full px-4 py-8">
+    <!-- Back to Side Projects Link -->
+    <div class="mb-6">
+        <a href="/side-projects/" class="text-dark-accent hover:text-white transition">
+            <i class="fa-solid fa-arrow-left"></i> Back to Side Projects
+        </a>
+    </div>
+    
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-white mb-4">
+            <i class="fa-solid fa-pen-to-square text-dark-accent"></i>
+            Product Description Generation
+        </h1>
+        <p class="text-xl text-dark-accent max-w-3xl mx-auto">
+            AI-powered tool for generating improved product descriptions. Full control and visibility of prompts, LLM settings, and outputs.
+        </p>
+    </div>
+
+    {% if error %}
+    <div class="bg-red-900 border border-red-700 rounded-lg p-4 mb-6">
+        <p class="text-red-200">Error: {{ error }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Stats Section - Single Line -->
+    {% if stats %}
+    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 mb-6">
+        <div class="flex flex-wrap items-center gap-6 text-sm">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-white">{{ stats.total_products or 0 }}</span>
+                <span class="text-gray-400">Total Products</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-yellow-400">{{ stats.products_under_30_words or 0 }}</span>
+                <span class="text-gray-400">Under 30 Words</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-white">{{ "%.1f"|format(stats.avg_word_count or 0) }}</span>
+                <span class="text-gray-400">Avg Word Count</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-green-400">{{ generated_count }}</span>
+                <span class="text-gray-400">Generated</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Workspace -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-full">
+        <!-- Left Panel: Product List Accordion -->
+        <div class="lg:col-span-1">
+            <div class="accordion-section">
+                <div class="accordion-header active" data-accordion="products-list">
+                    <h2 class="text-xl font-bold text-white">Products Needing Improvement</h2>
+                    <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                </div>
+                <div class="accordion-content active" id="products-list-content">
+                    <!-- Search and Filter -->
+                    <div class="mb-4">
+                        <input type="text" id="product-search" placeholder="Search products..." 
+                               class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-purple-500 focus:outline-none">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="text-gray-400 text-sm block mb-1">Word Threshold:</label>
+                        <input type="number" id="word-threshold" value="30" min="1" max="100"
+                               class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-purple-500 focus:outline-none">
+                    </div>
+                    
+                    <button id="load-products-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mb-4">
+                        <i class="fa-solid fa-refresh"></i> Load Products
+                    </button>
+                    
+                    <!-- Bulk Actions -->
+                    <div class="mb-4 pb-4 border-b border-gray-700">
+                        <label class="text-gray-400 text-sm flex items-center mb-2">
+                            <input type="checkbox" id="select-all-products" class="mr-2" checked>
+                            Select All
+                        </label>
+                        <label class="text-gray-400 text-sm flex items-center mb-2">
+                            <input type="checkbox" id="hide-generated" class="mr-2">
+                            Hide Already Generated
+                        </label>
+                        <button id="bulk-generate-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-2">
+                            <i class="fa-solid fa-bolt"></i> Bulk Generate Selected
+                        </button>
+                        <button id="view-results-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" style="display: none;">
+                            <i class="fa-solid fa-list"></i> View Results
+                        </button>
+                    </div>
+                    
+                    <!-- Product List -->
+                    <div id="product-list" class="space-y-2 max-h-96 overflow-y-auto">
+                        <p class="text-gray-400 text-center py-4">Click "Load Products" to see products</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Settings & Product Details -->
+        <div class="lg:col-span-3">
+            <!-- Settings Panel Accordion (LLM Settings & Prompt Preview) -->
+            <div id="settings-panel" class="accordion-section mb-6" style="display: none;">
+                <div class="accordion-header active" data-accordion="settings-panel">
+                    <h2 class="text-2xl font-bold text-white">Generation Settings</h2>
+                    <div class="flex items-center gap-4">
+                        <button id="generate-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                            <i class="fa-solid fa-magic"></i> Generate Description
+                        </button>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="accordion-content active" id="settings-panel-content">
+                
+                <!-- LLM Settings Accordion -->
+                <div class="accordion-section mb-4">
+                    <div class="accordion-header" data-accordion="llm-settings">
+                        <h3 class="text-lg font-bold text-white">LLM Settings</h3>
+                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content" id="llm-settings-content">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-gray-400 text-sm block mb-1">Provider:</label>
+                                <div class="custom-dropdown" id="provider-dropdown">
+                                    <button type="button" class="custom-dropdown-button" id="provider-button">
+                                        <span id="provider-value">Ollama</span>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                    <div class="custom-dropdown-menu" id="provider-menu">
+                                        <div class="custom-dropdown-item selected" data-value="ollama">Ollama</div>
+                                        <div class="custom-dropdown-item" data-value="openai">OpenAI</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="llm-provider" value="ollama">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 text-sm block mb-1">Model:</label>
+                                <div class="custom-dropdown" id="model-dropdown">
+                                    <button type="button" class="custom-dropdown-button" id="model-button">
+                                        <span id="model-value">llama3.2:latest</span>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                    <div class="custom-dropdown-menu" id="model-menu">
+                                        <div class="custom-dropdown-item selected" data-value="llama3.2:latest">llama3.2:latest</div>
+                                        <div class="custom-dropdown-item" data-value="gpt-4o">GPT-4o</div>
+                                        <div class="custom-dropdown-item" data-value="gpt-4-turbo">GPT-4 Turbo</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="llm-model" value="llama3.2:latest">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 text-sm block mb-1">Temperature: <span id="temp-value">0.7</span></label>
+                                <input type="range" id="llm-temperature" min="0" max="2" step="0.1" value="0.7" class="w-full">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 text-sm block mb-1">Max Tokens:</label>
+                                <input type="number" id="llm-max-tokens" value="2000" min="100" max="4000" step="100"
+                                       class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="text-gray-400 text-sm flex items-center">
+                                <input type="checkbox" id="include-image" class="mr-2">
+                                Include product image (if LLM supports vision)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Prompt Preview Accordion -->
+                <div class="accordion-section">
+                    <div class="accordion-header active" data-accordion="prompt-preview">
+                        <h3 class="text-lg font-bold text-white">Prompt Preview</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="prompt-preview-content">
+                        <div class="mb-4">
+                            <h4 class="text-white font-semibold mb-2">System Prompt:</h4>
+                            <pre id="system-prompt" class="bg-gray-900 p-3 rounded text-sm text-gray-300 overflow-x-auto max-h-64 overflow-y-auto"></pre>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-semibold mb-2">User Prompt:</h4>
+                            <pre id="user-prompt" class="bg-gray-900 p-3 rounded text-sm text-gray-300 overflow-x-auto max-h-96 overflow-y-auto"></pre>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <!-- Product Details Panel Accordion -->
+            <div id="product-details-panel" class="accordion-section mb-6" style="display: none;">
+                <div class="accordion-header active" data-accordion="product-details">
+                    <div class="flex justify-between items-center w-full">
+                        <h2 id="product-name" class="text-2xl font-bold text-white"></h2>
+                        <a id="clan-link" href="#" target="_blank" class="text-purple-400 hover:text-purple-300 flex items-center gap-2 mr-4">
+                            <i class="fa-solid fa-external-link"></i> View on Clan.com
+                        </a>
+                    </div>
+                    <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                </div>
+                <div class="accordion-content active" id="product-details-content">
+                
+                <!-- Product Info Accordion -->
+                <div class="accordion-section mb-4">
+                    <div class="accordion-header active" data-accordion="product-info">
+                        <h3 class="text-lg font-bold text-white">Product Information</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="product-info-content">
+                        <div id="product-info"></div>
+                    </div>
+                </div>
+                
+                <!-- Short Description Accordion -->
+                <div class="accordion-section mb-4" id="short-description-section" style="display: none;">
+                    <div class="accordion-header active" data-accordion="short-description">
+                        <h3 class="text-lg font-bold text-white">Short Description (Blurb)</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="short-description-content">
+                        <div id="short-description" class="text-gray-300 whitespace-pre-wrap"></div>
+                        <div id="short-description-stats" class="mt-2 text-sm text-gray-400"></div>
+                    </div>
+                </div>
+                
+                <!-- Product Options Accordion -->
+                <div class="accordion-section mb-4" id="product-options-section" style="display: none;">
+                    <div class="accordion-header active" data-accordion="product-options">
+                        <h3 class="text-lg font-bold text-white">Product Options</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="product-options-content">
+                        <div id="product-options" class="text-gray-300"></div>
+                    </div>
+                </div>
+                
+                <!-- Specifications Accordion -->
+                <div class="accordion-section mb-4" id="specifications-section" style="display: none;">
+                    <div class="accordion-header active" data-accordion="specifications">
+                        <h3 class="text-lg font-bold text-white">Specifications</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="specifications-content">
+                        <div id="specifications" class="text-gray-300"></div>
+                    </div>
+                </div>
+                
+                <!-- Additional Attributes Accordion -->
+                <div class="accordion-section mb-4" id="additional-attributes-section" style="display: none;">
+                    <div class="accordion-header active" data-accordion="additional-attributes">
+                        <h3 class="text-lg font-bold text-white">Additional Attributes</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="additional-attributes-content">
+                        <div id="additional-attributes" class="text-gray-300"></div>
+                    </div>
+                </div>
+                
+                <!-- Supplier Information Accordion -->
+                <div class="accordion-section mb-4" id="supplier-section" style="display: none;">
+                    <div class="accordion-header active" data-accordion="supplier">
+                        <h3 class="text-lg font-bold text-white">Supplier/Manufacturer Information</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="supplier-content">
+                        <div id="supplier-info" class="text-gray-300 whitespace-pre-wrap"></div>
+                    </div>
+                </div>
+                
+                <!-- Category Context Accordion -->
+                <div class="accordion-section mb-4" id="category-context-section" style="display: none;">
+                    <div class="accordion-header active" data-accordion="category-context">
+                        <h3 class="text-lg font-bold text-white">Category Context (Fallback)</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="category-context-content">
+                        <div id="category-context" class="text-gray-300"></div>
+                    </div>
+                </div>
+                
+                <!-- Original Description Accordion -->
+                <div class="accordion-section mb-4">
+                    <div class="accordion-header active" data-accordion="original-description">
+                        <h3 class="text-lg font-bold text-white">Original Description</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="original-description-content">
+                        <div id="original-description" class="text-gray-300 whitespace-pre-wrap max-h-96 overflow-y-auto"></div>
+                        <div id="original-stats" class="mt-2 text-sm text-gray-400"></div>
+                    </div>
+                </div>
+                
+                <!-- Generated Description Accordion -->
+                <div class="accordion-section mb-4">
+                    <div class="accordion-header active" data-accordion="generated-description">
+                        <h3 class="text-lg font-bold text-white">Generated Description</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="generated-description-content">
+                        <div id="generated-description" class="text-gray-300 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                            <p class="text-gray-500 italic">No generation yet. Click "Generate Description" to create one.</p>
+                        </div>
+                        <div id="generated-stats" class="mt-2 text-sm text-gray-400"></div>
+                    </div>
+                </div>
+                
+                <!-- Previous Generations Accordion -->
+                <div class="accordion-section">
+                    <div class="accordion-header active" data-accordion="previous-generations">
+                        <h3 class="text-lg font-bold text-white">Previous Generations</h3>
+                        <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                    </div>
+                    <div class="accordion-content active" id="previous-generations-content">
+                        <div id="generations-list" class="space-y-3">
+                            <p class="text-gray-500 italic">No previous generations</p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="bg-gray-800 rounded-lg p-12 border border-gray-700 text-center">
+                <i class="fa-solid fa-box-open text-6xl text-gray-600 mb-4"></i>
+                <p class="text-gray-400 text-lg">Select a product from the list to begin</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results Panel at Bottom of Page -->
+    <div class="mt-8">
+        <div id="bulk-results-panel" class="accordion-section">
+            <div class="accordion-header active" data-accordion="bulk-results">
+                <h2 class="text-2xl font-bold text-white">Bulk Generation Results</h2>
+                <div class="flex items-center gap-4">
+                    <button id="view-recent-results-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Load Recent (Last 24 Hours)
+                    </button>
+                    <button id="export-pdf-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+                        <i class="fa-solid fa-file-pdf"></i> Export PDF
+                    </button>
+                    <button id="export-rtf-btn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm">
+                        <i class="fa-solid fa-file-word"></i> Export RTF
+                    </button>
+                    <i class="fa-solid fa-chevron-up text-gray-400"></i>
+                </div>
+            </div>
+            <div class="accordion-content active" id="bulk-results-content">
+                <div id="bulk-results-list" class="space-y-4">
+                    <p class="text-gray-400 text-center py-8">No results yet. Generate descriptions or click "Load Recent" to view previous generations.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentProductId = null;
+let currentProduct = null;
+let currentGenerations = [];
+let bulkResults = [];
+
+// Select a single product (global function for onclick)
+window.selectProduct = function(productId) {
+    document.querySelectorAll('.product-item').forEach(i => i.classList.remove('active'));
+    const item = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+    if (item) {
+        item.classList.add('active');
+        loadProductDetails(productId);
+    }
+};
+
+// Accordion functionality with session storage
+function initAccordions() {
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        const accordionId = header.dataset.accordion;
+        const content = document.getElementById(`${accordionId}-content`);
+        const icon = header.querySelector('i');
+        
+        // Load state from session storage
+        const savedState = sessionStorage.getItem(`accordion-${accordionId}`);
+        if (savedState === 'closed') {
+            content.classList.remove('active');
+            header.classList.remove('active');
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        } else {
+            // Default to open for internal product detail accordions and LLM settings
+            if (accordionId.startsWith('product-') || accordionId === 'short-description' || 
+                accordionId === 'product-options' || accordionId === 'specifications' ||
+                accordionId === 'additional-attributes' || accordionId === 'supplier' ||
+                accordionId === 'category-context' || accordionId === 'original-description' ||
+                accordionId === 'generated-description' || accordionId === 'previous-generations') {
+                content.classList.add('active');
+                header.classList.add('active');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+        
+        header.addEventListener('click', function(e) {
+            // Don't toggle if clicking on a link or button inside the header
+            if (e.target.closest('a') || e.target.closest('button') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+                e.stopPropagation();
+                return;
+            }
+            
+            const isActive = content.classList.contains('active');
+            
+            if (isActive) {
+                content.classList.remove('active');
+                this.classList.remove('active');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+                sessionStorage.setItem(`accordion-${accordionId}`, 'closed');
+            } else {
+                content.classList.add('active');
+                this.classList.add('active');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+                sessionStorage.setItem(`accordion-${accordionId}`, 'open');
+            }
+        });
+    });
+}
+
+// Custom Dropdown Implementation
+function initCustomDropdowns() {
+    // Provider dropdown
+    const providerDropdown = document.getElementById('provider-dropdown');
+    const providerButton = document.getElementById('provider-button');
+    const providerMenu = document.getElementById('provider-menu');
+    const providerValue = document.getElementById('provider-value');
+    const providerInput = document.getElementById('llm-provider');
+    
+    providerButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = providerMenu.classList.contains('open');
+        closeAllDropdowns();
+        if (!isOpen) {
+            providerMenu.classList.add('open');
+            providerButton.classList.add('open');
+        }
+    });
+    
+    providerMenu.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const value = item.dataset.value;
+            providerInput.value = value;
+            providerValue.textContent = item.textContent;
+            providerMenu.querySelectorAll('.custom-dropdown-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            closeAllDropdowns();
+        });
+    });
+    
+    // Model dropdown
+    const modelDropdown = document.getElementById('model-dropdown');
+    const modelButton = document.getElementById('model-button');
+    const modelMenu = document.getElementById('model-menu');
+    const modelValue = document.getElementById('model-value');
+    const modelInput = document.getElementById('llm-model');
+    
+    modelButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = modelMenu.classList.contains('open');
+        closeAllDropdowns();
+        if (!isOpen) {
+            modelMenu.classList.add('open');
+            modelButton.classList.add('open');
+        }
+    });
+    
+    modelMenu.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const value = item.dataset.value;
+            modelInput.value = value;
+            modelValue.textContent = item.textContent;
+            modelMenu.querySelectorAll('.custom-dropdown-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            closeAllDropdowns();
+        });
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-dropdown')) {
+            closeAllDropdowns();
+        }
+    });
+}
+
+function closeAllDropdowns() {
+    document.querySelectorAll('.custom-dropdown-menu').forEach(menu => {
+        menu.classList.remove('open');
+    });
+    document.querySelectorAll('.custom-dropdown-button').forEach(btn => {
+        btn.classList.remove('open');
+    });
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+async function loadProducts() {
+    const threshold = document.getElementById('word-threshold').value;
+    const search = document.getElementById('product-search').value;
+    const listEl = document.getElementById('product-list');
+    
+    listEl.innerHTML = '<p class="text-gray-400 text-center py-4">Loading...</p>';
+    
+    try {
+        const response = await fetch(`/side-projects/product-description-generation/api/products?threshold=${threshold}&search=${encodeURIComponent(search)}&limit=50`);
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.products.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-400 text-center py-4">No products found</p>';
+                return;
+            }
+            
+            listEl.innerHTML = data.products.map(p => `
+                <div class="product-item flex items-start gap-2" data-product-id="${p.id}">
+                    <input type="checkbox" class="product-checkbox mt-1" data-product-id="${p.id}" checked>
+                    <div class="flex-1 cursor-pointer">
+                        <div class="flex items-center gap-2">
+                            <div class="font-semibold text-white text-sm">${p.name}</div>
+                            ${p.has_generation ? `<span class="px-2 py-0.5 bg-green-600 text-white text-xs rounded" title="Has ${p.generation_count || 1} generated description(s)">Generated</span>` : ''}
+                        </div>
+                        <div class="text-gray-400 text-xs mt-1">${p.sku}</div>
+                        <div class="text-yellow-400 text-xs mt-1">${p.description_word_count} words</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add click handlers for product selection
+            document.querySelectorAll('.product-item').forEach(item => {
+                const checkbox = item.querySelector('.product-checkbox');
+                const clickableArea = item.querySelector('.flex-1');
+                
+                checkbox.addEventListener('change', function(e) {
+                    e.stopPropagation();
+                    updateSelectAllState();
+                });
+                
+                clickableArea.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'INPUT') {
+                        const productId = parseInt(item.dataset.productId);
+                        window.selectProduct(productId);
+                    }
+                });
+            });
+            
+            // Update select all checkbox state
+            updateSelectAllState();
+            
+            // Hide empty state and show settings panel when products are loaded
+            const emptyState = document.getElementById('empty-state');
+            const settingsPanel = document.getElementById('settings-panel');
+            if (data.products.length > 0) {
+                if (emptyState) {
+                    emptyState.style.display = 'none';
+                }
+                if (settingsPanel) {
+                    settingsPanel.style.display = 'block';
+                }
+            }
+        } else {
+            listEl.innerHTML = `<p class="text-red-400 text-center py-4">Error: ${data.error}</p>`;
+        }
+    } catch (error) {
+        listEl.innerHTML = `<p class="text-red-400 text-center py-4">Error loading products</p>`;
+        console.error(error);
+    }
+}
+
+async function previewPrompt(productId) {
+    try {
+        const response = await fetch('/side-projects/product-description-generation/api/preview-prompt', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({product_id: productId})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('system-prompt').textContent = data.system_prompt || '';
+            document.getElementById('user-prompt').textContent = data.user_prompt || '';
+        } else {
+            console.error('Error previewing prompt:', data.error);
+        }
+    } catch (error) {
+        console.error('Error previewing prompt:', error);
+    }
+}
+
+async function loadProductDetails(productId) {
+    currentProductId = productId;
+    const panel = document.getElementById('product-details-panel');
+    const emptyState = document.getElementById('empty-state');
+    const settingsPanel = document.getElementById('settings-panel');
+    
+    if (!panel) {
+        console.error('Product details panel not found');
+        return Promise.resolve();
+    }
+    
+    panel.style.display = 'block';
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+    if (settingsPanel) {
+        settingsPanel.style.display = 'block';
+    }
+    
+    // Preview prompt immediately when product is selected
+    previewPrompt(productId);
+    
+    try {
+        const response = await fetch(`/side-projects/product-description-generation/api/products/${productId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            currentProduct = data.product;
+            currentGenerations = data.generations || [];
+            displayProductDetails(data);
+        } else {
+            alert('Error loading product: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error loading product details');
+        console.error(error);
+    }
+    
+    return Promise.resolve();
+}
+
+function displayProductDetails(data) {
+    const product = data.product;
+    
+    document.getElementById('product-name').textContent = product.name;
+    
+    // Set Clan.com link
+    if (product.url) {
+        const clanLink = document.getElementById('clan-link');
+        clanLink.href = product.url;
+        clanLink.style.display = 'flex';
+    } else {
+        document.getElementById('clan-link').style.display = 'none';
+    }
+    
+    // Product info
+    const infoHtml = `
+        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+            <div><span class="text-gray-400">SKU:</span> <span class="text-white">${product.sku}</span></div>
+            <div><span class="text-gray-400">Words:</span> <span class="text-white">${product.description_word_count}</span></div>
+            <div><span class="text-gray-400">Characters:</span> <span class="text-white">${product.description_char_count}</span></div>
+            ${product.image_url ? `<div class="col-span-2"><img src="${product.image_url}" alt="${product.name}" class="max-w-xs rounded"></div>` : ''}
+        </div>
+        ${data.category_breadcrumbs.length > 0 ? `
+            <div class="mb-4">
+                <span class="text-gray-400 text-sm">Categories:</span>
+                ${data.category_breadcrumbs.map(cats => `<div class="text-white text-sm">${cats.map(c => c.name).join(' > ')}</div>`).join('')}
+            </div>
+        ` : ''}
+    `;
+    document.getElementById('product-info').innerHTML = infoHtml;
+    
+    // Short description (blurb)
+    const shortDescSection = document.getElementById('short-description-section');
+    const shortDescEl = document.getElementById('short-description');
+    const shortDescStatsEl = document.getElementById('short-description-stats');
+    
+    if (product.short_description) {
+        shortDescEl.textContent = product.short_description;
+        shortDescStatsEl.textContent = 
+            `${product.short_description_word_count || 0} words, ${product.short_description_char_count || 0} characters`;
+        shortDescSection.style.display = 'block';
+    } else {
+        shortDescSection.style.display = 'none';
+    }
+    
+    // Product options (configurable_options) - keeping existing logic
+    const optionsSection = document.getElementById('product-options-section');
+    const optionsEl = document.getElementById('product-options');
+    
+    if (product.configurable_options) {
+        let optionsHtml = '';
+        try {
+            const options = typeof product.configurable_options === 'string' 
+                ? JSON.parse(product.configurable_options) 
+                : product.configurable_options;
+            
+            if (Array.isArray(options) && options.length > 0) {
+                options.forEach(option => {
+                    if (typeof option === 'object' && option !== null) {
+                        const optionType = option.type || option.name || 'Option';
+                        const optionValues = option.values || option.options || [];
+                        
+                        optionsHtml += `<div class="mb-3 pb-3 border-b border-gray-700">`;
+                        optionsHtml += `<div class="font-semibold text-white mb-2">${optionType}:</div>`;
+                        
+                        if (Array.isArray(optionValues) && optionValues.length > 0) {
+                            optionsHtml += `<div class="flex flex-wrap gap-2">`;
+                            optionValues.forEach(value => {
+                                const displayValue = typeof value === 'object' ? (value.label || value.value || JSON.stringify(value)) : value;
+                                optionsHtml += `<span class="px-2 py-1 bg-gray-700 text-white rounded text-sm">${displayValue}</span>`;
+                            });
+                            optionsHtml += `</div>`;
+                        } else {
+                            optionsHtml += `<span class="text-gray-400 text-sm">No values available</span>`;
+                        }
+                        optionsHtml += `</div>`;
+                    } else if (typeof option === 'string') {
+                        optionsHtml += `<div class="mb-2"><span class="px-2 py-1 bg-gray-700 text-white rounded text-sm">${option}</span></div>`;
+                    }
+                });
+            } else if (typeof options === 'object' && options !== null) {
+                Object.entries(options).forEach(([key, value]) => {
+                    optionsHtml += `<div class="mb-3 pb-3 border-b border-gray-700">`;
+                    optionsHtml += `<div class="font-semibold text-white mb-2">${key}:</div>`;
+                    if (Array.isArray(value)) {
+                        optionsHtml += `<div class="flex flex-wrap gap-2">`;
+                        value.forEach(v => {
+                            const displayValue = typeof v === 'object' ? JSON.stringify(v) : v;
+                            optionsHtml += `<span class="px-2 py-1 bg-gray-700 text-white rounded text-sm">${displayValue}</span>`;
+                        });
+                        optionsHtml += `</div>`;
+                    } else {
+                        optionsHtml += `<span class="text-gray-300">${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</span>`;
+                    }
+                    optionsHtml += `</div>`;
+                });
+            }
+            
+            if (optionsHtml) {
+                optionsEl.innerHTML = optionsHtml;
+                optionsSection.style.display = 'block';
+            } else {
+                optionsSection.style.display = 'none';
+            }
+        } catch (e) {
+            optionsEl.innerHTML = `<p class="text-gray-400 text-sm">Error parsing options: ${e.message}</p>`;
+            optionsSection.style.display = 'block';
+        }
+    } else {
+        optionsSection.style.display = 'none';
+    }
+    
+    // Specifications - keeping existing logic
+    const specsSection = document.getElementById('specifications-section');
+    const specsEl = document.getElementById('specifications');
+    
+    if (product.specifications) {
+        let specsHtml = '';
+        try {
+            const specs = typeof product.specifications === 'string' 
+                ? JSON.parse(product.specifications) 
+                : product.specifications;
+            
+            if (typeof specs === 'object' && specs !== null) {
+                if (Array.isArray(specs)) {
+                    specs.forEach(spec => {
+                        if (typeof spec === 'object' && spec !== null) {
+                            Object.entries(spec).forEach(([key, value]) => {
+                                if (value) {
+                                    specsHtml += `<div class="mb-2"><span class="text-gray-400 font-semibold">${key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span> <span class="text-white">${value}</span></div>`;
+                                }
+                            });
+                        } else {
+                            specsHtml += `<div class="mb-2"><span class="text-white">${spec}</span></div>`;
+                        }
+                    });
+                } else {
+                    Object.entries(specs).forEach(([key, value]) => {
+                        if (value) {
+                            specsHtml += `<div class="mb-2"><span class="text-gray-400 font-semibold">${key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span> <span class="text-white">${value}</span></div>`;
+                        }
+                    });
+                }
+            }
+            
+            if (specsHtml) {
+                specsEl.innerHTML = specsHtml;
+                specsSection.style.display = 'block';
+            } else {
+                specsSection.style.display = 'none';
+            }
+        } catch (e) {
+            specsEl.innerHTML = `<p class="text-gray-400 text-sm">Error parsing specifications: ${e.message}</p>`;
+            specsSection.style.display = 'block';
+        }
+    } else {
+        specsSection.style.display = 'none';
+    }
+    
+    // Additional attributes - keeping existing logic
+    const additionalSection = document.getElementById('additional-attributes-section');
+    const additionalEl = document.getElementById('additional-attributes');
+    
+    if (product.additional_data) {
+        let additionalHtml = '';
+        try {
+            const additional = typeof product.additional_data === 'string' 
+                ? JSON.parse(product.additional_data) 
+                : product.additional_data;
+            
+            if (typeof additional === 'object' && additional !== null) {
+                Object.entries(additional).forEach(([key, value]) => {
+                    if (value) {
+                        const displayKey = key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        if (typeof value === 'object') {
+                            additionalHtml += `<div class="mb-2"><span class="text-gray-400 font-semibold">${displayKey}:</span> <span class="text-white">${JSON.stringify(value, null, 2)}</span></div>`;
+                        } else {
+                            additionalHtml += `<div class="mb-2"><span class="text-gray-400 font-semibold">${displayKey}:</span> <span class="text-white">${value}</span></div>`;
+                        }
+                    }
+                });
+            }
+            
+            if (additionalHtml) {
+                additionalEl.innerHTML = additionalHtml;
+                additionalSection.style.display = 'block';
+            } else {
+                additionalSection.style.display = 'none';
+            }
+        } catch (e) {
+            additionalEl.innerHTML = `<p class="text-gray-400 text-sm">Error parsing additional data: ${e.message}</p>`;
+            additionalSection.style.display = 'block';
+        }
+    } else {
+        additionalSection.style.display = 'none';
+    }
+    
+    // Supplier information
+    const supplierSection = document.getElementById('supplier-section');
+    const supplierEl = document.getElementById('supplier-info');
+    
+    if (product.supplier_description) {
+        supplierEl.textContent = product.supplier_description;
+        supplierSection.style.display = 'block';
+    } else if (product.supplier_name) {
+        supplierEl.textContent = `Supplier: ${product.supplier_name}`;
+        supplierSection.style.display = 'block';
+    } else {
+        supplierSection.style.display = 'none';
+    }
+    
+    // Category descriptions
+    const categoryContextSection = document.getElementById('category-context-section');
+    const categoryContextEl = document.getElementById('category-context');
+    
+    if (data.category_descriptions && data.category_descriptions.length > 0) {
+        let contextHtml = '';
+        data.category_descriptions.forEach(cat => {
+            contextHtml += `<div class="mb-3 pb-3 border-b border-gray-700">`;
+            contextHtml += `<div class="font-semibold text-white mb-1">${cat.category}:</div>`;
+            contextHtml += `<div class="text-gray-300 text-sm">${cat.description}</div>`;
+            contextHtml += `</div>`;
+        });
+        categoryContextEl.innerHTML = contextHtml;
+        categoryContextSection.style.display = 'block';
+    } else {
+        categoryContextSection.style.display = 'none';
+    }
+    
+    // Original description
+    document.getElementById('original-description').textContent = product.description || '(No description)';
+    document.getElementById('original-stats').textContent = 
+        `${product.description_word_count} words, ${product.description_char_count} characters`;
+    
+    // Previous generations
+    if (data.generations && data.generations.length > 0) {
+        document.getElementById('generations-list').innerHTML = data.generations.map(gen => `
+            <div class="generation-item">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <div class="text-white font-semibold">${gen.llm_provider} / ${gen.llm_model}</div>
+                        <div class="text-gray-400 text-xs">Temp: ${gen.temperature} | ${gen.word_count} words | ${new Date(gen.created_at).toLocaleString()}</div>
+                    </div>
+                    <button class="text-purple-400 hover:text-purple-300 text-sm" onclick="loadGeneration(${gen.id})">
+                        <i class="fa-solid fa-eye"></i> View
+                    </button>
+                </div>
+                <div class="text-gray-300 text-sm max-h-32 overflow-y-auto">${gen.generated_description.substring(0, 200)}...</div>
+            </div>
+        `).join('');
+    } else {
+        document.getElementById('generations-list').innerHTML = '<p class="text-gray-500 italic">No previous generations</p>';
+    }
+}
+
+async function generateDescription() {
+    // Single product generation only
+    if (!currentProductId) {
+        alert('Please select a product first');
+        return;
+    }
+    
+    const btn = document.getElementById('generate-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+    
+    const settings = {
+        product_id: currentProductId,
+        provider: document.getElementById('llm-provider').value,
+        model: document.getElementById('llm-model').value,
+        temperature: parseFloat(document.getElementById('llm-temperature').value),
+        max_tokens: parseInt(document.getElementById('llm-max-tokens').value),
+        include_image: document.getElementById('include-image').checked
+    };
+    
+    try {
+        const response = await fetch('/side-projects/product-description-generation/api/generate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(settings)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Display generated description
+            document.getElementById('generated-description').textContent = data.generated_description;
+            document.getElementById('generated-stats').textContent = 
+                `${data.word_count} words, ${data.char_count} characters`;
+            
+            // Update prompts (they should already be visible from preview)
+            if (data.system_prompt) {
+                document.getElementById('system-prompt').textContent = data.system_prompt;
+            }
+            if (data.prompt_used) {
+                document.getElementById('user-prompt').textContent = data.prompt_used;
+            }
+            
+            // Reload product details to show new generation
+            loadProductDetails(currentProductId);
+        } else {
+            alert('Error generating description: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error generating description');
+        console.error(error);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-magic"></i> Generate Description';
+    }
+}
+
+function loadGeneration(genId) {
+    const gen = currentGenerations.find(g => g.id === genId);
+    if (gen) {
+        document.getElementById('generated-description').textContent = gen.generated_description;
+        document.getElementById('generated-stats').textContent = 
+            `${gen.word_count} words, ${gen.char_count} characters`;
+        
+        // Display prompts from the generation
+        if (gen.system_prompt) {
+            document.getElementById('system-prompt').textContent = gen.system_prompt;
+        }
+        if (gen.prompt_used) {
+            document.getElementById('user-prompt').textContent = gen.prompt_used;
+        }
+    }
+}
+
+// Update select all checkbox state
+function updateSelectAllState() {
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+    const selectAll = document.getElementById('select-all-products');
+    if (checkboxes.length === 0) {
+        selectAll.checked = false;
+        selectAll.disabled = true;
+        return;
+    }
+    selectAll.disabled = false;
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+    selectAll.checked = allChecked;
+    selectAll.indeterminate = someChecked && !allChecked;
+}
+
+// Get selected product IDs
+function getSelectedProductIds() {
+    return Array.from(document.querySelectorAll('.product-checkbox:checked'))
+        .map(cb => parseInt(cb.dataset.productId));
+}
+
+// Bulk generate descriptions
+async function bulkGenerate() {
+    console.log('bulkGenerate called');
+    const selectedIds = getSelectedProductIds();
+    console.log('Selected IDs:', selectedIds);
+    if (selectedIds.length === 0) {
+        alert('Please select at least one product');
+        return;
+    }
+    
+    const btn = document.getElementById('generate-btn') || document.getElementById('bulk-generate-btn');
+    if (!btn) {
+        console.error('Generate button not found!');
+        alert('Error: Generate button not found');
+        return;
+    }
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+    
+    const settings = {
+        product_ids: selectedIds,
+        provider: document.getElementById('llm-provider').value,
+        model: document.getElementById('llm-model').value,
+        temperature: parseFloat(document.getElementById('llm-temperature').value),
+        max_tokens: parseInt(document.getElementById('llm-max-tokens').value),
+        include_image: document.getElementById('include-image').checked
+    };
+    
+    try {
+        const response = await fetch('/side-projects/product-description-generation/api/bulk-generate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(settings)
+        });
+        
+        const data = await response.json();
+        console.log('Bulk generate response:', data);
+        
+        if (data.success) {
+            bulkResults = data.results;
+            console.log('Bulk generation successful, displaying results:', data.results.length, 'products');
+            displayBulkResults(data.results);
+            const viewResultsBtn = document.getElementById('view-results-btn');
+            if (viewResultsBtn) {
+                viewResultsBtn.style.display = 'block';
+            }
+            // Show success message and scroll to results
+            alert(`Successfully generated descriptions for ${data.results.length} product(s). Scroll down to see results.`);
+            setTimeout(() => {
+                const resultsPanel = document.getElementById('bulk-results-panel');
+                if (resultsPanel) {
+                    resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 500);
+        } else {
+            alert('Error generating descriptions: ' + (data.error || 'Unknown error'));
+            console.error('Bulk generate error:', data);
+        }
+    } catch (error) {
+        alert('Error generating descriptions: ' + error.message);
+        console.error('Bulk generate exception:', error);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+}
+
+// Display bulk results
+function displayBulkResults(results) {
+    console.log('Displaying bulk results:', results);
+    const resultsPanel = document.getElementById('bulk-results-panel');
+    const resultsList = document.getElementById('bulk-results-list');
+    const emptyState = document.getElementById('empty-state');
+    
+    if (!resultsPanel) {
+        console.error('Bulk results panel not found!');
+        alert('Results panel not found. Please refresh the page.');
+        return;
+    }
+    
+    if (!resultsList) {
+        console.error('Bulk results list not found!');
+        alert('Results list not found. Please refresh the page.');
+        return;
+    }
+    
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+    
+    // Ensure the accordion is open
+    const header = resultsPanel.querySelector('.accordion-header');
+    const content = resultsPanel.querySelector('.accordion-content');
+    if (header && content) {
+        content.classList.add('active');
+        header.classList.add('active');
+        const icon = header.querySelector('i');
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
+    }
+    
+    // Scroll to results panel
+    setTimeout(() => {
+        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+    
+    // Store results in global variable for export
+    bulkResults = results;
+    console.log('Stored bulkResults:', bulkResults.length, 'items');
+    
+    resultsList.innerHTML = results.map((result, index) => `
+        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700 ${result.error ? 'border-red-600' : ''}">
+            ${result.error ? `
+                <div class="mb-2 p-2 bg-red-900 border border-red-700 rounded">
+                    <div class="text-red-200 text-sm font-semibold">Error:</div>
+                    <div class="text-red-300 text-xs">${escapeHtml(result.error)}</div>
+                </div>
+            ` : ''}
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <div class="text-gray-400 text-xs mb-1">Title:</div>
+                    <div class="text-white font-semibold">${escapeHtml(result.title)}</div>
+                </div>
+                <div>
+                    <div class="text-gray-400 text-xs mb-1">SKU:</div>
+                    <div class="text-white">${escapeHtml(result.sku)}</div>
+                </div>
+                <div>
+                    <div class="text-gray-400 text-xs mb-1">Short Description:</div>
+                    <div class="text-gray-300 text-sm">${escapeHtml(result.short_description || 'N/A')}</div>
+                </div>
+                <div>
+                    <div class="text-gray-400 text-xs mb-1">OLD Long Description:</div>
+                    <div class="text-gray-300 text-sm whitespace-pre-wrap max-h-48 overflow-y-auto">${escapeHtml(result.old_description || 'N/A')}</div>
+                </div>
+                <div>
+                    <div class="text-gray-400 text-xs mb-1">NEW Long Description:</div>
+                    <div class="text-green-300 text-sm whitespace-pre-wrap max-h-48 overflow-y-auto">${escapeHtml(result.new_description || 'N/A')}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Export to PDF
+function exportToPDF() {
+    console.log('Export PDF called, bulkResults:', bulkResults);
+    
+    // If bulkResults is empty, try to extract from displayed results
+    if (!bulkResults || bulkResults.length === 0) {
+        const resultsList = document.getElementById('bulk-results-list');
+        if (resultsList && resultsList.children.length > 0) {
+            // Extract data from displayed results
+            const extractedResults = [];
+            resultsList.querySelectorAll('.bg-gray-900').forEach(item => {
+                const title = item.querySelector('.text-white.font-semibold')?.textContent || '';
+                const sku = item.querySelectorAll('.text-white')[1]?.textContent || '';
+                const shortDesc = item.querySelectorAll('.text-gray-300')[0]?.textContent || '';
+                const oldDesc = item.querySelectorAll('.text-gray-300')[1]?.textContent || '';
+                const newDesc = item.querySelector('.text-green-300')?.textContent || '';
+                
+                if (title) {
+                    extractedResults.push({
+                        title: title,
+                        sku: sku,
+                        short_description: shortDesc,
+                        old_description: oldDesc,
+                        new_description: newDesc
+                    });
+                }
+            });
+            
+            if (extractedResults.length > 0) {
+                bulkResults = extractedResults;
+                console.log('Extracted results from display:', bulkResults.length);
+            }
+        }
+    }
+    
+    if (!bulkResults || bulkResults.length === 0) {
+        alert('No results to export. Please generate descriptions or click "Load Recent" to view previous generations.');
+        return;
+    }
+    
+    // Create HTML content for PDF
+    let htmlContent = `
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h1 { color: #333; }
+                .product { margin-bottom: 30px; page-break-inside: avoid; }
+                .field-label { font-weight: bold; color: #666; font-size: 12px; margin-top: 10px; }
+                .field-value { margin-bottom: 10px; }
+                .old-desc { color: #666; }
+                .new-desc { color: #006600; }
+            </style>
+        </head>
+        <body>
+            <h1>Bulk Generated Product Descriptions</h1>
+    `;
+    
+    bulkResults.forEach((result, index) => {
+        htmlContent += `
+            <div class="product">
+                <h2>Product ${index + 1}</h2>
+                ${result.error ? `<div style="color: red; font-weight: bold; margin-bottom: 10px;">Error: ${escapeHtml(result.error)}</div>` : ''}
+                <div class="field-label">Title:</div>
+                <div class="field-value">${escapeHtml(result.title)}</div>
+                
+                <div class="field-label">SKU:</div>
+                <div class="field-value">${escapeHtml(result.sku)}</div>
+                
+                <div class="field-label">Short Description:</div>
+                <div class="field-value">${escapeHtml(result.short_description || 'N/A')}</div>
+                
+                <div class="field-label">OLD Long Description:</div>
+                <div class="field-value old-desc">${escapeHtml(result.old_description || 'N/A')}</div>
+                
+                <div class="field-label">NEW Long Description:</div>
+                <div class="field-value new-desc">${escapeHtml(result.new_description || 'N/A')}</div>
+            </div>
+        `;
+    });
+    
+    htmlContent += '</body></html>';
+    
+    // Open print dialog for PDF
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Export to RTF
+function exportToRTF() {
+    console.log('Export RTF called, bulkResults:', bulkResults);
+    
+    // If bulkResults is empty, try to extract from displayed results
+    if (!bulkResults || bulkResults.length === 0) {
+        const resultsList = document.getElementById('bulk-results-list');
+        if (resultsList && resultsList.children.length > 0) {
+            // Extract data from displayed results
+            const extractedResults = [];
+            resultsList.querySelectorAll('.bg-gray-900').forEach(item => {
+                const title = item.querySelector('.text-white.font-semibold')?.textContent || '';
+                const sku = item.querySelectorAll('.text-white')[1]?.textContent || '';
+                const shortDesc = item.querySelectorAll('.text-gray-300')[0]?.textContent || '';
+                const oldDesc = item.querySelectorAll('.text-gray-300')[1]?.textContent || '';
+                const newDesc = item.querySelector('.text-green-300')?.textContent || '';
+                
+                if (title) {
+                    extractedResults.push({
+                        title: title,
+                        sku: sku,
+                        short_description: shortDesc,
+                        old_description: oldDesc,
+                        new_description: newDesc
+                    });
+                }
+            });
+            
+            if (extractedResults.length > 0) {
+                bulkResults = extractedResults;
+                console.log('Extracted results from display:', bulkResults.length);
+            }
+        }
+    }
+    
+    if (!bulkResults || bulkResults.length === 0) {
+        alert('No results to export. Please generate descriptions or click "Load Recent" to view previous generations.');
+        return;
+    }
+    
+    let rtfContent = '{\\rtf1\\ansi\\deff0\n';
+    rtfContent += '{\\fonttbl{\\f0 Times New Roman;}}\n';
+    rtfContent += '{\\colortbl;\\red0\\green0\\blue0;\\red255\\green0\\blue0;}\n'; // Color table: black (default), red (errors)
+    rtfContent += '\\f0\\fs24\n';
+    rtfContent += 'Bulk Generated Product Descriptions\\par\\par\n';
+    
+    bulkResults.forEach((result, index) => {
+        rtfContent += `Product ${index + 1}\\par\\par\n`;
+        if (result.error) {
+            rtfContent += `{\\b Error:} {\\cf2 ${escapeRtf(result.error)}}\\par\\par\n`;
+        }
+        rtfContent += `{\\b Title:} ${escapeRtf(result.title)}\\par\n`;
+        rtfContent += `{\\b SKU:} ${escapeRtf(result.sku)}\\par\n`;
+        rtfContent += `{\\b Short Description:} ${escapeRtf(result.short_description || 'N/A')}\\par\n`;
+        rtfContent += `{\\b OLD Long Description:}\\par ${escapeRtf(result.old_description || 'N/A')}\\par\\par\n`;
+        rtfContent += `{\\b NEW Long Description:}\\par ${escapeRtf(result.new_description || 'N/A')}\\par\\par\\par\n`;
+    });
+    
+    rtfContent += '}';
+    
+    // Download RTF file
+    const blob = new Blob([rtfContent], { type: 'application/rtf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bulk-generated-descriptions-${new Date().toISOString().split('T')[0]}.rtf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function escapeRtf(text) {
+    if (!text) return '';
+    return text
+        .replace(/\\/g, '\\\\')
+        .replace(/{/g, '\\{')
+        .replace(/}/g, '\\}')
+        .replace(/\n/g, '\\par\n');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize accordions
+    initAccordions();
+    
+    // Initialize custom dropdowns
+    initCustomDropdowns();
+    
+    // Load products button
+    const loadBtn = document.getElementById('load-products-btn');
+    if (loadBtn) {
+        loadBtn.addEventListener('click', loadProducts);
+    }
+    
+    // Search input
+    const searchInput = document.getElementById('product-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(loadProducts, 500));
+    }
+    
+    // Temperature slider
+    const tempSlider = document.getElementById('llm-temperature');
+    if (tempSlider) {
+        tempSlider.addEventListener('input', (e) => {
+            const tempValue = document.getElementById('temp-value');
+            if (tempValue) {
+                tempValue.textContent = e.target.value;
+            }
+        });
+    }
+    
+    // Generate button - can do single or bulk
+    // Use event delegation in case button is added dynamically or panel is hidden
+    document.addEventListener('click', function(e) {
+        const generateBtn = e.target.closest('#generate-btn');
+        if (generateBtn) {
+            e.stopPropagation(); // Prevent accordion toggle
+            e.preventDefault();
+            
+            console.log('Generate button clicked', { currentProductId, selectedIds: getSelectedProductIds() });
+            
+            // If a single product is selected, generate for that one
+            // Otherwise, check for bulk selection
+            if (currentProductId) {
+                console.log('Generating for single product:', currentProductId);
+                generateDescription();
+            } else {
+                const selectedIds = getSelectedProductIds();
+                console.log('Checking bulk selection:', selectedIds);
+                if (selectedIds.length > 0) {
+                    console.log('Bulk generating for:', selectedIds);
+                    bulkGenerate();
+                } else {
+                    alert('Please select at least one product');
+                }
+            }
+        }
+    });
+    
+    // Also attach directly in case event delegation doesn't work
+    const generateBtn = document.getElementById('generate-btn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent accordion toggle
+            e.preventDefault();
+            
+            console.log('Generate button clicked (direct)', { currentProductId, selectedIds: getSelectedProductIds() });
+            
+            // If a single product is selected, generate for that one
+            // Otherwise, check for bulk selection
+            if (currentProductId) {
+                console.log('Generating for single product:', currentProductId);
+                generateDescription();
+            } else {
+                const selectedIds = getSelectedProductIds();
+                console.log('Checking bulk selection:', selectedIds);
+                if (selectedIds.length > 0) {
+                    console.log('Bulk generating for:', selectedIds);
+                    bulkGenerate();
+                } else {
+                    alert('Please select at least one product');
+                }
+            }
+        });
+    } else {
+        console.warn('Generate button not found on page load (will use event delegation)');
+    }
+    
+    // Select all checkbox
+    const selectAll = document.getElementById('select-all-products');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            document.querySelectorAll('.product-checkbox').forEach(cb => {
+                const item = cb.closest('.product-item');
+                if (item && item.style.display !== 'none') {
+                    cb.checked = this.checked;
+                }
+            });
+            updateSelectAllState();
+        });
+    }
+    
+    // Hide generated checkbox
+    const hideGenerated = document.getElementById('hide-generated');
+    if (hideGenerated) {
+        hideGenerated.addEventListener('change', function() {
+            document.querySelectorAll('.product-item').forEach(item => {
+                const hasGenerated = item.querySelector('.bg-green-600');
+                if (hasGenerated && this.checked) {
+                    item.style.display = 'none';
+                } else {
+                    item.style.display = 'flex';
+                }
+            });
+            updateSelectAllState();
+        });
+    }
+    
+    // Bulk generate button
+    const bulkGenerateBtn = document.getElementById('bulk-generate-btn');
+    if (bulkGenerateBtn) {
+        bulkGenerateBtn.addEventListener('click', bulkGenerate);
+    }
+    
+    // View results button
+    const viewResultsBtn = document.getElementById('view-results-btn');
+    if (viewResultsBtn) {
+        viewResultsBtn.addEventListener('click', function() {
+            const resultsPanel = document.getElementById('bulk-results-panel');
+            if (resultsPanel) {
+                resultsPanel.style.display = 'block';
+                const header = resultsPanel.querySelector('.accordion-header');
+                const content = resultsPanel.querySelector('.accordion-content');
+                if (header && content) {
+                    content.classList.add('active');
+                    header.classList.add('active');
+                }
+                resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+    
+    // View recent generations button (in results panel)
+    const viewRecentResultsBtn = document.getElementById('view-recent-results-btn');
+    if (viewRecentResultsBtn) {
+        viewRecentResultsBtn.addEventListener('click', async function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+            
+            try {
+                const response = await fetch('/side-projects/product-description-generation/api/recent-generations?limit=50&minutes=1440');
+                const data = await response.json();
+                
+                if (data.success && data.results.length > 0) {
+                    displayBulkResults(data.results); // This will set bulkResults internally
+                    // Scroll to results panel
+                    const resultsPanel = document.getElementById('bulk-results-panel');
+                    if (resultsPanel) {
+                        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    alert('No recent generations found. Try generating some descriptions first.');
+                }
+            } catch (error) {
+                alert('Error loading recent generations: ' + error.message);
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    }
+    
+    // Export buttons
+    const exportPdfBtn = document.getElementById('export-pdf-btn');
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', exportToPDF);
+    }
+    
+    const exportRtfBtn = document.getElementById('export-rtf-btn');
+    if (exportRtfBtn) {
+        exportRtfBtn.addEventListener('click', exportToRTF);
+    }
+    
+    // Auto-load products on page load
+    loadProducts();
+    
+    // Debug: Log button status
+    setTimeout(() => {
+        const generateBtn = document.getElementById('generate-btn');
+        console.log('Generate button status:', {
+            found: !!generateBtn,
+            visible: generateBtn ? generateBtn.offsetParent !== null : false,
+            parent: generateBtn ? generateBtn.closest('.accordion-header') : null
+        });
+    }, 1000);
+});
+</script>
+{% endblock %}

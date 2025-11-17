@@ -3,14 +3,14 @@
 
 <!-- LLM Prompts Panel - Self-contained include -->
 <div class="llm-prompts-panel" id="llm-prompts-panel">
-    <div class="panel-header" onclick="toggleLLMPromptsAccordion()">
+    <div class="panel-header" onclick="window.llmPromptsPanel?.toggleAccordion()">
         <h4><span class="panel-name-green">LLM Prompts:</span> <span id="llm-prompt-title">Loading...</span></h4>
         <div class="header-actions">
-            <i class="fas fa-chevron-up" id="prompts-accordion-icon"></i>
+            <i class="fas fa-chevron-up" id="llm-prompts-accordion-icon"></i>
         </div>
     </div>
     
-    <div class="panel-content" id="prompts-accordion-content" style="display: none;">
+    <div class="panel-content" id="llm-prompts-accordion-content" style="display: none;">
         <!-- Prompt Display -->
         <div id="llm-prompt-display" class="prompt-display">
             <div class="field-source-info" style="font-size: 0.7rem; color: #64748b; font-style: italic; margin-bottom: 0.5rem;">

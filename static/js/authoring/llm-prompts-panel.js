@@ -85,7 +85,7 @@ class LLMPromptsPanel {
             // Do not use localStorage; rely on DB-backed API
             this.loadPromptFromAPI();
         }
-        this.restoreAccordionState();
+        this.setupAccordion();
     }
 
     detectPageType() {
@@ -472,30 +472,49 @@ class LLMPromptsPanel {
 
     loadPromptState() { /* deprecated - no localStorage */ }
 
-    async restoreAccordionState() {
-        try {
-            const key = `llm-prompts-accordion-state-${this.pageType}`;
-            // Use planning API for planning pages, authoring API for authoring pages
-            const apiBase = (window.currentStage === 'planning' || window.currentStage === 'concept') 
-                ? '/planning/api/ui/preferences' 
-                : '/authoring/api/ui/preferences';
-            const resp = await fetch(`${apiBase}/${encodeURIComponent(key)}`);
-            if (!resp.ok) {
-                // Silently fail if API endpoint doesn't exist (404) or other errors
-                return;
+    setupAccordion() {
+        this.restoreAccordionState();
+    }
+
+    restoreAccordionState() {
+        const key = `llm-prompts-accordion-state-${this.pageType || 'default'}`;
+        const savedState = sessionStorage.getItem(key);
+        const content = document.getElementById('llm-prompts-accordion-content');
+        const icon = document.getElementById('llm-prompts-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
             }
-            const data = await resp.json();
-            const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
-            if (state === 'open') {
-                const content = document.getElementById('prompts-accordion-content');
-                const icon = document.getElementById('prompts-accordion-icon');
-                if (content && icon) {
-                    content.style.display = 'block';
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
-                }
-            }
-        } catch(_) {}
+        }
+    }
+
+    toggleAccordion() {
+        const key = `llm-prompts-accordion-state-${this.pageType || 'default'}`;
+        const content = document.getElementById('llm-prompts-accordion-content');
+        const icon = document.getElementById('llm-prompts-accordion-icon');
+        
+        if (!content || !icon) return;
+        
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
+        
+        if (isCollapsed) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            sessionStorage.setItem(key, 'open');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            sessionStorage.setItem(key, 'closed');
+        }
     }
 
     // Public API methods

@@ -182,72 +182,44 @@ class PromptBuilderPanel {
         }
     }
 
-    async restoreAccordionState() {
-        try {
-            const key = `prompt-builder-accordion-state-image-prompts`;
-            const resp = await fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`);
-            const data = await resp.json();
-            const state = data && data.value ? (typeof data.value === 'string' ? data.value : (data.value.state||'')) : '';
-            
-            const content = document.getElementById('prompt-builder-accordion-content');
-            const icon = document.getElementById('prompt-builder-accordion-icon');
-            
-            if (state === 'open') {
-                if (content && icon) {
-                    content.style.display = 'block';
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
-                }
+    restoreAccordionState() {
+        const key = 'prompt-builder-accordion-state-image-prompts';
+        const savedState = sessionStorage.getItem(key);
+        const content = document.getElementById('prompt-builder-accordion-content');
+        const icon = document.getElementById('prompt-builder-accordion-icon');
+        
+        if (content && icon) {
+            if (savedState === 'open') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
             } else {
-                if (content && icon) {
-                    content.style.display = 'none';
-                    icon.classList.remove('fa-chevron-down');
-                    icon.classList.add('fa-chevron-up');
-                }
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
             }
-        } catch (error) {
-            console.error('[PromptBuilderPanel] Error restoring accordion state:', error);
         }
     }
 
-    async toggleAccordion() {
+    toggleAccordion() {
+        const key = 'prompt-builder-accordion-state-image-prompts';
         const content = document.getElementById('prompt-builder-accordion-content');
         const icon = document.getElementById('prompt-builder-accordion-icon');
         
         if (!content || !icon) return;
 
-        const isCollapsed = content.style.display === 'none';
+        const isCollapsed = content.style.display === 'none' || content.style.display === '';
         
         if (isCollapsed) {
             content.style.display = 'block';
             icon.classList.remove('fa-chevron-up');
             icon.classList.add('fa-chevron-down');
-            // Save open state to DB
-            try {
-                const key = `prompt-builder-accordion-state-image-prompts`;
-                await fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ value: 'open' })
-                });
-            } catch (error) {
-                console.error('[PromptBuilderPanel] Error saving accordion state:', error);
-            }
+            sessionStorage.setItem(key, 'open');
         } else {
             content.style.display = 'none';
             icon.classList.remove('fa-chevron-down');
             icon.classList.add('fa-chevron-up');
-            // Save closed state to DB
-            try {
-                const key = `prompt-builder-accordion-state-image-prompts`;
-                await fetch(`/authoring/api/ui/preferences/${encodeURIComponent(key)}`, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ value: 'closed' })
-                });
-            } catch (error) {
-                console.error('[PromptBuilderPanel] Error saving accordion state:', error);
-            }
+            sessionStorage.setItem(key, 'closed');
         }
     }
 
@@ -595,23 +567,36 @@ class PromptBuilderPanel {
             const enableCompression = document.getElementById('enable-compression')?.checked ?? true;
             const enableExpansion = document.getElementById('enable-expansion')?.checked ?? false;
 
+            const requestBody = {
+                post_id: this.postId,
+                section_id: this.currentSection.id,
+                selected_concept: this.currentSection.selected_image_concept,
+                concept_content: this.selectedConceptContent,
+                imaging_model: this.modelSelection,
+                character_limit: config.limit,
+                compiled_prompt: compiledPrompt,
+                style_guidelines: config.style,
+                enable_compression: enableCompression,
+                enable_expansion: enableExpansion
+            };
+            
+            console.log('[DEBUG] PromptBuilderPanel sending to backend:', {
+                section_id: requestBody.section_id,
+                selected_concept: requestBody.selected_concept,
+                concept_content_description: requestBody.concept_content?.description?.substring(0, 100),
+                currentSection: {
+                    id: this.currentSection.id,
+                    section_order: this.currentSection.section_order,
+                    selected_image_concept: this.currentSection.selected_image_concept
+                }
+            });
+            
             const response = await fetch('/authoring/api/generate-image-prompt-from-builder-v2', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    post_id: this.postId,
-                    section_id: this.currentSection.id,
-                    selected_concept: this.currentSection.selected_image_concept,
-                    concept_content: this.selectedConceptContent,
-                    imaging_model: this.modelSelection,
-                    character_limit: config.limit,
-                    compiled_prompt: compiledPrompt,
-                    style_guidelines: config.style,
-                    enable_compression: enableCompression,
-                    enable_expansion: enableExpansion
-                })
+                body: JSON.stringify(requestBody)
             });
 
             if (response.ok) {
