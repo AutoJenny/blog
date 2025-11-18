@@ -655,11 +655,9 @@ Return ONLY a single subtitle string, not an array. Do not use quotes or bracket
                             generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
                             
                             # Clean up any JSON array if LLM returned one
-                            import re
                             json_match = re.search(r'\[.*?\]', generated_subtitle, re.DOTALL)
                             if json_match:
                                 try:
-                                    import json
                                     subtitle_array = json.loads(json_match.group(0))
                                     if isinstance(subtitle_array, list) and len(subtitle_array) > 0:
                                         generated_subtitle = subtitle_array[0].strip().strip('"').strip("'")
@@ -878,11 +876,9 @@ Return ONLY a single subtitle string, not an array. Do not use quotes or bracket
                             generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
                             
                             # Clean up any JSON array if LLM returned one
-                            import re
                             json_match = re.search(r'\[.*?\]', generated_subtitle, re.DOTALL)
                             if json_match:
                                 try:
-                                    import json
                                     subtitle_array = json.loads(json_match.group(0))
                                     if isinstance(subtitle_array, list) and len(subtitle_array) > 0:
                                         generated_subtitle = subtitle_array[0].strip().strip('"').strip("'")
@@ -1111,11 +1107,9 @@ Return ONLY a single subtitle string, not an array. Do not use quotes or bracket
                             generated_subtitle = generated_subtitle.strip('"').strip("'").strip('[').strip(']')
                             
                             # Clean up any JSON array if LLM returned one
-                            import re
                             json_match = re.search(r'\[.*?\]', generated_subtitle, re.DOTALL)
                             if json_match:
                                 try:
-                                    import json
                                     subtitle_array = json.loads(json_match.group(0))
                                     if isinstance(subtitle_array, list) and len(subtitle_array) > 0:
                                         generated_subtitle = subtitle_array[0].strip().strip('"').strip("'")
@@ -1632,8 +1626,6 @@ Return in JSON format:
             logger.info(f"LLM response content: {content}")
             
             # Parse JSON response
-            import re
-            import json
             
             # Try to extract JSON from code blocks first
             json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', content)
@@ -2319,7 +2311,6 @@ def api_compile_header_prompt(post_id):
                 style_section = cursor.fetchone()
                 
                 if style_section and style_section.get('post_section_elements'):
-                    import json
                     try:
                         elements = style_section['post_section_elements']
                         if isinstance(elements, str):
@@ -3045,8 +3036,6 @@ def api_generate_image_details(post_id):
                 raise Exception("Empty response")
             
             # Parse JSON response - clean up the text first
-            import json
-            import re
             
             # Try to extract JSON from the response (handle cases where LLM adds extra text)
             json_match = re.search(r'\{[\s\S]*\}', details_text)
@@ -3659,7 +3648,6 @@ def api_test_field(post_id):
             
             if sections_result and sections_result['sections']:
                 try:
-                    import json
                     sections_data = json.loads(sections_result['sections'])
                     if isinstance(sections_data, dict) and 'sections' in sections_data:
                         sections_list = sections_data['sections']

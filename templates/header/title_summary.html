@@ -17,9 +17,13 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Ensure header-workspace is properly positioned in normal flow
     const headerContent = document.querySelector('.header-workspace');
     const processTab = document.getElementById('process-tab');
     if (headerContent && processTab && !processTab.contains(headerContent)) {
+        // Move to process-tab but ensure it's in normal flow
+        headerContent.style.position = 'relative';
+        headerContent.style.zIndex = 'auto';
         processTab.appendChild(headerContent);
     }
 });
@@ -27,20 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div class="header-workspace">
     <div class="workspace-container">
-        <!-- Left Panel: Mini-Preview -->
-        {% include 'header/includes/mini_preview_panel.html' %}
-        
-            <!-- Right Panel: Content -->
-            <div class="editor-panel">
-                <!-- Route Indicator -->
-                <div class="route-indicator" style="background:#1e40af;color:#fff;padding:0.6rem 0.9rem;border-radius:8px;margin-bottom:1rem;font-weight:600;display:flex;align-items:center;gap:0.5rem;">
-                    <i class="fas fa-camera"></i>
-                    <span>Illustration Route: <strong>{{ illustration_method if illustration_method is defined else 'LLM-creation' }}</strong></span>
-                    {% if year and week %}
-                    <span style="margin-left:auto;font-weight:500;opacity:0.85;">Week {{ week }}, {{ year }}</span>
-                    {% endif %}
-                </div>
-                
+        <!-- Right Panel: Content -->
+        <div class="editor-panel">
                 {% if not week_has_post %}
                 <!-- Warning: No post scheduled for this week -->
                 <div class="alert alert-warning" style="margin-bottom: 1.5rem; padding: 1rem; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
@@ -49,15 +41,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 {% endif %}
                 
-                <!-- LLM Settings Panel -->
-                {% include 'authoring/includes/llm_settings_panel.html' %}
-                
-                <!-- Uber Generate Button -->
+                <!-- Main Generate Button - Prominent and Clear -->
                 <div class="uber-generate-section">
-                    <button class="btn-primary btn-large" id="uber-generate-btn" {% if not week_has_post %}disabled title="No post scheduled for this week"{% endif %}>
-                        <i class="fas fa-magic"></i> Generate All (Title, Subtitle, Summary, Slug)
+                    <h3 style="color: #fff; margin: 0 0 1rem 0; font-size: 1.25rem; font-weight: 600;">
+                        <i class="fas fa-magic"></i> Generate Title, Subtitle, Summary & Slug
+                    </h3>
+                    <p style="color: #cbd5e1; margin: 0 0 1rem 0; font-size: 0.95rem;">
+                        Click the button below to generate all header content at once
+                    </p>
+                    <button class="btn-primary btn-large" id="uber-generate-btn" style="padding: 1rem 2rem; font-size: 1.2rem; font-weight: 700; background: #10b981; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; color: white;" {% if not week_has_post %}disabled title="No post scheduled for this week" style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                        <i class="fas fa-magic"></i> Generate All
                     </button>
                 </div>
+                
+                <!-- LLM Settings Panel -->
+                {% include 'authoring/includes/llm_settings_panel.html' %}
             
             <!-- Title Generation Panel -->
             {% include 'header/includes/title_generation_panel.html' %}
@@ -73,6 +71,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <!-- Author Panel -->
             {% include 'header/includes/author_panel.html' %}
+            
+            <!-- Output Panel -->
+            {% include 'header/includes/output_panel_title_summary.html' %}
             
             <!-- Header Image Photo-harvesting Panels (only for Photo-harvesting route) -->
             {% if illustration_method and illustration_method == 'Photo-harvesting' %}

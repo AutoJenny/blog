@@ -1,10 +1,12 @@
 /* Unified Blog Pipeline Header Styles (self-contained) */
 .blog-pipeline-header {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.5rem !important;
     max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
     padding: 0 1rem;
+    position: relative !important;
+    z-index: auto !important;
 }
 
 .main-title-line {
@@ -255,15 +257,21 @@
 
 /* Tab Content */
 .tab-content {
-    position: relative;
+    position: relative !important;
+    z-index: auto !important;
+    margin-top: 1rem !important;
 }
 
 .tab-panel {
     display: none;
+    position: relative !important;
+    z-index: auto !important;
 }
 
 .tab-panel.active {
-    display: block;
+    display: block !important;
+    position: relative !important;
+    z-index: auto !important;
 }
 
 /* Responsive Design */

@@ -574,6 +574,9 @@ Return ONLY the product description text, no additional commentary.</pre>
                     <button id="export-rtf-btn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm">
                         <i class="fa-solid fa-file-word"></i> Export RTF
                     </button>
+                    <button id="export-csv-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                        <i class="fa-solid fa-file-csv"></i> Export CSV
+                    </button>
                     <i class="fa-solid fa-chevron-up text-gray-400"></i>
                 </div>
             </div>
@@ -1715,6 +1718,82 @@ function escapeRtf(text) {
         .replace(/\n/g, '\\par\n');
 }
 
+// Export to CSV (SKU and new_description only)
+function exportToCSV() {
+    console.log('Export CSV called, bulkResults:', bulkResults);
+    
+    // If bulkResults is empty, try to extract from displayed results
+    if (!bulkResults || bulkResults.length === 0) {
+        const resultsList = document.getElementById('bulk-results-list');
+        if (resultsList && resultsList.children.length > 0) {
+            // Extract data from displayed results
+            const extractedResults = [];
+            resultsList.querySelectorAll('.bg-gray-900').forEach(item => {
+                const sku = item.querySelectorAll('.text-white')[1]?.textContent || '';
+                const newDesc = item.querySelector('.text-green-300')?.textContent || '';
+                
+                if (sku) {
+                    extractedResults.push({
+                        sku: sku,
+                        new_description: newDesc
+                    });
+                }
+            });
+            
+            if (extractedResults.length > 0) {
+                bulkResults = extractedResults;
+                console.log('Extracted results from display:', bulkResults.length);
+            }
+        }
+    }
+    
+    if (!bulkResults || bulkResults.length === 0) {
+        alert('No results to export. Please generate descriptions or click "Load Recent" to view previous generations.');
+        return;
+    }
+    
+    // Filter to only include results with new_description (skip errors)
+    const validResults = bulkResults.filter(r => r.new_description && !r.error);
+    
+    if (validResults.length === 0) {
+        alert('No valid descriptions to export. All results have errors or missing descriptions.');
+        return;
+    }
+    
+    // Create CSV content
+    // CSV format: SKU,Description
+    // Properly escape CSV values (handle commas, quotes, newlines)
+    let csvContent = 'SKU,Description\n';
+    
+    validResults.forEach(result => {
+        const sku = escapeCsv(result.sku || '');
+        const description = escapeCsv(result.new_description || '');
+        csvContent += `${sku},${description}\n`;
+    });
+    
+    // Download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `product-descriptions-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function escapeCsv(text) {
+    if (!text) return '';
+    // Replace newlines with spaces for CSV
+    const cleaned = text.replace(/\r\n/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ');
+    // If text contains comma, quote, or newline, wrap in quotes and escape quotes
+    if (cleaned.includes(',') || cleaned.includes('"') || cleaned.includes('\n')) {
+        return '"' + cleaned.replace(/"/g, '""') + '"';
+    }
+    return cleaned;
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize accordions
@@ -1891,7 +1970,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
             
             try {
-                const response = await fetch(`/side-projects/product-description-generation/api/recent-generations?limit=100&minutes=${minutes}`);
+                const response = await fetch(`/side-projects/product-description-generation/api/recent-generations?limit=1000&minutes=${minutes}`);
                 const data = await response.json();
                 
                 if (data.success && data.results.length > 0) {
@@ -1926,6 +2005,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const exportRtfBtn = document.getElementById('export-rtf-btn');
     if (exportRtfBtn) {
         exportRtfBtn.addEventListener('click', exportToRTF);
+    }
+    
+    const exportCsvBtn = document.getElementById('export-csv-btn');
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', exportToCSV);
     }
     
     // Auto-load products on page load

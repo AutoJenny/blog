@@ -63,6 +63,46 @@
     setTimeout(updateOutputDisplay, 100);
   }
 
+  async function loadExistingData() {
+    try {
+      const postId = window.postId || window.originalPostId;
+      if (!postId) {
+        console.warn('[Output Panel] No postId available, skipping data load');
+        return;
+      }
+      
+      const response = await fetch(`/header/api/posts/${postId}/get-title-summary`);
+      const data = await response.json();
+      
+      if (data && !data.error) {
+        // Update display with loaded data
+        const titleDisplay = document.getElementById('selected-title');
+        const subtitleDisplay = document.getElementById('selected-subtitle');
+        const summaryDisplay = document.getElementById('generated-summary');
+        const slugDisplay = document.getElementById('generated-slug');
+        
+        if (titleDisplay && data.title) {
+          titleDisplay.textContent = data.title;
+        }
+        if (subtitleDisplay && data.subtitle) {
+          subtitleDisplay.textContent = data.subtitle;
+        }
+        if (summaryDisplay && data.summary) {
+          summaryDisplay.textContent = data.summary;
+        }
+        if (slugDisplay && data.slug) {
+          slugDisplay.textContent = data.slug;
+        }
+        
+        // Also check if there's a selected title in the title panel
+        // The title panel might have loaded titles, so check for selected one
+        setTimeout(updateOutputDisplay, 500);
+      }
+    } catch (error) {
+      console.error('[Output Panel] Error loading existing data:', error);
+    }
+  }
+
   // Initialize
   document.addEventListener('DOMContentLoaded', async function() {
     // Initialize accordion with database-backed state persistence
@@ -78,6 +118,9 @@
     if (saveBtn) {
       saveBtn.addEventListener('click', saveTitleSummary);
     }
+    
+    // Load existing data from database
+    loadExistingData();
     
     // Listen for changes in other panels
     document.addEventListener('change', updateOutputDisplay);

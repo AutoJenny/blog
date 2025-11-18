@@ -3,17 +3,28 @@
 .header-workspace {
     padding: 0.5rem 1rem;
     min-height: auto;
-    margin-top: 0;
+    margin-top: 0 !important;
+    margin-bottom: 2rem;
+    position: relative !important;
+    z-index: auto !important;
 }
 
 /* Uber Generate Button */
 .uber-generate-section {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 0.5rem;
-    text-align: center;
+    margin-bottom: 1.5rem !important;
+    margin-top: 0 !important;
+    padding: 1.5rem !important;
+    background: #1e40af !important;
+    border: 2px solid #3b82f6 !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    position: static !important;
+    z-index: auto !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .btn-large {
@@ -27,9 +38,7 @@
 }
 
 .header-workspace .workspace-container {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 1.5rem !important;
+    display: block !important;
     max-width: 1400px !important;
     margin: 0 auto !important;
     width: 100% !important;
@@ -41,14 +50,15 @@
     flex-direction: column !important;
     gap: 1rem !important;
     padding: 1rem !important;
-    grid-column: 1 !important;
-    grid-row: 1 !important;
     width: 100% !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    position: relative !important;
+    z-index: auto !important;
 }
 
 .header-workspace .mini-preview-panel {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
+    display: none !important; /* Hide mini-preview on title-summary page */
 }
 
 /* Panel styling */
