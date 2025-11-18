@@ -193,8 +193,8 @@ input[type="number"]::placeholder {
                 <span class="text-gray-400">Total Products</span>
             </div>
             <div class="flex items-center gap-2">
-                <span class="text-2xl font-bold text-yellow-400">{{ stats.products_under_30_words or 0 }}</span>
-                <span class="text-gray-400">Under 30 Words</span>
+                <span class="text-2xl font-bold text-yellow-400" id="products-under-threshold-count">{{ stats.products_under_30_words or 0 }}</span>
+                <span class="text-gray-400" id="products-under-threshold-label">Under 30 Words</span>
             </div>
             <div class="flex items-center gap-2">
                 <span class="text-2xl font-bold text-white">{{ "%.1f"|format(stats.avg_word_count or 0) }}</span>
@@ -268,7 +268,7 @@ input[type="number"]::placeholder {
                     <h2 class="text-2xl font-bold text-white">Generation Settings</h2>
                     <div class="flex items-center gap-4">
                         <button id="generate-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                            <i class="fa-solid fa-magic"></i> Generate Description
+                            <i class="fa-solid fa-magic"></i> <span id="generate-btn-text">Generate Description</span>
                         </button>
                         <i class="fa-solid fa-chevron-up text-gray-400"></i>
                     </div>
@@ -340,11 +340,70 @@ input[type="number"]::placeholder {
                     <div class="accordion-content active" id="prompt-preview-content">
                         <div class="mb-4">
                             <h4 class="text-white font-semibold mb-2">System Prompt:</h4>
-                            <pre id="system-prompt" class="bg-gray-900 p-3 rounded text-sm text-gray-300 overflow-x-auto max-h-64 overflow-y-auto"></pre>
+                            <pre id="system-prompt" class="bg-gray-900 p-3 rounded text-sm text-gray-300 overflow-x-auto max-h-64 overflow-y-auto">You are a professional product description writer for a Scottish heritage and tartan products retailer. 
+Your task is to write clear, factual product descriptions that focus on features and benefits.
+
+CRITICAL STYLE GUIDELINES:
+- Use UK-British English spellings (e.g., "colour" not "color", "organised" not "organized", "centre" not "center", "realise" not "realize", "travelling" not "traveling")
+- Be factual and focus on specific features and benefits
+- Avoid marketing fluff and empty phrases
+- NEVER use words like "Elevate", "Discover", "Unleash", "Transform", "Revolutionary", "Groundbreaking"
+- Use clear, direct language that informs the customer
+- Highlight materials, craftsmanship, dimensions, and practical benefits
+- If the product is made in Scotland or the UK, mention this factually
+- Keep descriptions informative but engaging
+
+FORMATTING REQUIREMENTS:
+- Start with bullet points (using simple HTML &lt;ul&gt; and &lt;li&gt; tags) summarising key features and benefits
+- Use HTML paragraph tags (&lt;p&gt;) to break up text every 2-3 sentences for better readability
+
+CRITICAL: NEVER include pricing information, price references, or cost-related content in the description. Focus solely on product features, materials, craftsmanship, and benefits.</pre>
                         </div>
                         <div>
                             <h4 class="text-white font-semibold mb-2">User Prompt:</h4>
-                            <pre id="user-prompt" class="bg-gray-900 p-3 rounded text-sm text-gray-300 overflow-x-auto max-h-96 overflow-y-auto"></pre>
+                            <pre id="user-prompt" class="bg-gray-900 p-3 rounded text-sm text-gray-300 overflow-x-auto max-h-96 overflow-y-auto">Write an improved product description for the following product.
+
+PRODUCT TITLE: [Product Name]
+SKU: [Product SKU]
+
+[Category: Category Path > Subcategory
+Category descriptions: [Category descriptions if available]]
+
+SHORT DESCRIPTION (BLURB):
+[Short description or "None provided"]
+
+CURRENT DESCRIPTION:
+[Current description or "None provided"]
+
+ADDITIONAL CONTEXT:
+[Supplier/Manufacturer: Supplier name if available]
+[Dimensions: Product dimensions if available]
+
+[SPECIFICATIONS:
+- Specification details if available]
+
+[ADDITIONAL PRODUCT ATTRIBUTES:
+- Material, pattern, style, etc. if available]
+
+[PRODUCT TYPE DATA:
+- Parsed identifiers if available]
+
+[SUPPLIER/MANUFACTURER INFORMATION:
+Supplier description if available]
+
+[PRODUCT OPTIONS (Sizes, Colours, Decorations, etc.):
+- Available options if available]
+
+Write a comprehensive product description that:
+1. Expands on the current description if it's too short
+2. Maintains factual accuracy
+3. Uses UK-British English spellings throughout
+4. Focuses on features, materials, and benefits
+5. Avoids marketing clichés and empty phrases
+6. Is informative and helpful to potential customers
+7. NEVER includes pricing information, price references, or cost-related content
+
+Return ONLY the product description text, no additional commentary.</pre>
                         </div>
                     </div>
                 </div>
@@ -497,8 +556,13 @@ input[type="number"]::placeholder {
             <div class="accordion-header active" data-accordion="bulk-results">
                 <h2 class="text-2xl font-bold text-white">Bulk Generation Results</h2>
                 <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <label class="text-gray-400 text-sm">Hours:</label>
+                        <input type="number" id="recent-hours-input" value="24" min="1" max="8760" 
+                               class="w-20 bg-gray-700 text-white px-2 py-1 rounded border border-gray-600 text-sm">
+                    </div>
                     <button id="view-recent-results-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">
-                        <i class="fa-solid fa-clock-rotate-left"></i> Load Recent (Last 24 Hours)
+                        <i class="fa-solid fa-clock-rotate-left"></i> Load Recent
                     </button>
                     <button id="export-pdf-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
                         <i class="fa-solid fa-file-pdf"></i> Export PDF
@@ -677,18 +741,52 @@ function debounce(func, wait) {
     };
 }
 
+function updateThresholdLabel() {
+    const thresholdInput = document.getElementById('word-threshold');
+    const thresholdLabel = document.getElementById('products-under-threshold-label');
+    if (thresholdInput && thresholdLabel) {
+        const threshold = thresholdInput.value;
+        thresholdLabel.textContent = `Under ${threshold} Words`;
+    }
+}
+
+function updateGenerateButtonText() {
+    const generateBtnText = document.getElementById('generate-btn-text');
+    if (!generateBtnText) return;
+    
+    const selectedIds = getSelectedProductIds();
+    const count = selectedIds.length;
+    
+    if (count === 0) {
+        generateBtnText.textContent = 'Generate Description';
+    } else if (count === 1) {
+        generateBtnText.textContent = 'Generate Description';
+    } else {
+        generateBtnText.textContent = `Generate ${count} Descriptions`;
+    }
+}
+
 async function loadProducts() {
     const threshold = document.getElementById('word-threshold').value;
     const search = document.getElementById('product-search').value;
     const listEl = document.getElementById('product-list');
     
+    // Update threshold label
+    updateThresholdLabel();
+    
     listEl.innerHTML = '<p class="text-gray-400 text-center py-4">Loading...</p>';
     
     try {
-        const response = await fetch(`/side-projects/product-description-generation/api/products?threshold=${threshold}&search=${encodeURIComponent(search)}&limit=50`);
+        const response = await fetch(`/side-projects/product-description-generation/api/products?threshold=${threshold}&search=${encodeURIComponent(search)}&limit=1000`);
         const data = await response.json();
         
         if (data.success) {
+            // Update the count in the stats display
+            const countEl = document.getElementById('products-under-threshold-count');
+            if (countEl) {
+                countEl.textContent = data.products.length;
+            }
+            
             if (data.products.length === 0) {
                 listEl.innerHTML = '<p class="text-gray-400 text-center py-4">No products found</p>';
                 return;
@@ -716,6 +814,7 @@ async function loadProducts() {
                 checkbox.addEventListener('change', function(e) {
                     e.stopPropagation();
                     updateSelectAllState();
+                    updateGenerateButtonText();
                 });
                 
                 clickableArea.addEventListener('click', function(e) {
@@ -728,6 +827,9 @@ async function loadProducts() {
             
             // Update select all checkbox state
             updateSelectAllState();
+            
+            // Update generate button text
+            updateGenerateButtonText();
             
             // Hide empty state and show settings panel when products are loaded
             const emptyState = document.getElementById('empty-state');
@@ -760,8 +862,13 @@ async function previewPrompt(productId) {
         const data = await response.json();
         
         if (data.success) {
-            document.getElementById('system-prompt').textContent = data.system_prompt || '';
-            document.getElementById('user-prompt').textContent = data.user_prompt || '';
+            // Update prompts with actual product data
+            if (data.system_prompt) {
+                document.getElementById('system-prompt').textContent = data.system_prompt;
+            }
+            if (data.user_prompt) {
+                document.getElementById('user-prompt').textContent = data.user_prompt;
+            }
         } else {
             console.error('Error previewing prompt:', data.error);
         }
@@ -1147,6 +1254,7 @@ function updateSelectAllState() {
     if (checkboxes.length === 0) {
         selectAll.checked = false;
         selectAll.disabled = true;
+        updateGenerateButtonText();
         return;
     }
     selectAll.disabled = false;
@@ -1154,6 +1262,7 @@ function updateSelectAllState() {
     const someChecked = Array.from(checkboxes).some(cb => cb.checked);
     selectAll.checked = allChecked;
     selectAll.indeterminate = someChecked && !allChecked;
+    updateGenerateButtonText();
 }
 
 // Get selected product IDs
@@ -1509,6 +1618,24 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', debounce(loadProducts, 500));
     }
     
+    // Word threshold input - update label when changed
+    const thresholdInput = document.getElementById('word-threshold');
+    if (thresholdInput) {
+        thresholdInput.addEventListener('input', function() {
+            updateThresholdLabel();
+        });
+        thresholdInput.addEventListener('change', function() {
+            updateThresholdLabel();
+            loadProducts(); // Reload products when threshold changes
+        });
+    }
+    
+    // Initialize threshold label on page load
+    updateThresholdLabel();
+    
+    // Initialize generate button text
+    updateGenerateButtonText();
+    
     // Temperature slider
     const tempSlider = document.getElementById('llm-temperature');
     if (tempSlider) {
@@ -1588,6 +1715,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             updateSelectAllState();
+            updateGenerateButtonText();
         });
     }
     
@@ -1604,6 +1732,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             updateSelectAllState();
+            updateGenerateButtonText();
         });
     }
     
@@ -1636,12 +1765,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (viewRecentResultsBtn) {
         viewRecentResultsBtn.addEventListener('click', async function() {
             const btn = this;
+            const hoursInput = document.getElementById('recent-hours-input');
+            const hours = parseInt(hoursInput?.value || 24);
+            const minutes = hours * 60;
+            
             const originalText = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
             
             try {
-                const response = await fetch('/side-projects/product-description-generation/api/recent-generations?limit=50&minutes=1440');
+                const response = await fetch(`/side-projects/product-description-generation/api/recent-generations?limit=100&minutes=${minutes}`);
                 const data = await response.json();
                 
                 if (data.success && data.results.length > 0) {
@@ -1651,15 +1784,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (resultsPanel) {
                         resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
+                    // Update button text to show what was loaded
+                    btn.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> Load Recent (${data.results.length} found)`;
                 } else {
-                    alert('No recent generations found. Try generating some descriptions first.');
+                    alert(`No recent generations found in the last ${hours} hour(s). Try generating some descriptions first or increase the time period.`);
+                    btn.innerHTML = originalText;
                 }
             } catch (error) {
                 alert('Error loading recent generations: ' + error.message);
                 console.error(error);
+                btn.innerHTML = originalText;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = originalText;
             }
         });
     }
