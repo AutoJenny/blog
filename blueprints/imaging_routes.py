@@ -89,15 +89,15 @@ def register_routes(bp):
                 # Get post type for recipe-specific handling
                 post_type = get_post_type(target_post_id)
                 
-            # Get content_type_name for header
-            cursor.execute("""
-                SELECT ti.display_name as content_type_name
-                FROM post p
-                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
-                WHERE p.id = %s
-            """, (target_post_id,))
-            result = cursor.fetchone()
-            content_type_name = result.get('content_type_name') if result else None
+                # Get content_type_name for header
+                cursor.execute("""
+                    SELECT ti.display_name as content_type_name
+                    FROM post p
+                    LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                    WHERE p.id = %s
+                """, (target_post_id,))
+                result = cursor.fetchone()
+                content_type_name = result.get('content_type_name') if result else None
             
             return render_template('imaging/sections/image_generation.html', 
                                  post_id=post_id,

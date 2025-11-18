@@ -177,13 +177,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('[Imaging Workspace] Batch progress:', progress);
                 // Show progress in console and UI
                 if (progress.status === 'generating') {
-                    console.log(`Generating image ${progress.current}/${progress.total}: ${progress.sectionTitle}`);
+                    const imageTypeText = progress.imageType ? ` (${progress.imageType})` : '';
+                    console.log(`Generating image ${progress.current}/${progress.total}: ${progress.sectionTitle}${imageTypeText}`);
                     showBatchProgress(progress);
                 } else if (progress.status === 'success') {
-                    console.log(`✓ Successfully generated image ${progress.current}/${progress.total}: ${progress.sectionTitle}`);
+                    const imageTypeText = progress.imageType ? ` (${progress.imageType})` : '';
+                    console.log(`✓ Successfully generated image ${progress.current}/${progress.total}: ${progress.sectionTitle}${imageTypeText}`);
                     updateBatchProgress(progress);
                 } else if (progress.status === 'error') {
-                    console.error(`✗ Error generating image ${progress.current}/${progress.total}: ${progress.sectionTitle} - ${progress.error}`);
+                    const imageTypeText = progress.imageType ? ` (${progress.imageType})` : '';
+                    console.error(`✗ Error generating image ${progress.current}/${progress.total}: ${progress.sectionTitle}${imageTypeText} - ${progress.error}`);
                     updateBatchProgress(progress);
                 }
             },
@@ -256,10 +259,11 @@ function showBatchProgress(progress) {
         document.body.appendChild(batchProgressContainer);
     }
     
+    const imageTypeText = progress.imageType ? ` (${progress.imageType})` : '';
     const progressHtml = `
         <div style="color:#e2e8f0;font-weight:bold;margin-bottom:0.5rem;">Generating Images</div>
         <div style="color:#94a3b8;font-size:0.9rem;margin-bottom:0.5rem;">
-            ${progress.current} / ${progress.total}: ${progress.sectionTitle || progress.sectionId}
+            ${progress.current} / ${progress.total}: ${progress.sectionTitle || progress.sectionId}${imageTypeText}
         </div>
         <div style="background:#1e293b;border-radius:4px;height:8px;overflow:hidden;">
             <div style="background:#10b981;height:100%;width:${(progress.current / progress.total) * 100}%;transition:width 0.3s;"></div>
@@ -274,11 +278,12 @@ function updateBatchProgress(progress) {
     
     const statusIcon = progress.status === 'success' ? '✓' : progress.status === 'error' ? '✗' : '';
     const statusColor = progress.status === 'success' ? '#10b981' : progress.status === 'error' ? '#ef4444' : '#94a3b8';
+    const imageTypeText = progress.imageType ? ` (${progress.imageType})` : '';
     
     const progressHtml = `
         <div style="color:#e2e8f0;font-weight:bold;margin-bottom:0.5rem;">Generating Images</div>
         <div style="color:${statusColor};font-size:0.9rem;margin-bottom:0.5rem;">
-            ${statusIcon} ${progress.current} / ${progress.total}: ${progress.sectionTitle || progress.sectionId}
+            ${statusIcon} ${progress.current} / ${progress.total}: ${progress.sectionTitle || progress.sectionId}${imageTypeText}
             ${progress.error ? `<div style="color:#ef4444;font-size:0.8rem;margin-top:0.25rem;">${progress.error}</div>` : ''}
         </div>
         <div style="background:#1e293b;border-radius:4px;height:8px;overflow:hidden;">

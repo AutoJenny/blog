@@ -349,8 +349,10 @@ CRITICAL STYLE GUIDELINES:
 - Avoid marketing fluff and empty phrases
 - NEVER use words like "Elevate", "Discover", "Unleash", "Transform", "Revolutionary", "Groundbreaking"
 - Use clear, direct language that informs the customer
+- Pay close attention to materials and be completely accurate. NEVER guess or infer material information that is not explicitly provided in the product data. Only state material facts that are clearly specified.
 - Highlight materials, craftsmanship, dimensions, and practical benefits
 - If the product is made in Scotland or the UK, mention this factually
+- For products with Irish or Welsh heritage indicators (such as shamrock motifs, dragon motifs, or other Irish/Welsh symbols), use "Celtic heritage" rather than "Scottish heritage" when describing the cultural context.
 - Keep descriptions informative but engaging
 
 FORMATTING REQUIREMENTS:
@@ -399,9 +401,11 @@ Write a comprehensive product description that:
 2. Maintains factual accuracy
 3. Uses UK-British English spellings throughout
 4. Focuses on features, materials, and benefits
-5. Avoids marketing clichés and empty phrases
-6. Is informative and helpful to potential customers
-7. NEVER includes pricing information, price references, or cost-related content
+5. Pay close attention to materials - only state material information that is explicitly provided, never guess
+6. Avoids marketing clichés and empty phrases
+7. Is informative and helpful to potential customers
+8. For items with Irish or Welsh heritage (e.g., shamrocks, dragon motifs), use "Celtic heritage" terminology rather than "Scottish"
+9. NEVER includes pricing information, price references, or cost-related content
 
 Return ONLY the product description text, no additional commentary.</pre>
                         </div>
@@ -1271,7 +1275,7 @@ function getSelectedProductIds() {
         .map(cb => parseInt(cb.dataset.productId));
 }
 
-// Bulk generate descriptions
+// Bulk generate descriptions in batches of 10
 async function bulkGenerate() {
     console.log('bulkGenerate called');
     const selectedIds = getSelectedProductIds();
@@ -1287,12 +1291,22 @@ async function bulkGenerate() {
         alert('Error: Generate button not found');
         return;
     }
-    const originalText = btn.innerHTML;
+    
+    const btnText = document.getElementById('generate-btn-text');
+    const originalHTML = btn.innerHTML;
+    
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+    
+    // Split into batches of 10
+    const batchSize = 10;
+    const batches = [];
+    for (let i = 0; i < selectedIds.length; i += batchSize) {
+        batches.push(selectedIds.slice(i, i + batchSize));
+    }
+    
+    console.log(`Processing ${selectedIds.length} products in ${batches.length} batches of ${batchSize}`);
     
     const settings = {
-        product_ids: selectedIds,
         provider: document.getElementById('llm-provider').value,
         model: document.getElementById('llm-model').value,
         temperature: parseFloat(document.getElementById('llm-temperature').value),
@@ -1300,43 +1314,146 @@ async function bulkGenerate() {
         include_image: document.getElementById('include-image').checked
     };
     
+    // Create progress dialog
+    const progressDialog = document.createElement('div');
+    progressDialog.id = 'bulk-generate-progress-dialog';
+    progressDialog.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #1f2937;
+        border: 2px solid #8b5cf6;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        z-index: 10000;
+        min-width: 400px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    `;
+    progressDialog.innerHTML = `
+        <div style="color: white; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">Generating Descriptions</h3>
+            <div id="progress-text" style="color: #9ca3af; font-size: 0.875rem;">Starting...</div>
+        </div>
+        <div style="background: #374151; border-radius: 0.25rem; height: 8px; margin-bottom: 1rem; overflow: hidden;">
+            <div id="progress-bar" style="background: #8b5cf6; height: 100%; width: 0%; transition: width 0.3s;"></div>
+        </div>
+        <div id="progress-details" style="color: #9ca3af; font-size: 0.75rem; max-height: 200px; overflow-y: auto;"></div>
+    `;
+    document.body.appendChild(progressDialog);
+    
+    const progressText = document.getElementById('progress-text');
+    const progressBar = document.getElementById('progress-bar');
+    const progressDetails = document.getElementById('progress-details');
+    
+    let allResults = [];
+    let totalProcessed = 0;
+    let totalSuccessful = 0;
+    let totalErrors = 0;
+    
     try {
-        const response = await fetch('/side-projects/product-description-generation/api/bulk-generate', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(settings)
-        });
-        
-        const data = await response.json();
-        console.log('Bulk generate response:', data);
-        
-        if (data.success) {
-            bulkResults = data.results;
-            console.log('Bulk generation successful, displaying results:', data.results.length, 'products');
-            displayBulkResults(data.results);
-            const viewResultsBtn = document.getElementById('view-results-btn');
-            if (viewResultsBtn) {
-                viewResultsBtn.style.display = 'block';
+        for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+            const batch = batches[batchIndex];
+            const batchNum = batchIndex + 1;
+            
+            // Update progress
+            const progressPercent = ((batchIndex / batches.length) * 100).toFixed(0);
+            progressBar.style.width = progressPercent + '%';
+            progressText.textContent = `Processing batch ${batchNum} of ${batches.length} (${totalProcessed}/${selectedIds.length} products)`;
+            progressDetails.innerHTML += `<div style="margin-bottom: 0.25rem;">Batch ${batchNum}: Processing ${batch.length} products...</div>`;
+            progressDetails.scrollTop = progressDetails.scrollHeight;
+            
+            if (btnText) {
+                btnText.textContent = `Generating batch ${batchNum}/${batches.length}...`;
             }
-            // Show success message and scroll to results
-            alert(`Successfully generated descriptions for ${data.results.length} product(s). Scroll down to see results.`);
-            setTimeout(() => {
-                const resultsPanel = document.getElementById('bulk-results-panel');
-                if (resultsPanel) {
-                    resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            try {
+                const batchSettings = {
+                    ...settings,
+                    product_ids: batch
+                };
+                
+                const response = await fetch('/side-projects/product-description-generation/api/bulk-generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(batchSettings)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
                 }
-            }, 500);
-        } else {
-            alert('Error generating descriptions: ' + (data.error || 'Unknown error'));
-            console.error('Bulk generate error:', data);
+                
+                const data = await response.json();
+                
+                if (data.success && data.results) {
+                    allResults = allResults.concat(data.results);
+                    const batchSuccessful = data.results.filter(r => !r.error).length;
+                    const batchErrors = data.results.filter(r => r.error).length;
+                    totalSuccessful += batchSuccessful;
+                    totalErrors += batchErrors;
+                    totalProcessed += batch.length;
+                    
+                    progressDetails.innerHTML += `<div style="color: #10b981; margin-bottom: 0.25rem;">✓ Batch ${batchNum} complete: ${batchSuccessful} successful, ${batchErrors} errors</div>`;
+                } else {
+                    // All products in batch failed
+                    totalErrors += batch.length;
+                    totalProcessed += batch.length;
+                    progressDetails.innerHTML += `<div style="color: #ef4444; margin-bottom: 0.25rem;">✗ Batch ${batchNum} failed: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                console.error(`Error processing batch ${batchNum}:`, error);
+                totalErrors += batch.length;
+                totalProcessed += batch.length;
+                progressDetails.innerHTML += `<div style="color: #ef4444; margin-bottom: 0.25rem;">✗ Batch ${batchNum} error: ${error.message}</div>`;
+            }
+            
+            progressDetails.scrollTop = progressDetails.scrollHeight;
         }
+        
+        // Final progress update
+        progressBar.style.width = '100%';
+        progressText.textContent = `Complete: ${totalSuccessful} successful, ${totalErrors} errors out of ${selectedIds.length} products`;
+        
+        // Wait a moment to show completion, then close dialog and show results
+        setTimeout(() => {
+            progressDialog.remove();
+            
+            if (allResults.length > 0) {
+                bulkResults = allResults;
+                displayBulkResults(allResults);
+                const viewResultsBtn = document.getElementById('view-results-btn');
+                if (viewResultsBtn) {
+                    viewResultsBtn.style.display = 'block';
+                }
+                
+                // Scroll to results
+                setTimeout(() => {
+                    const resultsPanel = document.getElementById('bulk-results-panel');
+                    if (resultsPanel) {
+                        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+                
+                alert(`Generation complete!\n\n${totalSuccessful} successful\n${totalErrors} errors\n${selectedIds.length} total products\n\nResults are displayed below.`);
+            } else {
+                alert(`Generation completed but no results were generated.\n\n${totalErrors} errors occurred.`);
+            }
+        }, 1000);
+        
     } catch (error) {
-        alert('Error generating descriptions: ' + error.message);
+        progressDialog.remove();
+        alert('Error during bulk generation: ' + error.message);
         console.error('Bulk generate exception:', error);
+        console.error('Error stack:', error.stack);
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = originalText;
+            if (btnText) {
+                updateGenerateButtonText();
+            } else {
+                btn.innerHTML = originalHTML;
+            }
         }
     }
 }

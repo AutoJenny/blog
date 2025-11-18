@@ -40,6 +40,7 @@ def preview_post(post_id):
     # The content comes from the unified renderer, ensuring preview matches published version
     # Try launchpad template first, then fallback to main templates
     from flask import current_app
+    from time import time
     try:
         # Try launchpad template path
         return render_template('launchpad/post_preview.html', post=post, sections=sections, rendered_content=html_content)

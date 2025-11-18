@@ -132,7 +132,7 @@ def register_routes(bp):
             
             for section in sections:
                 section_id = section['id']
-                raw_image_path = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
+                raw_image_path = f"static/content/posts/{post_id}/sections/{section_id}/landscape/raw/{section_id}.png"
                 
                 # Skip if raw image doesn't exist
                 if not os.path.exists(raw_image_path):

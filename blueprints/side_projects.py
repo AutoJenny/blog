@@ -50,6 +50,231 @@ def is_price_related_key(key):
     price_indicators = ['price', 'cost', 'pricing', '£', '$', 'eur', 'euro', 'dollar', 'pound', 'amount', 'fee', 'charge']
     return any(indicator in key_lower for indicator in price_indicators)
 
+def get_product_description_system_prompt():
+    """Get the system prompt for product description generation from llm_prompt table."""
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT system_prompt 
+            FROM llm_prompt 
+            WHERE name = 'Product Description Generation - System Prompt'
+            LIMIT 1
+        """)
+        result = cursor.fetchone()
+        if result and result.get('system_prompt'):
+            return result['system_prompt']
+    
+    # Fallback to hardcoded prompt if not found in database
+    logger.warning("Product Description Generation system prompt not found in database, using fallback")
+    return """You are a professional product description writer for a Scottish heritage and tartan products retailer. 
+Your task is to write clear, factual product descriptions that focus on features and benefits.
+
+CRITICAL STYLE GUIDELINES:
+- Use UK-British English spellings (e.g., "colour" not "color", "organised" not "organized", "centre" not "center", "realise" not "realize", "travelling" not "traveling")
+- Be factual and focus on specific features and benefits
+- Avoid marketing fluff and empty phrases
+- NEVER use words like "Elevate", "Discover", "Unleash", "Transform", "Revolutionary", "Groundbreaking"
+- Use clear, direct language that informs the customer
+- Pay close attention to materials and be completely accurate. NEVER guess or infer material information that is not explicitly provided in the product data. Only state material facts that are clearly specified.
+- Highlight materials, craftsmanship, dimensions, and practical benefits
+- If the product is made in Scotland or the UK, mention this factually
+- For products with Irish or Welsh heritage indicators (such as shamrock motifs, dragon motifs, or other Irish/Welsh symbols), use "Celtic heritage" rather than "Scottish heritage" when describing the cultural context.
+- Keep descriptions informative but engaging
+
+FORMATTING REQUIREMENTS:
+- Start with bullet points (using simple HTML <ul> and <li> tags) summarising key features and benefits
+- Use HTML paragraph tags (<p>) to break up text every 2-3 sentences for better readability
+
+CRITICAL: NEVER include pricing information, price references, or cost-related content in the description. Focus solely on product features, materials, craftsmanship, and benefits."""
+
+def get_product_with_category_context(product_id, cursor):
+    """Get product data and build category context. Returns (product, category_context) tuple."""
+    cursor.execute("""
+        SELECT 
+            id, sku, name, description, short_description,
+            image_url, category_ids, supplier_name, supplier_description,
+            additional_data, dimensions, configurable_options,
+            specifications, product_type_data, product_level, price
+        FROM clan_products
+        WHERE id = %s
+    """, (product_id,))
+    product = cursor.fetchone()
+    
+    if not product:
+        return None, None
+    
+    # Build category context
+    category_context = ""
+    if product.get('category_ids'):
+        for cat_id in product['category_ids']:
+            breadcrumbs = []
+            current_id = cat_id
+            visited = set()
+            
+            while current_id and current_id not in visited:
+                visited.add(current_id)
+                cursor.execute("""
+                    SELECT id, name, parent_id, level, description, heritage_data
+                    FROM clan_categories
+                    WHERE id = %s
+                """, (current_id,))
+                cat = cursor.fetchone()
+                if not cat:
+                    break
+                breadcrumbs.insert(0, cat)
+                current_id = cat.get('parent_id')
+            
+            if breadcrumbs:
+                path = ' > '.join([c['name'] for c in breadcrumbs])
+                descriptions = [c.get('description', '') for c in breadcrumbs if c.get('description')]
+                category_context += f"Category: {path}\n"
+                if descriptions:
+                    category_context += f"Category descriptions: {' | '.join(descriptions)}\n"
+                
+                # Add category heritage data if available
+                heritage_descriptions = []
+                for c in breadcrumbs:
+                    if c.get('heritage_data'):
+                        heritage = c['heritage_data']
+                        if isinstance(heritage, dict):
+                            for key in ['historical_origins', 'cultural_significance', 'evolution']:
+                                if heritage.get(key):
+                                    if isinstance(heritage[key], dict):
+                                        narrative = heritage[key].get('narrative', '')
+                                        if narrative:
+                                            heritage_descriptions.append(f"{key.replace('_', ' ').title()}: {narrative}")
+                                    elif isinstance(heritage[key], str):
+                                        heritage_descriptions.append(f"{key.replace('_', ' ').title()}: {heritage[key]}")
+                if heritage_descriptions:
+                    category_context += f"Category heritage context: {' | '.join(heritage_descriptions)}\n"
+    
+    return product, category_context
+
+def build_product_description_user_prompt(product, category_context):
+    """Build the user prompt for product description generation."""
+    user_prompt = f"""Write an improved product description for the following product.
+
+PRODUCT TITLE: {product['name']}
+SKU: {product['sku']}
+
+{category_context}
+
+SHORT DESCRIPTION (BLURB):
+{product.get('short_description', 'None provided')}
+
+CURRENT DESCRIPTION:
+{product.get('description', 'None provided')}
+
+ADDITIONAL CONTEXT:
+"""
+    
+    if product.get('supplier_name'):
+        user_prompt += f"Supplier/Manufacturer: {product['supplier_name']}\n"
+    
+    if product.get('dimensions'):
+        user_prompt += f"Dimensions: {product['dimensions']}\n"
+    
+    # Add specifications (excluding price-related fields)
+    if product.get('specifications'):
+        try:
+            specs = product['specifications']
+            if isinstance(specs, str):
+                specs = json.loads(specs)
+            
+            if specs:
+                user_prompt += "\nSPECIFICATIONS:\n"
+                if isinstance(specs, dict):
+                    for key, value in specs.items():
+                        if value and not is_price_related_key(key):
+                            user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
+                elif isinstance(specs, list):
+                    for spec in specs:
+                        if isinstance(spec, dict):
+                            for key, value in spec.items():
+                                if value and not is_price_related_key(key):
+                                    user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
+                        else:
+                            if not is_price_related_key(str(spec)):
+                                user_prompt += f"- {spec}\n"
+                user_prompt += "\n"
+        except Exception as e:
+            logger.warning(f"Error parsing specifications: {e}")
+    
+    # Add additional_data (excluding price-related fields)
+    if product.get('additional_data'):
+        additional = product['additional_data']
+        if isinstance(additional, dict):
+            user_prompt += "\nADDITIONAL PRODUCT ATTRIBUTES:\n"
+            for key, value in additional.items():
+                if value and not is_price_related_key(key):
+                    user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
+            user_prompt += "\n"
+    
+    # Add product_type_data (excluding price-related fields)
+    if product.get('product_type_data'):
+        try:
+            type_data = product['product_type_data']
+            if isinstance(type_data, str):
+                type_data = json.loads(type_data)
+            
+            if type_data and isinstance(type_data, dict):
+                user_prompt += "\nPRODUCT TYPE DATA:\n"
+                for key, value in type_data.items():
+                    if value and not is_price_related_key(key):
+                        user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
+                user_prompt += "\n"
+        except Exception as e:
+            logger.warning(f"Error parsing product_type_data: {e}")
+    
+    # Add supplier description
+    if product.get('supplier_description'):
+        user_prompt += f"\nSUPPLIER/MANUFACTURER INFORMATION:\n{product['supplier_description']}\n\n"
+    
+    # Add configurable options
+    if product.get('configurable_options'):
+        try:
+            options = product['configurable_options']
+            if isinstance(options, str):
+                options = json.loads(options)
+            
+            if options:
+                user_prompt += "\nPRODUCT OPTIONS (Sizes, Colours, Decorations, etc.):\n"
+                if isinstance(options, list):
+                    for option in options:
+                        if isinstance(option, dict):
+                            option_type = option.get('type') or option.get('name') or 'Option'
+                            option_values = option.get('values') or option.get('options') or []
+                            if option_values:
+                                values_str = ', '.join([str(v) for v in option_values])
+                                user_prompt += f"- {option_type}: {values_str}\n"
+                        elif isinstance(option, str):
+                            user_prompt += f"- {option}\n"
+                elif isinstance(options, dict):
+                    for key, value in options.items():
+                        if isinstance(value, list):
+                            values_str = ', '.join([str(v) for v in value])
+                            user_prompt += f"- {key}: {values_str}\n"
+                        else:
+                            user_prompt += f"- {key}: {value}\n"
+                user_prompt += "\n"
+        except Exception as e:
+            logger.warning(f"Error parsing configurable_options: {e}")
+    
+    user_prompt += """
+Write a comprehensive product description that:
+1. Expands on the current description if it's too short
+2. Maintains factual accuracy
+3. Uses UK-British English spellings throughout
+4. Focuses on features, materials, and benefits
+5. Pay close attention to materials - only state material information that is explicitly provided, never guess
+6. Avoids marketing clichés and empty phrases
+7. Is informative and helpful to potential customers
+8. For items with Irish or Welsh heritage (e.g., shamrocks, dragon motifs), use "Celtic heritage" terminology rather than "Scottish"
+9. NEVER includes pricing information, price references, or cost-related content
+
+Return ONLY the product description text, no additional commentary."""
+    
+    return user_prompt
+
 @bp.route('/')
 def index():
     """Side projects landing page"""
@@ -306,208 +531,17 @@ def api_preview_prompt():
         if not product_id:
             return jsonify({'success': False, 'error': 'product_id required'}), 400
         
-        # Reuse the prompt building logic from generate endpoint
         with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT 
-                    id, sku, name, description, short_description,
-                    image_url, category_ids, supplier_name, supplier_description,
-                    additional_data, dimensions, configurable_options,
-                    specifications, product_type_data, product_level, price
-                FROM clan_products
-                WHERE id = %s
-            """, (product_id,))
-            product = cursor.fetchone()
+            product, category_context = get_product_with_category_context(product_id, cursor)
             
             if not product:
                 return jsonify({'success': False, 'error': 'Product not found'}), 404
             
-            # Build category context (same as generate endpoint)
-            category_context = ""
-            if product.get('category_ids'):
-                for cat_id in product['category_ids']:
-                    breadcrumbs = []
-                    current_id = cat_id
-                    visited = set()
-                    
-                    while current_id and current_id not in visited:
-                        visited.add(current_id)
-                        cursor.execute("""
-                            SELECT id, name, parent_id, level, description, heritage_data
-                            FROM clan_categories
-                            WHERE id = %s
-                        """, (current_id,))
-                        cat = cursor.fetchone()
-                        if not cat:
-                            break
-                        breadcrumbs.insert(0, cat)
-                        current_id = cat.get('parent_id')
-                    
-                    if breadcrumbs:
-                        path = ' > '.join([c['name'] for c in breadcrumbs])
-                        descriptions = [c.get('description', '') for c in breadcrumbs if c.get('description')]
-                        category_context += f"Category: {path}\n"
-                        if descriptions:
-                            category_context += f"Category descriptions: {' | '.join(descriptions)}\n"
-                        
-                        # Add category heritage data if available
-                        heritage_descriptions = []
-                        for c in breadcrumbs:
-                            if c.get('heritage_data'):
-                                heritage = c['heritage_data']
-                                if isinstance(heritage, dict):
-                                    for key in ['historical_origins', 'cultural_significance', 'evolution']:
-                                        if heritage.get(key):
-                                            if isinstance(heritage[key], dict):
-                                                narrative = heritage[key].get('narrative', '')
-                                                if narrative:
-                                                    heritage_descriptions.append(f"{key.replace('_', ' ').title()}: {narrative}")
-                                            elif isinstance(heritage[key], str):
-                                                heritage_descriptions.append(f"{key.replace('_', ' ').title()}: {heritage[key]}")
-                        if heritage_descriptions:
-                            category_context += f"Category heritage context: {' | '.join(heritage_descriptions)}\n"
+            # Get system prompt from database
+            system_prompt = get_product_description_system_prompt()
             
-            # Build prompts (same logic as generate endpoint)
-            system_prompt = """You are a professional product description writer for a Scottish heritage and tartan products retailer. 
-Your task is to write clear, factual product descriptions that focus on features and benefits.
-
-CRITICAL STYLE GUIDELINES:
-- Use UK-British English spellings (e.g., "colour" not "color", "organised" not "organized", "centre" not "center", "realise" not "realize", "travelling" not "traveling")
-- Be factual and focus on specific features and benefits
-- Avoid marketing fluff and empty phrases
-- NEVER use words like "Elevate", "Discover", "Unleash", "Transform", "Revolutionary", "Groundbreaking"
-- Use clear, direct language that informs the customer
-- Highlight materials, craftsmanship, dimensions, and practical benefits
-- If the product is made in Scotland or the UK, mention this factually
-- Keep descriptions informative but engaging
-
-FORMATTING REQUIREMENTS:
-- Start with bullet points (using simple HTML <ul> and <li> tags) summarising key features and benefits
-- Use HTML paragraph tags (<p>) to break up text every 2-3 sentences for better readability
-
-CRITICAL: NEVER include pricing information, price references, or cost-related content in the description. Focus solely on product features, materials, craftsmanship, and benefits."""
-            
-            user_prompt = f"""Write an improved product description for the following product.
-
-PRODUCT TITLE: {product['name']}
-SKU: {product['sku']}
-
-{category_context}
-
-SHORT DESCRIPTION (BLURB):
-{product.get('short_description', 'None provided')}
-
-CURRENT DESCRIPTION:
-{product.get('description', 'None provided')}
-
-ADDITIONAL CONTEXT:
-"""
-            
-            if product.get('supplier_name'):
-                user_prompt += f"Supplier/Manufacturer: {product['supplier_name']}\n"
-            
-            if product.get('dimensions'):
-                user_prompt += f"Dimensions: {product['dimensions']}\n"
-            
-            # Add specifications
-            if product.get('specifications'):
-                try:
-                    specs = product['specifications']
-                    if isinstance(specs, str):
-                        import json
-                        specs = json.loads(specs)
-                    
-                    if specs:
-                        user_prompt += "\nSPECIFICATIONS:\n"
-                        if isinstance(specs, dict):
-                            for key, value in specs.items():
-                                if value:
-                                    user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                        elif isinstance(specs, list):
-                            for spec in specs:
-                                if isinstance(spec, dict):
-                                    for key, value in spec.items():
-                                        if value:
-                                            user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                                else:
-                                    user_prompt += f"- {spec}\n"
-                        user_prompt += "\n"
-                except Exception as e:
-                    logger.warning(f"Error parsing specifications: {e}")
-            
-            # Add additional_data (excluding price-related fields)
-            if product.get('additional_data'):
-                additional = product['additional_data']
-                if isinstance(additional, dict):
-                    user_prompt += "\nADDITIONAL PRODUCT ATTRIBUTES:\n"
-                    for key, value in additional.items():
-                        if value and not is_price_related_key(key):
-                            user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                    user_prompt += "\n"
-            
-            # Add product_type_data (excluding price-related fields)
-            if product.get('product_type_data'):
-                try:
-                    type_data = product['product_type_data']
-                    if isinstance(type_data, str):
-                        import json
-                        type_data = json.loads(type_data)
-                    
-                    if type_data and isinstance(type_data, dict):
-                        user_prompt += "\nPRODUCT TYPE DATA:\n"
-                        for key, value in type_data.items():
-                            if value and not is_price_related_key(key):
-                                user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                        user_prompt += "\n"
-                except Exception as e:
-                    logger.warning(f"Error parsing product_type_data: {e}")
-            
-            # Add supplier description
-            if product.get('supplier_description'):
-                user_prompt += f"\nSUPPLIER/MANUFACTURER INFORMATION:\n{product['supplier_description']}\n\n"
-            
-            # Add configurable options
-            if product.get('configurable_options'):
-                try:
-                    options = product['configurable_options']
-                    if isinstance(options, str):
-                        import json
-                        options = json.loads(options)
-                    
-                    if options:
-                        user_prompt += "\nPRODUCT OPTIONS (Sizes, Colours, Decorations, etc.):\n"
-                        if isinstance(options, list):
-                            for option in options:
-                                if isinstance(option, dict):
-                                    option_type = option.get('type') or option.get('name') or 'Option'
-                                    option_values = option.get('values') or option.get('options') or []
-                                    if option_values:
-                                        values_str = ', '.join([str(v) for v in option_values])
-                                        user_prompt += f"- {option_type}: {values_str}\n"
-                                elif isinstance(option, str):
-                                    user_prompt += f"- {option}\n"
-                        elif isinstance(options, dict):
-                            for key, value in options.items():
-                                if isinstance(value, list):
-                                    values_str = ', '.join([str(v) for v in value])
-                                    user_prompt += f"- {key}: {values_str}\n"
-                                else:
-                                    user_prompt += f"- {key}: {value}\n"
-                        user_prompt += "\n"
-                except Exception as e:
-                    logger.warning(f"Error parsing configurable_options: {e}")
-            
-            user_prompt += """
-Write a comprehensive product description that:
-1. Expands on the current description if it's too short
-2. Maintains factual accuracy
-3. Uses UK-British English spellings throughout
-4. Focuses on features, materials, and benefits
-5. Avoids marketing clichés and empty phrases
-6. Is informative and helpful to potential customers
-7. NEVER includes pricing information, price references, or cost-related content
-
-Return ONLY the product description text, no additional commentary."""
+            # Build user prompt using shared helper
+            user_prompt = build_product_description_user_prompt(product, category_context)
             
             return jsonify({
                 'success': True,
@@ -536,209 +570,17 @@ def api_generate_description():
         if not product_id:
             return jsonify({'success': False, 'error': 'product_id required'}), 400
         
-            # Get product details - include all available descriptive fields
         with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT 
-                    id, sku, name, description, short_description,
-                    image_url, category_ids, supplier_name, supplier_description,
-                    additional_data, dimensions, configurable_options,
-                    specifications, product_type_data, product_level, price
-                FROM clan_products
-                WHERE id = %s
-            """, (product_id,))
-            product = cursor.fetchone()
+            product, category_context = get_product_with_category_context(product_id, cursor)
             
             if not product:
                 return jsonify({'success': False, 'error': 'Product not found'}), 404
             
-            # Build category breadcrumbs
-            category_context = ""
-            if product.get('category_ids'):
-                for cat_id in product['category_ids']:
-                    breadcrumbs = []
-                    current_id = cat_id
-                    visited = set()
-                    
-                    while current_id and current_id not in visited:
-                        visited.add(current_id)
-                        cursor.execute("""
-                            SELECT id, name, parent_id, level, description
-                            FROM clan_categories
-                            WHERE id = %s
-                        """, (current_id,))
-                        cat = cursor.fetchone()
-                        if not cat:
-                            break
-                        breadcrumbs.insert(0, cat)
-                        current_id = cat.get('parent_id')
-                    
-                    if breadcrumbs:
-                        path = ' > '.join([c['name'] for c in breadcrumbs])
-                        descriptions = [c.get('description', '') for c in breadcrumbs if c.get('description')]
-                        category_context += f"Category: {path}\n"
-                        if descriptions:
-                            category_context += f"Category descriptions: {' | '.join(descriptions)}\n"
-                        
-                        # Add category heritage data if available
-                        heritage_descriptions = []
-                        for c in breadcrumbs:
-                            if c.get('heritage_data'):
-                                heritage = c['heritage_data']
-                                if isinstance(heritage, dict):
-                                    for key in ['historical_origins', 'cultural_significance', 'evolution']:
-                                        if heritage.get(key):
-                                            if isinstance(heritage[key], dict):
-                                                narrative = heritage[key].get('narrative', '')
-                                                if narrative:
-                                                    heritage_descriptions.append(f"{key.replace('_', ' ').title()}: {narrative}")
-                                            elif isinstance(heritage[key], str):
-                                                heritage_descriptions.append(f"{key.replace('_', ' ').title()}: {heritage[key]}")
-                        if heritage_descriptions:
-                            category_context += f"Category heritage context: {' | '.join(heritage_descriptions)}\n"
+            # Get system prompt from database
+            system_prompt = get_product_description_system_prompt()
             
-            # Build prompt
-            system_prompt = """You are a professional product description writer for a Scottish heritage and tartan products retailer. 
-Your task is to write clear, factual product descriptions that focus on features and benefits.
-
-CRITICAL STYLE GUIDELINES:
-- Use UK-British English spellings (e.g., "colour" not "color", "organised" not "organized", "centre" not "center", "realise" not "realize", "travelling" not "traveling")
-- Be factual and focus on specific features and benefits
-- Avoid marketing fluff and empty phrases
-- NEVER use words like "Elevate", "Discover", "Unleash", "Transform", "Revolutionary", "Groundbreaking"
-- Use clear, direct language that informs the customer
-- Highlight materials, craftsmanship, dimensions, and practical benefits
-- If the product is made in Scotland or the UK, mention this factually
-- Keep descriptions informative but engaging
-
-FORMATTING REQUIREMENTS:
-- Start with bullet points (using simple HTML <ul> and <li> tags) summarising key features and benefits
-- Use HTML paragraph tags (<p>) to break up text every 2-3 sentences for better readability
-
-CRITICAL: NEVER include pricing information, price references, or cost-related content in the description. Focus solely on product features, materials, craftsmanship, and benefits."""
-            
-            user_prompt = f"""Write an improved product description for the following product.
-
-PRODUCT TITLE: {product['name']}
-SKU: {product['sku']}
-
-{category_context}
-
-SHORT DESCRIPTION (BLURB):
-{product.get('short_description', 'None provided')}
-
-CURRENT DESCRIPTION:
-{product.get('description', 'None provided')}
-
-ADDITIONAL CONTEXT:
-"""
-            
-            if product.get('supplier_name'):
-                user_prompt += f"Supplier/Manufacturer: {product['supplier_name']}\n"
-            
-            if product.get('dimensions'):
-                user_prompt += f"Dimensions: {product['dimensions']}\n"
-            
-            # Add specifications (excluding price-related fields)
-            if product.get('specifications'):
-                try:
-                    specs = product['specifications']
-                    if isinstance(specs, str):
-                        import json
-                        specs = json.loads(specs)
-                    
-                    if specs:
-                        user_prompt += "\nSPECIFICATIONS:\n"
-                        if isinstance(specs, dict):
-                            for key, value in specs.items():
-                                if value and not is_price_related_key(key):
-                                    user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                        elif isinstance(specs, list):
-                            for spec in specs:
-                                if isinstance(spec, dict):
-                                    for key, value in spec.items():
-                                        if value and not is_price_related_key(key):
-                                            user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                                else:
-                                    if not is_price_related_key(str(spec)):
-                                        user_prompt += f"- {spec}\n"
-                        user_prompt += "\n"
-                except Exception as e:
-                    logger.warning(f"Error parsing specifications: {e}")
-            
-            # Add additional_data (attributes like material, pattern, style, etc.) - excluding price-related fields
-            if product.get('additional_data'):
-                additional = product['additional_data']
-                if isinstance(additional, dict):
-                    user_prompt += "\nADDITIONAL PRODUCT ATTRIBUTES:\n"
-                    for key, value in additional.items():
-                        if value and not is_price_related_key(key):
-                            user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                    user_prompt += "\n"
-            
-            # Add product_type_data (parsed identifiers) - excluding price-related fields
-            if product.get('product_type_data'):
-                try:
-                    type_data = product['product_type_data']
-                    if isinstance(type_data, str):
-                        import json
-                        type_data = json.loads(type_data)
-                    
-                    if type_data and isinstance(type_data, dict):
-                        user_prompt += "\nPRODUCT TYPE DATA:\n"
-                        for key, value in type_data.items():
-                            if value and not is_price_related_key(key):
-                                user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                        user_prompt += "\n"
-                except Exception as e:
-                    logger.warning(f"Error parsing product_type_data: {e}")
-            
-            # Add supplier description if available
-            if product.get('supplier_description'):
-                user_prompt += f"\nSUPPLIER/MANUFACTURER INFORMATION:\n{product['supplier_description']}\n\n"
-            
-            # Add configurable options (sizes, colours, decorations, etc.)
-            if product.get('configurable_options'):
-                try:
-                    options = product['configurable_options']
-                    if isinstance(options, str):
-                        import json
-                        options = json.loads(options)
-                    
-                    if options:
-                        user_prompt += "\nPRODUCT OPTIONS (Sizes, Colours, Decorations, etc.):\n"
-                        if isinstance(options, list):
-                            for option in options:
-                                if isinstance(option, dict):
-                                    option_type = option.get('type') or option.get('name') or 'Option'
-                                    option_values = option.get('values') or option.get('options') or []
-                                    if option_values:
-                                        values_str = ', '.join([str(v) for v in option_values])
-                                        user_prompt += f"- {option_type}: {values_str}\n"
-                                elif isinstance(option, str):
-                                    user_prompt += f"- {option}\n"
-                        elif isinstance(options, dict):
-                            for key, value in options.items():
-                                if isinstance(value, list):
-                                    values_str = ', '.join([str(v) for v in value])
-                                    user_prompt += f"- {key}: {values_str}\n"
-                                else:
-                                    user_prompt += f"- {key}: {value}\n"
-                        user_prompt += "\n"
-                except Exception as e:
-                    logger.warning(f"Error parsing configurable_options: {e}")
-            
-            user_prompt += """
-Write a comprehensive product description that:
-1. Expands on the current description if it's too short
-2. Maintains factual accuracy
-3. Uses UK-British English spellings throughout
-4. Focuses on features, materials, and benefits
-5. Avoids marketing clichés and empty phrases
-6. Is informative and helpful to potential customers
-7. NEVER includes pricing information, price references, or cost-related content
-
-Return ONLY the product description text, no additional commentary."""
+            # Build user prompt using shared helper
+            user_prompt = build_product_description_user_prompt(product, category_context)
             
             # Prepare messages
             messages = [
@@ -817,20 +659,14 @@ def api_bulk_generate():
         logger.info(f"Starting bulk generation for {total_products} products")
         
         with db_manager.get_cursor() as cursor:
+            # Get system prompt once (shared for all products)
+            system_prompt = get_product_description_system_prompt()
+            
             for idx, product_id in enumerate(product_ids, 1):
                 logger.info(f"Processing product {idx}/{total_products}: {product_id}")
                 try:
-                    # Get product
-                    cursor.execute("""
-                        SELECT 
-                            id, sku, name, description, short_description,
-                            image_url, category_ids, supplier_name, supplier_description,
-                            additional_data, dimensions, configurable_options,
-                            specifications, product_type_data, product_level, price
-                        FROM clan_products
-                        WHERE id = %s
-                    """, (product_id,))
-                    product = cursor.fetchone()
+                    # Get product and category context using shared helper
+                    product, category_context = get_product_with_category_context(product_id, cursor)
                     
                     if not product:
                         results.append({
@@ -844,172 +680,8 @@ def api_bulk_generate():
                         })
                         continue
                     
-                    # Build category context (same as single generate)
-                    category_context = ""
-                    if product.get('category_ids'):
-                        for cat_id in product['category_ids']:
-                            breadcrumbs = []
-                            current_id = cat_id
-                            visited = set()
-                            
-                            while current_id and current_id not in visited:
-                                visited.add(current_id)
-                                cursor.execute("""
-                                    SELECT id, name, parent_id, level, description, heritage_data
-                                    FROM clan_categories
-                                    WHERE id = %s
-                                """, (current_id,))
-                                cat = cursor.fetchone()
-                                if not cat:
-                                    break
-                                breadcrumbs.insert(0, cat)
-                                current_id = cat.get('parent_id')
-                            
-                            if breadcrumbs:
-                                path = ' > '.join([c['name'] for c in breadcrumbs])
-                                descriptions = [c.get('description', '') for c in breadcrumbs if c.get('description')]
-                                category_context += f"Category: {path}\n"
-                                if descriptions:
-                                    category_context += f"Category descriptions: {' | '.join(descriptions)}\n"
-                    
-                    # Build prompts (same as single generate)
-                    system_prompt = """You are a professional product description writer for a Scottish heritage and tartan products retailer. 
-Your task is to write clear, factual product descriptions that focus on features and benefits.
-
-CRITICAL STYLE GUIDELINES:
-- Use UK-British English spellings (e.g., "colour" not "color", "organised" not "organized", "centre" not "center", "realise" not "realize", "travelling" not "traveling")
-- Be factual and focus on specific features and benefits
-- Avoid marketing fluff and empty phrases
-- NEVER use words like "Elevate", "Discover", "Unleash", "Transform", "Revolutionary", "Groundbreaking"
-- Use clear, direct language that informs the customer
-- Highlight materials, craftsmanship, dimensions, and practical benefits
-- If the product is made in Scotland or the UK, mention this factually
-- Keep descriptions informative but engaging
-
-FORMATTING REQUIREMENTS:
-- Start with bullet points (using simple HTML <ul> and <li> tags) summarising key features and benefits
-- Use HTML paragraph tags (<p>) to break up text every 2-3 sentences for better readability
-
-CRITICAL: NEVER include pricing information, price references, or cost-related content in the description. Focus solely on product features, materials, craftsmanship, and benefits."""
-                    
-                    user_prompt = f"""Write an improved product description for the following product.
-
-PRODUCT TITLE: {product['name']}
-SKU: {product['sku']}
-
-{category_context}
-
-SHORT DESCRIPTION (BLURB):
-{product.get('short_description', 'None provided')}
-
-CURRENT DESCRIPTION:
-{product.get('description', 'None provided')}
-
-ADDITIONAL CONTEXT:
-"""
-                    
-                    if product.get('supplier_name'):
-                        user_prompt += f"Supplier/Manufacturer: {product['supplier_name']}\n"
-                    
-                    if product.get('dimensions'):
-                        user_prompt += f"Dimensions: {product['dimensions']}\n"
-                    
-                    # Add all the same context as single generate (excluding price-related fields)
-                    if product.get('specifications'):
-                        try:
-                            specs = product['specifications']
-                            if isinstance(specs, str):
-                                import json
-                                specs = json.loads(specs)
-                            
-                            if specs:
-                                user_prompt += "\nSPECIFICATIONS:\n"
-                                if isinstance(specs, dict):
-                                    for key, value in specs.items():
-                                        if value and not is_price_related_key(key):
-                                            user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                                elif isinstance(specs, list):
-                                    for spec in specs:
-                                        if isinstance(spec, dict):
-                                            for key, value in spec.items():
-                                                if value and not is_price_related_key(key):
-                                                    user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                                        else:
-                                            if not is_price_related_key(str(spec)):
-                                                user_prompt += f"- {spec}\n"
-                                user_prompt += "\n"
-                        except Exception as e:
-                            logger.warning(f"Error parsing specifications: {e}")
-                    
-                    if product.get('additional_data'):
-                        additional = product['additional_data']
-                        if isinstance(additional, dict):
-                            user_prompt += "\nADDITIONAL PRODUCT ATTRIBUTES:\n"
-                            for key, value in additional.items():
-                                if value and not is_price_related_key(key):
-                                    user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                            user_prompt += "\n"
-                    
-                    if product.get('product_type_data'):
-                        try:
-                            type_data = product['product_type_data']
-                            if isinstance(type_data, str):
-                                import json
-                                type_data = json.loads(type_data)
-                            
-                            if type_data and isinstance(type_data, dict):
-                                user_prompt += "\nPRODUCT TYPE DATA:\n"
-                                for key, value in type_data.items():
-                                    if value and not is_price_related_key(key):
-                                        user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
-                                user_prompt += "\n"
-                        except Exception as e:
-                            logger.warning(f"Error parsing product_type_data: {e}")
-                    
-                    if product.get('supplier_description'):
-                        user_prompt += f"\nSUPPLIER/MANUFACTURER INFORMATION:\n{product['supplier_description']}\n\n"
-                    
-                    if product.get('configurable_options'):
-                        try:
-                            options = product['configurable_options']
-                            if isinstance(options, str):
-                                import json
-                                options = json.loads(options)
-                            
-                            if options:
-                                user_prompt += "\nPRODUCT OPTIONS (Sizes, Colours, Decorations, etc.):\n"
-                                if isinstance(options, list):
-                                    for option in options:
-                                        if isinstance(option, dict):
-                                            option_type = option.get('type') or option.get('name') or 'Option'
-                                            option_values = option.get('values') or option.get('options') or []
-                                            if option_values:
-                                                values_str = ', '.join([str(v) for v in option_values])
-                                                user_prompt += f"- {option_type}: {values_str}\n"
-                                        elif isinstance(option, str):
-                                            user_prompt += f"- {option}\n"
-                                elif isinstance(options, dict):
-                                    for key, value in options.items():
-                                        if isinstance(value, list):
-                                            values_str = ', '.join([str(v) for v in value])
-                                            user_prompt += f"- {key}: {values_str}\n"
-                                        else:
-                                            user_prompt += f"- {key}: {value}\n"
-                                user_prompt += "\n"
-                        except Exception as e:
-                            logger.warning(f"Error parsing configurable_options: {e}")
-                    
-                    user_prompt += """
-Write a comprehensive product description that:
-1. Expands on the current description if it's too short
-2. Maintains factual accuracy
-3. Uses UK-British English spellings throughout
-4. Focuses on features, materials, and benefits
-5. Avoids marketing clichés and empty phrases
-6. Is informative and helpful to potential customers
-7. NEVER includes pricing information, price references, or cost-related content
-
-Return ONLY the product description text, no additional commentary."""
+                    # Build user prompt using shared helper
+                    user_prompt = build_product_description_user_prompt(product, category_context)
                     
                     # Call LLM
                     messages = [

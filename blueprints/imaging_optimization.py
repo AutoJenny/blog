@@ -125,7 +125,11 @@ def _process_single_image_optimization(raw_image_path, optimized_image_path, wat
                     saved_quality = q
                     break
     
-    return {'success': True}
+    # Verify the optimized image file was actually created
+    if not os.path.exists(optimized_image_path):
+        return {'success': False, 'error': f'Failed to create optimized image: {optimized_image_path}'}
+    
+    return {'success': True, 'optimized_path': optimized_image_path}
 
 
 def optimize_image_with_watermark(post_id, section_id, params=None):
@@ -152,10 +156,10 @@ def optimize_image_with_watermark(post_id, section_id, params=None):
             portrait_raw = f"static/content/posts/{post_id}/header/portrait/raw/header_portrait.png"
             portrait_optimized = f"static/content/posts/{post_id}/header/portrait/header_portrait.jpg"
         else:
-            landscape_raw = f"static/content/posts/{post_id}/sections/{section_id}/raw/{section_id}.png"
+            landscape_raw = f"static/content/posts/{post_id}/sections/{section_id}/landscape/raw/{section_id}.png"
             landscape_optimized = f"static/content/posts/{post_id}/sections/{section_id}/optimized/{section_id}.jpg"
             portrait_raw = f"static/content/posts/{post_id}/sections/{section_id}/portrait/raw/{section_id}_portrait.png"
-            portrait_optimized = f"static/content/posts/{post_id}/sections/{section_id}/portrait/{section_id}_portrait.jpg"
+            portrait_optimized = f"static/content/posts/{post_id}/sections/{section_id}/portrait/optimized/{section_id}_portrait.jpg"
         
         # Check if landscape raw exists (required)
         if not os.path.exists(landscape_raw):
