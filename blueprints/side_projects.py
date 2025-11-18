@@ -42,6 +42,14 @@ def count_words(text):
     words = [w for w in re.split(r'\s+', clean_text) if w.strip()]
     return len(words)
 
+def is_price_related_key(key):
+    """Check if a key is related to pricing."""
+    if not key:
+        return False
+    key_lower = str(key).lower()
+    price_indicators = ['price', 'cost', 'pricing', '£', '$', 'eur', 'euro', 'dollar', 'pound', 'amount', 'fee', 'charge']
+    return any(indicator in key_lower for indicator in price_indicators)
+
 @bp.route('/')
 def index():
     """Side projects landing page"""
@@ -144,7 +152,7 @@ def api_products_short_descriptions():
     """Get products with descriptions under specified word count"""
     try:
         word_threshold = request.args.get('threshold', 30, type=int)
-        limit = request.args.get('limit', 50, type=int)
+        limit = request.args.get('limit', 1000, type=int)
         offset = request.args.get('offset', 0, type=int)
         search = request.args.get('search', '', type=str)
         
@@ -371,7 +379,13 @@ CRITICAL STYLE GUIDELINES:
 - Use clear, direct language that informs the customer
 - Highlight materials, craftsmanship, dimensions, and practical benefits
 - If the product is made in Scotland or the UK, mention this factually
-- Keep descriptions informative but engaging"""
+- Keep descriptions informative but engaging
+
+FORMATTING REQUIREMENTS:
+- Start with bullet points (using simple HTML <ul> and <li> tags) summarising key features and benefits
+- Use HTML paragraph tags (<p>) to break up text every 2-3 sentences for better readability
+
+CRITICAL: NEVER include pricing information, price references, or cost-related content in the description. Focus solely on product features, materials, craftsmanship, and benefits."""
             
             user_prompt = f"""Write an improved product description for the following product.
 
@@ -421,17 +435,17 @@ ADDITIONAL CONTEXT:
                 except Exception as e:
                     logger.warning(f"Error parsing specifications: {e}")
             
-            # Add additional_data
+            # Add additional_data (excluding price-related fields)
             if product.get('additional_data'):
                 additional = product['additional_data']
                 if isinstance(additional, dict):
                     user_prompt += "\nADDITIONAL PRODUCT ATTRIBUTES:\n"
                     for key, value in additional.items():
-                        if value:
+                        if value and not is_price_related_key(key):
                             user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                     user_prompt += "\n"
             
-            # Add product_type_data
+            # Add product_type_data (excluding price-related fields)
             if product.get('product_type_data'):
                 try:
                     type_data = product['product_type_data']
@@ -442,7 +456,7 @@ ADDITIONAL CONTEXT:
                     if type_data and isinstance(type_data, dict):
                         user_prompt += "\nPRODUCT TYPE DATA:\n"
                         for key, value in type_data.items():
-                            if value:
+                            if value and not is_price_related_key(key):
                                 user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                         user_prompt += "\n"
                 except Exception as e:
@@ -491,6 +505,7 @@ Write a comprehensive product description that:
 4. Focuses on features, materials, and benefits
 5. Avoids marketing clichés and empty phrases
 6. Is informative and helpful to potential customers
+7. NEVER includes pricing information, price references, or cost-related content
 
 Return ONLY the product description text, no additional commentary."""
             
@@ -594,7 +609,13 @@ CRITICAL STYLE GUIDELINES:
 - Use clear, direct language that informs the customer
 - Highlight materials, craftsmanship, dimensions, and practical benefits
 - If the product is made in Scotland or the UK, mention this factually
-- Keep descriptions informative but engaging"""
+- Keep descriptions informative but engaging
+
+FORMATTING REQUIREMENTS:
+- Start with bullet points (using simple HTML <ul> and <li> tags) summarising key features and benefits
+- Use HTML paragraph tags (<p>) to break up text every 2-3 sentences for better readability
+
+CRITICAL: NEVER include pricing information, price references, or cost-related content in the description. Focus solely on product features, materials, craftsmanship, and benefits."""
             
             user_prompt = f"""Write an improved product description for the following product.
 
@@ -618,7 +639,7 @@ ADDITIONAL CONTEXT:
             if product.get('dimensions'):
                 user_prompt += f"Dimensions: {product['dimensions']}\n"
             
-            # Add specifications
+            # Add specifications (excluding price-related fields)
             if product.get('specifications'):
                 try:
                     specs = product['specifications']
@@ -630,31 +651,32 @@ ADDITIONAL CONTEXT:
                         user_prompt += "\nSPECIFICATIONS:\n"
                         if isinstance(specs, dict):
                             for key, value in specs.items():
-                                if value:
+                                if value and not is_price_related_key(key):
                                     user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                         elif isinstance(specs, list):
                             for spec in specs:
                                 if isinstance(spec, dict):
                                     for key, value in spec.items():
-                                        if value:
+                                        if value and not is_price_related_key(key):
                                             user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                                 else:
-                                    user_prompt += f"- {spec}\n"
+                                    if not is_price_related_key(str(spec)):
+                                        user_prompt += f"- {spec}\n"
                         user_prompt += "\n"
                 except Exception as e:
                     logger.warning(f"Error parsing specifications: {e}")
             
-            # Add additional_data (attributes like material, pattern, style, etc.)
+            # Add additional_data (attributes like material, pattern, style, etc.) - excluding price-related fields
             if product.get('additional_data'):
                 additional = product['additional_data']
                 if isinstance(additional, dict):
                     user_prompt += "\nADDITIONAL PRODUCT ATTRIBUTES:\n"
                     for key, value in additional.items():
-                        if value:
+                        if value and not is_price_related_key(key):
                             user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                     user_prompt += "\n"
             
-            # Add product_type_data (parsed identifiers)
+            # Add product_type_data (parsed identifiers) - excluding price-related fields
             if product.get('product_type_data'):
                 try:
                     type_data = product['product_type_data']
@@ -665,7 +687,7 @@ ADDITIONAL CONTEXT:
                     if type_data and isinstance(type_data, dict):
                         user_prompt += "\nPRODUCT TYPE DATA:\n"
                         for key, value in type_data.items():
-                            if value:
+                            if value and not is_price_related_key(key):
                                 user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                         user_prompt += "\n"
                 except Exception as e:
@@ -714,6 +736,7 @@ Write a comprehensive product description that:
 4. Focuses on features, materials, and benefits
 5. Avoids marketing clichés and empty phrases
 6. Is informative and helpful to potential customers
+7. NEVER includes pricing information, price references, or cost-related content
 
 Return ONLY the product description text, no additional commentary."""
             
@@ -790,9 +813,12 @@ def api_bulk_generate():
             return jsonify({'success': False, 'error': 'product_ids required'}), 400
         
         results = []
+        total_products = len(product_ids)
+        logger.info(f"Starting bulk generation for {total_products} products")
         
         with db_manager.get_cursor() as cursor:
-            for product_id in product_ids:
+            for idx, product_id in enumerate(product_ids, 1):
+                logger.info(f"Processing product {idx}/{total_products}: {product_id}")
                 try:
                     # Get product
                     cursor.execute("""
@@ -858,7 +884,13 @@ CRITICAL STYLE GUIDELINES:
 - Use clear, direct language that informs the customer
 - Highlight materials, craftsmanship, dimensions, and practical benefits
 - If the product is made in Scotland or the UK, mention this factually
-- Keep descriptions informative but engaging"""
+- Keep descriptions informative but engaging
+
+FORMATTING REQUIREMENTS:
+- Start with bullet points (using simple HTML <ul> and <li> tags) summarising key features and benefits
+- Use HTML paragraph tags (<p>) to break up text every 2-3 sentences for better readability
+
+CRITICAL: NEVER include pricing information, price references, or cost-related content in the description. Focus solely on product features, materials, craftsmanship, and benefits."""
                     
                     user_prompt = f"""Write an improved product description for the following product.
 
@@ -882,7 +914,7 @@ ADDITIONAL CONTEXT:
                     if product.get('dimensions'):
                         user_prompt += f"Dimensions: {product['dimensions']}\n"
                     
-                    # Add all the same context as single generate
+                    # Add all the same context as single generate (excluding price-related fields)
                     if product.get('specifications'):
                         try:
                             specs = product['specifications']
@@ -894,16 +926,17 @@ ADDITIONAL CONTEXT:
                                 user_prompt += "\nSPECIFICATIONS:\n"
                                 if isinstance(specs, dict):
                                     for key, value in specs.items():
-                                        if value:
+                                        if value and not is_price_related_key(key):
                                             user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                                 elif isinstance(specs, list):
                                     for spec in specs:
                                         if isinstance(spec, dict):
                                             for key, value in spec.items():
-                                                if value:
+                                                if value and not is_price_related_key(key):
                                                     user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                                         else:
-                                            user_prompt += f"- {spec}\n"
+                                            if not is_price_related_key(str(spec)):
+                                                user_prompt += f"- {spec}\n"
                                 user_prompt += "\n"
                         except Exception as e:
                             logger.warning(f"Error parsing specifications: {e}")
@@ -913,7 +946,7 @@ ADDITIONAL CONTEXT:
                         if isinstance(additional, dict):
                             user_prompt += "\nADDITIONAL PRODUCT ATTRIBUTES:\n"
                             for key, value in additional.items():
-                                if value:
+                                if value and not is_price_related_key(key):
                                     user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                             user_prompt += "\n"
                     
@@ -927,7 +960,7 @@ ADDITIONAL CONTEXT:
                             if type_data and isinstance(type_data, dict):
                                 user_prompt += "\nPRODUCT TYPE DATA:\n"
                                 for key, value in type_data.items():
-                                    if value:
+                                    if value and not is_price_related_key(key):
                                         user_prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
                                 user_prompt += "\n"
                         except Exception as e:
@@ -974,6 +1007,7 @@ Write a comprehensive product description that:
 4. Focuses on features, materials, and benefits
 5. Avoids marketing clichés and empty phrases
 6. Is informative and helpful to potential customers
+7. NEVER includes pricing information, price references, or cost-related content
 
 Return ONLY the product description text, no additional commentary."""
                     
@@ -1028,21 +1062,23 @@ Return ONLY the product description text, no additional commentary."""
                         'old_description': product.get('description', ''),
                         'new_description': generated_description
                     })
+                    logger.info(f"Successfully generated description for product {product_id} ({idx}/{total_products})")
                     
                 except Exception as e:
-                    logger.error(f"Error generating description for product {product_id}: {e}")
+                    logger.error(f"Error generating description for product {product_id} ({idx}/{total_products}): {e}", exc_info=True)
                     results.append({
                         'product_id': product_id,
-                        'title': 'Error',
-                        'sku': 'N/A',
-                        'short_description': '',
-                        'old_description': '',
+                        'title': product.get('name', 'N/A') if product else 'Error',
+                        'sku': product.get('sku', 'N/A') if product else 'N/A',
+                        'short_description': product.get('short_description', '') if product else '',
+                        'old_description': product.get('description', '') if product else '',
                         'new_description': '',
                         'error': str(e)
                     })
             
             cursor.connection.commit()
         
+        logger.info(f"Bulk generation completed: {len(results)} results out of {total_products} products")
         return jsonify({
             'success': True,
             'results': results
@@ -1058,8 +1094,8 @@ Return ONLY the product description text, no additional commentary."""
 def api_recent_generations():
     """Get recent bulk generation results"""
     try:
-        limit = request.args.get('limit', 50, type=int)
-        minutes = request.args.get('minutes', 1440, type=int)  # Last N minutes (default 24 hours)
+        limit = request.args.get('limit', 100, type=int)
+        minutes = request.args.get('minutes', 1440, type=int)  # Last N minutes (default 24 hours = 1440 minutes)
         
         with db_manager.get_cursor() as cursor:
             # Get recent generations with product info
