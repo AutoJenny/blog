@@ -766,7 +766,7 @@ def api_bulk_generate():
 def api_recent_generations():
     """Get recent bulk generation results"""
     try:
-        limit = request.args.get('limit', 100, type=int)
+        limit = request.args.get('limit', 1000, type=int)
         minutes = request.args.get('minutes', 1440, type=int)  # Last N minutes (default 24 hours = 1440 minutes)
         
         with db_manager.get_cursor() as cursor:
