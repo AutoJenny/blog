@@ -1193,7 +1193,7 @@ def api_generate_image_captions(post_id, section_id):
             
             logger.info(f"[IMAGE_CAPTIONS] Using prompt: {prompt_name} (illustration_method: {illustration_method}, content_type: {content_type_name})")
             
-            # Get the image captions prompt
+            # Get the image captions prompt - try category-specific first, then fall back to base
             cursor.execute("""
                 SELECT prompt_text, system_prompt
                 FROM llm_prompt 
@@ -1203,6 +1203,19 @@ def api_generate_image_captions(post_id, section_id):
             """, (prompt_name,))
             
             prompt_data = cursor.fetchone()
+            
+            # Fallback to base prompt if category-specific not found
+            if not prompt_data and prompt_name != 'Image Captions Generation':
+                logger.info(f"[IMAGE_CAPTIONS] Category-specific prompt '{prompt_name}' not found, falling back to base prompt")
+                cursor.execute("""
+                    SELECT prompt_text, system_prompt
+                    FROM llm_prompt 
+                    WHERE name = 'Image Captions Generation'
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """)
+                prompt_data = cursor.fetchone()
+            
             if not prompt_data:
                 return jsonify({
                     'error': f'Image Captions prompt "{prompt_name}" not found. Please configure prompts in the LLM Prompts panel first.'

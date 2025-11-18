@@ -236,6 +236,16 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters, 
                 filename = f"{section_id}.png"
             image_size = parameters.get('size', landscape_size)
         
+        # Validate image_size against GPT-Image-1 supported values
+        supported_sizes = ['1024x1024', '1024x1536', '1536x1024', 'auto']
+        if image_size not in supported_sizes:
+            original_size = image_size
+            if orientation == 'portrait':
+                image_size = '1024x1536'  # Default portrait size
+            else:
+                image_size = '1536x1024'  # Default landscape size
+            logger.warning(f"GPT-Image-1 {orientation} generation: Invalid size '{original_size}' not supported. Using '{image_size}' instead. Supported sizes: {supported_sizes}")
+        
         os.makedirs(image_dir, exist_ok=True)
         image_path = f"{image_dir}/{filename}"
         
@@ -250,18 +260,42 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters, 
         }
         
         logger.info(f"GPT-Image-1 {orientation} API request: {api_data}")
-        response = requests.post('https://api.openai.com/v1/images/generations', 
-                               headers=headers, json=api_data, timeout=120)
+        try:
+            response = requests.post('https://api.openai.com/v1/images/generations', 
+                                   headers=headers, json=api_data, timeout=120)
+            logger.info(f"GPT-Image-1 {orientation} API response status: {response.status_code}")
+        except requests.exceptions.Timeout:
+            error_msg = f'GPT-Image-1 {orientation} API request timed out after 120 seconds'
+            logger.error(f"GPT-Image-1 {orientation} generation failed: {error_msg}")
+            return {'success': False, 'error': error_msg}
+        except requests.exceptions.RequestException as e:
+            error_msg = f'GPT-Image-1 {orientation} API request failed: {str(e)}'
+            logger.error(f"GPT-Image-1 {orientation} generation failed: {error_msg}")
+            return {'success': False, 'error': error_msg}
+        except Exception as e:
+            error_msg = f'GPT-Image-1 {orientation} unexpected error: {str(e)}'
+            logger.error(f"GPT-Image-1 {orientation} generation failed: {error_msg}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return {'success': False, 'error': error_msg}
         
         if response.status_code != 200:
-            return {'success': False, 'error': f'GPT-Image-1 {orientation} API error: {response.status_code} - {response.text}'}
+            error_msg = f'GPT-Image-1 {orientation} API error: {response.status_code} - {response.text}'
+            logger.error(f"GPT-Image-1 {orientation} generation failed: {error_msg}")
+            return {'success': False, 'error': error_msg}
         
         result = response.json()
+        logger.info(f"GPT-Image-1 {orientation} API response structure: has 'data'={('data' in result)}, data length={len(result.get('data', []))}")
+        
         if 'data' not in result or not result['data']:
-            return {'success': False, 'error': f'No image data returned from GPT-Image-1 {orientation}'}
+            error_msg = f'No image data returned from GPT-Image-1 {orientation}. Response: {result}'
+            logger.error(f"GPT-Image-1 {orientation} generation failed: {error_msg}")
+            return {'success': False, 'error': error_msg}
         
         # Check response structure - GPT-Image-1 may return b64_json or url
         first_item = result['data'][0]
+        logger.info(f"GPT-Image-1 {orientation} response item keys: {list(first_item.keys())}")
+        
         if 'b64_json' in first_item:
             # Decode base64 and save directly
             import base64
@@ -271,18 +305,26 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters, 
                     f.write(image_data)
                 logger.info(f"Generated and saved {orientation} image from b64_json: {image_path}")
             except Exception as e:
-                return {'success': False, 'error': f'Failed to decode b64_json image: {str(e)}'}
+                error_msg = f'Failed to decode b64_json image: {str(e)}'
+                logger.error(f"GPT-Image-1 {orientation} generation failed: {error_msg}")
+                return {'success': False, 'error': error_msg}
         elif 'url' in first_item:
             # Download image from URL
             image_url = first_item['url']
+            logger.info(f"GPT-Image-1 {orientation} downloading image from URL: {image_url}")
             image_response = requests.get(image_url, timeout=30)
+            logger.info(f"GPT-Image-1 {orientation} download response status: {image_response.status_code}")
             if image_response.status_code != 200:
-                return {'success': False, 'error': f'Failed to download {orientation} image: {image_response.status_code}'}
+                error_msg = f'Failed to download {orientation} image: {image_response.status_code}'
+                logger.error(f"GPT-Image-1 {orientation} generation failed: {error_msg}")
+                return {'success': False, 'error': error_msg}
             with open(image_path, 'wb') as f:
                 f.write(image_response.content)
             logger.info(f"Generated and saved {orientation} image from URL: {image_path}")
         else:
-            return {'success': False, 'error': f"GPT-Image-1 response missing both 'url' and 'b64_json' keys. Response: {result}"}
+            error_msg = f"GPT-Image-1 response missing both 'url' and 'b64_json' keys. Response keys: {list(first_item.keys())}, Full response: {result}"
+            logger.error(f"GPT-Image-1 {orientation} generation failed: {error_msg}")
+            return {'success': False, 'error': error_msg}
         
         # Return path
         if section_id == 'header':

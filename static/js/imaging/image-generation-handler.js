@@ -147,10 +147,29 @@ class ImageGenerationHandler {
             if (result.success) {
                 let successMsg = `Section ${targetSectionId}: `;
                 const parts = [];
-                if (result.landscape_generated) parts.push('Landscape');
-                if (result.portrait_generated) parts.push('Portrait');
-                successMsg += parts.join(' + ') + ' generated';
-                this.showTransientMessage(successMsg, 3000);
+                const errors = [];
+                
+                if (result.landscape_generated) {
+                    parts.push('Landscape');
+                } else if (result.landscape_error) {
+                    errors.push(`Landscape: ${result.landscape_error}`);
+                }
+                
+                if (result.portrait_generated) {
+                    parts.push('Portrait');
+                } else if (result.portrait_error) {
+                    errors.push(`Portrait: ${result.portrait_error}`);
+                }
+                
+                if (parts.length > 0) {
+                    successMsg += parts.join(' + ') + ' generated';
+                    this.showTransientMessage(successMsg, 3000);
+                }
+                
+                if (errors.length > 0) {
+                    console.error(`[Image Generation Handler] Generation errors for section ${targetSectionId}:`, errors);
+                    this.showTransientMessage(`Section ${targetSectionId}: ${errors.join('; ')}`, 8000);
+                }
                 
                 // Notify output panel with full result data
                 if (window.imagingOutputPanel && typeof window.imagingOutputPanel.onImageGenerated === 'function') {

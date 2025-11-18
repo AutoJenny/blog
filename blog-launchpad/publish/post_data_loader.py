@@ -178,12 +178,13 @@ def get_post_sections_with_images(post_id):
             if 'section_type' not in section_dict:
                 section_dict['section_type'] = section.get('section_type')
             
-            # Priority 1: Check post_images table (approved optimized images)
+            # ONLY use optimized images - no fallbacks to raw
             image_path = None
             caption_text = section.get('image_captions') or ''
             alt_text = f"Image for {section.get('section_heading', 'section')}"
             
-            # Check post_images table first
+            import os
+            # Priority 1: Check post_images table (optimized images)
             cur.execute("""
                 SELECT i.file_path as path, i.filename, i.alt_text, i.caption
                 FROM post_images pi
@@ -198,20 +199,15 @@ def get_post_sections_with_images(post_id):
                     caption_text = db_image['caption']
                 if db_image.get('alt_text'):
                     alt_text = db_image['alt_text']
+                logger.info(f"Using optimized image from database for section {section['id']}: {image_path}")
             
             # Priority 2: Fallback to filesystem for optimized images (if not in database yet)
             if not image_path:
-                import os
-                candidate = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
-                filesystem_path = candidate.lstrip('/')
-                
-                # Try multiple base directories
                 possible_bases = [
                     os.getcwd(),  # Current working directory
                     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),  # Blog directory
                 ]
                 
-                # Also try with Flask's instance_path if available
                 try:
                     from flask import current_app
                     if current_app and hasattr(current_app, 'root_path'):
@@ -219,10 +215,14 @@ def get_post_sections_with_images(post_id):
                 except:
                     pass
                 
+                optimized_candidate = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
+                optimized_filesystem = optimized_candidate.lstrip('/')
+                
                 for base in possible_bases:
-                    test_path = os.path.join(base, filesystem_path)
+                    test_path = os.path.join(base, optimized_filesystem)
                     if os.path.exists(test_path):
-                        image_path = candidate
+                        image_path = optimized_candidate
+                        logger.info(f"Using optimized image from filesystem for section {section['id']}: {image_path}")
                         break
             
             if image_path:

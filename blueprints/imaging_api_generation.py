@@ -109,16 +109,37 @@ def register_routes(bp):
                 landscape_params = parameters.copy()
                 landscape_result = None
                 
-                if model_name == 'gpt-image-1':
-                    landscape_result = imaging_generate_gpt_image_1(image_prompt, post_id, resolved_section_id, landscape_params, 'landscape')
-                elif model_name.startswith('dall-e') or model_name.startswith('openai'):
-                    landscape_result = imaging_generate_dalle_image(image_prompt, post_id, resolved_section_id, landscape_params, 'landscape')
-                elif model_name.startswith('sdxl'):
-                    landscape_result = imaging_generate_sdxl_image(image_prompt, post_id, resolved_section_id, landscape_params, 'landscape')
+                logger.info(f"[IMAGE_GENERATION] Starting landscape generation for section {resolved_section_id} with model {model_name}")
+                
+                try:
+                    if model_name == 'gpt-image-1':
+                        landscape_result = imaging_generate_gpt_image_1(image_prompt, post_id, resolved_section_id, landscape_params, 'landscape')
+                    elif model_name.startswith('dall-e') or model_name.startswith('openai'):
+                        landscape_result = imaging_generate_dalle_image(image_prompt, post_id, resolved_section_id, landscape_params, 'landscape')
+                    elif model_name.startswith('sdxl'):
+                        landscape_result = imaging_generate_sdxl_image(image_prompt, post_id, resolved_section_id, landscape_params, 'landscape')
+                    else:
+                        landscape_result = {'success': False, 'error': f'Unknown model: {model_name}'}
+                except Exception as e:
+                    logger.error(f"[IMAGE_GENERATION] Exception during landscape generation for section {resolved_section_id}: {str(e)}")
+                    import traceback
+                    logger.error(traceback.format_exc())
+                    landscape_result = {'success': False, 'error': f'Exception: {str(e)}'}
+                
+                if landscape_result is None:
+                    logger.error(f"[IMAGE_GENERATION] Landscape generation returned None for section {resolved_section_id}")
+                    landscape_result = {'success': False, 'error': 'Generator function returned None'}
+                
+                logger.info(f"[IMAGE_GENERATION] Landscape generation result: {landscape_result}")
                 
                 if landscape_result and landscape_result.get('success'):
                     results['landscape_generated'] = True
                     results['landscape_path'] = landscape_result.get('image_path')
+                    logger.info(f"[IMAGE_GENERATION] Landscape generation succeeded: {results['landscape_path']}")
+                else:
+                    error_msg = landscape_result.get('error', 'Unknown error') if landscape_result else 'No result returned'
+                    logger.error(f"[IMAGE_GENERATION] Landscape generation failed for section {resolved_section_id}: {error_msg}")
+                    results['landscape_error'] = error_msg
             
             # Generate portrait image if requested
             if generate_portrait:
@@ -128,16 +149,37 @@ def register_routes(bp):
                 
                 portrait_result = None
                 
-                if model_name == 'gpt-image-1':
-                    portrait_result = imaging_generate_gpt_image_1(image_prompt, post_id, resolved_section_id, portrait_params, 'portrait')
-                elif model_name.startswith('dall-e') or model_name.startswith('openai'):
-                    portrait_result = imaging_generate_dalle_image(image_prompt, post_id, resolved_section_id, portrait_params, 'portrait')
-                elif model_name.startswith('sdxl'):
-                    portrait_result = imaging_generate_sdxl_image(image_prompt, post_id, resolved_section_id, portrait_params, 'portrait')
+                logger.info(f"[IMAGE_GENERATION] Starting portrait generation for section {resolved_section_id} with model {model_name}")
+                
+                try:
+                    if model_name == 'gpt-image-1':
+                        portrait_result = imaging_generate_gpt_image_1(image_prompt, post_id, resolved_section_id, portrait_params, 'portrait')
+                    elif model_name.startswith('dall-e') or model_name.startswith('openai'):
+                        portrait_result = imaging_generate_dalle_image(image_prompt, post_id, resolved_section_id, portrait_params, 'portrait')
+                    elif model_name.startswith('sdxl'):
+                        portrait_result = imaging_generate_sdxl_image(image_prompt, post_id, resolved_section_id, portrait_params, 'portrait')
+                    else:
+                        portrait_result = {'success': False, 'error': f'Unknown model: {model_name}'}
+                except Exception as e:
+                    logger.error(f"[IMAGE_GENERATION] Exception during portrait generation for section {resolved_section_id}: {str(e)}")
+                    import traceback
+                    logger.error(traceback.format_exc())
+                    portrait_result = {'success': False, 'error': f'Exception: {str(e)}'}
+                
+                if portrait_result is None:
+                    logger.error(f"[IMAGE_GENERATION] Portrait generation returned None for section {resolved_section_id}")
+                    portrait_result = {'success': False, 'error': 'Generator function returned None'}
+                
+                logger.info(f"[IMAGE_GENERATION] Portrait generation result: {portrait_result}")
                 
                 if portrait_result and portrait_result.get('success'):
                     results['portrait_generated'] = True
                     results['portrait_path'] = portrait_result.get('image_path')
+                    logger.info(f"[IMAGE_GENERATION] Portrait generation succeeded: {results['portrait_path']}")
+                else:
+                    error_msg = portrait_result.get('error', 'Unknown error') if portrait_result else 'No result returned'
+                    logger.error(f"[IMAGE_GENERATION] Portrait generation failed for section {resolved_section_id}: {error_msg}")
+                    results['portrait_error'] = error_msg
             
             # Return response
             response_data = {
@@ -147,6 +189,14 @@ def register_routes(bp):
                 'landscape_path': results['landscape_path'],
                 'portrait_path': results['portrait_path']
             }
+            
+            # Include error messages if generation failed
+            if 'landscape_error' in results:
+                response_data['landscape_error'] = results['landscape_error']
+            if 'portrait_error' in results:
+                response_data['portrait_error'] = results['portrait_error']
+            
+            logger.info(f"[IMAGE_GENERATION] Final response for section {resolved_section_id}: landscape={results['landscape_generated']}, portrait={results['portrait_generated']}")
             
             return jsonify(response_data)
                     

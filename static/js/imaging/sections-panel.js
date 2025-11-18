@@ -276,25 +276,90 @@ class ImagingSectionsPanel {
         try {
             // Filter out 'hero' if it somehow got selected (shouldn't happen, but be safe)
             const sectionIds = selectedIds.filter(id => id !== 'hero');
-            const totalItems = sectionIds.length;
-            let currentItem = 0;
+            
+            // Get checkbox states to calculate total images
+            const landscapeChecked = document.getElementById('landscape-checkbox')?.checked ?? true;
+            const portraitChecked = document.getElementById('portrait-checkbox')?.checked ?? true;
+            const imagesPerSection = (landscapeChecked ? 1 : 0) + (portraitChecked ? 1 : 0);
+            const totalImages = sectionIds.length * imagesPerSection;
+            let currentImage = 0;
+            
+            console.log('[ImagingSectionsPanel] Batch calculation:', {
+                sectionIds,
+                sectionCount: sectionIds.length,
+                landscapeChecked,
+                portraitChecked,
+                imagesPerSection,
+                totalImages
+            });
 
             // Process section images
             for (let i = 0; i < sectionIds.length; i++) {
                 const sectionId = sectionIds[i];
                 const section = this.sections.find(s => s.id === sectionId);
                 const sectionTitle = section ? (section.section_heading || section.title || `Section ${sectionId}`) : `Section ${sectionId}`;
-
-                currentItem++;
                 
-                // On image-generation page, show dialog for each section
+                // On image-generation page, generate images and track progress per image
                 if (window.currentSubstage === 'image-generation' || window.location.pathname.includes('/image-generation')) {
                     if (window.imageGenerationHandler) {
+                        // Report progress for landscape if enabled
+                        if (landscapeChecked) {
+                            currentImage++;
+                            this.callbacks.onBatchProgress({ 
+                                current: currentImage, 
+                                total: totalImages, 
+                                sectionId, 
+                                sectionTitle, 
+                                status: 'generating',
+                                imageType: 'landscape'
+                            });
+                        }
+                        
+                        // Report progress for portrait if enabled
+                        if (portraitChecked) {
+                            currentImage++;
+                            this.callbacks.onBatchProgress({ 
+                                current: currentImage, 
+                                total: totalImages, 
+                                sectionId, 
+                                sectionTitle, 
+                                status: 'generating',
+                                imageType: 'portrait'
+                            });
+                        }
+                        
+                        // Generate both images (landscape and/or portrait)
                         await window.imageGenerationHandler.handleGenerateImage(sectionId);
+                        
+                        // Report success for each generated image
+                        if (landscapeChecked) {
+                            this.callbacks.onBatchProgress({ 
+                                current: currentImage - (portraitChecked ? 1 : 0), 
+                                total: totalImages, 
+                                sectionId, 
+                                sectionTitle, 
+                                status: 'success',
+                                imageType: 'landscape'
+                            });
+                        }
+                        if (portraitChecked) {
+                            this.callbacks.onBatchProgress({ 
+                                current: currentImage, 
+                                total: totalImages, 
+                                sectionId, 
+                                sectionTitle, 
+                                status: 'success',
+                                imageType: 'portrait'
+                            });
+                        }
                     }
                     continue;
                 }
 
+                // For non-image-generation pages, track by section
+                const currentItem = i + 1;
+                const totalItems = sectionIds.length;
+                
                 // Obtain prompt for this specific section
                 let image_prompt = '';
                 console.log(`[ImagingSectionsPanel] Getting prompt for section ${sectionId}`);
@@ -504,20 +569,32 @@ class ImagingSectionsPanel {
                 if (i < sectionIds.length - 1) await new Promise(r => setTimeout(r, 500));
             }
 
-            const totalGenerated = totalItems;
+            // Calculate completion stats
+            const totalGenerated = sectionIds.length;
             
-            // Count actual images based on checkbox states
-            const landscapeChecked = document.getElementById('landscape-checkbox')?.checked ?? true;
-            const portraitChecked = document.getElementById('portrait-checkbox')?.checked ?? true;
-            const imagesPerSection = (landscapeChecked ? 1 : 0) + (portraitChecked ? 1 : 0);
-            const totalImages = totalGenerated * imagesPerSection;
+            // For image-generation page, totalImages and imagesPerSection were already calculated above
+            // For other pages, calculate based on checkbox states
+            let calculatedTotalImages;
+            let calculatedImagesPerSection;
+            
+            if (window.currentSubstage === 'image-generation' || window.location.pathname.includes('/image-generation')) {
+                // Already calculated above - use those values
+                calculatedTotalImages = totalImages;
+                calculatedImagesPerSection = imagesPerSection;
+            } else {
+                // For other pages, recalculate based on checkbox states
+                const otherLandscapeChecked = document.getElementById('landscape-checkbox')?.checked ?? true;
+                const otherPortraitChecked = document.getElementById('portrait-checkbox')?.checked ?? true;
+                calculatedImagesPerSection = (otherLandscapeChecked ? 1 : 0) + (otherPortraitChecked ? 1 : 0);
+                calculatedTotalImages = totalGenerated * calculatedImagesPerSection;
+            }
             
             console.log('[ImagingSectionsPanel] Batch generation complete, calling onBatchComplete');
             this.callbacks.onBatchComplete({ 
                 totalSections: totalGenerated, 
                 successCount: totalGenerated,
-                totalImages: totalImages,
-                imagesPerSection: imagesPerSection
+                totalImages: calculatedTotalImages,
+                imagesPerSection: calculatedImagesPerSection
             });
         } catch (err) {
             console.error('[ImagingSectionsPanel] Batch generation error:', err);
