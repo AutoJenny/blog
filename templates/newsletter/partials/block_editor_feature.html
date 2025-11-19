@@ -1,0 +1,206 @@
+{# Feature block editor: post selection with dropdown #}
+<div class="block-editor-feature" data-block-id="{{ b.id }}" data-issue-id="{{ issue_id }}">
+  {# Current content preview #}
+  <div style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+    <div style="color: #a5b4fc; font-size: 12px; font-weight: 600; margin-bottom: 8px;">
+      <i class="fa-solid fa-eye"></i> Current Selection:
+    </div>
+    <div style="color: #e6e8ef; font-size: 14px; line-height: 1.6;" id="feature-preview-{{ b.id }}">
+      {% if b.payload_json and b.payload_json.title %}
+        <div style="font-weight: 600; margin-bottom: 8px; color: #e6e8ef;">{{ b.payload_json.title }}</div>
+        {% if b.payload_json.excerpt %}
+          <div style="margin-bottom: 8px; color: #9ca3af;">{{ b.payload_json.excerpt }}</div>
+        {% endif %}
+        {% if b.payload_json.url %}
+          <a href="{{ b.payload_json.url }}" target="_blank" style="color: #7b8dff; text-decoration: none; font-size: 12px; display: inline-block; margin-top: 8px;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">
+            <i class="fa-solid fa-external-link"></i> View post
+          </a>
+        {% endif %}
+      {% else %}
+        <span style="color: #9ca3af;">No post selected. Generate suggestions below.</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Post selection dropdown #}
+  <div style="margin-bottom: 16px; padding: 16px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px;">
+    <div style="color: #a5b4fc; font-size: 13px; font-weight: 600; margin-bottom: 12px;">
+      <i class="fa-solid fa-list"></i> Select Post:
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <select id="feature-post-select-{{ b.id }}" style="flex: 1; background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; padding: 10px 14px; border-radius: 6px; font-size: 14px;">
+        <option value="">Loading posts...</option>
+      </select>
+      <button type="button" style="background: #4e6bff; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;" onclick="applyFeatureSelection({{ b.id }}, {{ issue_id }})">
+        <i class="fa-solid fa-check"></i> Use Selected
+      </button>
+      <button type="button" style="background: transparent; color: #a5b4fc; border: 1px solid #2d3246; padding: 10px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;" onclick="loadFeatureSuggestions({{ b.id }}, {{ issue_id }})">
+        <i class="fa-solid fa-refresh"></i> Refresh List
+      </button>
+    </div>
+  </div>
+
+  {# Suggestions list (for reference) #}
+  <div style="margin-bottom: 16px;">
+    <div style="color: #a5b4fc; font-size: 13px; font-weight: 600; margin-bottom: 12px;">
+      <i class="fa-solid fa-lightbulb"></i> Available Posts:
+    </div>
+    <div id="feature-suggestions-{{ b.id }}" style="space-y: 8px;">
+      <div style="color: #9ca3af; font-size: 13px; padding: 12px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px;">
+        Click "Refresh List" to load recent theme posts.
+      </div>
+    </div>
+  </div>
+
+  {# Manual override (collapsible) #}
+  <details style="margin-top: 16px;">
+    <summary style="color: #a5b4fc; cursor: pointer; font-weight: 600; padding: 12px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; margin-bottom: 8px;">
+      <i class="fa-solid fa-code"></i> Manual JSON Override
+    </summary>
+    <form method="post" action="/newsletter/block/{{ b.id }}/update" style="margin-top: 12px;">
+      <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+      <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Payload JSON</label>
+      <textarea name="payload_json" rows="8" style="width: 100%; background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; line-height: 1.6;">{{ (b.payload_json | tojson(indent=2)) if b.payload_json else '{}' }}</textarea>
+      <div style="margin-top: 12px; text-align: right;">
+        <button type="submit" style="background: #4e6bff; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          <i class="fa-solid fa-save"></i> Save
+        </button>
+      </div>
+    </form>
+  </details>
+</div>
+
+<script>
+function loadFeatureSuggestions(blockId, issueId) {
+  const suggestionsDiv = document.getElementById(`feature-suggestions-${blockId}`);
+  const selectEl = document.getElementById(`feature-post-select-${blockId}`);
+  
+  // Show loading state
+  suggestionsDiv.innerHTML = '<div style="color: #9ca3af; padding: 12px;">Loading posts...</div>';
+  selectEl.innerHTML = '<option value="">Loading...</option>';
+  
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Response is not JSON');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const suggestions = data.suggestions || [];
+      const current = data.current || {};
+      
+      // Update dropdown
+      selectEl.innerHTML = '';
+      if (suggestions.length === 0) {
+        selectEl.innerHTML = '<option value="">No theme posts found</option>';
+      } else {
+        suggestions.forEach((post, index) => {
+          const option = document.createElement('option');
+          option.value = post.id;
+          option.textContent = post.title || `Post #${post.id}`;
+          // Select current post if it matches
+          if (current.id && post.id === current.id) {
+            option.selected = true;
+          } else if (index === 0 && !current.id) {
+            // Select first if no current
+            option.selected = true;
+          }
+          selectEl.appendChild(option);
+        });
+      }
+      
+      // Update suggestions list
+      if (suggestions.length === 0) {
+        suggestionsDiv.innerHTML = '<div style="color: #9ca3af; padding: 12px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px;">No theme posts available.</div>';
+      } else {
+        let html = '';
+      const blockId = {{ b.id }};
+      const issueId = {{ issue_id }};
+      suggestions.forEach((post, index) => {
+          const isCurrent = current.id && post.id === current.id;
+          html += `
+            <div style="padding: 12px; background: ${isCurrent ? '#1b3a2e' : '#0f172a'}; border: 1px solid ${isCurrent ? '#10b981' : '#2d3246'}; border-radius: 6px; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; color: #e6e8ef; margin-bottom: 4px;">
+                    ${isCurrent ? '<i class="fa-solid fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>' : ''}
+                    ${escapeHtml(post.title || `Post #${post.id}`)}
+                  </div>
+                  ${post.excerpt ? `<div style="color: #9ca3af; font-size: 12px; margin-top: 4px;">${escapeHtml(post.excerpt.substring(0, 100))}${post.excerpt.length > 100 ? '...' : ''}</div>` : ''}
+                </div>
+                <button type="button" onclick="applyFeaturePost(${blockId}, ${post.id}, ${issueId})" style="background: ${isCurrent ? '#10b981' : '#4e6bff'}; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; margin-left: 12px;">
+                  ${isCurrent ? '<i class="fa-solid fa-check"></i> Current' : '<i class="fa-solid fa-check"></i> Use This'}
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        suggestionsDiv.innerHTML = html;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading suggestions:', error);
+      suggestionsDiv.innerHTML = `<div style="color: #ef4444; padding: 12px; background: #3b0b0b; border: 1px solid #ef4444; border-radius: 6px;">Failed to load posts: ${escapeHtml(error.message)}</div>`;
+      selectEl.innerHTML = '<option value="">Error loading posts</option>';
+    });
+}
+
+function applyFeatureSelection(blockId, issueId) {
+  const selectEl = document.getElementById(`feature-post-select-${blockId}`);
+  const postId = selectEl.value;
+  if (!postId) {
+    alert('Please select a post from the dropdown');
+    return;
+  }
+  applyFeaturePost(blockId, parseInt(postId), issueId);
+}
+
+function applyFeaturePost(blockId, postId, issueId) {
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/select-suggestion`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ suggestion_id: postId })
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Reload page to show updated content
+      window.location.reload();
+    })
+    .catch(error => {
+      console.error('Error applying post:', error);
+      alert(`Failed to apply post: ${error.message}`);
+    });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Load suggestions on page load
+(function() {
+  const blockId = {{ b.id }};
+  const issueId = {{ issue_id }};
+  document.addEventListener('DOMContentLoaded', function() {
+    const featureEditor = document.querySelector(`.block-editor-feature[data-block-id="${blockId}"]`);
+    if (featureEditor) {
+      // Auto-load suggestions when editor is visible
+      loadFeatureSuggestions(blockId, issueId);
+    }
+  });
+})();
+</script>
+

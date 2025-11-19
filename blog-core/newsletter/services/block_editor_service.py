@@ -44,6 +44,10 @@ def get_suggestions(*, block_id: int, block_type: str, issue_id: int, target_wee
             result['current'] = current_payload.get('selected') or result.get('current')
         elif block_type == 'snapshot':
             result['current'] = current_payload or result.get('current')
+        elif block_type == 'feature':
+            # Feature block stores post data directly in payload
+            if current_payload.get('id'):
+                result['current'] = current_payload
         else:
             result['current'] = current_payload.get('selected') or current_payload or result.get('current')
     
@@ -55,49 +59,83 @@ def apply_suggestion(*, block_id: int, block_type: str, issue_id: int, target_we
     
     If suggestion_id provided, uses that; otherwise auto-selects top suggestion.
     """
-    # Skip validation for cached items - faster and more reliable
-    suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3, skip_validation=True)
-    
-    if not suggestions:
-        return {'success': False, 'error': 'No suggestions available'}
-    
-    # Find selected suggestion
-    selected = None
-    if suggestion_id:
-        for s in suggestions:
-            if s.get('id') == suggestion_id:
-                selected = s
-                break
-    if not selected:
-        selected = suggestions[0]  # Auto-select top
-    
-    # Generate text based on block type
-    if block_type == 'intro':
-        # For intro, we need multiple items (weather/event/community)
-        intro_content = select_intro_content(target_week=target_week)
-        text = intro_content.get('text', '')
+    # For feature blocks, get suggestions from block_suggestion_service
+    if block_type == 'feature':
+        from newsletter.services.block_suggestion_service import get_suggestions_for_block
+        result = get_suggestions_for_block(block_type=block_type, issue_id=issue_id, target_week=target_week)
+        suggestions = result.get('suggestions', [])
+        
+        if not suggestions:
+            return {'success': False, 'error': 'No theme posts available'}
+        
+        # Find selected suggestion
+        selected = None
+        if suggestion_id:
+            for s in suggestions:
+                if s.get('id') == suggestion_id:
+                    selected = s
+                    break
+        if not selected:
+            selected = suggestions[0]  # Auto-select top
+        
+        # Format payload for feature block
+        # Generate chatty summary from title and expanded_idea
+        from newsletter.services.feature_summary_service import generate_feature_summary
+        title = selected.get('title', '')
+        expanded_idea = selected.get('expanded_idea', '')
+        excerpt = generate_feature_summary(title=title, expanded_idea=expanded_idea)
+        
         payload = {
-            "text": text,
-            "suggestions": intro_content.get('suggestions', []),
-            "selected": intro_content.get('selected'),
-            "items_by_category": intro_content.get('items_by_category', {}),
-        }
-    elif block_type == 'snapshot':
-        text = generate_snapshot_text(selected)
-        payload = {
-            "title": selected.get('title', ''),
-            "publisher": selected.get('source_name', ''),
+            "id": selected.get('id'),
+            "title": title,
             "url": selected.get('url', ''),
-            "comment": text,
-            "suggestions": suggestions,
-            "selected_id": selected.get('id'),
+            "excerpt": excerpt,
+            "hero_image": selected.get('hero_image', ''),
         }
     else:
-        # Other block types: store selected item
-        payload = {
-            "selected": selected,
-            "suggestions": suggestions,
-        }
+        # Skip validation for cached items - faster and more reliable
+        suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3, skip_validation=True)
+        
+        if not suggestions:
+            return {'success': False, 'error': 'No suggestions available'}
+        
+        # Find selected suggestion
+        selected = None
+        if suggestion_id:
+            for s in suggestions:
+                if s.get('id') == suggestion_id:
+                    selected = s
+                    break
+        if not selected:
+            selected = suggestions[0]  # Auto-select top
+        
+        # Generate text based on block type
+        if block_type == 'intro':
+            # For intro, we need multiple items (weather/event/community)
+            intro_content = select_intro_content(target_week=target_week)
+            text = intro_content.get('text', '')
+            payload = {
+                "text": text,
+                "suggestions": intro_content.get('suggestions', []),
+                "selected": intro_content.get('selected'),
+                "items_by_category": intro_content.get('items_by_category', {}),
+            }
+        elif block_type == 'snapshot':
+            text = generate_snapshot_text(selected)
+            payload = {
+                "title": selected.get('title', ''),
+                "publisher": selected.get('source_name', ''),
+                "url": selected.get('url', ''),
+                "comment": text,
+                "suggestions": suggestions,
+                "selected_id": selected.get('id'),
+            }
+        else:
+            # Other block types: store selected item
+            payload = {
+                "selected": selected,
+                "suggestions": suggestions,
+            }
     
     # Update block payload
     update_block_payload(block_id=block_id, payload=payload)
