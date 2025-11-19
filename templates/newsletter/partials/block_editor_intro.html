@@ -106,42 +106,114 @@
 {# JavaScript for intro editor #}
 <script>
 function loadSuggestions(blockId, blockType) {
-  const issueId = document.querySelector(`[data-block-id="${blockId}"]`).dataset.issueId;
-  fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`)
-    .then(r => r.json())
+  // Look for the specific block editor element (intro/snapshot) which has both data-block-id and data-issue-id
+  const blockElement = document.querySelector(`.block-editor-${blockType}[data-block-id="${blockId}"]`);
+  if (!blockElement) {
+    console.error(`Block element with data-block-id="${blockId}" and class "block-editor-${blockType}" not found`);
+    return;
+  }
+  
+  const issueId = blockElement.dataset.issueId;
+  if (!issueId) {
+    console.error(`Issue ID not found for block ${blockId}. Element:`, blockElement);
+    return;
+  }
+  
+  const container = document.getElementById(`${blockType}-suggestions-${blockId}`);
+  if (!container) {
+    console.error(`Container element "${blockType}-suggestions-${blockId}" not found`);
+    return;
+  }
+  
+  // Show loading state
+  container.innerHTML = '<div style="color: #9ca3af; font-size: 13px; padding: 16px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading suggestions...</div>';
+  
+  const url = `/newsletter/issue/${issueId}/block/${blockId}/suggestions`;
+  console.log(`Fetching suggestions from: ${url}`);
+  
+  fetch(url)
+    .then(async r => {
+      const contentType = r.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+      
+      if (!r.ok) {
+        if (isJson) {
+          try {
+            const data = await r.json();
+            throw new Error(data.error || `HTTP ${r.status}: ${r.statusText}`);
+          } catch (parseErr) {
+            throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+          }
+        } else {
+          // Server returned HTML (404 page, etc.)
+          throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+        }
+      }
+      
+      if (!isJson) {
+        throw new Error('Server returned non-JSON response');
+      }
+      
+      return r.json();
+    })
     .then(data => {
-      const container = document.getElementById(`${blockType}-suggestions-${blockId}`);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
       if (data.suggestions && data.suggestions.length > 0) {
-        container.innerHTML = data.suggestions.map(s => `
+        // Escape HTML in user content to prevent XSS
+        const escapeHtml = (text) => {
+          const div = document.createElement('div');
+          div.textContent = text;
+          return div.innerHTML;
+        };
+        
+        container.innerHTML = data.suggestions.map(s => {
+          const title = escapeHtml(s.title || '');
+          const sourceName = escapeHtml(s.source_name || '');
+          const category = s.category ? escapeHtml(s.category) : '';
+          const score = s.combined_score !== undefined ? s.combined_score.toFixed(1) : '';
+          const url = s.url ? escapeHtml(s.url) : '';
+          
+          return `
           <div style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 16px;" data-suggestion-id="${s.id}">
             <div style="display: flex; align-items: start; justify-content: space-between; gap: 16px;">
               <div style="flex: 1;">
-                <div style="color: #e6e8ef; font-size: 14px; font-weight: 600; margin-bottom: 8px;">${s.title || ''}</div>
+                <div style="color: #e6e8ef; font-size: 14px; font-weight: 600; margin-bottom: 8px;">${title}</div>
                 <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
-                  <span style="font-weight: 600; color: #a5b4fc;">${s.source_name || ''}</span>
-                  ${s.category ? `<span style="margin: 0 6px;">·</span><span style="text-transform: capitalize;">${s.category}</span>` : ''}
-                  ${s.combined_score !== undefined ? `<span style="margin: 0 6px;">·</span><span>Score: ${s.combined_score.toFixed(1)}</span>` : ''}
+                  <span style="font-weight: 600; color: #a5b4fc;">${sourceName}</span>
+                  ${category ? `<span style="margin: 0 6px;">·</span><span style="text-transform: capitalize;">${category}</span>` : ''}
+                  ${score ? `<span style="margin: 0 6px;">·</span><span>Score: ${score}</span>` : ''}
                 </div>
-                ${s.url ? `<a href="${s.url}" target="_blank" style="color: #7b8dff; text-decoration: none; font-size: 12px;"><i class="fa-solid fa-external-link"></i> View source</a>` : ''}
+                ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #7b8dff; text-decoration: none; font-size: 12px;"><i class="fa-solid fa-external-link"></i> View source</a>` : ''}
               </div>
               <button type="button" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap;" onclick="applySuggestion(${blockId}, ${s.id}, '${blockType}')">
                 <i class="fa-solid fa-check"></i> Use This
               </button>
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
       } else {
-        container.innerHTML = '<div style="color: #9ca3af; font-size: 13px; padding: 16px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; text-align: center;">No suggestions available.</div>';
+        const errorMsg = data.error || 'No suggestions available. Try running the source prefetch job to gather content.';
+        container.innerHTML = `<div style="color: #ef4444; font-size: 13px; padding: 16px; background: #0f172a; border: 1px solid #ef4444; border-radius: 6px; text-align: center;">${errorMsg}</div>`;
       }
     })
     .catch(err => {
       console.error('Failed to load suggestions:', err);
-      alert('Failed to load suggestions. Please try again.');
+      const errorMsg = err.message || 'Failed to load suggestions. Please try again.';
+      container.innerHTML = `<div style="color: #ef4444; font-size: 13px; padding: 16px; background: #0f172a; border: 1px solid #ef4444; border-radius: 6px; text-align: center;">Error: ${errorMsg}</div>`;
     });
 }
 
 function applySuggestion(blockId, suggestionId, blockType) {
-  const issueId = document.querySelector(`[data-block-id="${blockId}"]`).dataset.issueId;
+  const blockElement = document.querySelector(`.block-editor-${blockType}[data-block-id="${blockId}"]`);
+  if (!blockElement || !blockElement.dataset.issueId) {
+    alert('Error: Could not find issue ID for this block');
+    return;
+  }
+  const issueId = blockElement.dataset.issueId;
   fetch(`/newsletter/issue/${issueId}/block/${blockId}/select-suggestion`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -167,7 +239,12 @@ function applySuggestion(blockId, suggestionId, blockType) {
 }
 
 function saveOverride(blockId, blockType) {
-  const issueId = document.querySelector(`[data-block-id="${blockId}"]`).dataset.issueId;
+  const blockElement = document.querySelector(`.block-editor-${blockType}[data-block-id="${blockId}"]`);
+  if (!blockElement || !blockElement.dataset.issueId) {
+    alert('Error: Could not find issue ID for this block');
+    return;
+  }
+  const issueId = blockElement.dataset.issueId;
   const text = document.getElementById(`${blockType}-override-${blockId}`).value;
   fetch(`/newsletter/issue/${issueId}/block/${blockId}/override`, {
     method: 'POST',
@@ -196,7 +273,12 @@ function clearOverride(blockId, blockType) {
 }
 
 function loadPreview(blockId, blockType) {
-  const issueId = document.querySelector(`[data-block-id="${blockId}"]`).dataset.issueId;
+  const blockElement = document.querySelector(`.block-editor-${blockType}[data-block-id="${blockId}"]`);
+  if (!blockElement || !blockElement.dataset.issueId) {
+    alert('Error: Could not find issue ID for this block');
+    return;
+  }
+  const issueId = blockElement.dataset.issueId;
   fetch(`/newsletter/issue/${issueId}/block/${blockId}/preview`)
     .then(r => r.json())
     .then(data => {

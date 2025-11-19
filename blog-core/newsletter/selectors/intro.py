@@ -21,7 +21,8 @@ def select_intro_content(*, target_week: str) -> Dict[str, Any]:
     - items_by_category: Dict mapping category to selected item
     """
     # Get suggestions for intro (we want diverse mix)
-    all_suggestions = generate_suggestions(block_type='intro', target_week=target_week, count=9)
+    # Skip validation for cached items - they were validated on fetch
+    all_suggestions = generate_suggestions(block_type='intro', target_week=target_week, count=9, skip_validation=True)
     
     if not all_suggestions:
         return {

@@ -303,6 +303,9 @@ def get_block_suggestions(issue_id: int, block_id: int):
     """Get suggestions for a block."""
     try:
         from newsletter.db.queries_issue import get_block
+        import logging
+        logger = logging.getLogger(__name__)
+        
         block = get_block(block_id=block_id)
         if not block:
             return jsonify({'error': 'Block not found'}), 404
@@ -314,15 +317,26 @@ def get_block_suggestions(issue_id: int, block_id: int):
         target_week = issue.get('target_week', '')
         block_type = block.get('type', '')
         
+        logger.debug(f"Getting suggestions for block {block_id} (type: {block_type}, week: {target_week})")
+        
         result = get_suggestions(
             block_id=block_id,
             block_type=block_type,
             issue_id=issue_id,
             target_week=target_week
         )
+        
+        logger.debug(f"Suggestions result: {len(result.get('suggestions', []))} suggestions found")
+        
+        # If no suggestions and no error, provide helpful message
+        if not result.get('suggestions') and not result.get('error'):
+            result['error'] = 'No suggestions available. Make sure source prefetch has run and there is content in the database.'
+        
         return jsonify(result)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import logging
+        logging.getLogger(__name__).error(f"Error getting suggestions: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'suggestions': [], 'current': None, 'metadata': {}}), 500
 
 
 @bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/select-suggestion', methods=['POST'])

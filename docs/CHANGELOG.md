@@ -1,5 +1,43 @@
 # Changelog
 
+## 2025-11-02 - Newsletter Intro Block Fixes & Documentation
+
+### Fixed
+- **Regenerate Suggestions**: Fixed "Regenerate Suggestions" button in newsletter intro block
+  - Made link validation optional for cached items (skip_validation=True) to improve performance
+  - Added fallback logic when validation filters all items
+  - Fixed JavaScript selector to find correct element with data-issue-id attribute
+  - Improved error handling with content-type checking and better error messages
+- **JavaScript Error Handling**: Enhanced error handling in block_editor_intro.html
+  - Added element validation before DOM manipulation
+  - Improved JSON parsing with content-type checks
+  - Added HTML escaping for XSS protection
+  - Better error messages displayed to users
+
+### Improved
+- **Suggestion Generation**: Optimized suggestion generation to skip link validation for cached items
+  - Updated `generate_suggestions()` to accept `skip_validation` parameter
+  - Updated all intro/snapshot selectors to use skip_validation=True
+  - Added logging for debugging suggestion generation
+- **Template Context**: Fixed template include to pass context properly with `with context` directive
+
+### Documentation
+- **Block Documentation**: Split block-editors.md into individual files per block type
+  - Created detailed `docs/newsletter/blocks/intro.md` with complete file listings, line counts, JavaScript functions, API endpoints, and testing instructions
+  - Created documentation files for all block types: snapshot, feature, products, category, evergreen, closing
+  - Updated `docs/newsletter/block-editors.md` to be overview/index with links to individual blocks
+  - Updated `docs/newsletter.md` to link to individual block documentation
+
+### Files Changed
+- `blog-core/newsletter/selectors/intro.py` - Added skip_validation parameter
+- `blog-core/newsletter/selectors/snapshot.py` - Added skip_validation parameter
+- `blog-core/newsletter/services/block_editor_service.py` - Updated to use skip_validation
+- `blog-core/newsletter/services/suggestion_service.py` - Added skip_validation with fallback logic
+- `blueprints/newsletter.py` - Improved error handling and logging
+- `templates/newsletter/partials/block_editor_base.html` - Fixed template context passing
+- `templates/newsletter/partials/block_editor_intro.html` - Fixed JavaScript selectors and error handling
+- `docs/newsletter/blocks/*.md` - New detailed block documentation files
+
 ## 2025-01-XX - Product Tag Editor Enhancements
 
 ### Fixed

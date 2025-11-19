@@ -12,7 +12,8 @@ def select_snapshot(*, target_week: str) -> Optional[Dict[str, Any]]:
     
     Fetches top-scored suggestions, selects default, generates text with attribution.
     """
-    suggestions = generate_suggestions(block_type='snapshot', target_week=target_week, count=3)
+    # Skip validation for cached items - they were validated on fetch
+    suggestions = generate_suggestions(block_type='snapshot', target_week=target_week, count=3, skip_validation=True)
     
     if not suggestions:
         return fallback_snapshot()
