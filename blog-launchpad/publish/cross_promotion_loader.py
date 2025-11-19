@@ -54,6 +54,7 @@ def load_cross_promotion_data(post_id):
                     # Remove title="..." parameter
                     product_widget_html = re.sub(r'\s+title="[^"]*"', '', product_widget_html)
                 
+                # Return dict even if all values are None - template needs to check this
                 return {
                     'category_id': header_data.get('cross_promotion_category_id'),
                     'category_title': header_data.get('cross_promotion_category_title'),
@@ -66,7 +67,17 @@ def load_cross_promotion_data(post_id):
                 }
             else:
                 logger.warning(f"Post {post_id} not found for cross-promotion data")
-                return None
+                # Return empty dict so template can check if widgets are configured
+                return {
+                    'category_id': None,
+                    'category_title': None,
+                    'product_id': None,
+                    'product_title': None,
+                    'category_position': None,
+                    'product_position': None,
+                    'category_widget_html': None,
+                    'product_widget_html': None
+                }
     except Exception as e:
         logger.error(f"Error loading cross-promotion data for post {post_id}: {e}")
         return None

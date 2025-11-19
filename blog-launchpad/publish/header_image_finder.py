@@ -49,16 +49,16 @@ def find_header_image_filesystem(post_id):
 def load_header_image_from_db(post_id):
     """
     Load header image from post_images table.
-    Uses images table (plural) - foreign keys point here.
+    Foreign key points to image_archive table.
     Returns dict with path, alt_text, caption, width, height or None.
     """
     try:
         with db_manager.get_cursor() as cursor:
-            # Use images table (plural) - foreign keys point here
+            # Foreign key points to image_archive table
             cursor.execute("""
-                SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+                SELECT ia.path, ia.filename, ia.alt_text, ia.caption, pi.image_type
                 FROM post_images pi
-                JOIN images i ON pi.image_id = i.id
+                JOIN image_archive ia ON pi.image_id = ia.id
                 WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
                 ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
                               WHEN pi.image_type = 'header_watermarked' THEN 2
@@ -82,8 +82,8 @@ def load_header_image_from_db(post_id):
                     'alt_text': img_row.get('alt_text'),
                     'title': img_row.get('filename'),
                     'caption': img_row.get('caption'),
-                    'width': img_row.get('width'),
-                    'height': img_row.get('height')
+                    'width': None,
+                    'height': None
                 }
                 logger.info(f"Found header image in database: {header_path}")
                 return header_image
@@ -97,26 +97,11 @@ def load_header_image_from_db(post_id):
 def get_header_image(post_id):
     """
     Main function to get header image for a post.
-    Tries database first, then filesystem.
+    Uses database only - no fallbacks.
     Returns dict with path, alt_text, caption, width, height or None.
     """
-    # Try database first
     header_image = load_header_image_from_db(post_id)
-    if header_image:
-        return header_image
-    
-    # Fallback to filesystem
-    header_path = find_header_image_filesystem(post_id)
-    if header_path:
-        return {
-            'path': header_path,
-            'alt_text': None,
-            'title': None,
-            'caption': None,
-            'width': None,
-            'height': None
-        }
-    
-    logger.warning(f"No header image found for post {post_id}")
-    return None
+    if not header_image:
+        logger.warning(f"No header image found in database for post {post_id}")
+    return header_image
 

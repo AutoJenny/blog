@@ -68,9 +68,9 @@ def register_routes(bp):
                     # Get optimized image path
                     optimized_path = result['optimized_path'].lstrip('/')  # Remove leading /
                     
-                    # Insert or update image record
+                    # Insert or update image record in image_archive (foreign key points here)
                     cursor.execute("""
-                        INSERT INTO image (filename, path, alt_text, caption)
+                        INSERT INTO image_archive (filename, path, alt_text, caption)
                         VALUES (%s, %s, %s, %s)
                         ON CONFLICT (path) DO UPDATE 
                         SET filename = EXCLUDED.filename, alt_text = EXCLUDED.alt_text, caption = EXCLUDED.caption

@@ -426,10 +426,70 @@ class ClanPublisher:
             # Plain text - escape HTML special characters
             return html.escape(text_str)
 
-    def process_images(self, post, sections):
-        """Upload all images and update paths in the post content"""
+    def _process_single_image(self, web_path, image_type, post_id, image_index=None):
+        """
+        Unified image upload processing for both header and section images.
+        
+        Args:
+            web_path: Web path to the image (e.g., '/static/content/posts/90/header/optimized/header.jpg')
+            image_type: Type prefix for filename ('header' or 'section')
+            post_id: Post ID for filename generation
+            image_index: Optional index for section images (None for header)
+        
+        Returns:
+            Tuple of (web_path, uploaded_url) if successful, (None, None) if failed
+        """
         import time
         from config.paths import path_resolver
+        
+        if not web_path:
+            logger.warning(f"No {image_type} image path provided")
+            return (None, None)
+        
+        logger.info(f"Processing {image_type} image: {web_path}")
+        
+        # Reject URLs (Photo-harvesting deprecated - only local files supported)
+        if web_path.startswith(('http://', 'https://')):
+            logger.warning(f"⚠️ URL detected in {image_type} image (Photo-harvesting deprecated): {web_path}")
+            logger.warning(f"   Skipping URL - only local files are supported")
+            return (None, None)
+        
+        # Check if file exists - convert web path to file system path
+        fs_path = path_resolver.convert_web_path_to_filesystem(web_path)
+        if os.path.exists(fs_path):
+            logger.info(f"✅ {image_type.capitalize()} image file exists at: {fs_path}")
+            logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
+        else:
+            logger.error(f"❌ {image_type.capitalize()} image file NOT found at: {fs_path}")
+            logger.error(f"Current working directory: {os.getcwd()}")
+        
+        # Generate unique filename
+        if image_index is not None:
+            filename = f"{image_type}_{post_id}_{image_index}_{int(time.time())}.jpg"
+        else:
+            filename = f"{image_type}_{post_id}_{int(time.time())}.jpg"
+        logger.info(f"Uploading {image_type} image with filename: {filename}")
+        
+        try:
+            # Convert web path to file system path for upload
+            fs_path = path_resolver.convert_web_path_to_filesystem(web_path)
+            logger.info(f"Converting {image_type} web path '{web_path}' to file system path '{fs_path}'")
+            
+            uploaded_url = self.upload_image(fs_path, filename)
+            if uploaded_url:
+                logger.info(f"✅ {image_type.capitalize()} image uploaded: {web_path} -> {uploaded_url}")
+                return (web_path, uploaded_url)
+            else:
+                logger.error(f"❌ Failed to upload {image_type} image: {web_path}")
+                return (None, None)
+        except Exception as e:
+            logger.error(f"❌ Exception during {image_type} image upload: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return (None, None)
+    
+    def process_images(self, post, sections):
+        """Upload all images and update paths in the post content"""
         uploaded_images = {}
         
         logger.info(f"=== PROCESS_IMAGES DEBUG START ===")
@@ -437,59 +497,24 @@ class ClanPublisher:
         logger.info(f"Post header_image: {post.get('header_image')}")
         logger.info(f"Post header_image_id: {post.get('header_image_id')}")
         
-        # Process header image - use header image path from post data
+        # Process header image - use unified method
         logger.info(f"=== PROCESS_IMAGES: Checking for header image ===")
-        logger.info(f"post.get('header_image'): {post.get('header_image')}")
         header_path = post.get('header_image', {}).get('path')
         logger.info(f"header_path extracted: {header_path}")
-        if header_path:
-            logger.info(f"✅ Found header image: {header_path}")
-            
-            # Generate unique filename with timestamp for cache busting
-            filename = f"header_{post['id']}_{int(time.time())}.jpg"
-            logger.info(f"Uploading header image with filename: {filename}")
-            
-            try:
-                # Convert web path to file system path for upload
-                # Try path_resolver first, but also check static/ directly if it fails
-                fs_path = path_resolver.convert_web_path_to_filesystem(header_path)
-                logger.info(f"Converting web path '{header_path}' to file system path '{fs_path}'")
-                
-                # NO FALLBACKS - path_resolver should find it or fail clearly
-                if not os.path.exists(fs_path):
-                    logger.error(f"❌ Header image file NOT found at: {fs_path}")
-                    logger.error(f"   Web path was: {header_path}")
-                    logger.error(f"   Project root: {path_resolver.project_root}")
-                    logger.error(f"   This should not happen - path_resolver should find files in project_root/static/")
-                
-                # Check if file exists before attempting upload
-                if os.path.exists(fs_path):
-                    logger.info(f"✅ Header image file exists at: {fs_path}")
-                    logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
-                    
-                    uploaded_url = self.upload_image(fs_path, filename)
-                    logger.info(f"upload_image returned: {uploaded_url}")
-                    
-                    if uploaded_url:
-                        uploaded_images[header_path] = uploaded_url
-                        logger.info(f"✅ Header image uploaded successfully: {header_path} -> {uploaded_url}")
-                        logger.info(f"✅ Stored in uploaded_images with key: '{header_path}' (type: {type(header_path)}, len: {len(header_path)})")
-                        logger.info(f"✅ uploaded_images keys: {list(uploaded_images.keys())}")
-                        logger.info(f"✅ uploaded_images values: {list(uploaded_images.values())}")
-                    else:
-                        logger.error(f"❌ upload_image returned None/empty for: {header_path}")
-                else:
-                    logger.error(f"❌ Header image file NOT found at: {fs_path}")
-                    logger.error(f"Current working directory: {os.getcwd()}")
-                    logger.error(f"Web path was: {header_path}")
-            except Exception as e:
-                logger.error(f"❌ Exception during header image upload: {str(e)}")
-                import traceback
-                logger.error(f"Traceback: {traceback.format_exc()}")
-        else:
-            logger.warning(f"❌ No header image found using find_header_image function")
         
-        # Process section images
+        if header_path:
+            web_path, uploaded_url = self._process_single_image(
+                header_path, 
+                'header', 
+                post['id'], 
+                None
+            )
+            if web_path and uploaded_url:
+                uploaded_images[web_path] = uploaded_url
+        else:
+            logger.info(f"No header image found")
+        
+        # Process section images - use unified method
         logger.info(f"Processing {len(sections)} sections for images...")
         for i, section in enumerate(sections):
             logger.info(f"Section {i+1}: {section.get('title', 'No title')}")
@@ -497,41 +522,14 @@ class ClanPublisher:
             
             if section.get('image') and section['image'].get('path') and not section['image'].get('placeholder'):
                 section_path = section['image']['path']
-                logger.info(f"Processing section image: {section_path}")
-                
-                # Reject URLs (Photo-harvesting deprecated - only local files supported)
-                if section_path.startswith(('http://', 'https://')):
-                    logger.warning(f"⚠️ URL detected in section image (Photo-harvesting deprecated): {section_path}")
-                    logger.warning(f"   Section ID: {section.get('id')}")
-                    logger.warning(f"   Skipping URL - only local files are supported")
-                    continue
-                
-                # Check if file exists - convert web path to file system path
-                fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
-                if os.path.exists(fs_path):
-                    logger.info(f"✅ Section image file exists at: {fs_path}")
-                    logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
-                else:
-                    logger.error(f"❌ Section image file NOT found at: {fs_path}")
-                    logger.error(f"Current working directory: {os.getcwd()}")
-                
-                # Generate unique filename
-                filename = f"section_{post['id']}_{i+1}_{int(time.time())}.jpg"
-                logger.info(f"Uploading section image with filename: {filename}")
-                
-                try:
-                    # Convert web path to file system path for upload
-                    fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
-                    logger.info(f"Converting section web path '{section_path}' to file system path '{fs_path}'")
-                    
-                    uploaded_url = self.upload_image(fs_path, filename)
-                    if uploaded_url:
-                        uploaded_images[section_path] = uploaded_url
-                        logger.info(f"✅ Section image uploaded: {section_path} -> {uploaded_url}")
-                    else:
-                        logger.error(f"❌ Failed to upload section image: {section_path}")
-                except Exception as e:
-                    logger.error(f"❌ Exception during section image upload: {str(e)}")
+                web_path, uploaded_url = self._process_single_image(
+                    section_path,
+                    'section',
+                    post['id'],
+                    i + 1
+                )
+                if web_path and uploaded_url:
+                    uploaded_images[web_path] = uploaded_url
             else:
                 logger.info(f"No image for section {i+1}")
         
@@ -673,8 +671,8 @@ class ClanPublisher:
             
             # Set thumbnails based on uploaded header image availability
             # CRITICAL: These fields are MANDATORY according to clan.com API docs
-            list_thumbnail = '/blog/placeholder.jpg'  # Default fallback that should exist on clan.com
-            post_thumbnail = '/blog/placeholder.jpg'  # Default fallback that should exist on clan.com
+            list_thumbnail = None
+            post_thumbnail = None
             
             # Get header image path from post data (not from uploaded_images keys)
             header_image_path = None
@@ -722,13 +720,17 @@ class ClanPublisher:
                 else:
                     logger.warning(f"⚠️ Header image URL doesn't contain /media/: {header_uploaded_url}")
             else:
-                # No header image found - use placeholder (DO NOT fall back to section images)
+                # No header image found - fail if header image path was expected
                 if header_image_path:
-                    logger.warning(f"⚠️ Header image path exists ({header_image_path}) but not found in uploaded_images. Using placeholder.")
+                    error_msg = f"Header image path exists ({header_image_path}) but not found in uploaded_images. Upload failed."
+                    logger.error(f"❌ {error_msg}")
                     if uploaded_images:
-                        logger.warning(f"Available image paths: {list(uploaded_images.keys())}")
+                        logger.error(f"Available image paths: {list(uploaded_images.keys())}")
+                    raise ValueError(error_msg)
                 else:
-                    logger.info("No header image available, using default placeholder thumbnails")
+                    error_msg = "No header image available and no placeholder allowed. Publishing requires a header image."
+                    logger.error(f"❌ {error_msg}")
+                    raise ValueError(error_msg)
             
             # Common post metadata - using new database meta fields for proper OG tags
             meta_title = post.get('meta_title') or post.get('title')
@@ -1004,70 +1006,6 @@ class ClanPublisher:
                 uploaded_images = self.process_images(post, sections)
                 logger.info(f"✅ Image processing completed. Uploaded {len(uploaded_images)} images.")
                 logger.info(f"uploaded_images dictionary: {uploaded_images}")
-                
-                # Fallback: If no images were uploaded/mapped, force-upload header and section images
-                if not uploaded_images or len(uploaded_images) == 0:
-                    logger.warning("⚠️ uploaded_images is empty. Forcing image uploads for header and sections...")
-                    # Attempt header image upload
-                    header_image_path = post.get('header_image', {}).get('path')
-                    if header_image_path:
-                        try:
-                            fs_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
-                            if os.path.exists(fs_path):
-                                filename = f"header_{post['id']}_{int(time.time())}.jpg"
-                                uploaded_url = self.upload_image(fs_path, filename)
-                                if uploaded_url:
-                                    uploaded_images[header_image_path] = uploaded_url
-                                    logger.info(f"✅ Forced header image upload: {header_image_path} -> {uploaded_url}")
-                            else:
-                                logger.warning(f"⚠️ Forced upload skipped: header fs_path not found: {fs_path}")
-                        except Exception as e:
-                            logger.error(f"❌ Forced upload error (header): {e}")
-                    # Attempt each section image upload
-                    for i, section in enumerate(sections):
-                        try:
-                                section_img = section.get('image') or {}
-                                section_path = section_img.get('path')
-                                if section_path and not section_img.get('placeholder'):
-                                    # Try path_resolver first, then fallback to direct path in project root
-                                    fs_path = path_resolver.convert_web_path_to_filesystem(section_path)
-                                    if not os.path.exists(fs_path):
-                                        # Fallback: try direct path in project root static/ directory
-                                        import os
-                                        project_root = os.path.dirname(os.path.dirname(__file__))
-                                        fs_path = os.path.join(project_root, section_path.lstrip('/'))
-                                    if os.path.exists(fs_path):
-                                        filename = f"section_{post['id']}_{i+1}_{int(time.time())}.jpg"
-                                        uploaded_url = self.upload_image(fs_path, filename)
-                                        if uploaded_url:
-                                            uploaded_images[section_path] = uploaded_url
-                                            logger.info(f"✅ Forced section image upload: {section_path} -> {uploaded_url}")
-                                else:
-                                    logger.warning(f"⚠️ Forced upload skipped: section fs_path not found: {fs_path}")
-                        except Exception as e:
-                            logger.error(f"❌ Forced upload error (section {i+1}): {e}")
-                    logger.info(f"After forced uploads, uploaded_images: {uploaded_images}")
-
-                # Fix: Ensure header image is included in uploaded_images for HTML replacement
-                header_image_path = post.get('header_image', {}).get('path')
-                if header_image_path and header_image_path not in uploaded_images:
-                    # Header image was processed but not added to uploaded_images
-                    # We need to upload it separately and add to uploaded_images
-                    logger.info(f"Header image not in uploaded_images, uploading separately: {header_image_path}")
-                    try:
-                        fs_path = path_resolver.convert_web_path_to_filesystem(header_image_path)
-                        if os.path.exists(fs_path):
-                            filename = f"header_{post['id']}_{int(time.time())}.jpg"
-                            uploaded_url = self.upload_image(fs_path, filename)
-                            if uploaded_url:
-                                uploaded_images[header_image_path] = uploaded_url
-                                logger.info(f"✅ Header image uploaded and added to uploaded_images: {header_image_path} -> {uploaded_url}")
-                            else:
-                                logger.warning(f"❌ Header image upload failed: {header_image_path}")
-                        else:
-                            logger.warning(f"❌ Header image file not found: {fs_path}")
-                    except Exception as e:
-                        logger.error(f"❌ Error uploading header image: {str(e)}")
             except Exception as e:
                 logger.error(f"❌ Error during image processing: {str(e)}")
                 import traceback
