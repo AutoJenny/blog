@@ -9,35 +9,309 @@ from typing import Any, Dict, List, Tuple
 from config.database import db_manager
 
 
-def select_new_products(*, since_iso_timestamp: str, limit: int = 6) -> List[Dict[str, Any]]:
-    """Return published products created after the given timestamp, newest first.
-
-    Defensive to unknown schemas: returns [] on any failure.
+def get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_launched: bool = True, min_product_id: int = 10000) -> List[Dict[str, Any]]:
+    """Get a pool of recent products for random selection.
+    
+    Returns up to pool_size products from the most recent first_seen_at dates,
+    excluding already launched products. This pool can be reused for multiple
+    random selections.
+    
+    Args:
+        since_iso_timestamp: Minimum first_seen_at date (ISO format)
+        pool_size: Maximum number of products in the pool (default: 50)
+        exclude_launched: If True, exclude products with newsletter_launched_at set
+        min_product_id: Minimum product ID to consider (default: 10000)
+    
+    Returns:
+        List of product dicts with: id, name, sku, image_url, url, short_description, category_ids
     """
     try:
         with db_manager.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    """
+                # Build query to get recent products, excluding launched ones
+                exclude_clause = "AND newsletter_launched_at IS NULL" if exclude_launched else ""
+                
+                # Use string concatenation to avoid f-string issues with LIKE patterns containing %
+                query = """
                     SELECT id,
-                           COALESCE(name, title) AS name,
-                           COALESCE(slug, url, '') AS slug,
-                           COALESCE(image_url, hero_image, '') AS image_url,
-                           created_at,
-                           COALESCE(is_published, TRUE) AS is_published,
-                           COALESCE(short_description, '') AS short_description
-                    FROM product
-                    WHERE created_at > %s
-                      AND COALESCE(is_published, TRUE) = TRUE
-                      AND COALESCE(image_url, hero_image, '') <> ''
-                    ORDER BY created_at DESC
+                           name,
+                           sku,
+                           COALESCE(image_url, '') AS image_url,
+                           COALESCE(url, '') AS url,
+                           COALESCE(short_description, '') AS short_description,
+                           first_seen_at,
+                           category_ids
+                    FROM clan_products
+                    WHERE first_seen_at > %s
+                      AND id > %s
+                      AND image_url IS NOT NULL
+                      AND TRIM(image_url) <> ''
+                      AND (image_url LIKE 'http://%%' OR image_url LIKE 'https://%%')
+                      """ + exclude_clause + """
+                    ORDER BY first_seen_at DESC
                     LIMIT %s
-                    """,
-                    (since_iso_timestamp, limit),
+                """
+                
+                cur.execute(
+                    query,
+                    (since_iso_timestamp, min_product_id, pool_size),
                 )
                 rows = cur.fetchall() or []
-                return [dict(r) for r in rows]
-    except Exception:
+                products = [dict(r) for r in rows]
+                
+                # Filter out any products without valid image URLs (double-check)
+                valid_products = []
+                for p in products:
+                    image_url = p.get('image_url')
+                    if image_url:
+                        image_str = str(image_url).strip() if image_url else ''
+                        if image_str and (image_str.startswith('http://') or image_str.startswith('https://')):
+                            valid_products.append(p)
+                
+                # Deduplicate by product name
+                seen_names = set()
+                unique_products = []
+                for p in valid_products:
+                    name = p.get('name')
+                    if name:
+                        name_str = str(name).strip() if name else ''
+                        if name_str and name_str not in seen_names:
+                            seen_names.add(name_str)
+                            unique_products.append(p)
+                
+                return unique_products
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error getting product pool: {e}", exc_info=True)
+        return []
+
+
+def select_random_from_pool(*, pool: List[Dict[str, Any]], limit: int = 3) -> List[Dict[str, Any]]:
+    """Randomly select products from a pool, ensuring different specific categories.
+    
+    Args:
+        pool: List of product dicts to select from
+        limit: Number of products to select (default: 3)
+    
+    Returns:
+        List of selected products with category diversity
+    """
+    if not pool or len(pool) < limit:
+        # If pool is too small, just return what we have
+        import random
+        random.shuffle(pool)
+        return pool[:limit] if pool else []
+    
+    import random
+    
+    # Helper to get a specific (non-generic) category ID from category_ids
+    def get_specific_category(category_ids) -> int | None:
+        """Get the first specific (non-12) category ID from the list."""
+        if not category_ids:
+            return None
+        
+        category_list = None
+        if isinstance(category_ids, list):
+            category_list = category_ids
+        elif isinstance(category_ids, str):
+            try:
+                import json
+                parsed = json.loads(category_ids)
+                if isinstance(parsed, list):
+                    category_list = parsed
+            except (json.JSONDecodeError, ValueError, TypeError):
+                pass
+        
+        if not category_list or len(category_list) == 0:
+            return None
+        
+        # Find first category that's not 12 (skip generic root category)
+        for cat_id in category_list:
+            try:
+                cat_int = int(cat_id) if cat_id else None
+                if cat_int and cat_int != 12:  # Skip category 12
+                    return cat_int
+            except (ValueError, TypeError):
+                continue
+        
+        return None
+    
+    # Shuffle pool for randomness
+    shuffled_pool = pool.copy()
+    random.shuffle(shuffled_pool)
+    
+    # Select diverse products: prefer different specific categories
+    selected = []
+    seen_categories = set()
+    
+    # First pass: try to get one product from each specific category
+    for p in shuffled_pool:
+        if len(selected) >= limit:
+            break
+        category_id = get_specific_category(p.get('category_ids'))
+        # If product has a specific category and we haven't seen it, add it
+        if category_id and category_id not in seen_categories:
+            selected.append(p)
+            seen_categories.add(category_id)
+        # If product has no specific category, we'll handle it in second pass
+    
+    # Second pass: fill remaining slots with products from any category (or no category)
+    if len(selected) < limit:
+        remaining = [p for p in shuffled_pool if p not in selected]
+        random.shuffle(remaining)
+        needed = limit - len(selected)
+        for p in remaining[:needed]:
+            selected.append(p)
+    
+    return selected
+
+
+def select_new_products(*, since_iso_timestamp: str, limit: int = 6, exclude_launched: bool = True, min_product_id: int = 10000) -> List[Dict[str, Any]]:
+    """Return recent products from clan_products, excluding already launched ones.
+    
+    DEPRECATED: Use get_product_pool() and select_random_from_pool() instead.
+    This function is kept for backward compatibility.
+    
+    Selects products by first_seen_at (most recent first), excluding those with
+    newsletter_launched_at set, then randomly selects from the results.
+    
+    Args:
+        since_iso_timestamp: Minimum first_seen_at date (ISO format)
+        limit: Maximum number of products to return (default: 6)
+        exclude_launched: If True, exclude products with newsletter_launched_at set
+        min_product_id: Minimum product ID to consider (default: 10000)
+    
+    Returns:
+        List of product dicts with: id, name, sku, image_url, url, short_description
+    """
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Build query to get recent products, excluding launched ones
+                exclude_clause = "AND newsletter_launched_at IS NULL" if exclude_launched else ""
+                
+                # Use string concatenation to avoid f-string issues with LIKE patterns containing %
+                query = """
+                    SELECT id,
+                           name,
+                           sku,
+                           COALESCE(image_url, '') AS image_url,
+                           COALESCE(url, '') AS url,
+                           COALESCE(short_description, '') AS short_description,
+                           first_seen_at,
+                           category_ids
+                    FROM clan_products
+                    WHERE first_seen_at > %s
+                      AND id > %s
+                      AND image_url IS NOT NULL
+                      AND TRIM(image_url) <> ''
+                      AND (image_url LIKE 'http://%%' OR image_url LIKE 'https://%%')
+                      """ + exclude_clause + """
+                    ORDER BY first_seen_at DESC
+                    LIMIT %s
+                """
+                
+                cur.execute(
+                    query,
+                    (since_iso_timestamp, min_product_id, limit * 10),  # Get many more candidates for better randomization
+                )
+                rows = cur.fetchall() or []
+                products = [dict(r) for r in rows]
+                
+                # Filter out any products without valid image URLs (double-check)
+                # Since we already filtered in SQL, this is just a safety check
+                valid_products = []
+                for p in products:
+                    image_url = p.get('image_url')
+                    if image_url:
+                        # Ensure image_url is a string
+                        image_str = str(image_url).strip() if image_url else ''
+                        if image_str and (image_str.startswith('http://') or image_str.startswith('https://')):
+                            valid_products.append(p)
+                products = valid_products
+                
+                # Deduplicate by product name to avoid showing the same product twice
+                seen_names = set()
+                unique_products = []
+                for p in products:
+                    name = p.get('name')
+                    if name:
+                        name_str = str(name).strip() if name else ''
+                        if name_str and name_str not in seen_names:
+                            seen_names.add(name_str)
+                            unique_products.append(p)
+                products = unique_products
+                
+                # Shuffle FIRST to randomize the order before any filtering
+                import random
+                random.shuffle(products)
+                
+                # Helper to get a specific (non-generic) category ID from category_ids
+                # Skips category 12 (CLAN Main Category) as it's too generic
+                def get_specific_category(category_ids) -> int | None:
+                    """Get the first specific (non-12) category ID from the list.
+                    
+                    Category 12 is "CLAN Main Category" which is too generic - almost all
+                    products have it. We want more specific categories for diversity.
+                    """
+                    if not category_ids:
+                        return None
+                    
+                    # Handle JSONB array from database (could be list or already parsed)
+                    category_list = None
+                    if isinstance(category_ids, list):
+                        category_list = category_ids
+                    elif isinstance(category_ids, str):
+                        try:
+                            import json
+                            parsed = json.loads(category_ids)
+                            if isinstance(parsed, list):
+                                category_list = parsed
+                        except (json.JSONDecodeError, ValueError, TypeError):
+                            pass
+                    
+                    if not category_list or len(category_list) == 0:
+                        return None
+                    
+                    # Find first category that's not 12 (skip generic root category)
+                    for cat_id in category_list:
+                        try:
+                            cat_int = int(cat_id) if cat_id else None
+                            if cat_int and cat_int != 12:  # Skip category 12
+                                return cat_int
+                        except (ValueError, TypeError):
+                            continue
+                    
+                    # If all categories are 12 or we couldn't parse, return None
+                    return None
+                
+                # Select diverse products: prefer different specific categories
+                selected = []
+                seen_categories = set()
+                
+                # First pass: try to get one product from each specific category
+                for p in products:
+                    if len(selected) >= limit:
+                        break
+                    category_id = get_specific_category(p.get('category_ids'))
+                    # If product has a specific category and we haven't seen it, add it
+                    if category_id and category_id not in seen_categories:
+                        selected.append(p)
+                        seen_categories.add(category_id)
+                    # If product has no specific category, we'll handle it in second pass
+                
+                # Second pass: fill remaining slots with products from any category (or no category)
+                if len(selected) < limit:
+                    remaining = [p for p in products if p not in selected]
+                    random.shuffle(remaining)
+                    needed = limit - len(selected)
+                    for p in remaining[:needed]:
+                        selected.append(p)
+                
+                return selected
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error selecting new products: {e}", exc_info=True)
         return []
 
 

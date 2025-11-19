@@ -77,22 +77,79 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
         }
     
     elif block_type == 'new_products':
-        since_date = f"{date.today().isoformat()}T00:00:00Z"
-        products = select_new_products(since_iso_timestamp=since_date, limit=12)
-        grouped, _ = group_variants(products)
+        # Get or create product pool (up to 50 products)
+        from datetime import datetime, timedelta
+        from newsletter.selectors.products import get_product_pool, select_random_from_pool
+        from newsletter.db.queries_issue import list_blocks_by_issue
+        
+        # Try to get pool from any existing new_products block in this issue
+        # (pools are shared per issue to avoid duplicates)
+        product_pool = []
+        try:
+            blocks = list_blocks_by_issue(issue_id=issue_id)
+            for b in blocks:
+                if b.get('type') == 'new_products':
+                    payload = b.get('payload_json', {})
+                    if payload.get('product_pool'):
+                        product_pool = payload.get('product_pool', [])
+                        break
+        except Exception:
+            pass
+        
+        # If no pool found, create a new one
+        # Use 60 days to get more products
+        if not product_pool or len(product_pool) == 0:
+            since_date = (datetime.now() - timedelta(days=60)).isoformat()
+            # First try excluding launched products
+            product_pool = get_product_pool(
+                since_iso_timestamp=since_date,
+                pool_size=50,
+                exclude_launched=True,
+                min_product_id=10000
+            )
+            # If we don't have enough products (less than 10), include launched ones to fill the pool
+            # This ensures we always have a pool to re-choose from
+            if len(product_pool) < 10:
+                product_pool_with_launched = get_product_pool(
+                    since_iso_timestamp=since_date,
+                    pool_size=50,
+                    exclude_launched=False,  # Include launched to fill pool
+                    min_product_id=10000
+                )
+                # Merge, keeping unlaunched first, then adding launched
+                existing_ids = {p.get('id') for p in product_pool}
+                for p in product_pool_with_launched:
+                    if p.get('id') not in existing_ids:
+                        product_pool.append(p)
+                        if len(product_pool) >= 50:
+                            break
+        
+        # Randomly select 3 products from the pool with category diversity
+        selected_products = select_random_from_pool(pool=product_pool, limit=3)
+        
+        # Format as suggestions
         suggestions = []
-        for item in grouped[:6]:
+        for item in selected_products:
             suggestions.append({
                 'id': item.get('id'),
-                'title': item.get('title', ''),
+                'name': item.get('name', ''),
+                'sku': item.get('sku', ''),
+                'image_url': item.get('image_url', ''),
                 'url': item.get('url', ''),
-                'price': item.get('price'),
+                'short_description': item.get('short_description', ''),
+                'category_ids': item.get('category_ids', []),
                 'type': 'product',
             })
+        
         return {
             'suggestions': suggestions,
-            'current': {'items': grouped[:6]} if grouped else None,
-            'metadata': {'count': len(grouped)},
+            'current': {'items': suggestions} if suggestions else None,
+            'metadata': {
+                'count': len(suggestions),
+                'pool_size': len(product_pool),
+            },
+            # Include pool in metadata so it can be stored in block payload
+            '_product_pool': product_pool,
         }
     
     elif block_type == 'spotlight':
@@ -208,9 +265,25 @@ def auto_select_for_block(*, block_type: str, issue_id: int, target_week: str) -
         return current  # Fallback if no current
     
     elif block_type == 'new_products':
-        return {'items': result.get('suggestions', [])[:6]}
+        # Use current items if available, otherwise use suggestions
+        current_items = result.get('current', {}).get('items', [])
+        if current_items:
+            payload = {'items': current_items[:3]}  # Limit to 3 products
+        else:
+            # Fallback to suggestions format
+            payload = {'items': result.get('suggestions', [])[:3]}
+        # Mark products as newsletter launched
+        from newsletter.services.product_tracking import mark_products_newsletter_launched, extract_product_ids_from_payload
+        product_ids = extract_product_ids_from_payload(payload, block_type)
+        if product_ids:
+            mark_products_newsletter_launched(product_ids)
+        return payload
     
     elif block_type == 'spotlight':
+        # Mark product as newsletter launched
+        if current and current.get('id'):
+            from newsletter.services.product_tracking import mark_products_newsletter_launched
+            mark_products_newsletter_launched([current.get('id')])
         return current  # Already in correct format
     
     elif block_type == 'category':

@@ -198,7 +198,17 @@ class ClanCache:
                 short_description = product.get('short_description')
                 supplier_name = product.get('supplier_name')
                 supplier_description = product.get('supplier_description')
-                clan_created_at = product.get('created_at') or product.get('clan_created_at')
+                # Parse created_at from API (ISO format string) to datetime
+                created_at_str = product.get('created_at') or product.get('clan_created_at')
+                clan_created_at = None
+                if created_at_str:
+                    try:
+                        from dateutil import parser as date_parser
+                        clan_created_at = date_parser.parse(created_at_str)
+                    except Exception:
+                        # If parsing fails, try to store as string and let PostgreSQL handle it
+                        clan_created_at = created_at_str
+                # updated_at is not available in API - will remain None
                 clan_updated_at = product.get('updated_at') or product.get('clan_updated_at')
                 category_ids = json.dumps(product.get('category_ids', []))
                 configurable_options = json.dumps(product.get('configurable_options', None))
@@ -417,16 +427,32 @@ class ClanCache:
             for i, product in enumerate(products):
                 try:
                     # Extract basic info from clan.com API response
-                    product_data = {
-                        'id': int(product[5]) if len(product) > 5 and product[5] else i + 1,  # Use actual product ID from API
-                        'name': product[0],  # title
-                        'sku': product[1],   # sku
-                        'url': product[2],   # product_url - use actual URL from API
-                        'description': product[3],  # description
-                        'image_url': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg',  # Default image
-                        'price': '29.99',  # Default price
-                        'has_detailed_data': False  # Mark as needing detailed data
-                    }
+                    # API returns products as DICT objects (not lists)
+                    if isinstance(product, dict):
+                        product_data = {
+                            'id': int(product.get('product_id', 0)) if product.get('product_id') else None,
+                            'name': product.get('title', ''),
+                            'sku': product.get('sku', ''),
+                            'url': product.get('product_url', ''),
+                            'description': product.get('description', ''),
+                            'created_at': product.get('created_at'),  # Extract created_at from API
+                            'image_url': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg',  # Default image
+                            'price': '29.99',  # Default price
+                            'has_detailed_data': False  # Mark as needing detailed data
+                        }
+                    else:
+                        # Fallback for old list format (shouldn't happen, but handle gracefully)
+                        product_data = {
+                            'id': int(product[5]) if len(product) > 5 and product[5] else i + 1,
+                            'name': product[0] if len(product) > 0 else '',
+                            'sku': product[1] if len(product) > 1 else '',
+                            'url': product[2] if len(product) > 2 else '',
+                            'description': product[3] if len(product) > 3 else '',
+                            'created_at': None,  # List format doesn't have created_at
+                            'image_url': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg',
+                            'price': '29.99',
+                            'has_detailed_data': False
+                        }
                     
                     if self.store_single_product(product_data):
                         stored_count += 1
@@ -462,27 +488,41 @@ class ClanCache:
             
             detailed_products = []
             
-            for sku in skus:
+                for sku in skus:
                 try:
-                    # Fetch detailed product data
-                    response = requests.get(f"https://clan.com/clan/api/getProductData?sku={sku}", timeout=10)
+                    # Fetch detailed product data WITH categories
+                    response = requests.get(f"https://clan.com/clan/api/getProductData?sku={sku}&include_categories=1", timeout=10)
                     
                     if response.status_code == 200:
                         product_data = response.json()
                         
                         if product_data.get('success') and product_data.get('data'):
+                            api_data = product_data['data']
+                            
+                            # Extract category IDs from categories array
+                            category_ids = []
+                            categories = api_data.get('categories', [])
+                            if categories and isinstance(categories, list):
+                                for cat in categories:
+                                    if isinstance(cat, dict) and cat.get('id'):
+                                        try:
+                                            category_ids.append(int(cat['id']))
+                                        except (ValueError, TypeError):
+                                            continue
+                            
                             # Extract detailed info
                             detailed_product = {
-                                'id': int(product_data['data'].get('product_id', 0)) if product_data['data'].get('product_id') else None,
+                                'id': int(api_data.get('product_id', 0)) if api_data.get('product_id') else None,
                                 'sku': sku,
-                                'name': product_data['data'].get('title', ''),
-                                'price': str(product_data['data'].get('price', '29.99')),
-                                'image_url': product_data['data'].get('image', 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg'),
-                                'description': product_data['data'].get('description', ''),
-                                'url': product_data['data'].get('product_url', '')  # Use product_url field from API response
+                                'name': api_data.get('title', ''),
+                                'price': str(api_data.get('price', '29.99')),
+                                'image_url': api_data.get('image', 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg'),
+                                'description': api_data.get('description', ''),
+                                'url': api_data.get('product_url', ''),  # Use product_url field from API response
+                                'category_ids': category_ids  # Include category IDs
                             }
                             
-                            # Update local cache with detailed data
+                            # Update local cache with detailed data (including categories)
                             self.update_product_details(sku, detailed_product)
                             
                             detailed_products.append(detailed_product)
@@ -502,18 +542,26 @@ class ClanCache:
             return []
     
     def update_product_details(self, sku: str, detailed_data: Dict):
-        """Update product with detailed data from clan.com API"""
+        """Update product with detailed data from clan.com API, including categories"""
         try:
             conn = self.get_db_conn()
             cursor = conn.cursor()
             
+            # Extract category_ids and convert to JSON
+            category_ids = detailed_data.get('category_ids', [])
+            category_ids_json = json.dumps(category_ids) if category_ids else None
+            
             cursor.execute("""
                 UPDATE clan_products 
-                SET price = %s, image_url = %s, has_detailed_data = TRUE
+                SET price = %s, 
+                    image_url = %s, 
+                    category_ids = COALESCE(%s, clan_products.category_ids),
+                    has_detailed_data = TRUE
                 WHERE sku = %s
             """, (
                 detailed_data.get('price', '29.99'),
                 detailed_data.get('image_url', ''),
+                category_ids_json,
                 sku
             ))
             
@@ -521,7 +569,7 @@ class ClanCache:
             cursor.close()
             conn.close()
             
-            logger.info(f"Updated product {sku} with detailed data")
+            logger.info(f"Updated product {sku} with detailed data (categories: {len(category_ids) if category_ids else 0})")
             
         except Exception as e:
             logger.error(f"Error updating product details for {sku}: {str(e)}")
@@ -581,12 +629,26 @@ class ClanCache:
             description = product_data.get('description', '')
             supplier_name = product_data.get('supplier_name')
             supplier_description = product_data.get('supplier_description')
-            clan_created_at = product_data.get('created_at') or product_data.get('clan_created_at')
+            # Parse created_at from API (ISO format string) to datetime
+            created_at_str = product_data.get('created_at') or product_data.get('clan_created_at')
+            clan_created_at = None
+            if created_at_str:
+                try:
+                    from dateutil import parser as date_parser
+                    clan_created_at = date_parser.parse(created_at_str)
+                except Exception:
+                    # If parsing fails, try to store as string and let PostgreSQL handle it
+                    clan_created_at = created_at_str
+            # updated_at is not available in API - will remain None
             clan_updated_at = product_data.get('updated_at') or product_data.get('clan_updated_at')
             configurable_options = json.dumps(product_data.get('configurable_options', None))
             additional_data = json.dumps(product_data.get('additional_data', None)) if product_data.get('additional_data') else None
             dimensions = product_data.get('dimensions', '')
             has_detailed_data = product_data.get('has_detailed_data', True)  # Default to True for backward compatibility
+            
+            # Extract category_ids from product_data
+            category_ids = product_data.get('category_ids', [])
+            category_ids_json = json.dumps(category_ids) if category_ids else None
 
             # Ensure hashable, JSON-serializable fields
             price_for_hash = str(price) if price is not None else ''
@@ -608,8 +670,8 @@ class ClanCache:
             
             # Insert or update the product
             cursor.execute("""
-                INSERT INTO clan_products (id, name, sku, url, image_url, price, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_content_hash, has_detailed_data)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO clan_products (id, name, sku, url, image_url, price, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_content_hash, has_detailed_data, category_ids)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (id) DO UPDATE SET
                     name = EXCLUDED.name,
                     sku = EXCLUDED.sku,
@@ -627,8 +689,9 @@ class ClanCache:
                     dimensions = EXCLUDED.dimensions,
                     product_content_hash = EXCLUDED.product_content_hash,
                     has_detailed_data = EXCLUDED.has_detailed_data,
+                    category_ids = COALESCE(EXCLUDED.category_ids, clan_products.category_ids),
                     last_updated = CURRENT_TIMESTAMP
-            """, (product_id, name, sku, url, image_url, price, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_hash, has_detailed_data))
+            """, (product_id, name, sku, url, image_url, price, short_description, description, supplier_name, supplier_description, clan_created_at, clan_updated_at, configurable_options, additional_data, dimensions, product_hash, has_detailed_data, category_ids_json))
             
             conn.commit()
             cursor.close()

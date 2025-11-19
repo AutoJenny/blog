@@ -1,0 +1,291 @@
+{# Products Spotlight block editor: product selection with re-choose button #}
+<div class="block-editor-new-products" data-block-id="{{ b.id }}" data-issue-id="{{ issue_id }}">
+  {# Current selection preview #}
+  <div style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+    <div style="color: #a5b4fc; font-size: 12px; font-weight: 600; margin-bottom: 12px;">
+      <i class="fa-solid fa-eye"></i> Current Selection (3 products):
+    </div>
+    <div id="new-products-preview-{{ b.id }}" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+      {% if b.payload_json and b.payload_json.get('items') %}
+        {% for p in b.payload_json.get('items', []) %}
+        <div style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; text-align: center;">
+          {% if p.image_url %}
+          <img src="{{ p.image_url }}" alt="{{ p.name }}" style="width: 100%; max-width: 120px; height: auto; border-radius: 4px; margin-bottom: 8px;" />
+          {% endif %}
+          <div style="font-size: 12px; font-weight: 600; color: #e6e8ef; margin-bottom: 4px;">{{ p.name }}</div>
+          {% if p.sku %}
+          <div style="font-size: 11px; color: #9ca3af;">SKU: {{ p.sku }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="grid-column: 1 / -1; color: #9ca3af; padding: 12px; text-align: center;">
+          No products selected. Click "Choose Products" below.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Re-choose button #}
+  <div style="margin-bottom: 16px; padding: 16px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px;">
+    <button type="button" onclick="rechooseProducts({{ b.id }}, {{ issue_id }})" style="width: 100%; background: #4e6bff; color: #fff; border: none; padding: 12px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px;">
+      <i class="fa-solid fa-shuffle"></i> Re-choose Products (Random 3 from Recent)
+    </button>
+    <div style="color: #9ca3af; font-size: 11px; margin-top: 8px; text-align: center;">
+      Selects 3 random products from the most recent (by first_seen_at), excluding already launched products
+    </div>
+  </div>
+
+  {# Confirm button - generates intro and marks products as launched #}
+  {% if b.payload_json and b.payload_json.get('items') and b.payload_json.get('items')|length > 0 %}
+  <div style="margin-bottom: 16px; padding: 16px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px;">
+    <button type="button" onclick="confirmProducts({{ b.id }}, {{ issue_id }})" id="confirm-btn-{{ b.id }}" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 12px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px;">
+      <i class="fa-solid fa-check-circle"></i> Confirm Selection & Generate Intro
+    </button>
+    <div style="color: #9ca3af; font-size: 11px; margin-top: 8px; text-align: center;">
+      Generates intro paragraph and marks products as launched in newsletter
+    </div>
+    <div id="intro-preview-{{ b.id }}" style="margin-top: 12px; padding: 12px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; {% if b.payload_json and b.payload_json.get('intro') %}display: block;{% else %}display: none;{% endif %}">
+      <div style="color: #a5b4fc; font-size: 12px; font-weight: 600; margin-bottom: 8px;">Generated Intro:</div>
+      <div id="intro-text-{{ b.id }}" style="color: #e6e8ef; font-size: 13px; line-height: 1.6;">{% if b.payload_json and b.payload_json.get('intro') %}{{ b.payload_json.get('intro') }}{% endif %}</div>
+    </div>
+    {% if b.payload_json and b.payload_json.get('intro') %}
+    <script>
+      // If intro already exists, update button state
+      document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('confirm-btn-{{ b.id }}');
+        if (btn) {
+          btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Confirmed';
+          btn.style.background = '#10b981';
+        }
+      });
+    </script>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# Manual Override (collapsible) #}
+  <details style="margin-top: 12px;">
+    <summary style="color: #a5b4fc; cursor: pointer; font-weight: 600; padding: 8px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; margin-bottom: 8px;">
+      <i class="fa-solid fa-code"></i> Manual Override
+    </summary>
+    <form method="post" action="/newsletter/block/{{ b.id }}/update" class="mt-2" style="margin-top: 12px;">
+      <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+      <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Payload JSON</label>
+      <textarea name="payload_json" rows="8" style="width: 100%; background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; line-height: 1.6;">{{ (b.payload_json | tojson(indent=2)) if b.payload_json else '{"items": []}' }}</textarea>
+      <div style="margin-top: 12px; text-align: right;">
+        <button type="submit" class="admin-button" style="background: #4e6bff; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          <i class="fa-solid fa-save"></i> Save Override
+        </button>
+      </div>
+    </form>
+  </details>
+</div>
+
+<script>
+  // Helper to escape HTML for display
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  async function rechooseProducts(blockId, issueId) {
+    const previewDiv = document.getElementById(`new-products-preview-${blockId}`);
+    
+    if (!previewDiv) {
+      console.error(`[Products Spotlight Editor] Preview div not found for block ${blockId}`);
+      return;
+    }
+
+    previewDiv.innerHTML = '<div style="grid-column: 1 / -1; color: #a5b4fc; padding: 12px; text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Choosing products...</div>';
+
+    try {
+      // Get fresh suggestions (which will randomly select 3 products)
+      const response = await fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+
+      const suggestions = data.suggestions || [];
+
+      if (suggestions.length === 0) {
+        previewDiv.innerHTML = '<div style="grid-column: 1 / -1; color: #ef4444; padding: 12px; text-align: center;">No products available. Make sure there are recent products that haven\'t been launched yet.</div>';
+        return;
+      }
+
+      // Show preview of selected products immediately
+      const products = suggestions.slice(0, 3);
+      let previewHtml = '';
+      for (const p of products) {
+        previewHtml += `
+          <div style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; text-align: center;">
+            ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name || '')}" style="width: 100%; max-width: 120px; height: auto; border-radius: 4px; margin-bottom: 8px;" />` : ''}
+            <div style="font-size: 12px; font-weight: 600; color: #e6e8ef; margin-bottom: 4px;">${escapeHtml(p.name || 'Unknown')}</div>
+            ${p.sku ? `<div style="font-size: 11px; color: #9ca3af;">SKU: ${escapeHtml(p.sku)}</div>` : ''}
+          </div>
+        `;
+      }
+      previewDiv.innerHTML = previewHtml;
+
+      // Apply the selection - pass the product IDs to ensure we use the exact same products
+      const productIds = products.map(p => p.id).filter(id => id != null);
+      const applyResponse = await fetch(`/newsletter/issue/${issueId}/block/${blockId}/select-suggestion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          auto_select: true,
+          product_ids: productIds  // Pass IDs to ensure we use the same products
+        })
+      });
+
+      if (!applyResponse.ok) {
+        throw new Error(`HTTP error! status: ${applyResponse.status}`);
+      }
+
+      const applyData = await applyResponse.json();
+      
+      if (applyData.success && applyData.payload && applyData.payload.items) {
+        // Update preview with the newly selected products
+        const products = applyData.payload.items;
+        let html = '';
+        for (const p of products) {
+          html += `
+            <div style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; text-align: center;">
+              ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name || '')}" style="width: 100%; max-width: 120px; height: auto; border-radius: 4px; margin-bottom: 8px;" />` : ''}
+              <div style="font-size: 12px; font-weight: 600; color: #e6e8ef; margin-bottom: 4px;">${escapeHtml(p.name || 'Unknown')}</div>
+              ${p.sku ? `<div style="font-size: 11px; color: #9ca3af;">SKU: ${escapeHtml(p.sku)}</div>` : ''}
+            </div>
+          `;
+        }
+        previewDiv.innerHTML = html;
+      } else {
+        // Fallback: reload from suggestions endpoint
+        await loadProductsPreview(blockId, issueId);
+      }
+    } catch (error) {
+      console.error(`[Products Spotlight Editor] Failed to re-choose products for block ${blockId}:`, error);
+      previewDiv.innerHTML = `<div style="grid-column: 1 / -1; color: #ef4444; padding: 12px; text-align: center;">Error: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async function loadProductsPreview(blockId, issueId) {
+    const previewDiv = document.getElementById(`new-products-preview-${blockId}`);
+    
+    try {
+      const response = await fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+
+      const current = data.current || {};
+      const products = current.items || [];
+
+      if (products.length === 0) {
+        previewDiv.innerHTML = '<div style="grid-column: 1 / -1; color: #9ca3af; padding: 12px; text-align: center;">No products selected. Click "Re-choose Products" above.</div>';
+        return;
+      }
+
+      let html = '';
+      for (const p of products) {
+        html += `
+          <div style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; text-align: center;">
+            ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name || '')}" style="width: 100%; max-width: 120px; height: auto; border-radius: 4px; margin-bottom: 8px;" />` : ''}
+            <div style="font-size: 12px; font-weight: 600; color: #e6e8ef; margin-bottom: 4px;">${escapeHtml(p.name || 'Unknown')}</div>
+            ${p.sku ? `<div style="font-size: 11px; color: #9ca3af;">SKU: ${escapeHtml(p.sku)}</div>` : ''}
+          </div>
+        `;
+      }
+      previewDiv.innerHTML = html;
+    } catch (error) {
+      console.error(`[Products Spotlight Editor] Failed to load preview for block ${blockId}:`, error);
+      previewDiv.innerHTML = `<div style="grid-column: 1 / -1; color: #ef4444; padding: 12px; text-align: center;">Error loading preview</div>`;
+    }
+  }
+
+  async function confirmProducts(blockId, issueId) {
+    const btn = document.getElementById(`confirm-btn-${blockId}`);
+    const introPreview = document.getElementById(`intro-preview-${blockId}`);
+    const introText = document.getElementById(`intro-text-${blockId}`);
+    
+    if (!btn || !introPreview || !introText) {
+      console.error(`[Products Spotlight Editor] Elements not found for block ${blockId}`);
+      return;
+    }
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating intro...';
+    introPreview.style.display = 'none';
+    
+    try {
+      // First, generate the intro paragraph
+      const generateResponse = await fetch(`/newsletter/issue/${issueId}/block/${blockId}/generate-products-intro`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!generateResponse.ok) {
+        throw new Error(`HTTP error! status: ${generateResponse.status}`);
+      }
+      
+      const generateData = await generateResponse.json();
+      
+      if (!generateData.success) {
+        throw new Error(generateData.error || 'Failed to generate intro');
+      }
+      
+      const intro = generateData.intro;
+      
+      // Display the intro
+      introText.textContent = intro;
+      introPreview.style.display = 'block';
+      
+      // Now update the block payload with the intro and mark products as launched
+      const updateResponse = await fetch(`/newsletter/issue/${issueId}/block/${blockId}/confirm-products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intro: intro })
+      });
+      
+      if (!updateResponse.ok) {
+        throw new Error(`HTTP error! status: ${updateResponse.status}`);
+      }
+      
+      const updateData = await updateResponse.json();
+      
+      if (!updateData.success) {
+        throw new Error(updateData.error || 'Failed to confirm products');
+      }
+      
+      // Update button to show success
+      btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Confirmed';
+      btn.style.background = '#10b981';
+      
+    } catch (error) {
+      console.error(`[Products Spotlight Editor] Failed to confirm products for block ${blockId}:`, error);
+      introText.innerHTML = `<em style="color: #ef4444;">Error: ${escapeHtml(error.message)}</em>`;
+      introPreview.style.display = 'block';
+      btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Confirm Selection & Generate Intro';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
+
+  // Load preview on page load
+  (function() {
+    const blockId = {{ b.id }};
+    const issueId = {{ issue_id }};
+    document.addEventListener('DOMContentLoaded', function() {
+      const editor = document.querySelector(`.block-editor-new-products[data-block-id="${blockId}"]`);
+      if (editor) {
+        loadProductsPreview(blockId, issueId);
+      }
+    });
+  })();
+</script>
+
