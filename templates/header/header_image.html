@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- JavaScript for simplified workflow -->
+<script src="{{ url_for('static', filename='js/header/accordion-manager.js') }}"></script>
 {% if post_type == 'recipe' %}
 <script src="{{ url_for('static', filename='js/header/recipe-header-image.js') }}?v={{ range(1000, 9999) | random }}"></script>
 {% else %}

@@ -26,8 +26,21 @@ class HeaderImageSimplified {
     // Load existing compiled prompt from database
     async loadExistingCompiledPrompt() {
         try {
-            const response = await fetch(`/header/api/posts/${this.postId}/get-header-image`);
-            if (response.ok) {
+            // Use AbortController for timeout (browser compatible)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(`/header/api/posts/${this.postId}/get-header-image`, {
+                signal: controller.signal
+            }).catch(() => {
+                // Silently catch network errors and 404s - no header image exists yet, which is expected
+                clearTimeout(timeoutId);
+                return null;
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (response && response.ok) {
                 const data = await response.json();
                 if (data.success && data.image_prompt) {
                     // Show generated prompt panel and populate it
@@ -46,9 +59,11 @@ class HeaderImageSimplified {
                     }
                 }
             }
+            // Silently ignore 404s - no header image exists yet, which is expected
+            // The fetch with catch() prevents console errors
         } catch (error) {
-            // No existing prompt is fine, just log it
-            console.log('[HeaderImageSimplified] No existing compiled prompt found');
+            // Silently ignore errors - no existing prompt is fine
+            // Network errors are expected when no header image exists
         }
     }
     
@@ -56,29 +71,38 @@ class HeaderImageSimplified {
     async loadExistingImages() {
         try {
             // Check if raw landscape image exists
-            const landscapePath = `/static/content/posts/${this.postId}/header/raw/header.png`;
+            // Note: Header images use landscape/raw/ and portrait/raw/ subdirectories (same as section images)
+            const landscapePath = `/static/content/posts/${this.postId}/header/landscape/raw/header.png`;
             const landscapeImg = document.getElementById('raw-landscape-image');
             const landscapePlaceholder = document.getElementById('raw-landscape-placeholder');
             
             if (landscapeImg) {
-                const testImg = new Image();
-                testImg.onload = () => {
-                    landscapeImg.src = testImg.src;
-                    landscapeImg.style.display = 'block';
+                // Use fetch to check if image exists before setting src (prevents 404 console errors)
+                try {
+                    const imgResponse = await fetch(landscapePath, { method: 'HEAD' });
+                    if (imgResponse.ok) {
+                        landscapeImg.src = landscapePath;
+                        landscapeImg.style.display = 'block';
+                        if (landscapePlaceholder) {
+                            landscapePlaceholder.style.display = 'none';
+                        }
+                        // Show raw images panel
+                        const rawImagesPanel = document.getElementById('raw-images-panel');
+                        if (rawImagesPanel) {
+                            rawImagesPanel.style.display = 'block';
+                        }
+                    } else {
+                        // Image doesn't exist - show placeholder
+                        if (landscapePlaceholder) {
+                            landscapePlaceholder.style.display = 'block';
+                        }
+                    }
+                } catch (err) {
+                    // Silently fail - no image exists yet
                     if (landscapePlaceholder) {
-                        landscapePlaceholder.style.display = 'none';
+                        landscapePlaceholder.style.display = 'block';
                     }
-                    // Show raw images panel
-                    const rawImagesPanel = document.getElementById('raw-images-panel');
-                    if (rawImagesPanel) {
-                        rawImagesPanel.style.display = 'block';
-                    }
-                    console.log('[HeaderImageSimplified] Loaded existing landscape image:', testImg.src);
-                };
-                testImg.onerror = () => {
-                    console.log('[HeaderImageSimplified] No existing raw landscape image found');
-                };
-                testImg.src = landscapePath + '?t=' + Date.now();
+                }
             }
             
             // Check if raw portrait image exists
@@ -87,19 +111,27 @@ class HeaderImageSimplified {
             const portraitPlaceholder = document.getElementById('raw-portrait-placeholder');
             
             if (portraitImg) {
-                const testPortraitImg = new Image();
-                testPortraitImg.onload = () => {
-                    portraitImg.src = testPortraitImg.src;
-                    portraitImg.style.display = 'block';
-                    if (portraitPlaceholder) {
-                        portraitPlaceholder.style.display = 'none';
+                // Use fetch to check if image exists before setting src (prevents 404 console errors)
+                try {
+                    const imgResponse = await fetch(portraitPath, { method: 'HEAD' });
+                    if (imgResponse.ok) {
+                        portraitImg.src = portraitPath;
+                        portraitImg.style.display = 'block';
+                        if (portraitPlaceholder) {
+                            portraitPlaceholder.style.display = 'none';
+                        }
+                    } else {
+                        // Image doesn't exist - show placeholder (don't log 404)
+                        if (portraitPlaceholder) {
+                            portraitPlaceholder.style.display = 'block';
+                        }
                     }
-                    console.log('[HeaderImageSimplified] Loaded existing portrait image:', testPortraitImg.src);
-                };
-                testPortraitImg.onerror = () => {
-                    console.log('[HeaderImageSimplified] No existing raw portrait image found');
-                };
-                testPortraitImg.src = portraitPath + '?t=' + Date.now();
+                } catch (err) {
+                    // Silently fail - no image exists yet (don't log errors)
+                    if (portraitPlaceholder) {
+                        portraitPlaceholder.style.display = 'block';
+                    }
+                }
             }
         } catch (error) {
             console.log('[HeaderImageSimplified] No existing images found or error loading:', error);
@@ -180,22 +212,20 @@ class HeaderImageSimplified {
                 });
             }
             
-            // Add button to generate LLM-imaging message in LLM Settings panel header
-            const llmSettingsPanel = document.getElementById('llm-settings-panel');
-            if (llmSettingsPanel) {
-                const headerActions = llmSettingsPanel.querySelector('.header-actions');
-                if (headerActions && !headerActions.querySelector('#generate-llm-message-btn')) {
-                    const generateBtn = document.createElement('button');
-                    generateBtn.id = 'generate-llm-message-btn';
-                    generateBtn.className = 'btn-primary';
-                    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate LLM-Imaging Message';
-                    generateBtn.style.cssText = 'padding: 0.5rem 1rem; border-radius: 4px; background: #3b82f6; color: white; border: none; cursor: pointer; font-weight: 600; margin-right: 0.5rem;';
-                    generateBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.generateLLMMessage();
-                    });
-                    headerActions.insertBefore(generateBtn, headerActions.firstChild);
-                }
+            // Attach listener to existing generate-llm-message-btn button
+            const existingBtn = document.getElementById('generate-llm-message-btn');
+            if (existingBtn) {
+                // Remove any existing listeners by cloning
+                const newBtn = existingBtn.cloneNode(true);
+                existingBtn.parentNode.replaceChild(newBtn, existingBtn);
+                // Attach listener to new button
+                newBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.generateLLMMessage();
+                });
+                console.log('[HeaderImageSimplified] LLM message button listener attached');
+            } else {
+                console.error('[HeaderImageSimplified] generate-llm-message-btn not found!');
             }
         }, 500);
     }
@@ -218,6 +248,35 @@ class HeaderImageSimplified {
             const year = urlParams.get('year') || this.year;
             const week = urlParams.get('week') || this.week;
             
+            // Validate input data - reject placeholder text
+            const themeName = document.getElementById('theme-name-display')?.textContent?.trim();
+            const expandedIdea = document.getElementById('expanded-idea-display')?.textContent?.trim();
+            
+            const PLACEHOLDER_TEXTS = ['Loading...', 'No theme selected', 'No expanded idea generated', ''];
+            let theme_name = themeName;
+            let expanded_idea = expandedIdea;
+            
+            // Check if data is valid
+            if (!theme_name || PLACEHOLDER_TEXTS.includes(theme_name) || 
+                !expanded_idea || PLACEHOLDER_TEXTS.includes(expanded_idea)) {
+                console.log('[HeaderImageSimplified] Invalid input data detected, fetching from API...');
+                // Fetch from API first
+                await this.loadInputData();
+                // Retry with fresh data
+                const freshTheme = document.getElementById('theme-name-display')?.textContent?.trim();
+                const freshIdea = document.getElementById('expanded-idea-display')?.textContent?.trim();
+                if (!freshTheme || PLACEHOLDER_TEXTS.includes(freshTheme) || 
+                    !freshIdea || PLACEHOLDER_TEXTS.includes(freshIdea)) {
+                    alert('Error: Theme and expanded idea data not available. Please ensure the Planning stage is complete.');
+                    return;
+                }
+                // Use fresh data
+                theme_name = freshTheme;
+                expanded_idea = freshIdea;
+            }
+            
+            console.log('[HeaderImageSimplified] Sending to API - theme_name:', theme_name?.substring(0, 50), 'expanded_idea:', expanded_idea?.substring(0, 50));
+            
             // Use the compile-header-prompt endpoint which uses LLM to generate the prompt
             let url = `/header/api/posts/${this.postId}/compile-header-prompt?illustration_method=${encodeURIComponent(this.illustrationMethod)}`;
             if (year) url += `&year=${year}`;
@@ -227,8 +286,8 @@ class HeaderImageSimplified {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    theme_name: document.getElementById('theme-name-display')?.textContent,
-                    expanded_idea: document.getElementById('expanded-idea-display')?.textContent,
+                    theme_name: theme_name,
+                    expanded_idea: expanded_idea,
                     model: model,
                     provider: provider
                 })
@@ -272,9 +331,33 @@ class HeaderImageSimplified {
     
     // Panel 5: Setup Image Generation
     setupImageGeneration() {
-        const generateBtn = document.getElementById('generate-images-btn');
-        if (generateBtn) {
-            generateBtn.addEventListener('click', () => this.generateImages());
+        const setupBtn = () => {
+            const generateBtn = document.getElementById('generate-images-btn');
+            if (generateBtn) {
+                // Clone to remove existing listeners
+                const newBtn = generateBtn.cloneNode(true);
+                generateBtn.parentNode.replaceChild(newBtn, generateBtn);
+                // Attach listener
+                newBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.generateImages();
+                });
+                console.log('[HeaderImageSimplified] Image generation button listener attached');
+                return true; // Success
+            } else {
+                console.warn('[HeaderImageSimplified] generate-images-btn not found, retrying...');
+                return false; // Not found
+            }
+        };
+        
+        // Try immediately
+        if (!setupBtn()) {
+            // Retry after short delay if not found
+            setTimeout(() => {
+                if (!setupBtn()) {
+                    console.error('[HeaderImageSimplified] Failed to find generate-images-btn after retry!');
+                }
+            }, 200);
         }
     }
     
@@ -392,7 +475,9 @@ class HeaderImageSimplified {
                     
                     // If not in response but portrait was generated, construct path
                     if (!portraitPath && data.portrait_generated) {
-                        portraitPath = data.raw_path?.replace('/header/raw/header.png', '/header/portrait/raw/header_portrait.png') ||
+                        // Handle both old and new path structures
+                        portraitPath = data.raw_path?.replace('/header/landscape/raw/header.png', '/header/portrait/raw/header_portrait.png')
+                                     ?.replace('/header/raw/header.png', '/header/portrait/raw/header_portrait.png') ||
                                      `/static/content/posts/${this.postId}/header/portrait/raw/header_portrait.png`;
                     }
                     
@@ -469,9 +554,33 @@ class HeaderImageSimplified {
     
     // Panel 7: Setup Optimization
     setupOptimization() {
-        const optimizeBtn = document.getElementById('optimize-image-btn');
-        if (optimizeBtn) {
-            optimizeBtn.addEventListener('click', () => this.optimizeImages());
+        const setupBtn = () => {
+            const optimizeBtn = document.getElementById('optimize-image-btn');
+            if (optimizeBtn) {
+                // Clone to remove existing listeners
+                const newBtn = optimizeBtn.cloneNode(true);
+                optimizeBtn.parentNode.replaceChild(newBtn, optimizeBtn);
+                // Attach listener
+                newBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.optimizeImages();
+                });
+                console.log('[HeaderImageSimplified] Optimization button listener attached');
+                return true; // Success
+            } else {
+                console.warn('[HeaderImageSimplified] optimize-image-btn not found, retrying...');
+                return false; // Not found
+            }
+        };
+        
+        // Try immediately
+        if (!setupBtn()) {
+            // Retry after short delay if not found
+            setTimeout(() => {
+                if (!setupBtn()) {
+                    console.error('[HeaderImageSimplified] Failed to find optimize-image-btn after retry!');
+                }
+            }, 200);
         }
     }
     
@@ -523,7 +632,10 @@ class HeaderImageSimplified {
                     
                     // If not in response, construct from landscape path
                     if (!portraitPath && data.optimized_path) {
-                        portraitPath = data.optimized_path.replace('/header/optimized/header.jpg', '/header/portrait/optimized/header_portrait.jpg')
+                        // Handle both old and new path structures
+                        portraitPath = data.optimized_path.replace('/header/landscape/optimized/header.jpg', '/header/portrait/optimized/header_portrait.jpg')
+                                           .replace('/header/optimized/header.jpg', '/header/portrait/optimized/header_portrait.jpg')
+                                           .replace('/header/landscape/raw/header.png', '/header/portrait/optimized/header_portrait.jpg')
                                            .replace('/header/raw/header.png', '/header/portrait/optimized/header_portrait.jpg');
                     }
                     
@@ -564,8 +676,14 @@ class HeaderImageSimplified {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('[HeaderImageSimplified] DOMContentLoaded - postId:', window.postId, 'substage:', window.currentSubstage);
     if (window.postId && window.currentSubstage === 'header-image') {
         window.headerImageSimplified = new HeaderImageSimplified(window.postId);
+    } else {
+        console.error('[HeaderImageSimplified] Missing postId or wrong substage!', {
+            postId: window.postId,
+            substage: window.currentSubstage
+        });
     }
 });
 
