@@ -1,153 +1,130 @@
-{# Intro block editor: suggestions list, override textarea, preview #}
+{# Intro block editor: modular components (Weather, Events, Theme) with compile #}
 <div class="block-editor-intro" data-block-id="{{ b.id }}" data-issue-id="{{ issue_id }}">
-  {# Current content preview #}
-  <div style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+  
+  {# Final compiled preview #}
+  <div style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
     <div style="color: #a5b4fc; font-size: 12px; font-weight: 600; margin-bottom: 8px;">
-      <i class="fa-solid fa-eye"></i> Current Content:
+      <i class="fa-solid fa-eye"></i> Final Intro Paragraph:
     </div>
-    <div style="color: #e6e8ef; font-size: 14px; line-height: 1.6;" id="intro-preview-{{ b.id }}">
+    <div style="color: #e6e8ef; font-size: 14px; line-height: 1.6;" id="intro-final-{{ b.id }}">
       {% if b.payload_json and b.payload_json.text %}
         {{ b.payload_json.text }}
       {% else %}
-        <span style="color: #9ca3af;">No content yet. Generate suggestions below.</span>
+        <span style="color: #9ca3af;">No content yet. Generate components below and compile.</span>
       {% endif %}
     </div>
   </div>
 
-  {# Auto-select toggle #}
-  <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; padding: 12px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px;">
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-      <input type="checkbox" id="auto-select-{{ b.id }}" checked style="width: 18px; height: 18px; border-radius: 4px; background: #0f172a; border: 1px solid #2d3246; accent-color: #4e6bff;">
-      <span style="color: #a5b4fc; font-size: 13px;">Auto-select best suggestion</span>
-    </label>
-    <a href="/newsletter/sources" target="_blank" style="background: transparent; color: #a5b4fc; border: 1px solid #2d3246; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#0f172a'; this.style.borderColor='#4e6bff';" onmouseout="this.style.background='transparent'; this.style.borderColor='#2d3246';">
-      <i class="fa-solid fa-gear"></i> Manage Sources
-    </a>
-    <button type="button" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; margin-left: auto;" onclick="loadSuggestions({{ b.id }}, 'intro')">
-      <i class="fa-solid fa-refresh"></i> Regenerate Suggestions
-    </button>
-  </div>
-
-  {# Suggestions list #}
-  <div style="margin-bottom: 16px;">
-    <div style="color: #a5b4fc; font-size: 13px; font-weight: 600; margin-bottom: 12px;">
-      <i class="fa-solid fa-lightbulb"></i> Suggestions:
+  {# Weather Component Module #}
+  <div class="intro-component-module" data-component="weather" style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <div style="color: #a5b4fc; font-size: 14px; font-weight: 600;">
+        <i class="fa-solid fa-cloud-sun"></i> Weather Component
+      </div>
+      <button type="button" class="component-generate-btn" data-component="weather" onclick="generateWeatherComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
+      </button>
     </div>
-    <div id="intro-suggestions-{{ b.id }}" style="display: flex; flex-direction: column; gap: 12px;">
-      {% if b.payload_json and b.payload_json.suggestions %}
-        {% for suggestion in b.payload_json.suggestions[:3] %}
-        <div style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 16px;" data-suggestion-id="{{ suggestion.id }}">
-          <div style="display: flex; align-items: start; justify-content: space-between; gap: 16px;">
-            <div style="flex: 1;">
-              <div style="color: #e6e8ef; font-size: 14px; font-weight: 600; margin-bottom: 8px;">{{ suggestion.title }}</div>
-              <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
-                <span style="font-weight: 600; color: #a5b4fc;">{{ suggestion.source_name }}</span>
-                {% if suggestion.category %}
-                  <span style="margin: 0 6px;">·</span>
-                  <span style="text-transform: capitalize;">{{ suggestion.category }}</span>
-                {% endif %}
-                {% if suggestion.combined_score is defined %}
-                  <span style="margin: 0 6px;">·</span>
-                  <span>Score: {{ "%.1f"|format(suggestion.combined_score) }}</span>
-                {% endif %}
-              </div>
-              {% if suggestion.url %}
-                <a href="{{ suggestion.url }}" target="_blank" style="color: #7b8dff; text-decoration: none; font-size: 12px;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">
-                  <i class="fa-solid fa-external-link"></i> View source
-                </a>
-              {% endif %}
-            </div>
-            <button type="button" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap;" onclick="applySuggestion({{ b.id }}, {{ suggestion.id }}, 'intro')">
-              <i class="fa-solid fa-check"></i> Use This
-            </button>
-          </div>
-        </div>
-        {% endfor %}
+    <div id="weather-output-{{ b.id }}" style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; min-height: 40px; font-size: 13px; line-height: 1.6; {% if b.payload_json and b.payload_json.weather_text %}color: #e6e8ef;{% else %}color: #9ca3af;{% endif %}">
+      {% if b.payload_json and b.payload_json.weather_text %}
+        {{ b.payload_json.weather_text }}
       {% else %}
-        <div style="color: #9ca3af; font-size: 13px; padding: 16px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; text-align: center;">
-          No suggestions loaded. Click "Regenerate Suggestions" to fetch.
-        </div>
+        <em>Click "Generate" to create weather summary</em>
       {% endif %}
     </div>
   </div>
 
-  {# Manual override textarea #}
-  <div style="margin-bottom: 16px;">
-    <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px;">
-      <i class="fa-solid fa-pencil"></i> Manual Override (optional):
-    </label>
-    <textarea id="intro-override-{{ b.id }}" rows="4" style="width: 100%; background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; font-size: 13px; line-height: 1.6; resize: vertical;" placeholder="Enter custom intro text...">{{ b.payload_json.text if (b.payload_json and b.payload_json.text and b.payload_json.manual_override) else '' }}</textarea>
-    <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
-      <button type="button" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;" onclick="saveOverride({{ b.id }}, 'intro')">
-        <i class="fa-solid fa-save"></i> Save Override
+  {# Events Component Module #}
+  <div class="intro-component-module" data-component="events" style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <div style="color: #a5b4fc; font-size: 14px; font-weight: 600;">
+        <i class="fa-solid fa-calendar-days"></i> Events Component
+      </div>
+      <button type="button" class="component-generate-btn" data-component="events" onclick="generateEventsComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
       </button>
-      <button type="button" style="background: transparent; color: #9ca3af; border: 1px solid #2d3246; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;" onclick="clearOverride({{ b.id }}, 'intro')" onmouseover="this.style.background='#1b2138';" onmouseout="this.style.background='transparent';">
-        <i class="fa-solid fa-xmark"></i> Clear Override
-      </button>
+    </div>
+    <div id="events-output-{{ b.id }}" style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; min-height: 40px; font-size: 13px; line-height: 1.6; {% if b.payload_json and b.payload_json.events_text %}color: #e6e8ef;{% else %}color: #9ca3af;{% endif %}">
+      {% if b.payload_json and b.payload_json.events_text %}
+        {{ b.payload_json.events_text }}
+      {% else %}
+        <em>Click "Generate" to create event summary</em>
+      {% endif %}
     </div>
   </div>
 
-  {# Preview toggle #}
+  {# Theme Component Module #}
+  <div class="intro-component-module" data-component="theme" style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <div style="color: #a5b4fc; font-size: 14px; font-weight: 600;">
+        <i class="fa-solid fa-palette"></i> Theme Component
+      </div>
+      <button type="button" class="component-generate-btn" data-component="theme" onclick="generateThemeComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
+      </button>
+    </div>
+    <div id="theme-output-{{ b.id }}" style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; min-height: 40px; font-size: 13px; line-height: 1.6; {% if b.payload_json and b.payload_json.theme_text %}color: #e6e8ef;{% else %}color: #9ca3af;{% endif %}">
+      {% if b.payload_json and b.payload_json.theme_text %}
+        {{ b.payload_json.theme_text }}
+      {% else %}
+        <em>Click "Generate" to create theme summary</em>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Compile Section #}
+  <div style="background: #1b2138; border: 2px solid #4e6bff; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <div style="color: #a5b4fc; font-size: 14px; font-weight: 600;">
+        <i class="fa-solid fa-code-merge"></i> Compile Final Paragraph
+      </div>
+      <button type="button" onclick="compileIntroComponents({{ b.id }}, {{ issue_id }})" style="background: #10b981; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer;">
+        <i class="fa-solid fa-compress"></i> Compile
+      </button>
+    </div>
+    <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
+      Combines all generated components into a single paragraph (order will vary for natural flow)
+    </div>
+  </div>
+
+  {# Manual Override (optional) #}
   <details style="margin-top: 12px;">
     <summary style="color: #a5b4fc; cursor: pointer; font-weight: 600; padding: 8px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; margin-bottom: 8px;">
-      <i class="fa-solid fa-code"></i> Preview rendered HTML
+      <i class="fa-solid fa-pencil"></i> Manual Override (optional)
     </summary>
-    <div style="margin-top: 12px; padding: 16px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px;">
-      <div id="intro-html-preview-{{ b.id }}" style="color: #9ca3af; font-size: 12px; min-height: 40px;">
-        <em>Preview will appear here</em>
+    <div style="margin-top: 12px;">
+      <textarea id="intro-override-{{ b.id }}" rows="4" style="width: 100%; background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; font-size: 13px; line-height: 1.6; resize: vertical;" placeholder="Enter custom intro text...">{{ b.payload_json.text if (b.payload_json and b.payload_json.text and b.payload_json.manual_override) else '' }}</textarea>
+      <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+        <button type="button" onclick="saveOverride({{ b.id }}, 'intro')" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
+          <i class="fa-solid fa-save"></i> Save Override
+        </button>
+        <button type="button" onclick="clearOverride({{ b.id }}, 'intro')" style="background: transparent; color: #9ca3af; border: 1px solid #2d3246; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;" onmouseover="this.style.background='#1b2138';" onmouseout="this.style.background='transparent';">
+          <i class="fa-solid fa-xmark"></i> Clear Override
+        </button>
       </div>
-      <button type="button" style="margin-top: 12px; background: transparent; color: #a5b4fc; border: 1px solid #2d3246; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;" onclick="loadPreview({{ b.id }}, 'intro')" onmouseover="this.style.background='#1b2138';" onmouseout="this.style.background='transparent';">
-        <i class="fa-solid fa-refresh"></i> Load Preview
-      </button>
     </div>
   </details>
 </div>
 
-{# JavaScript for intro editor #}
+{# JavaScript modules for each component #}
 <script>
-function loadSuggestions(blockId, blockType) {
-  // Look for the specific block editor element (intro/snapshot) which has both data-block-id and data-issue-id
-  const blockElement = document.querySelector(`.block-editor-${blockType}[data-block-id="${blockId}"]`);
-  if (!blockElement) {
-    console.error(`Block element with data-block-id="${blockId}" and class "block-editor-${blockType}" not found`);
-    return;
-  }
-  
-  const issueId = blockElement.dataset.issueId;
-  if (!issueId) {
-    console.error(`Issue ID not found for block ${blockId}. Element:`, blockElement);
-    return;
-  }
-  
-  const container = document.getElementById(`${blockType}-suggestions-${blockId}`);
-  if (!container) {
-    console.error(`Container element "${blockType}-suggestions-${blockId}" not found`);
-    return;
-  }
+// Weather Component Module
+function generateWeatherComponent(blockId, issueId) {
+  const outputEl = document.getElementById(`weather-output-${blockId}`);
+  const btn = document.querySelector(`[data-component="weather"] .component-generate-btn`);
   
   // Show loading state
-  container.innerHTML = '<div style="color: #9ca3af; font-size: 13px; padding: 16px; background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading suggestions...</div>';
+  outputEl.innerHTML = '<em style="color: #9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i> Generating weather summary...</em>';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
   
-  const url = `/newsletter/issue/${issueId}/block/${blockId}/suggestions`;
-  console.log(`Fetching suggestions from: ${url}`);
-  
-  fetch(url)
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/generate-weather`)
     .then(async r => {
       const contentType = r.headers.get('content-type');
       const isJson = contentType && contentType.includes('application/json');
       
       if (!r.ok) {
-        if (isJson) {
-          try {
-            const data = await r.json();
-            throw new Error(data.error || `HTTP ${r.status}: ${r.statusText}`);
-          } catch (parseErr) {
-            throw new Error(`HTTP ${r.status}: ${r.statusText}`);
-          }
-        } else {
-          // Server returned HTML (404 page, etc.)
-          throw new Error(`HTTP ${r.status}: ${r.statusText}`);
-        }
+        throw new Error(`HTTP ${r.status}: ${r.statusText}`);
       }
       
       if (!isJson) {
@@ -157,87 +134,178 @@ function loadSuggestions(blockId, blockType) {
       return r.json();
     })
     .then(data => {
-      if (data.error) {
-        throw new Error(data.error);
+      if (data.success && data.text) {
+        outputEl.textContent = data.text;
+        outputEl.style.color = '#e6e8ef';
+      } else {
+        outputEl.innerHTML = `<em style="color: #ef4444;">${data.error || 'Failed to generate weather component'}</em>`;
+      }
+    })
+    .catch(err => {
+      console.error('Failed to generate weather component:', err);
+      outputEl.innerHTML = `<em style="color: #ef4444;">Error: ${err.message || 'Failed to generate weather component'}</em>`;
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    });
+}
+
+// Events Component Module
+function generateEventsComponent(blockId, issueId) {
+  const outputEl = document.getElementById(`events-output-${blockId}`);
+  const btn = document.querySelector(`[data-component="events"] .component-generate-btn`);
+  
+  // Show loading state
+  outputEl.innerHTML = '<em style="color: #9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i> Generating events summary...</em>';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/generate-events`)
+    .then(async r => {
+      const contentType = r.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+      
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}: ${r.statusText}`);
       }
       
-      if (data.suggestions && data.suggestions.length > 0) {
-        // Escape HTML in user content to prevent XSS
-        const escapeHtml = (text) => {
-          const div = document.createElement('div');
-          div.textContent = text;
-          return div.innerHTML;
-        };
-        
-        container.innerHTML = data.suggestions.map(s => {
-          const title = escapeHtml(s.title || '');
-          const sourceName = escapeHtml(s.source_name || '');
-          const category = s.category ? escapeHtml(s.category) : '';
-          const score = s.combined_score !== undefined ? s.combined_score.toFixed(1) : '';
-          const url = s.url ? escapeHtml(s.url) : '';
-          
-          return `
-          <div style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 16px;" data-suggestion-id="${s.id}">
-            <div style="display: flex; align-items: start; justify-content: space-between; gap: 16px;">
-              <div style="flex: 1;">
-                <div style="color: #e6e8ef; font-size: 14px; font-weight: 600; margin-bottom: 8px;">${title}</div>
-                <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
-                  <span style="font-weight: 600; color: #a5b4fc;">${sourceName}</span>
-                  ${category ? `<span style="margin: 0 6px;">·</span><span style="text-transform: capitalize;">${category}</span>` : ''}
-                  ${score ? `<span style="margin: 0 6px;">·</span><span>Score: ${score}</span>` : ''}
-                </div>
-                ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #7b8dff; text-decoration: none; font-size: 12px;"><i class="fa-solid fa-external-link"></i> View source</a>` : ''}
-              </div>
-              <button type="button" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap;" onclick="applySuggestion(${blockId}, ${s.id}, '${blockType}')">
-                <i class="fa-solid fa-check"></i> Use This
-              </button>
-            </div>
-          </div>
-        `;
-        }).join('');
+      if (!isJson) {
+        throw new Error('Server returned non-JSON response');
+      }
+      
+      return r.json();
+    })
+    .then(data => {
+      if (data.success && data.text) {
+        outputEl.textContent = data.text;
+        outputEl.style.color = '#e6e8ef';
       } else {
-        const errorMsg = data.error || 'No suggestions available. Try running the source prefetch job to gather content.';
-        container.innerHTML = `<div style="color: #ef4444; font-size: 13px; padding: 16px; background: #0f172a; border: 1px solid #ef4444; border-radius: 6px; text-align: center;">${errorMsg}</div>`;
+        outputEl.innerHTML = `<em style="color: #ef4444;">${data.error || 'Failed to generate events component'}</em>`;
       }
     })
     .catch(err => {
-      console.error('Failed to load suggestions:', err);
-      const errorMsg = err.message || 'Failed to load suggestions. Please try again.';
-      container.innerHTML = `<div style="color: #ef4444; font-size: 13px; padding: 16px; background: #0f172a; border: 1px solid #ef4444; border-radius: 6px; text-align: center;">Error: ${errorMsg}</div>`;
+      console.error('Failed to generate events component:', err);
+      outputEl.innerHTML = `<em style="color: #ef4444;">Error: ${err.message || 'Failed to generate events component'}</em>`;
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
     });
 }
 
-function applySuggestion(blockId, suggestionId, blockType) {
-  const blockElement = document.querySelector(`.block-editor-${blockType}[data-block-id="${blockId}"]`);
-  if (!blockElement || !blockElement.dataset.issueId) {
-    alert('Error: Could not find issue ID for this block');
+// Theme Component Module
+function generateThemeComponent(blockId, issueId) {
+  const outputEl = document.getElementById(`theme-output-${blockId}`);
+  const btn = document.querySelector(`[data-component="theme"] .component-generate-btn`);
+  
+  // Show loading state
+  outputEl.innerHTML = '<em style="color: #9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i> Generating theme summary...</em>';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/generate-theme`)
+    .then(async r => {
+      const contentType = r.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+      
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+      }
+      
+      if (!isJson) {
+        throw new Error('Server returned non-JSON response');
+      }
+      
+      return r.json();
+    })
+    .then(data => {
+      if (data.success && data.text) {
+        outputEl.textContent = data.text;
+        outputEl.style.color = '#e6e8ef';
+      } else {
+        outputEl.innerHTML = `<em style="color: #ef4444;">${data.error || 'Failed to generate theme component'}</em>`;
+      }
+    })
+    .catch(err => {
+      console.error('Failed to generate theme component:', err);
+      outputEl.innerHTML = `<em style="color: #ef4444;">Error: ${err.message || 'Failed to generate theme component'}</em>`;
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    });
+}
+
+// Compile Components
+function compileIntroComponents(blockId, issueId) {
+  const finalEl = document.getElementById(`intro-final-${blockId}`);
+  
+  // Get text from output divs, filtering out placeholder/loading text
+  const getComponentText = (elId) => {
+    const el = document.getElementById(elId);
+    if (!el) return '';
+    const text = el.textContent.trim();
+    // Filter out placeholder/loading messages
+    if (text.includes('Click "Generate"') || text.includes('Generating') || text.includes('Error:')) {
+      return '';
+    }
+    return text;
+  };
+  
+  const weatherText = getComponentText(`weather-output-${blockId}`);
+  const eventsText = getComponentText(`events-output-${blockId}`);
+  const themeText = getComponentText(`theme-output-${blockId}`);
+  
+  // Check if we have any components
+  if (!weatherText && !eventsText && !themeText) {
+    alert('Please generate at least one component before compiling.');
     return;
   }
-  const issueId = blockElement.dataset.issueId;
-  fetch(`/newsletter/issue/${issueId}/block/${blockId}/select-suggestion`, {
+  
+  // Show loading state
+  finalEl.innerHTML = '<em style="color: #9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i> Compiling...</em>';
+  
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/compile-intro`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({suggestion_id: suggestionId})
+    body: JSON.stringify({
+      weather_text: weatherText,
+      events_text: eventsText,
+      theme_text: themeText
+    })
   })
-    .then(r => r.json())
+    .then(async r => {
+      const contentType = r.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+      
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+      }
+      
+      if (!isJson) {
+        throw new Error('Server returned non-JSON response');
+      }
+      
+      return r.json();
+    })
     .then(data => {
-      if (data.success) {
-        if (data.text) {
-          document.getElementById(`${blockType}-preview-${blockId}`).textContent = data.text;
-        }
-        alert('Suggestion applied successfully!');
+      if (data.success && data.text) {
+        finalEl.textContent = data.text;
+        finalEl.style.color = '#e6e8ef';
         // Reload page to show updated payload
-        window.location.reload();
+        setTimeout(() => window.location.reload(), 500);
       } else {
-        alert('Failed to apply suggestion: ' + (data.error || 'Unknown error'));
+        finalEl.innerHTML = `<em style="color: #ef4444;">${data.error || 'Failed to compile intro'}</em>`;
       }
     })
     .catch(err => {
-      console.error('Failed to apply suggestion:', err);
-      alert('Failed to apply suggestion. Please try again.');
+      console.error('Failed to compile intro:', err);
+      finalEl.innerHTML = `<em style="color: #ef4444;">Error: ${err.message || 'Failed to compile intro'}</em>`;
     });
 }
 
+// Override functions (reused from old code)
 function saveOverride(blockId, blockType) {
   const blockElement = document.querySelector(`.block-editor-${blockType}[data-block-id="${blockId}"]`);
   if (!blockElement || !blockElement.dataset.issueId) {
@@ -254,7 +322,7 @@ function saveOverride(blockId, blockType) {
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        document.getElementById(`${blockType}-preview-${blockId}`).textContent = text;
+        document.getElementById(`intro-final-${blockId}`).textContent = text;
         alert('Override saved successfully!');
         window.location.reload();
       } else {
@@ -269,25 +337,5 @@ function saveOverride(blockId, blockType) {
 
 function clearOverride(blockId, blockType) {
   document.getElementById(`${blockType}-override-${blockId}`).value = '';
-  // Optionally reload to reset preview
-}
-
-function loadPreview(blockId, blockType) {
-  const blockElement = document.querySelector(`.block-editor-${blockType}[data-block-id="${blockId}"]`);
-  if (!blockElement || !blockElement.dataset.issueId) {
-    alert('Error: Could not find issue ID for this block');
-    return;
-  }
-  const issueId = blockElement.dataset.issueId;
-  fetch(`/newsletter/issue/${issueId}/block/${blockId}/preview`)
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById(`${blockType}-html-preview-${blockId}`).innerHTML = data.html || '<em>Preview not available</em>';
-    })
-    .catch(err => {
-      console.error('Failed to load preview:', err);
-      document.getElementById(`${blockType}-html-preview-${blockId}`).innerHTML = '<em>Failed to load preview</em>';
-    });
 }
 </script>
-

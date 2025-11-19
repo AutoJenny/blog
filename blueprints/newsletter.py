@@ -423,6 +423,213 @@ def preview_block(issue_id: int, block_id: int):
         return jsonify({'error': str(e)}), 500
 
 
+# Intro Block Component Generation Endpoints
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-weather', methods=['GET'])
+def generate_weather_component(issue_id: int, block_id: int):
+    """Generate weather component for intro block."""
+    try:
+        from newsletter.db.queries_issue import get_block
+        from newsletter.services.weather_analysis_service import get_weather_for_intro
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        issue = get_issue(issue_id=issue_id)
+        if not issue:
+            return jsonify({'error': 'Issue not found'}), 404
+        
+        target_week = issue.get('target_week', '')
+        weather_result = get_weather_for_intro(target_week=target_week)
+        
+        if weather_result:
+            return jsonify({
+                'success': True,
+                'text': weather_result.get('summary_text', ''),
+                'source_name': weather_result.get('source_name', ''),
+                'url': weather_result.get('url', ''),
+                'analysis': weather_result.get('analysis', {})
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'No weather data available for this period',
+                'text': ''
+            })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error generating weather component: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-events', methods=['GET'])
+def generate_events_component(issue_id: int, block_id: int):
+    """Generate events component for intro block."""
+    try:
+        from newsletter.db.queries_issue import get_block
+        from newsletter.services.suggestion_service import generate_suggestions
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        issue = get_issue(issue_id=issue_id)
+        if not issue:
+            return jsonify({'error': 'Issue not found'}), 404
+        
+        target_week = issue.get('target_week', '')
+        
+        # Get top event suggestion
+        event_suggestions = generate_suggestions(block_type='intro', target_week=target_week, count=5, skip_validation=True)
+        event_items = [s for s in event_suggestions if s.get('category') == 'event']
+        
+        if event_items:
+            event_item = event_items[0]
+            source = event_item.get('source_name', '')
+            title = event_item.get('title', '')
+            location = event_item.get('location', '')
+            
+            if location:
+                text = f"Meanwhile, {source} has announced {title} in {location}."
+            else:
+                text = f"Meanwhile, {source} has announced {title}."
+            
+            return jsonify({
+                'success': True,
+                'text': text,
+                'source_name': source,
+                'title': title,
+                'location': location,
+                'url': event_item.get('url', ''),
+                'suggestion_id': event_item.get('id')
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'No event suggestions available',
+                'text': ''
+            })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error generating events component: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-theme', methods=['GET'])
+def generate_theme_component(issue_id: int, block_id: int):
+    """Generate theme component for intro block."""
+    try:
+        from newsletter.db.queries_issue import get_block
+        from newsletter.selectors.theme import parse_target_week, get_theme_by_id
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        issue = get_issue(issue_id=issue_id)
+        if not issue:
+            return jsonify({'error': 'Issue not found'}), 404
+        
+        # Get theme from issue
+        theme_id = issue.get('theme_id')
+        if theme_id:
+            theme = get_theme_by_id(theme_id)
+            if theme:
+                theme_title = theme.get('idea_title', '')
+                seasonal_context = theme.get('seasonal_context', '')
+                
+                # Generate conversational text about the theme
+                if seasonal_context:
+                    text = f"This week we're exploring {theme_title.lower()}, {seasonal_context.lower()}."
+                else:
+                    text = f"This week we're exploring {theme_title.lower()}."
+                
+                return jsonify({
+                    'success': True,
+                    'text': text,
+                    'theme_title': theme_title,
+                    'seasonal_context': seasonal_context,
+                    'theme_id': theme_id
+                })
+        
+        return jsonify({
+            'success': False,
+            'error': 'No theme selected for this issue',
+            'text': ''
+        })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error generating theme component: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/compile-intro', methods=['POST'])
+def compile_intro(issue_id: int, block_id: int):
+    """Compile weather, events, and theme into final intro paragraph."""
+    try:
+        from newsletter.db.queries_issue import get_block, update_block_payload
+        import random
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        if not request.is_json:
+            return jsonify({'error': 'Request must be JSON'}), 400
+        
+        data = request.json
+        weather_text = data.get('weather_text', '').strip()
+        events_text = data.get('events_text', '').strip()
+        theme_text = data.get('theme_text', '').strip()
+        
+        # Combine all non-empty components
+        sentences = []
+        if weather_text:
+            sentences.append(weather_text)
+        if events_text:
+            sentences.append(events_text)
+        if theme_text:
+            sentences.append(theme_text)
+        
+        if not sentences:
+            return jsonify({
+                'success': False,
+                'error': 'No components provided to compile',
+                'text': ''
+            })
+        
+        # Vary the order for natural flow
+        if len(sentences) > 1:
+            random.shuffle(sentences)
+        
+        # Join sentences naturally
+        if len(sentences) == 1:
+            compiled_text = sentences[0]
+        elif len(sentences) == 2:
+            compiled_text = sentences[0] + " " + sentences[1]
+        else:
+            compiled_text = sentences[0] + " " + sentences[1] + " " + sentences[2]
+        
+        # Save to block payload
+        payload = block.get('payload_json', {}) or {}
+        payload['text'] = compiled_text
+        payload['weather_text'] = weather_text
+        payload['events_text'] = events_text
+        payload['theme_text'] = theme_text
+        payload['manual_override'] = False
+        
+        update_block_payload(block_id=block_id, payload=payload)
+        
+        return jsonify({
+            'success': True,
+            'text': compiled_text
+        })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error compiling intro: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
 # Source Management Routes
 
 @bp.route('/newsletter/weather/summary')

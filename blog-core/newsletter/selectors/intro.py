@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 from newsletter.services.suggestion_service import generate_suggestions
 from newsletter.rendering.intro_text import generate_intro_text
 from newsletter.services.scoring import apply_diversity_rules
+from newsletter.services.weather_analysis_service import get_weather_for_intro
 
 
 def select_intro_content(*, target_week: str) -> Dict[str, Any]:
@@ -40,32 +41,34 @@ def select_intro_content(*, target_week: str) -> Dict[str, Any]:
             by_category[cat] = []
         by_category[cat].append(item)
     
-    # Select one top item per category
+    # Get weather summary (new approach: aggregated analysis, not single day)
+    weather_summary = get_weather_for_intro(target_week=target_week)
+    
+    # Select one top item per category (event and community still use single items)
     weather_item = None
     event_item = None
     community_item = None
     
-    if 'weather' in by_category:
-        weather_item = by_category['weather'][0]  # Top scored
+    # Weather: use the new summary format
+    if weather_summary:
+        weather_item = weather_summary  # This is now a summary dict, not a single day item
+    
     if 'event' in by_category:
         event_item = by_category['event'][0]
     if 'community' in by_category:
         community_item = by_category['community'][0]
     
     # Fallback: if no category-specific, use top items regardless
-    if not weather_item and not event_item and not community_item:
+    # (Weather already handled by get_weather_for_intro, so only check event/community)
+    if not event_item and not community_item:
         if all_suggestions:
-            # Use top 3 as fallback
+            # Use top items as fallback
             for i, item in enumerate(all_suggestions[:3]):
                 cat = item.get('category', 'other')
-                if cat == 'weather' and not weather_item:
-                    weather_item = item
-                elif cat == 'event' and not event_item:
+                if cat == 'event' and not event_item:
                     event_item = item
                 elif cat == 'community' and not community_item:
                     community_item = item
-                elif not weather_item:
-                    weather_item = item
                 elif not event_item:
                     event_item = item
                 elif not community_item:
@@ -75,10 +78,12 @@ def select_intro_content(*, target_week: str) -> Dict[str, Any]:
     text = generate_intro_text(weather_item, event_item, community_item)
     
     # Build top 3 suggestions for UI
+    # Note: weather_item is now a summary dict, not a single day item
     top_suggestions = []
     items_by_category = {}
     
     if weather_item:
+        # Weather summary is already formatted, add to suggestions
         top_suggestions.append(weather_item)
         items_by_category['weather'] = weather_item
     if event_item:
