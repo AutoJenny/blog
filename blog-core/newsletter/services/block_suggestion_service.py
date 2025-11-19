@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 from newsletter.services.suggestion_service import generate_suggestions
-from newsletter.selectors.blog_feature import select_feature_article
+from newsletter.selectors.blog_feature import select_feature_article, select_feature_articles
 from newsletter.selectors.products import select_new_products, select_spotlight_product, group_variants
 from newsletter.selectors.category import select_category_feature
 from newsletter.selectors.evergreen import select_evergreen
@@ -55,21 +55,24 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
         return {'suggestions': [], 'current': None, 'metadata': {}}
     
     elif block_type == 'feature':
-        feature = select_feature_article()
-        # For feature, we can return the selected article plus alternatives
-        # In future, could fetch multiple recent posts for suggestions
+        # Get multiple recent theme posts for selection
+        articles = select_feature_articles(limit=10)
         suggestions = []
-        if feature:
+        for article in articles:
             suggestions.append({
-                'id': feature.get('id'),
-                'title': feature.get('title', ''),
-                'excerpt': feature.get('excerpt', ''),
-                'url': feature.get('url', ''),
+                'id': article.get('id'),
+                'title': article.get('title', ''),
+                'excerpt': article.get('excerpt', ''),
+                'url': article.get('url', ''),
+                'hero_image': article.get('hero_image', ''),
+                'expanded_idea': article.get('expanded_idea', ''),
                 'type': 'blog_post',
             })
+        # First article is the default/current selection
+        current = articles[0] if articles else None
         return {
             'suggestions': suggestions,
-            'current': feature,
+            'current': current,
             'metadata': {},
         }
     
@@ -189,7 +192,20 @@ def auto_select_for_block(*, block_type: str, issue_id: int, target_week: str) -
         return {}
     
     elif block_type == 'feature':
-        return current  # Already in correct format
+        # Generate chatty summary from title and expanded_idea
+        if current and current.get('id'):
+            from newsletter.services.feature_summary_service import generate_feature_summary
+            title = current.get('title', '')
+            expanded_idea = current.get('expanded_idea', '')
+            excerpt = generate_feature_summary(title=title, expanded_idea=expanded_idea)
+            return {
+                'id': current.get('id'),
+                'title': title,
+                'url': current.get('url', ''),
+                'excerpt': excerpt,
+                'hero_image': current.get('hero_image', ''),
+            }
+        return current  # Fallback if no current
     
     elif block_type == 'new_products':
         return {'items': result.get('suggestions', [])[:6]}

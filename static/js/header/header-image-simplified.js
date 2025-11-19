@@ -43,6 +43,12 @@ class HeaderImageSimplified {
             if (response && response.ok) {
                 const data = await response.json();
                 if (data.success && data.image_prompt) {
+                    // Skip test prompts - they shouldn't be used
+                    if (data.image_prompt.includes('TEST PROMPT FOR DEBUGGING')) {
+                        console.warn('[HeaderImageSimplified] Skipping test prompt from database');
+                        return;
+                    }
+                    
                     // Show generated prompt panel and populate it
                     const promptPanel = document.getElementById('generated-prompt-panel');
                     const promptTextarea = document.getElementById('generated-prompt-textarea');
@@ -50,6 +56,7 @@ class HeaderImageSimplified {
                     if (promptPanel && promptTextarea) {
                         promptPanel.style.display = 'block';
                         promptTextarea.value = data.image_prompt;
+                        console.log('[HeaderImageSimplified] Loaded prompt from database:', data.image_prompt.substring(0, 100) + '...');
                         
                         // Enable image generation button
                         const generateImagesBtn = document.getElementById('generate-images-btn');
@@ -394,20 +401,54 @@ class HeaderImageSimplified {
             if (year) url += `&year=${year}`;
             if (week) url += `&week=${week}`;
             
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    image_prompt: promptTextarea.value.trim(),
-                    model_name: model,
-                    parameters: {
-                        size: landscapeSize,
-                        portrait_size: portraitSize,
-                        quality: quality
-                    },
-                    use_renderer: false
-                })
-            });
+            // Use the prompt from textarea, but validate it's not a test prompt
+            const promptToUse = promptTextarea.value.trim();
+            if (promptToUse.includes('TEST PROMPT FOR DEBUGGING') || promptToUse.length < 50) {
+                console.warn('[HeaderImageSimplified] Invalid or test prompt detected, attempting to load from database...');
+                // Try to reload the prompt from database first
+                await this.loadExistingCompiledPrompt();
+                const updatedPrompt = document.getElementById('generated-prompt-textarea')?.value.trim();
+                if (updatedPrompt && !updatedPrompt.includes('TEST PROMPT')) {
+                    console.log('[HeaderImageSimplified] Loaded valid prompt from database');
+                } else {
+                    alert('Please generate a valid prompt first using the "Generate LLM-Imaging Message" button.');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-image"></i> Generate Images';
+                    }
+                    return;
+                }
+            }
+            
+            // Image generation can take 2-3 minutes, so we need a longer timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+            
+            let response;
+            try {
+                response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_prompt: document.getElementById('generated-prompt-textarea').value.trim(),
+                        model_name: model,
+                        parameters: {
+                            size: landscapeSize,
+                            portrait_size: portraitSize,
+                            quality: quality
+                        },
+                        use_renderer: false
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+            } catch (fetchError) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('Request timed out after 5 minutes. Image generation may still be in progress.');
+                }
+                throw fetchError;
+            }
             
             const data = await response.json();
             
@@ -427,7 +468,15 @@ class HeaderImageSimplified {
                 const landscapeImg = document.getElementById('raw-landscape-image');
                 const landscapePlaceholder = document.getElementById('raw-landscape-placeholder');
                 if (landscapeImg) {
-                    const landscapePath = data.raw_path || data.optimized_path;
+                    // Prefer raw_path (web path to raw image), fallback to optimized
+                    let landscapePath = data.raw_path;
+                    // Ensure it starts with / if it's a web path
+                    if (landscapePath && !landscapePath.startsWith('/') && !landscapePath.startsWith('http')) {
+                        landscapePath = '/' + landscapePath;
+                    }
+                    if (!landscapePath) {
+                        landscapePath = data.optimized_path;
+                    }
                     if (landscapePath) {
                         // Use Image object to test load before setting src (handles errors gracefully)
                         const testImg = new Image();

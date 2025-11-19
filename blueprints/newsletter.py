@@ -932,6 +932,53 @@ Your response should be ONLY the paragraph, nothing else."""
         return jsonify({'error': str(e), 'success': False}), 500
 
 
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-feature-summary', methods=['POST'])
+def generate_feature_summary(issue_id: int, block_id: int):
+    """Generate chatty summary for feature block post using LLM."""
+    try:
+        from newsletter.db.queries_issue import get_block, update_block_payload
+        from newsletter.services.feature_summary_service import generate_feature_summary as generate_summary
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        if not request.is_json:
+            return jsonify({'error': 'Request must be JSON'}), 400
+        
+        data = request.json
+        post_id = data.get('post_id')
+        title = data.get('title', '')
+        expanded_idea = data.get('expanded_idea', '')
+        
+        if not post_id:
+            return jsonify({'error': 'post_id required'}), 400
+        
+        # Generate chatty summary
+        summary = generate_summary(title=title, expanded_idea=expanded_idea)
+        
+        # Update block payload with new summary
+        payload = block.get('payload_json', {}) or {}
+        payload['excerpt'] = summary
+        payload['id'] = post_id
+        payload['title'] = title
+        payload['url'] = data.get('url', payload.get('url', ''))
+        payload['hero_image'] = data.get('hero_image', payload.get('hero_image', ''))
+        
+        update_block_payload(block_id=block_id, payload=payload)
+        
+        return jsonify({
+            'success': True,
+            'excerpt': summary
+        })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error generating feature summary: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
 # Source Management Routes
 
 @bp.route('/newsletter/weather/summary')

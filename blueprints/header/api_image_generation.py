@@ -306,18 +306,25 @@ def register_routes(bp):
                 )
                 
                 # Build response with both landscape and portrait information
+                # Get web paths for raw images (for display in raw images panel)
+                landscape_raw_web_path = results.get('landscape_path')  # Already a web path from generator
+                portrait_raw_web_path = results.get('portrait_path')  # Already a web path from generator
+                
                 response_data = {
                     'success': True,
-                    'image_path': new_path,
-                    'raw_path': result.get('local_path', ''),
+                    'image_path': new_path,  # Optimized path
+                    'raw_path': landscape_raw_web_path or new_path,  # Use web path, not local path
                     'generation_time_ms': generation_time_ms,
                     'landscape_generated': results.get('landscape_generated', False),
                     'portrait_generated': results.get('portrait_generated', False)
                 }
                 
-                # Include portrait path if available
-                if results.get('portrait_path'):
-                    response_data['portrait_path'] = results['portrait_path']
+                # Include portrait raw web path if available
+                if portrait_raw_web_path:
+                    response_data['portrait_path'] = portrait_raw_web_path
+                elif results.get('portrait_generated'):
+                    # Construct path if generation succeeded but path not in results
+                    response_data['portrait_path'] = f"/static/content/posts/{post_id}/header/portrait/raw/header_portrait.png"
                 
                 # Add additional fields for compatibility
                 response_data['image_id'] = image_id
