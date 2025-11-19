@@ -15,12 +15,22 @@ class HeaderImageSimplified {
     init() {
         this.loadInputData();
         this.loadLLMPrompts();
-        this.loadExistingCompiledPrompt();
-        this.loadExistingImages();
-        this.setupLLMSettings();
-        this.setupImageGeneration();
-        this.setupOptimization();
-        console.log('[HeaderImageSimplified] Initialized');
+        // Load existing prompt FIRST to ensure textarea is populated
+        this.loadExistingCompiledPrompt().then(() => {
+            // After prompt is loaded, continue with other initialization
+            this.loadExistingImages();
+            this.setupLLMSettings();
+            this.setupImageGeneration();
+            this.setupOptimization();
+            console.log('[HeaderImageSimplified] Initialized with prompt loaded');
+        }).catch(() => {
+            // Even if prompt load fails, continue with other initialization
+            this.loadExistingImages();
+            this.setupLLMSettings();
+            this.setupImageGeneration();
+            this.setupOptimization();
+            console.log('[HeaderImageSimplified] Initialized (prompt load failed)');
+        });
     }
     
     // Load existing compiled prompt from database
@@ -43,12 +53,6 @@ class HeaderImageSimplified {
             if (response && response.ok) {
                 const data = await response.json();
                 if (data.success && data.image_prompt) {
-                    // Skip test prompts - they shouldn't be used
-                    if (data.image_prompt.includes('TEST PROMPT FOR DEBUGGING')) {
-                        console.warn('[HeaderImageSimplified] Skipping test prompt from database');
-                        return;
-                    }
-                    
                     // Show generated prompt panel and populate it
                     const promptPanel = document.getElementById('generated-prompt-panel');
                     const promptTextarea = document.getElementById('generated-prompt-textarea');
@@ -56,7 +60,6 @@ class HeaderImageSimplified {
                     if (promptPanel && promptTextarea) {
                         promptPanel.style.display = 'block';
                         promptTextarea.value = data.image_prompt;
-                        console.log('[HeaderImageSimplified] Loaded prompt from database:', data.image_prompt.substring(0, 100) + '...');
                         
                         // Enable image generation button
                         const generateImagesBtn = document.getElementById('generate-images-btn');
@@ -338,37 +341,17 @@ class HeaderImageSimplified {
     
     // Panel 5: Setup Image Generation
     setupImageGeneration() {
-        const setupBtn = () => {
-            const generateBtn = document.getElementById('generate-images-btn');
-            if (generateBtn) {
-                // Clone to remove existing listeners
-                const newBtn = generateBtn.cloneNode(true);
-                generateBtn.parentNode.replaceChild(newBtn, generateBtn);
-                // Attach listener
-                newBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.generateImages();
-                });
-                console.log('[HeaderImageSimplified] Image generation button listener attached');
-                return true; // Success
-            } else {
-                console.warn('[HeaderImageSimplified] generate-images-btn not found, retrying...');
-                return false; // Not found
-            }
-        };
-        
-        // Try immediately
-        if (!setupBtn()) {
-            // Retry after short delay if not found
-            setTimeout(() => {
-                if (!setupBtn()) {
-                    console.error('[HeaderImageSimplified] Failed to find generate-images-btn after retry!');
-                }
-            }, 200);
+        const generateBtn = document.getElementById('generate-images-btn');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.generateImages();
+            });
+            generateBtn.disabled = false;
         }
     }
     
-    // Generate Images (Panel 6)
+    // Generate Images
     async generateImages() {
         try {
             const btn = document.getElementById('generate-images-btn');
@@ -380,75 +363,31 @@ class HeaderImageSimplified {
             const promptTextarea = document.getElementById('generated-prompt-textarea');
             if (!promptTextarea || !promptTextarea.value.trim()) {
                 alert('Please generate a prompt first');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-image"></i> Generate Images';
+                }
                 return;
             }
             
             const model = document.getElementById('image-model-select')?.value || 'gpt-image-1';
             const landscapeSize = document.getElementById('landscape-size')?.value || '1536x1024';
             const portraitSize = document.getElementById('portrait-size')?.value || '1024x1536';
-            // gpt-image-1 uses 'high', 'medium', 'low', 'auto' - not 'hd'
-            let quality = document.getElementById('image-quality')?.value || 'high';
-            // Map 'hd' to 'high' for backwards compatibility
-            if (quality === 'hd') {
-                quality = 'high';
-            }
+            const quality = document.getElementById('image-quality')?.value || 'high';
             
-            const urlParams = new URLSearchParams(window.location.search);
-            const year = urlParams.get('year') || this.year;
-            const week = urlParams.get('week') || this.week;
-            
-            let url = `/header/api/posts/${this.postId}/generate-header-image?illustration_method=${encodeURIComponent(this.illustrationMethod)}`;
-            if (year) url += `&year=${year}`;
-            if (week) url += `&week=${week}`;
-            
-            // Use the prompt from textarea, but validate it's not a test prompt
-            const promptToUse = promptTextarea.value.trim();
-            if (promptToUse.includes('TEST PROMPT FOR DEBUGGING') || promptToUse.length < 50) {
-                console.warn('[HeaderImageSimplified] Invalid or test prompt detected, attempting to load from database...');
-                // Try to reload the prompt from database first
-                await this.loadExistingCompiledPrompt();
-                const updatedPrompt = document.getElementById('generated-prompt-textarea')?.value.trim();
-                if (updatedPrompt && !updatedPrompt.includes('TEST PROMPT')) {
-                    console.log('[HeaderImageSimplified] Loaded valid prompt from database');
-                } else {
-                    alert('Please generate a valid prompt first using the "Generate LLM-Imaging Message" button.');
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-image"></i> Generate Images';
+            const response = await fetch(`/header/api/posts/${this.postId}/generate-header-image`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    image_prompt: promptTextarea.value.trim(),
+                    model_name: model,
+                    parameters: {
+                        size: landscapeSize,
+                        portrait_size: portraitSize,
+                        quality: quality
                     }
-                    return;
-                }
-            }
-            
-            // Image generation can take 2-3 minutes, so we need a longer timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
-            
-            let response;
-            try {
-                response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        image_prompt: document.getElementById('generated-prompt-textarea').value.trim(),
-                        model_name: model,
-                        parameters: {
-                            size: landscapeSize,
-                            portrait_size: portraitSize,
-                            quality: quality
-                        },
-                        use_renderer: false
-                    }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-            } catch (fetchError) {
-                clearTimeout(timeoutId);
-                if (fetchError.name === 'AbortError') {
-                    throw new Error('Request timed out after 5 minutes. Image generation may still be in progress.');
-                }
-                throw fetchError;
-            }
+                })
+            });
             
             const data = await response.json();
             
@@ -457,137 +396,67 @@ class HeaderImageSimplified {
                 const rawImagesPanel = document.getElementById('raw-images-panel');
                 if (rawImagesPanel) {
                     rawImagesPanel.style.display = 'block';
-                    
-                    // Scroll to raw images panel
-                    setTimeout(() => {
-                        rawImagesPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }, 100);
                 }
                 
-                // Display landscape image (use raw_path for raw images panel)
+                // Display landscape image
                 const landscapeImg = document.getElementById('raw-landscape-image');
                 const landscapePlaceholder = document.getElementById('raw-landscape-placeholder');
-                if (landscapeImg) {
-                    // Prefer raw_path (web path to raw image), fallback to optimized
-                    let landscapePath = data.raw_path;
-                    // Ensure it starts with / if it's a web path
-                    if (landscapePath && !landscapePath.startsWith('/') && !landscapePath.startsWith('http')) {
-                        landscapePath = '/' + landscapePath;
-                    }
-                    if (!landscapePath) {
-                        landscapePath = data.optimized_path;
-                    }
-                    if (landscapePath) {
-                        // Use Image object to test load before setting src (handles errors gracefully)
-                        const testImg = new Image();
-                        testImg.onload = () => {
-                            // Use the test image src (which may have cache bust) to ensure it loads
-                            landscapeImg.src = testImg.src;
-                            landscapeImg.style.display = 'block';
-                            if (landscapePlaceholder) {
-                                landscapePlaceholder.style.display = 'none';
-                            }
-                            console.log('[HeaderImageSimplified] Landscape image loaded successfully:', testImg.src);
-                        };
-                        testImg.onerror = () => {
-                            console.error('[HeaderImageSimplified] Landscape image failed to load:', landscapePath);
-                            // Show error message to user
-                            if (landscapePlaceholder) {
-                                landscapePlaceholder.textContent = 'Image failed to load. Path: ' + landscapePath + '. Retrying...';
-                                landscapePlaceholder.style.color = '#ef4444';
-                            }
-                            // Retry with longer delay and cache bust - file might still be writing
-                            setTimeout(() => {
-                                testImg.src = landscapePath + (landscapePath.includes('?') ? '&' : '?') + 't=' + Date.now();
-                            }, 2000);
-                        };
-                        // Add a small delay to ensure file is written to disk
-                        setTimeout(() => {
-                            testImg.src = landscapePath;
-                        }, 1000);
-                    } else {
-                        console.error('[HeaderImageSimplified] No landscape path in response:', data);
-                        if (landscapePlaceholder) {
-                            landscapePlaceholder.textContent = 'No image path returned from server';
-                            landscapePlaceholder.style.color = '#ef4444';
-                        }
+                if (landscapeImg && data.landscape_raw) {
+                    landscapeImg.src = data.landscape_raw;
+                    landscapeImg.style.display = 'block';
+                    if (landscapePlaceholder) {
+                        landscapePlaceholder.style.display = 'none';
                     }
                 }
                 
-                // Display portrait image if available
-                // gpt-image-1 generates both landscape and portrait
+                // Display portrait image
                 const portraitImg = document.getElementById('raw-portrait-image');
                 const portraitPlaceholder = document.getElementById('raw-portrait-placeholder');
-                if (portraitImg) {
-                    // Check if response has portrait path
-                    let portraitPath = data.portrait_path;
-                    
-                    // If not in response but portrait was generated, construct path
-                    if (!portraitPath && data.portrait_generated) {
-                        // Handle both old and new path structures
-                        portraitPath = data.raw_path?.replace('/header/landscape/raw/header.png', '/header/portrait/raw/header_portrait.png')
-                                     ?.replace('/header/raw/header.png', '/header/portrait/raw/header_portrait.png') ||
-                                     `/static/content/posts/${this.postId}/header/portrait/raw/header_portrait.png`;
+                if (portraitImg && data.portrait_raw) {
+                    portraitImg.src = data.portrait_raw;
+                    portraitImg.style.display = 'block';
+                    if (portraitPlaceholder) {
+                        portraitPlaceholder.style.display = 'none';
                     }
-                    
-                    // If still no path, try to load from expected location
-                    if (!portraitPath) {
-                        portraitPath = `/static/content/posts/${this.postId}/header/portrait/raw/header_portrait.png`;
-                    }
-                    
-                    console.log('[HeaderImageSimplified] Attempting to load portrait image:', portraitPath, 'portrait_generated:', data.portrait_generated);
-                    
-                    // Try to load portrait image with retry logic
-                    const img = new Image();
-                    img.onload = () => {
-                        portraitImg.src = img.src;
-                        portraitImg.style.display = 'block';
-                        if (portraitPlaceholder) {
-                            portraitPlaceholder.style.display = 'none';
-                        }
-                        console.log('[HeaderImageSimplified] Portrait image loaded successfully:', img.src);
-                    };
-                    img.onerror = () => {
-                        console.warn('[HeaderImageSimplified] Portrait image not found at:', portraitPath);
-                        // Show message that portrait might still be generating
-                        if (portraitPlaceholder && data.portrait_generated) {
-                            portraitPlaceholder.textContent = 'Portrait image generating... Retrying...';
-                            portraitPlaceholder.style.color = '#fbbf24';
-                        }
-                        // Retry with cache bust - might still be generating
-                        setTimeout(() => {
-                            const retryImg = new Image();
-                            retryImg.onload = () => {
-                                portraitImg.src = portraitPath + '?t=' + Date.now();
-                                portraitImg.style.display = 'block';
-                                if (portraitPlaceholder) {
-                                    portraitPlaceholder.style.display = 'none';
-                                }
-                                console.log('[HeaderImageSimplified] Portrait image loaded on retry:', retryImg.src);
-                            };
-                            retryImg.onerror = () => {
-                                console.warn('[HeaderImageSimplified] Portrait image still not found after retry');
-                                if (portraitPlaceholder) {
-                                    portraitPlaceholder.textContent = 'No portrait image generated yet';
-                                    portraitPlaceholder.style.color = '#64748b';
-                                }
-                            };
-                            retryImg.src = portraitPath + '?t=' + Date.now();
-                        }, 3000);
-                    };
-                    // Add delay before first attempt to allow file to be written
-                    setTimeout(() => {
-                        img.src = portraitPath;
-                    }, 1500);
                 }
                 
-                // Enable optimization button
+                // Show and display optimized images
+                const optimizedPanel = document.getElementById('optimized-images-panel');
+                if (optimizedPanel) {
+                    optimizedPanel.style.display = 'block';
+                }
+                
+                // Display optimized landscape image
+                const optimizedLandscapeImg = document.getElementById('optimized-landscape-image');
+                const optimizedLandscapePlaceholder = document.getElementById('optimized-landscape-placeholder');
+                if (optimizedLandscapeImg && data.landscape_optimized) {
+                    optimizedLandscapeImg.src = data.landscape_optimized;
+                    optimizedLandscapeImg.style.display = 'block';
+                    if (optimizedLandscapePlaceholder) {
+                        optimizedLandscapePlaceholder.style.display = 'none';
+                    }
+                }
+                
+                // Display optimized portrait image
+                const optimizedPortraitImg = document.getElementById('optimized-portrait-image');
+                const optimizedPortraitPlaceholder = document.getElementById('optimized-portrait-placeholder');
+                if (optimizedPortraitImg && data.portrait_optimized) {
+                    optimizedPortraitImg.src = data.portrait_optimized;
+                    optimizedPortraitImg.style.display = 'block';
+                    if (optimizedPortraitPlaceholder) {
+                        optimizedPortraitPlaceholder.style.display = 'none';
+                    }
+                }
+                
+                // Enable optimization button (though optimization already done)
                 const optimizeBtn = document.getElementById('optimize-image-btn');
                 if (optimizeBtn) {
                     optimizeBtn.disabled = false;
                 }
+                
+                alert('Images generated and optimized successfully!');
             } else {
-                alert('Error generating images: ' + (data.error || 'Unknown error'));
+                alert('Error: ' + (data.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('[HeaderImageSimplified] Error generating images:', error);
@@ -596,7 +465,7 @@ class HeaderImageSimplified {
             const btn = document.getElementById('generate-images-btn');
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-image"></i> Generate Images (Landscape + Portrait)';
+                btn.innerHTML = '<i class="fas fa-image"></i> Generate Images';
             }
         }
     }

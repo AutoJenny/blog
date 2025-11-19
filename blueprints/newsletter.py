@@ -178,12 +178,47 @@ def preview_issue(issue_id: int):
         logging.getLogger(__name__).warning(f"Could not load tile background: {e}")
         pass  # Tile is optional
     
+    # Convert local image paths to clan.com URLs for feature blocks
+    processed_blocks = []
+    for b in blocks:
+        block_data = {"type": b["type"], "payload_json": b["payload_json"].copy() if b["payload_json"] else {}}
+        
+        # If this is a feature block with a hero_image, try to convert local path to clan.com URL
+        if b["type"] == "feature" and block_data["payload_json"].get("hero_image"):
+            hero_image = block_data["payload_json"]["hero_image"]
+            post_id = block_data["payload_json"].get("id")
+            
+            # If it's a local path, try to find the clan.com URL
+            if hero_image.startswith("/static/") and post_id:
+                try:
+                    from config.database import db_manager
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT clan_uploaded_url 
+                            FROM section_image_mappings 
+                            WHERE post_id = %s 
+                              AND section_id IS NULL
+                              AND local_image_path = %s
+                            LIMIT 1
+                        """, (post_id, hero_image))
+                        result = cursor.fetchone()
+                        if result and result.get('clan_uploaded_url'):
+                            block_data["payload_json"]["hero_image"] = result['clan_uploaded_url']
+                            import logging
+                            logging.getLogger(__name__).info(f"Converted feature block hero_image from {hero_image} to {result['clan_uploaded_url']}")
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Could not convert hero_image path: {e}")
+                    pass  # Keep original path if conversion fails
+        
+        processed_blocks.append(block_data)
+    
     # Map blocks to pass each payload as "block" expected by partials
     return render_template(
         'newsletter/render.html',
         subject=f"Issue {issue_id}",
         issue=issue,
-        blocks=[{"type": b["type"], "payload_json": b["payload_json"]} for b in blocks],
+        blocks=processed_blocks,
         tile_base64_data=tile_base64_data
     )
 

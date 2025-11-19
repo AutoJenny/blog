@@ -38,304 +38,75 @@ def register_routes(bp):
 
     @bp.route('/api/posts/<int:post_id>/generate-header-image', methods=['POST'])
     def api_generate_header_image(post_id):
-        """Generate header image with custom dimensions and automatic watermarking using model-aware renderers"""
+        """Generate header image: landscape and portrait, then optimize both"""
         try:
-            from modules.prompt_service import prompt_service
-            
             data = request.get_json()
-            model_name = data.get('model_name', 'dall-e-3')
+            image_prompt = data.get('image_prompt', '').strip()
+            model_name = data.get('model_name', 'gpt-image-1')
             parameters = data.get('parameters', {})
-            use_renderer = data.get('use_renderer', True)  # Feature flag
-            
-            # Get illustration_method from query parameter or post taxonomy
-            illustration_method = request.args.get('illustration_method', None)
-            if illustration_method is None:
-                with db_manager.get_cursor() as cursor:
-                    cursor.execute("""
-                        SELECT ti.illustration_method
-                        FROM post p
-                        LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
-                        WHERE p.id = %s
-                    """, (post_id,))
-                    result = cursor.fetchone()
-                    illustration_method = (result.get('illustration_method') if result else None) or 'LLM-creation'
-            
-            # Get rendered prompt using the new system
-            if use_renderer:
-                # For header images, we need to compile a collage prompt from all sections
-                rendered_prompt, debug_info = prompt_service.render_header_prompt_for_model(
-                    post_id, model_name, use_override=True, illustration_method=illustration_method
-                )
-                
-                if not rendered_prompt:
-                    return jsonify({'error': 'No sections available to create header prompt'}), 400
-                
-                image_prompt = rendered_prompt
-            else:
-                # Fallback to original prompt from request
-                image_prompt = data.get('image_prompt', '')
-                debug_info = {'source': 'fallback', 'model_key': model_name}
             
             if not image_prompt:
                 return jsonify({'error': 'No image prompt provided'}), 400
             
-            # Import imaging functions
-            from blueprints.imaging_optimization import optimize_image_with_watermark
+            # Get dimensions from parameters
+            landscape_size = parameters.get('size', '1536x1024')
+            portrait_size = parameters.get('portrait_size', '1024x1536')
+            quality = parameters.get('quality', 'high')
             
-            # Set custom dimensions and style for header image
-            # For Photo-harvesting route, use photorealistic settings
-            if illustration_method == 'Photo-harvesting':
-                # Photo-harvesting route: use gpt-image-1 with photorealistic settings
-                if model_name == 'gpt-image-1':
-                    parameters['size'] = '1536x1024'  # Landscape format
-                    parameters['portrait_size'] = '1024x1536'  # Portrait format
-                    parameters['quality'] = 'high'  # High quality for photorealistic (gpt-image-1 uses 'high' not 'hd')
-                elif model_name == 'dall-e-3':
-                    parameters['size'] = '1792x1024'
-                    parameters['quality'] = 'hd'
-                    parameters['style'] = 'natural'  # Photorealistic
-                else:
-                    # For other models, use photorealistic defaults
-                    parameters['width'] = 2358
-                    parameters['height'] = 1048
-            elif model_name == 'dall-e-3':
-                # DALL-E uses predefined sizes, closest to 2358x1048 is 1792x1024
-                parameters['size'] = '1792x1024'
-                # Fix quality parameter for DALL-E (must be string, not number)
-                if 'quality' in parameters and isinstance(parameters['quality'], int):
-                    parameters['quality'] = 'hd' if parameters['quality'] > 50 else 'standard'
-                else:
-                    parameters['quality'] = 'standard'
-                # Set style parameter
-                parameters['style'] = 'natural'
-            else:
-                # SDXL can use custom dimensions
-                parameters['width'] = 2358
-                parameters['height'] = 1048
-            
-            # Start timing
-            start_time = time.time()
-            
-            # Generate both landscape and portrait images (same as section images)
-            results = {
-                'landscape_generated': False,
-                'portrait_generated': False,
-                'landscape_path': None,
-                'portrait_path': None
-            }
+            # Import generators
+            from blueprints.imaging_generators import imaging_generate_gpt_image_1, imaging_generate_dalle_image, imaging_generate_sdxl_image
             
             # Generate landscape image
-            logger.info(f"[HEADER_IMAGE_GENERATION] Starting landscape generation for post {post_id} with model {model_name}")
-            landscape_result = None
-            try:
-                if model_name == 'gpt-image-1':
-                    landscape_result = imaging_generate_gpt_image_1(image_prompt, post_id, 'header', parameters, 'landscape')
-                elif model_name.startswith('dall-e') or model_name.startswith('openai'):
-                    landscape_result = imaging_generate_dalle_image(image_prompt, post_id, 'header', parameters, 'landscape')
-                elif model_name.startswith('sdxl'):
-                    landscape_result = imaging_generate_sdxl_image(image_prompt, post_id, 'header', parameters, 'landscape')
-                else:
-                    landscape_result = {'success': False, 'error': f'Unknown model: {model_name}'}
-            except Exception as e:
-                logger.error(f"[HEADER_IMAGE_GENERATION] Exception during landscape generation: {str(e)}")
-                import traceback
-                logger.error(traceback.format_exc())
-                landscape_result = {'success': False, 'error': f'Exception: {str(e)}'}
-            
-            if landscape_result and landscape_result.get('success'):
-                results['landscape_generated'] = True
-                results['landscape_path'] = landscape_result.get('image_path')
-                logger.info(f"[HEADER_IMAGE_GENERATION] Landscape image generated: {results['landscape_path']}")
+            logger.info(f"[HEADER_IMAGE] Generating landscape image for post {post_id}")
+            landscape_params = {'size': landscape_size, 'quality': quality}
+            if model_name == 'gpt-image-1':
+                landscape_result = imaging_generate_gpt_image_1(image_prompt, post_id, 'header', landscape_params, 'landscape')
+            elif model_name.startswith('dall-e') or model_name.startswith('openai'):
+                landscape_result = imaging_generate_dalle_image(image_prompt, post_id, 'header', landscape_params, 'landscape')
+            elif model_name.startswith('sdxl'):
+                landscape_result = imaging_generate_sdxl_image(image_prompt, post_id, 'header', landscape_params, 'landscape')
             else:
-                logger.error(f"[HEADER_IMAGE_GENERATION] Landscape generation failed: {landscape_result.get('error') if landscape_result else 'No result'}")
+                return jsonify({'error': f'Unknown model: {model_name}'}), 400
+            
+            if not landscape_result.get('success'):
+                return jsonify({'error': f'Landscape generation failed: {landscape_result.get("error")}'}), 500
             
             # Generate portrait image
-            logger.info(f"[HEADER_IMAGE_GENERATION] Starting portrait generation for post {post_id} with model {model_name}")
-            portrait_result = None
-            try:
-                if model_name == 'gpt-image-1':
-                    portrait_result = imaging_generate_gpt_image_1(image_prompt, post_id, 'header', parameters, 'portrait')
-                elif model_name.startswith('dall-e') or model_name.startswith('openai'):
-                    portrait_result = imaging_generate_dalle_image(image_prompt, post_id, 'header', parameters, 'portrait')
-                elif model_name.startswith('sdxl'):
-                    portrait_result = imaging_generate_sdxl_image(image_prompt, post_id, 'header', parameters, 'portrait')
-                else:
-                    portrait_result = {'success': False, 'error': f'Unknown model: {model_name}'}
-            except Exception as e:
-                logger.error(f"[HEADER_IMAGE_GENERATION] Exception during portrait generation: {str(e)}")
-                import traceback
-                logger.error(traceback.format_exc())
-                portrait_result = {'success': False, 'error': f'Exception: {str(e)}'}
-            
-            if portrait_result and portrait_result.get('success'):
-                results['portrait_generated'] = True
-                results['portrait_path'] = portrait_result.get('image_path')
-                logger.info(f"[HEADER_IMAGE_GENERATION] Portrait image generated: {results['portrait_path']}")
+            logger.info(f"[HEADER_IMAGE] Generating portrait image for post {post_id}")
+            portrait_params = {'portrait_size': portrait_size, 'quality': quality}
+            if model_name == 'gpt-image-1':
+                portrait_result = imaging_generate_gpt_image_1(image_prompt, post_id, 'header', portrait_params, 'portrait')
+            elif model_name.startswith('dall-e') or model_name.startswith('openai'):
+                portrait_result = imaging_generate_dalle_image(image_prompt, post_id, 'header', portrait_params, 'portrait')
+            elif model_name.startswith('sdxl'):
+                portrait_result = imaging_generate_sdxl_image(image_prompt, post_id, 'header', portrait_params, 'portrait')
             else:
-                logger.error(f"[HEADER_IMAGE_GENERATION] Portrait generation failed: {portrait_result.get('error') if portrait_result else 'No result'}")
+                return jsonify({'error': f'Unknown model: {model_name}'}), 400
             
-            # Calculate generation time
-            generation_time_ms = int((time.time() - start_time) * 1000)
+            if not portrait_result.get('success'):
+                return jsonify({'error': f'Portrait generation failed: {portrait_result.get("error")}'}), 500
             
-            # At least one image must succeed
-            if not results['landscape_generated'] and not results['portrait_generated']:
-                error_msg = f"Both landscape and portrait generation failed. Landscape: {landscape_result.get('error') if landscape_result else 'No result'}, Portrait: {portrait_result.get('error') if portrait_result else 'No result'}"
-                logger.error(f"[HEADER_IMAGE_GENERATION] {error_msg}")
-                # Log failed generation event
-                prompt_service.log_generation_event(
-                    post_id=post_id,
-                    section_id=None,  # Header images don't have section_id
-                    model_key=model_name,
-                    params=parameters,
-                    prompt_text=image_prompt,
-                    rendered_prompt=image_prompt,
-                    result_path='',
-                    success=False,
-                    error_message=error_msg,
-                    generation_time_ms=generation_time_ms
-                )
-                return jsonify({'error': error_msg}), 500
+            # Optimize both images
+            logger.info(f"[HEADER_IMAGE] Optimizing images for post {post_id}")
+            from blueprints.imaging_optimization import optimize_image_with_watermark
+            optimize_result = optimize_image_with_watermark(post_id, 'header', parameters)
             
-            # Use landscape result as primary result for compatibility
-            result = landscape_result if results['landscape_generated'] else portrait_result
+            if not optimize_result.get('success'):
+                return jsonify({'error': f'Optimization failed: {optimize_result.get("error")}'}), 500
             
-            # Automatically optimize and watermark the header image after generation
-            logger.info(f"Automatically optimizing header image for post {post_id}")
-            watermark_result = optimize_image_with_watermark(post_id, 'header', parameters)
+            # Return success with paths
+            return jsonify({
+                'success': True,
+                'landscape_raw': landscape_result.get('image_path'),
+                'portrait_raw': portrait_result.get('image_path'),
+                'landscape_optimized': optimize_result.get('optimized_path'),
+                'portrait_optimized': optimize_result.get('portrait_path')
+            })
             
-            if not watermark_result.get('success'):
-                logger.error(f"Header image optimization failed: {watermark_result.get('error', 'Unknown error')}")
-                # NO FALLBACK - optimization must succeed for image to be shown
-                return jsonify({
-                    'success': False,
-                    'error': f"Image generation succeeded but optimization failed: {watermark_result.get('error', 'Unknown error')}"
-                }), 500
-            
-            # Create or update image table record
-            with db_manager.get_cursor() as cursor:
-                # Check if header image already exists
-                cursor.execute("""
-                    SELECT header_image_id FROM post WHERE id = %s
-                """, (post_id,))
-                
-                existing_image_id = cursor.fetchone()
-                
-                # Get the optimized path - ONLY optimized, no fallback to raw
-                new_path = watermark_result.get('optimized_path')
-                if not new_path:
-                    logger.error(f"No optimized path returned from watermark_result for post {post_id}")
-                    return jsonify({
-                        'success': False,
-                        'error': 'Image optimization did not return an optimized path'
-                    }), 500
-                # Normalize path: strip leading slash, then ensure it starts with /static/
-                # This matches the normalization in api_optimize_header_image for consistency
-                if new_path:
-                    new_path = new_path.lstrip('/')
-                    if not new_path.startswith('static/'):
-                        new_path = 'static/' + new_path.lstrip('/')
-                    new_path = '/' + new_path  # Add leading slash
-                
-                # CRITICAL: Write to images table (plural) with file_path column - foreign keys point here
-                if existing_image_id and existing_image_id['header_image_id']:
-                    # Update existing image record
-                    cursor.execute("""
-                        UPDATE images 
-                        SET filename = %s, original_filename = %s, file_path = %s, 
-                            image_prompt = %s, alt_text = %s, caption = %s,
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                    """, (
-                        'header.jpg',
-                        'original_header.png', 
-                        new_path,
-                        image_prompt,
-                        'Header image for blog post',
-                        'Generated header image',
-                        existing_image_id['header_image_id']
-                    ))
-                    image_id = existing_image_id['header_image_id']
-                else:
-                    # Create new image record
-                    cursor.execute("""
-                        INSERT INTO images (filename, original_filename, file_path, image_prompt, alt_text, caption)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                        RETURNING id
-                    """, (
-                        'header.jpg',
-                        'original_header.png', 
-                        new_path,
-                        image_prompt,
-                        'Header image for blog post',
-                        'Generated header image'
-                    ))
-                    
-                    image_id = cursor.fetchone()['id']
-                    
-                    # Update post table with header image reference
-                    cursor.execute("""
-                        UPDATE post 
-                        SET header_image_id = %s, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                    """, (image_id, post_id))
-                
-                # CRITICAL: Create post_images record for publishing system (same as api_optimize_header_image)
-                # Delete any existing post_images link for header_optimized
-                cursor.execute("""
-                    DELETE FROM post_images 
-                    WHERE post_id = %s AND section_id IS NULL AND image_type = 'header_optimized'
-                """, (post_id,))
-                
-                # Create post_images link for header_optimized
-                cursor.execute("""
-                    INSERT INTO post_images (post_id, section_id, image_id, image_type)
-                    VALUES (%s, NULL, %s, 'header_optimized')
-                """, (post_id, image_id))
-                
-                # Log successful generation event
-                prompt_service.log_generation_event(
-                    post_id=post_id,
-                    section_id=None,  # Header images don't have section_id
-                    model_key=model_name,
-                    params=parameters,
-                    prompt_text=image_prompt,
-                    rendered_prompt=image_prompt,
-                    result_path=new_path,
-                    success=True,
-                    generation_time_ms=generation_time_ms
-                )
-                
-                # Build response with both landscape and portrait information
-                # Get web paths for raw images (for display in raw images panel)
-                landscape_raw_web_path = results.get('landscape_path')  # Already a web path from generator
-                portrait_raw_web_path = results.get('portrait_path')  # Already a web path from generator
-                
-                response_data = {
-                    'success': True,
-                    'image_path': new_path,  # Optimized path
-                    'raw_path': landscape_raw_web_path or new_path,  # Use web path, not local path
-                    'generation_time_ms': generation_time_ms,
-                    'landscape_generated': results.get('landscape_generated', False),
-                    'portrait_generated': results.get('portrait_generated', False)
-                }
-                
-                # Include portrait raw web path if available
-                if portrait_raw_web_path:
-                    response_data['portrait_path'] = portrait_raw_web_path
-                elif results.get('portrait_generated'):
-                    # Construct path if generation succeeded but path not in results
-                    response_data['portrait_path'] = f"/static/content/posts/{post_id}/header/portrait/raw/header_portrait.png"
-                
-                # Add additional fields for compatibility
-                response_data['image_id'] = image_id
-                response_data['optimized_path'] = new_path
-                response_data['dimensions'] = {'width': 2358, 'height': 1048}
-                response_data['debug_info'] = debug_info
-                
-                return jsonify(response_data)
-                
         except Exception as e:
             logger.error(f"Error generating header image for post {post_id}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return jsonify({'error': str(e)}), 500
 
     @bp.route('/api/posts/<int:post_id>/get-header-image', methods=['GET'])

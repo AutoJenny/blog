@@ -565,7 +565,7 @@
             
             <div class="post-meta">
                 <span class="post-meta__author">
-                    By {{ post.author_name or 'Clan.com' }}
+                    By {{ post.author_name or 'Caitrin Stewart' }}
                 </span>
                 <span class="post-meta__separator"> | </span>
                 <span class="post-meta__date">
@@ -598,7 +598,7 @@
                     <strong>Updated:</strong> {{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Not set' }}
                 </div>
                 <div class="meta-item">
-                    <strong>Author:</strong> {{ post.author_name or 'Clan.com' }}
+                    <strong>Author:</strong> {{ post.author_name or 'Caitrin Stewart' }}
                 </div>
                 <div class="meta-item">
                     <strong>Word Count:</strong> {{ word_count|round(0, 'ceil')|int }} words
@@ -617,21 +617,9 @@
         </header>
         {% if sections %}
         <div class="blog-sections">
-            <!-- Cross-promotion error handling -->
-            {% if not post.cross_promotion %}
-                <div class="cross-promotion-error" style="background-color: #ffebee; border: 2px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 8px; color: #c62828;">
-                    <h4 style="margin: 0 0 10px 0; color: #d32f2f;">
-                        <i class="fas fa-exclamation-triangle"></i> Cross-Promotion Configuration Missing
-                    </h4>
-                    <p style="margin: 0; font-size: 0.9em;">
-                        No cross-promotion widgets are configured for this post. 
-                        <a href="http://localhost:5000/cross-promotion" style="color: #d32f2f; text-decoration: underline;">Configure widgets here</a>.
-                    </p>
-                </div>
-            {% endif %}
             {% for section in sections %}
             <section class="blog-section" id="section-{{ loop.index }}">
-                <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                <h2>{{ (section.section_heading or 'Untitled Section')|replace('"', '')|replace("'", '')|trim }}</h2>
                 <div class="section-text">
                     {% if section.polished %}
                         {{ section.polished|strip_html_doc|safe }}
@@ -686,49 +674,109 @@
             </section>
             
             <!-- Cross-promotion widgets between sections -->
-            {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
-                {% if post.cross_promotion.category_id %}
-                    <div class="cross-promotion-widget category-widget" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                        <p style="margin: 0; color: #1565c0;">
-                            <strong>Category Widget:</strong> Will display category ID {{ post.cross_promotion.category_id }}
-                        </p>
-                        <small style="color: #42a5f5;">Position: After section {{ loop.index }}</small>
-                    </div>
+            {% if post.cross_promotion %}
+                {% if post.cross_promotion.category_position == loop.index %}
+                    {% if post.cross_promotion.category_widget_html %}
+                        {# Display the actual clan.com widget syntax - it won't render in preview but shows what will be published #}
+                        <div class="cross-promotion-widget category-widget" style="background-color: #e8f5e9; border: 2px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 8px; font-family: monospace; font-size: 0.9em;">
+                            <div style="color: #2e7d32; margin-bottom: 5px; font-weight: 600;">Category Widget (clan.com format):</div>
+                            <code style="color: #1b5e20; background-color: #f1f8e9; padding: 10px; display: block; border-radius: 4px; white-space: pre-wrap;">{{ post.cross_promotion.category_widget_html }}</code>
+                            <small style="color: #558b2f; display: block; margin-top: 5px;">Note: This widget will render on clan.com when published</small>
+                        </div>
+                    {% elif post.cross_promotion.category_id %}
+                        <div class="cross-promotion-widget category-widget" style="background-color: #fff3cd; border: 2px dashed #ffc107; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                            <p style="margin: 0; color: #856404;">
+                                <strong>Category Widget Placeholder:</strong> Category ID {{ post.cross_promotion.category_id }} configured, but widget HTML not generated.
+                                <a href="http://localhost:5000/cross-promotion" style="color: #856404; text-decoration: underline;">Configure widget here</a>.
+                            </p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
+                {% if post.cross_promotion.product_position == loop.index %}
+                    {% if post.cross_promotion.product_widget_html %}
+                        {# Display the actual clan.com widget syntax - it won't render in preview but shows what will be published #}
+                        <div class="cross-promotion-widget product-widget" style="background-color: #e8f5e9; border: 2px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 8px; font-family: monospace; font-size: 0.9em;">
+                            <div style="color: #2e7d32; margin-bottom: 5px; font-weight: 600;">Product Widget (clan.com format):</div>
+                            <code style="color: #1b5e20; background-color: #f1f8e9; padding: 10px; display: block; border-radius: 4px; white-space: pre-wrap;">{{ post.cross_promotion.product_widget_html }}</code>
+                            <small style="color: #558b2f; display: block; margin-top: 5px;">Note: This widget will render on clan.com when published</small>
+                        </div>
+                    {% elif post.cross_promotion.product_id %}
+                        <div class="cross-promotion-widget product-widget" style="background-color: #fff3cd; border: 2px dashed #ffc107; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                            <p style="margin: 0; color: #856404;">
+                                <strong>Product Widget Placeholder:</strong> Product ID {{ post.cross_promotion.product_id }} configured, but widget HTML not generated.
+                                <a href="http://localhost:5000/cross-promotion" style="color: #856404; text-decoration: underline;">Configure widget here</a>.
+                            </p>
+                        </div>
+                    {% endif %}
                 {% endif %}
             {% endif %}
             
-            {% if post.cross_promotion and post.cross_promotion.product_position == loop.index %}
-                {% if post.cross_promotion.product_id %}
-                    <div class="cross-promotion-widget product-widget" style="background-color: #f3e5f5; border: 2px solid #9c27b0; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                        <p style="margin: 0; color: #6a1b9a;">
-                            <strong>Product Widget:</strong> Will display product ID {{ post.cross_promotion.product_id }}
-                        </p>
-                        <small style="color: #ab47bc;">Position: After section {{ loop.index }}</small>
-                    </div>
-                {% endif %}
+            <!-- Show placeholder after section 3 if no widgets configured -->
+            {% if loop.index == 3 and (not post.cross_promotion or (not post.cross_promotion.category_position and not post.cross_promotion.product_position)) %}
+                <div class="cross-promotion-widget" style="background-color: #fff3cd; border: 2px dashed #ffc107; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                    <p style="margin: 0; color: #856404;">
+                        <strong>Widget Placeholder:</strong> After section 3. 
+                        <a href="http://localhost:5000/cross-promotion" style="color: #856404; text-decoration: underline;">Configure widgets here</a>.
+                    </p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-size: 0.9em; font-style: italic;">
+                        When configured, a clan.com widget will appear here in the format: <code style="background-color: #fff9c4; padding: 2px 4px; border-radius: 2px;">{% raw %}{{widget type="swcatalog/widget_crossSell_category" category_id="..."}}{% endraw %}</code>
+                    </p>
+                </div>
             {% endif %}
             
             {% endfor %}
             
             <!-- Cross-promotion widgets after the last section -->
             {% if post.cross_promotion %}
-                {% if post.cross_promotion.category_position == sections|length + 1 and post.cross_promotion.category_id %}
-                    <div class="cross-promotion-widget category-widget" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                        <p style="margin: 0; color: #1565c0;">
-                            <strong>Category Widget:</strong> Will display category ID {{ post.cross_promotion.category_id }}
-                        </p>
-                        <small style="color: #42a5f5;">Position: After all sections</small>
-                    </div>
+                {% if post.cross_promotion.category_position == sections|length + 1 %}
+                    {% if post.cross_promotion.category_widget_html %}
+                        {# Display the actual clan.com widget syntax - it won't render in preview but shows what will be published #}
+                        <div class="cross-promotion-widget category-widget" style="background-color: #e8f5e9; border: 2px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 8px; font-family: monospace; font-size: 0.9em;">
+                            <div style="color: #2e7d32; margin-bottom: 5px; font-weight: 600;">Category Widget (clan.com format):</div>
+                            <code style="color: #1b5e20; background-color: #f1f8e9; padding: 10px; display: block; border-radius: 4px; white-space: pre-wrap;">{{ post.cross_promotion.category_widget_html }}</code>
+                            <small style="color: #558b2f; display: block; margin-top: 5px;">Note: This widget will render on clan.com when published</small>
+                        </div>
+                    {% elif post.cross_promotion.category_id %}
+                        <div class="cross-promotion-widget category-widget" style="background-color: #fff3cd; border: 2px dashed #ffc107; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                            <p style="margin: 0; color: #856404;">
+                                <strong>Category Widget Placeholder:</strong> Category ID {{ post.cross_promotion.category_id }} configured, but widget HTML not generated.
+                                <a href="http://localhost:5000/cross-promotion" style="color: #856404; text-decoration: underline;">Configure widget here</a>.
+                            </p>
+                        </div>
+                    {% endif %}
                 {% endif %}
                 
-                {% if post.cross_promotion.product_position == sections|length + 1 and post.cross_promotion.product_id %}
-                    <div class="cross-promotion-widget product-widget" style="background-color: #f3e5f5; border: 2px solid #9c27b0; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                        <p style="margin: 0; color: #6a1b9a;">
-                            <strong>Product Widget:</strong> Will display product ID {{ post.cross_promotion.product_id }}
-                        </p>
-                        <small style="color: #ab47bc;">Position: After all sections</small>
-                    </div>
+                {% if post.cross_promotion.product_position == sections|length + 1 %}
+                    {% if post.cross_promotion.product_widget_html %}
+                        {# Display the actual clan.com widget syntax - it won't render in preview but shows what will be published #}
+                        <div class="cross-promotion-widget product-widget" style="background-color: #e8f5e9; border: 2px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 8px; font-family: monospace; font-size: 0.9em;">
+                            <div style="color: #2e7d32; margin-bottom: 5px; font-weight: 600;">Product Widget (clan.com format):</div>
+                            <code style="color: #1b5e20; background-color: #f1f8e9; padding: 10px; display: block; border-radius: 4px; white-space: pre-wrap;">{{ post.cross_promotion.product_widget_html }}</code>
+                            <small style="color: #558b2f; display: block; margin-top: 5px;">Note: This widget will render on clan.com when published</small>
+                        </div>
+                    {% elif post.cross_promotion.product_id %}
+                        <div class="cross-promotion-widget product-widget" style="background-color: #fff3cd; border: 2px dashed #ffc107; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                            <p style="margin: 0; color: #856404;">
+                                <strong>Product Widget Placeholder:</strong> Product ID {{ post.cross_promotion.product_id }} configured, but widget HTML not generated.
+                                <a href="http://localhost:5000/cross-promotion" style="color: #856404; text-decoration: underline;">Configure widget here</a>.
+                            </p>
+                        </div>
+                    {% endif %}
                 {% endif %}
+            {% endif %}
+            
+            <!-- Show placeholder after final section if no widgets configured -->
+            {% if not post.cross_promotion or (post.cross_promotion.category_position != sections|length + 1 and post.cross_promotion.product_position != sections|length + 1) %}
+                <div class="cross-promotion-widget" style="background-color: #fff3cd; border: 2px dashed #ffc107; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                    <p style="margin: 0; color: #856404;">
+                        <strong>Widget Placeholder:</strong> After final section. 
+                        <a href="http://localhost:5000/cross-promotion" style="color: #856404; text-decoration: underline;">Configure widgets here</a>.
+                    </p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-size: 0.9em; font-style: italic;">
+                        When configured, a clan.com widget will appear here in the format: <code style="background-color: #fff9c4; padding: 2px 4px; border-radius: 2px;">{% raw %}{{widget type="swcatalog/widget_crossSell_product" product_id="..."}}{% endraw %}</code>
+                    </p>
+                </div>
             {% endif %}
         </div>
         {% endif %}
@@ -979,8 +1027,22 @@
                 try {
                     const v = await validate();
                     if (!v.valid) {
-                        const lines = (v.issues||[]).map(i => `- ${i.type}${i.field?': '+i.field:''}${i.message?' - '+i.message:''}`);
-                        if (!confirm(`Validation found issues:\n\n${lines.join('\n')}\n\nProceed anyway?`)) return;
+                        const issues = v.issues || [];
+                        let message = 'Validation found issues:\n\n';
+                        if (issues.length === 0) {
+                            message += 'Unknown validation issues detected.\n';
+                        } else {
+                            const lines = issues.map(i => {
+                                let line = `- ${i.type || 'issue'}`;
+                                if (i.field) line += `: ${i.field}`;
+                                if (i.message) line += ` - ${i.message}`;
+                                if (i.path) line += ` (${i.path})`;
+                                return line;
+                            });
+                            message += lines.join('\n');
+                        }
+                        message += '\n\nProceed anyway?';
+                        if (!confirm(message)) return;
                     }
                     await doPublish();
                 } catch (err) {

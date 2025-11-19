@@ -6,196 +6,21 @@ import logging
 from config.database import db_manager
 import os
 import json
+from blueprints.launchpad.publishing_helpers import (
+    get_post_with_development,
+    find_header_image
+)
 
 bp = Blueprint("publishing", __name__)
 logger = logging.getLogger(__name__)
 
-
-def get_post_with_development(post_id):
-    """Fetch post with development data and include image paths."""
-    with db_manager.get_cursor() as cursor:
-        # Get post data, alias post.id as post_id
-        cursor.execute("""
-            SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
-                   p.clan_post_id, p.clan_uploaded_url,
-                   p.header_image_id, p.header_image_caption, p.header_image_title, p.header_image_width, p.header_image_height,
-                   pd.idea_seed, pd.intro_blurb, pd.main_title,
-                   p.cross_promotion_category_id, p.cross_promotion_category_title,
-                   p.cross_promotion_product_id, p.cross_promotion_product_title,
-                   p.cross_promotion_category_position, p.cross_promotion_product_position,
-                   p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html,
-                   p.meta_title, p.meta_description, p.meta_tags, p.meta_image, p.meta_type, p.meta_site_name
-            FROM post p
-            LEFT JOIN post_development pd ON pd.post_id = p.id
-            WHERE p.id = %s
-        """, (post_id,))
-        
-        post = cursor.fetchone()
-        if not post:
-            return None
-        
-        post_dict = dict(post)
-        
-        # Try to get optimized header via post_images link first
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT i.path, i.alt_text, i.caption, i.filename
-                FROM post_images pi
-                JOIN image i ON pi.image_id = i.id
-                WHERE pi.section_id IS NULL 
-                  AND pi.image_type = 'header_optimized'
-                  AND pi.post_id = %s
-                LIMIT 1
-            """, (post_id,))
-            header_img = cursor.fetchone()
-            
-            if header_img and header_img['path']:
-                # Use optimized header from post_images
-                post_dict['header_image'] = {
-                    'path': header_img['path'],
-                    'id': post_dict.get('header_image_id'),
-                    'caption': header_img['caption'] or post_dict.get('header_image_caption'),
-                    'title': header_img['filename'] or post_dict.get('header_image_title'),
-                    'alt_text': header_img['alt_text'],
-                    'width': post_dict.get('header_image_width'),
-                    'height': post_dict.get('header_image_height')
-                }
-            else:
-                # Fallback to find_header_image() for legacy posts
-                header_image_path = find_header_image(post_id)
-                if header_image_path:
-                    post_dict['header_image'] = {
-                        'path': header_image_path,
-                        'id': post_dict.get('header_image_id'),
-                        'caption': post_dict.get('header_image_caption'),
-                        'title': post_dict.get('header_image_title'),
-                        'width': post_dict.get('header_image_width'),
-                        'height': post_dict.get('header_image_height')
-                    }
-        
-        return post_dict
-
-def get_post_sections_with_images(post_id):
-    """Fetch sections with complete image metadata from post_images linking table (matches preview data)."""
-    with db_manager.get_cursor() as cursor:
-        # Get all sections with images via post_images linking table (same as preview route)
-        cursor.execute("""
-            SELECT 
-                ps.id, ps.post_id, ps.section_order, 
-                ps.section_heading,
-                ps.section_description, ps.ideas_to_include, ps.facts_to_include,
-                ps.draft, ps.polished, ps.highlighting, ps.image_concepts,
-                ps.image_prompts,
-                ps.image_alt_text, ps.image_captions, ps.status,
-                i.id AS image_id,
-                i.filename,
-                i.path AS image_path,
-                i.alt_text AS image_alt_text,
-                i.caption AS image_caption
-            FROM post_section ps
-            LEFT JOIN post_images pi ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
-            LEFT JOIN image i ON pi.image_id = i.id
-            WHERE ps.post_id = %s
-            ORDER BY ps.section_order
-        """, (post_id,))
-        
-        raw_sections = cursor.fetchall()
-        sections = []
-        
-        for section in raw_sections:
-            section_dict = dict(section)
-            
-            # Priority 1: Check Photo-harvesting route (selected_landscape.json)
-            image_path = None
-            caption_text = section_dict.get('image_captions') or ''
-            alt_text = section_dict.get('image_alt_text') or ''
-            
-            try:
-                import os
-                import json
-                photo_json_path = f"static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/selected_landscape.json"
-                if os.path.exists(photo_json_path):
-                    with open(photo_json_path, 'r') as f:
-                        photo_data = json.load(f)
-                        photo = photo_data.get('photo', {})
-                        if photo.get('url'):
-                            # Use hotlinked provider URL (Pexels/Unsplash)
-                            image_path = photo['url']
-                            # Extract caption/alt from photo metadata if not already set
-                            if not caption_text and photo.get('credits'):
-                                caption_text = photo['credits']
-                            if not alt_text and photo.get('photographer'):
-                                alt_text = f"Photo by {photo['photographer']}"
-            except Exception as e:
-                logger.debug(f"Could not load Photo-harvesting JSON for section {section_dict['id']}: {e}")
-            
-            # Priority 2: Database link (post_images)
-            if not image_path:
-                image_path = section_dict.get('image_path')
-            
-            if image_path:
-                # Image exists (Photo-harvesting or post_images linking table)
-                section_dict['image'] = {
-                    'path': image_path,
-                    'caption': caption_text,
-                    'alt_text': alt_text,
-                    'placeholder': False
-                }
-            else:
-                # Priority 3: Fallback: check filesystem for conventional optimized path
-                try:
-                    import os
-                    candidate = f"/static/content/posts/{post_id}/sections/{section_dict['id']}/optimized/{section_dict['id']}.jpg"
-                    filesystem_path = candidate.lstrip('/')
-                    if os.path.exists(filesystem_path):
-                        section_dict['image'] = {
-                            'path': candidate,
-                            'caption': caption_text,
-                            'alt_text': alt_text,
-                            'placeholder': False
-                        }
-                    else:
-                        section_dict['image'] = None
-                except Exception:
-                    section_dict['image'] = None
-            
-            sections.append(section_dict)
-        
-        return sections
-
-def find_header_image(post_id):
-    """Find header image for a post."""
-    import urllib.parse
-    from config.paths import path_resolver
-    
-    image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
-
-    # Priority order: watermarked -> optimized -> raw
-    image_types = ['watermarked', 'optimized', 'raw']
-    
-    for image_type in image_types:
-        header_path = path_resolver.get_header_image_path(post_id, image_type)
-        if os.path.exists(header_path):
-            image_files = [f for f in os.listdir(header_path)
-                          if f.lower().endswith(image_extensions) and not f.startswith('.')]
-            if image_files:
-                image_filename = image_files[0]
-                # URL-encode the filename to handle spaces and special characters
-                encoded_filename = urllib.parse.quote(image_filename)
-                return f"/static/content/posts/{post_id}/header/{image_type}/{encoded_filename}"
-    
-    # Fallback to legacy structure
-    legacy_path = f"/Users/autojenny/Documents/projects/blog/blog-images/static/images/posts/{post_id}/header.jpg"
-    if os.path.exists(legacy_path):
-        return legacy_path
-    
-    return None
 
 @bp.route('/publishing')
 def publishing():
     """Publishing management page."""
     return render_template('launchpad/publishing.html')
 
+@bp.route('/api/publish/<int:post_id>', methods=['POST'])
 def publish_post_to_clan(post_id):
     """Publish a post to clan.com"""
     try:
@@ -204,6 +29,12 @@ def publish_post_to_clan(post_id):
         if not post:
             return jsonify({'success': False, 'error': 'Post not found'}), 404
         
+        # Use SAME function as preview for sections
+        import sys
+        import os
+        blog_launchpad_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'blog-launchpad')
+        sys.path.insert(0, blog_launchpad_path)
+        from publish.post_data_loader import get_post_sections_with_images
         sections = get_post_sections_with_images(post_id)
         
         # Fix field mapping - ensure post has the fields our function expects
@@ -253,17 +84,24 @@ def publish_post_to_clan(post_id):
                 """, (post_id,))
                 header_data = cursor.fetchone()
                 
-            # Add header image if exists (optional)
-            header_image_path = find_header_image(post_id)
-            if header_image_path:
-                post['header_image'] = {
-                    'path': header_image_path,
-                    'alt_text': f"Header image for {post.get('title', 'this post')}",
-                    'caption': header_data['header_image_caption'] if header_data else None,
-                    'title': header_data['header_image_title'] if header_data else None,
-                    'width': header_data['header_image_width'] if header_data else None,
-                    'height': header_data['header_image_height'] if header_data else None
-                }
+            # Add header image if exists (optional) - use SAME function as preview
+            import sys
+            import os
+            blog_launchpad_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'blog-launchpad')
+            sys.path.insert(0, blog_launchpad_path)
+            from publish.header_image_finder import get_header_image
+            header_image = get_header_image(post_id)
+            if header_image:
+                post['header_image'] = header_image
+                # Add metadata from post table if not already set
+                if not post['header_image'].get('caption') and header_data and header_data.get('header_image_caption'):
+                    post['header_image']['caption'] = header_data['header_image_caption']
+                if not post['header_image'].get('title') and header_data and header_data.get('header_image_title'):
+                    post['header_image']['title'] = header_data['header_image_title']
+                if not post['header_image'].get('width') and header_data and header_data.get('header_image_width'):
+                    post['header_image']['width'] = header_data['header_image_width']
+                if not post['header_image'].get('height') and header_data and header_data.get('header_image_height'):
+                    post['header_image']['height'] = header_data['header_image_height']
                 
             # Map cross-promotion regardless of header image
                 post['cross_promotion'] = {
@@ -431,6 +269,7 @@ def publish_post_to_clan(post_id):
         
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@bp.route('/clan-api-data/<int:post_id>')
 def clan_api_data(post_id):
     """View the actual API request data that was/will be sent to Clan.com."""
     try:
@@ -439,6 +278,12 @@ def clan_api_data(post_id):
         if not post:
             return jsonify({'error': 'Post not found'}), 404
         
+        # Use SAME function as preview for sections
+        import sys
+        import os
+        blog_launchpad_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'blog-launchpad')
+        sys.path.insert(0, blog_launchpad_path)
+        from publish.post_data_loader import get_post_sections_with_images
         sections = get_post_sections_with_images(post_id)
         
         # Fix field mapping - ensure post has the fields our function expects
@@ -536,6 +381,7 @@ def clan_api_data(post_id):
         logger.error(f"Error in clan_api_data for post {post_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/clan-post-html/<int:post_id>')
 def clan_post_html(post_id):
     """View the clan_post HTML that will be uploaded to Clan.com."""
     try:
@@ -547,6 +393,12 @@ def clan_post_html(post_id):
         if not post:
             return "Post not found", 404
         
+        # Use SAME function as preview for sections
+        import sys
+        import os
+        blog_launchpad_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'blog-launchpad')
+        sys.path.insert(0, blog_launchpad_path)
+        from publish.post_data_loader import get_post_sections_with_images
         sections = get_post_sections_with_images(post_id)
         
         # Find header image
@@ -619,211 +471,8 @@ def clan_post_html(post_id):
                 # Set content type to text/plain so browser shows source code
                 return upload_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
             else:
-                # Fallback to raw template if preview HTML fails
-                raw_html = render_template('launchpad/clan_post_raw.html', post=post, sections=sections)
-                return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+                return "Error: Failed to generate upload HTML", 500
                 
     except Exception as e:
         logger.error(f"Error in clan_post_html for post {post_id}: {e}")
         return f"Error: {str(e)}", 500
-
-def validate_publish_data(post_id):
-    """Validate publish data consistency and completeness."""
-    try:
-        # Get post and sections
-        post = get_post_with_development(post_id)
-        if not post:
-            return jsonify({'error': 'Post not found', 'valid': False}), 404
-        
-        sections = get_post_sections_with_images(post_id)
-        
-        # Check for required data
-        issues = []
-        
-        # Check required fields
-        required_fields = ['title', 'meta_title', 'meta_description', 'meta_tags']
-        for field in required_fields:
-            if not post.get(field):
-                issues.append({
-                    'type': 'missing_field',
-                    'field': field
-                })
-        
-        # Check taxonomy fields (required for publishing)
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT theme_id, content_type_id, format_id
-                FROM post
-                WHERE id = %s
-            """, (post_id,))
-            taxonomy_check = cursor.fetchone()
-            
-            if not taxonomy_check or not taxonomy_check.get('theme_id'):
-                issues.append({
-                    'type': 'missing_taxonomy',
-                    'field': 'theme_id',
-                    'message': 'Post must have a theme assigned. Please assign taxonomy in Planning stage.'
-                })
-            if not taxonomy_check or not taxonomy_check.get('content_type_id'):
-                issues.append({
-                    'type': 'missing_taxonomy',
-                    'field': 'content_type_id',
-                    'message': 'Post must have a content type assigned. Please assign taxonomy in Planning stage.'
-                })
-            if not taxonomy_check or not taxonomy_check.get('format_id'):
-                issues.append({
-                    'type': 'missing_taxonomy',
-                    'field': 'format_id',
-                    'message': 'Post must have a format assigned. Please assign taxonomy in Planning stage.'
-                })
-        
-        # Check meta_image points to optimized path
-        meta_image = post.get('meta_image', '')
-        if meta_image and '/raw/' in meta_image:
-            issues.append({
-                'type': 'raw_image_path',
-                'field': 'meta_image',
-                'path': meta_image
-            })
-        elif meta_image and '.png' in meta_image and '/optimized/' in meta_image:
-            issues.append({
-                'type': 'png_in_optimized',
-                'field': 'meta_image',
-                'path': meta_image
-            })
-        
-        # Check for sections with content
-        if not sections or len(sections) == 0:
-            issues.append({
-                'type': 'no_sections',
-                'message': 'Post has no sections'
-            })
-        
-        # Check images use optimized paths
-        for section in sections:
-            img = section.get('image')
-            if img and img.get('path'):
-                path = img['path']
-                if '/raw/' in path or path.endswith('.png'):
-                    issues.append({
-                        'type': 'raw_section_image',
-                        'section_id': section['id'],
-                        'section_heading': section.get('section_heading'),
-                        'path': path
-                    })
-        
-        # Ensure cross-promotion data is attached (and auto-select if desired fields are missing)
-        try:
-            # Load existing cross-promo fields from DB
-            with db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    SELECT cross_promotion_category_id, cross_promotion_category_title,
-                           cross_promotion_product_id, cross_promotion_product_title,
-                           cross_promotion_category_position, cross_promotion_product_position,
-                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
-                    FROM post WHERE id = %s
-                """, (post_id,))
-                cp = cursor.fetchone() or {}
-
-                # Attach to post for validation context
-                post['cross_promotion'] = {
-                    'category_id': cp.get('cross_promotion_category_id'),
-                    'category_title': cp.get('cross_promotion_category_title'),
-                    'product_id': cp.get('cross_promotion_product_id'),
-                    'product_title': cp.get('cross_promotion_product_title'),
-                    'category_position': cp.get('cross_promotion_category_position'),
-                    'product_position': cp.get('cross_promotion_product_position'),
-                    'category_widget_html': cp.get('cross_promotion_category_widget_html'),
-                    'product_widget_html': cp.get('cross_promotion_product_widget_html')
-                }
-
-                # If nothing configured, opportunistically auto-select to avoid blocking publish
-                need_persist = False
-                if not post['cross_promotion'].get('category_id'):
-                    cursor.execute("SELECT id, name FROM clan_categories ORDER BY RANDOM() LIMIT 1")
-                    cat = cursor.fetchone()
-                    if cat:
-                        post['cross_promotion']['category_id'] = cat['id']
-                        post['cross_promotion']['category_title'] = cat.get('name') or 'Related Department'
-                        post['cross_promotion']['category_position'] = post['cross_promotion']['category_position'] or 2
-                        need_persist = True
-                if not post['cross_promotion'].get('product_id'):
-                    cursor.execute("SELECT id, name FROM clan_products ORDER BY RANDOM() LIMIT 1")
-                    prod = cursor.fetchone()
-                    if prod:
-                        post['cross_promotion']['product_id'] = prod['id']
-                        post['cross_promotion']['product_title'] = prod.get('name') or 'Related Products'
-                        post['cross_promotion']['product_position'] = post['cross_promotion']['product_position'] or 4
-                        need_persist = True
-                if need_persist:
-                    cursor.execute("""
-                        UPDATE post SET
-                            cross_promotion_category_id = %s,
-                            cross_promotion_category_title = %s,
-                            cross_promotion_product_id = %s,
-                            cross_promotion_product_title = %s,
-                            cross_promotion_category_position = COALESCE(cross_promotion_category_position, %s),
-                            cross_promotion_product_position = COALESCE(cross_promotion_product_position, %s),
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                    """, (
-                        post['cross_promotion'].get('category_id'),
-                        post['cross_promotion'].get('category_title'),
-                        post['cross_promotion'].get('product_id'),
-                        post['cross_promotion'].get('product_title'),
-                        post['cross_promotion'].get('category_position') or 2,
-                        post['cross_promotion'].get('product_position') or 4,
-                        post_id
-                    ))
-                    cursor.connection.commit()
-
-                # Ensure widget HTML exists for preview/publish consistency
-                widget_changed = False
-                if post['cross_promotion'].get('category_id') and post['cross_promotion'].get('category_position') and not post['cross_promotion'].get('category_widget_html'):
-                    post['cross_promotion']['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{post['cross_promotion'].get('category_id')}\" title=\"{post['cross_promotion'].get('category_title') or 'Related Department'}\"}}}}"
-                    widget_changed = True
-                if post['cross_promotion'].get('product_id') and post['cross_promotion'].get('product_position') and not post['cross_promotion'].get('product_widget_html'):
-                    post['cross_promotion']['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{post['cross_promotion'].get('product_id')}\" title=\"{post['cross_promotion'].get('product_title') or 'Related Products'}\"}}}}"
-                    widget_changed = True
-                if widget_changed:
-                    with db_manager.get_cursor() as c2:
-                        c2.execute("""
-                            UPDATE post SET
-                                cross_promotion_category_widget_html = %s,
-                                cross_promotion_product_widget_html = %s,
-                                updated_at = CURRENT_TIMESTAMP
-                            WHERE id = %s
-                        """, (
-                            post['cross_promotion'].get('category_widget_html'),
-                            post['cross_promotion'].get('product_widget_html'),
-                            post_id
-                        ))
-                        c2.connection.commit()
-        except Exception as e:
-            logger.warning(f"Validation cross-promotion attach/auto-select error: {e}")
-
-        # After attachment/generation, only warn if DB claims configured but we truly have no usable data
-        cp = post.get('cross_promotion') or {}
-        if (
-            (post.get('cross_promotion_category_id') or post.get('cross_promotion_product_id'))
-            and not (cp.get('category_widget_html') or cp.get('product_widget_html'))
-        ):
-            issues.append({
-                'type': 'cross_promotion_missing',
-                'message': 'Cross-promotion configured but no widget HTML available'
-            })
-        
-        valid = len(issues) == 0
-        
-        return jsonify({
-            'valid': valid,
-            'issues': issues,
-            'section_count': len(sections),
-            'has_all_meta_fields': all(post.get(f) for f in required_fields),
-            'meta_image_is_optimized': meta_image and '/optimized/' in meta_image and meta_image.endswith('.jpg'),
-            'message': 'Ready to publish' if valid else f'Found {len(issues)} issues that need attention'
-        })
-        
-    except Exception as e:
-        logger.error(f"Error validating publish data for post {post_id}: {e}")
-        return jsonify({'error': str(e), 'valid': False}), 500

@@ -52,11 +52,11 @@ def get_post_with_development(post_id):
         if not post:
             return None
             
-        # Get header image - use post_images -> images table (plural) - foreign keys point to image_archive but data is in images
+        # Get header image - use post_images -> image_archive table (foreign key points here)
         cur.execute("""
-            SELECT i.file_path as path, i.filename, i.alt_text, i.caption, i.width, i.height, pi.image_type
+            SELECT ia.path as path, ia.filename, ia.alt_text, ia.caption, pi.image_type
             FROM post_images pi
-            JOIN images i ON pi.image_id = i.id
+            JOIN image_archive ia ON pi.image_id = ia.id
             WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
             ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
                           WHEN pi.image_type = 'header_watermarked' THEN 2
@@ -77,26 +77,9 @@ def get_post_with_development(post_id):
                 'alt_text': img_row.get('alt_text'),
                 'title': img_row.get('filename'),
                 'caption': img_row.get('caption'),
-                'width': img_row.get('width'),
-                'height': img_row.get('height')
+                'width': None,
+                'height': None
             }
-        
-        # Final fallback to legacy post.header_image_id -> images table (if no post_images record)
-        if not post.get('header_image') and post.get('header_image_id'):
-            # Fallback to legacy images table (should not be needed, but handle gracefully)
-            cur.execute("""
-                SELECT id, filename, file_path as path, alt_text, caption FROM images WHERE id = %s
-            """, (post['header_image_id'],))
-            header_image = cur.fetchone()
-            if header_image:
-                header_img_dict = dict(header_image)
-                # Normalize path to always use /static/ format
-                if header_img_dict.get('path'):
-                    path = header_img_dict['path']
-                    if not path.startswith('/static/'):
-                        path = '/static/' + path.lstrip('/')
-                    header_img_dict['path'] = path
-                    post['header_image'] = header_img_dict
         
         post_dict = dict(post)
         # Always use post_id for the edit link
@@ -156,17 +139,24 @@ def get_post_sections_with_images(post_id):
                     logger.warning(f"Section {section['id']} contains raw JSON in polished/draft - this should not happen!")
                     section_dict['polished'] = '<p><em>No content available for this section.</em></p>'
                 else:
-                    # For recipe sections, ALWAYS strip H2 headings to prevent duplicates
-                    # The template will also skip adding H2 from section_heading for recipe sections
-                    is_recipe_section = section.get('section_type') and section['section_type'].startswith('recipe_')
+                    # ALWAYS strip H2 headings from content to prevent duplicates
+                    # The template adds H2 from section_heading, so content should not have its own H2
+                    original_polished = polished
+                    polished = re.sub(r'<h2[^>]*>.*?</h2>', '', polished, flags=re.IGNORECASE | re.DOTALL)
                     
-                    if is_recipe_section:
-                        original_polished = polished
-                        polished = re.sub(r'<h2[^>]*>.*?</h2>', '', polished, flags=re.IGNORECASE | re.DOTALL)
-                        if original_polished != polished:
-                            logger.info(f"✅ Stripped H2 from recipe section {section['id']} ({section.get('section_type')}) - removed {len(original_polished) - len(polished)} chars")
-                        else:
-                            logger.debug(f"No H2 found in recipe section {section['id']} ({section.get('section_type')})")
+                    # Also strip paragraphs that exactly match the section heading (common duplicate issue)
+                    section_heading = section.get('section_heading', '').strip()
+                    if section_heading:
+                        # Remove quotes from heading for comparison
+                        heading_clean = section_heading.replace('"', '').replace("'", '').strip()
+                        # Escape special regex characters in heading
+                        heading_escaped = re.escape(heading_clean)
+                        # Match paragraph containing just the heading (with optional whitespace)
+                        paragraph_pattern = rf'<p[^>]*>\s*{heading_escaped}\s*</p>'
+                        polished = re.sub(paragraph_pattern, '', polished, flags=re.IGNORECASE | re.DOTALL)
+                    
+                    if original_polished != polished:
+                        logger.info(f"✅ Stripped H2/duplicate heading from section {section['id']} ({section.get('section_heading', 'no heading')}) - removed {len(original_polished) - len(polished)} chars")
                     section_dict['polished'] = polished
             else:
                 section_dict['polished'] = '<p><em>No content available for this section.</em></p>'
@@ -185,10 +175,11 @@ def get_post_sections_with_images(post_id):
             
             import os
             # Priority 1: Check post_images table (optimized images)
+            # Foreign key points to image_archive table
             cur.execute("""
-                SELECT i.file_path as path, i.filename, i.alt_text, i.caption
+                SELECT ia.path, ia.filename, ia.alt_text, ia.caption
                 FROM post_images pi
-                JOIN images i ON pi.image_id = i.id
+                JOIN image_archive ia ON pi.image_id = ia.id
                 WHERE pi.section_id = %s AND pi.image_type = 'section_optimized'
                 LIMIT 1
             """, (section['id'],))
@@ -201,29 +192,6 @@ def get_post_sections_with_images(post_id):
                     alt_text = db_image['alt_text']
                 logger.info(f"Using optimized image from database for section {section['id']}: {image_path}")
             
-            # Priority 2: Fallback to filesystem for optimized images (if not in database yet)
-            if not image_path:
-                possible_bases = [
-                    os.getcwd(),  # Current working directory
-                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),  # Blog directory
-                ]
-                
-                try:
-                    from flask import current_app
-                    if current_app and hasattr(current_app, 'root_path'):
-                        possible_bases.insert(0, current_app.root_path)
-                except:
-                    pass
-                
-                optimized_candidate = f"/static/content/posts/{post_id}/sections/{section['id']}/optimized/{section['id']}.jpg"
-                optimized_filesystem = optimized_candidate.lstrip('/')
-                
-                for base in possible_bases:
-                    test_path = os.path.join(base, optimized_filesystem)
-                    if os.path.exists(test_path):
-                        image_path = optimized_candidate
-                        logger.info(f"Using optimized image from filesystem for section {section['id']}: {image_path}")
-                        break
             
             if image_path:
                 # Found image in post_images table
@@ -341,8 +309,8 @@ def prepare_post_data(post_id):
     # Load cross-promotion data using shared function
     from .cross_promotion_loader import load_cross_promotion_data
     cross_promotion = load_cross_promotion_data(post_id)
-    if cross_promotion:
-        post['cross_promotion'] = cross_promotion
+    # Always set cross_promotion, even if None, so template can check it
+    post['cross_promotion'] = cross_promotion
     
     logger.info(f"✅ Prepared post data for post {post_id}")
     return post, sections
