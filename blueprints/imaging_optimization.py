@@ -151,10 +151,10 @@ def optimize_image_with_watermark(post_id, section_id, params=None):
         
         # Determine paths for landscape and portrait
         if section_id == 'header':
-            landscape_raw = f"static/content/posts/{post_id}/header/raw/header.png"
+            landscape_raw = f"static/content/posts/{post_id}/header/landscape/raw/header.png"
             landscape_optimized = f"static/content/posts/{post_id}/header/optimized/header.jpg"
             portrait_raw = f"static/content/posts/{post_id}/header/portrait/raw/header_portrait.png"
-            portrait_optimized = f"static/content/posts/{post_id}/header/portrait/header_portrait.jpg"
+            portrait_optimized = f"static/content/posts/{post_id}/header/portrait/optimized/header_portrait.jpg"
         else:
             landscape_raw = f"static/content/posts/{post_id}/sections/{section_id}/landscape/raw/{section_id}.png"
             landscape_optimized = f"static/content/posts/{post_id}/sections/{section_id}/optimized/{section_id}.jpg"

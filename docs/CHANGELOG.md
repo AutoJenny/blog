@@ -1,5 +1,26 @@
 # Changelog
 
+## 2025-11-19 - Newsletter Preview Redesign with Cream Panels & Dark Brown Text
+
+### Changed
+- **Newsletter Preview Styling**: Complete redesign of preview appearance
+  - Changed all panel backgrounds from off-white to very light cream (#fef9e7)
+  - Updated all text colors from black/gray to very dark brown (#3d2817)
+  - Changed borders from light gray to light brown (#e8dcc0)
+  - Removed white container background - panels now show individually against dark tiled background
+  - All panels have rounded corners (border-radius:8px) for email compatibility
+  - Links now use brown color scheme (#6b4e3d) instead of blue
+  - Consistent spacing and padding across all panels
+
+### Fixed
+- **Tile Background Loading**: Fixed path resolution for base64 tile data
+- **Panel Structure**: Each section (header, blocks, footer) now has its own panel with rounded corners
+
+### Updated Files
+- All newsletter block partials (intro, snapshot, feature, products, spotlight, category, evergreen, closing)
+- Main render template (removed white container, updated colors)
+- Header and footer panels (matching cream/brown scheme)
+
 ## 2025-11-02 - Newsletter Intro Components Enhanced with LLM & Intelligent Compilation
 
 ### Enhanced
