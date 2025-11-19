@@ -1,6 +1,6 @@
 # Newsletter Block Editors
 
-This document describes the block editor system for managing newsletter content with automated suggestions and human override capabilities.
+This document provides an overview of the block editor system. For detailed documentation on each block type, see the individual block documentation files.
 
 ## Overview
 
@@ -37,82 +37,21 @@ Block editors provide a unified interface for:
   - Move up/down, delete controls
   - Type-specific editor inclusion
 
-- **`block_editor_intro.html`**: Intro block editor
-  - 3 suggestions list (weather/event/community)
-  - Current content preview
-  - Manual override textarea
-  - Preview toggle
-
-- **`block_editor_snapshot.html`**: Snapshot block editor
-  - Single-item focused suggestions
-  - Similar interface to intro but simpler
-
+- **`block_editor_intro.html`**: Intro block editor (see [Intro Block](blocks/intro.md))
+- **`block_editor_snapshot.html`**: Snapshot block editor (see [Snapshot Block](blocks/snapshot.md))
 - **`block_editor_universal.html`**: Universal editor for other block types
-  - JSON payload display
-  - Basic suggestion support
-  - JSON override editor
 
 ## Block Types
 
-### Intro Block
+Each block type has its own detailed documentation:
 
-**Purpose**: Welcome message with topical content from Scotland
-
-**Data Sources**:
-- Weather items (Met Office, BBC Scotland)
-- Event items (HES, Museums, Galleries)
-- Community items (Reddit discussions)
-
-**Payload Structure**:
-```json
-{
-  "text": "Generated 2-3 sentence intro text...",
-  "suggestions": [
-    {
-      "id": 123,
-      "source_name": "Met Office",
-      "title": "Weather warning...",
-      "url": "...",
-      "category": "weather",
-      "combined_score": 18.5
-    }
-  ],
-  "selected": {...},
-  "items_by_category": {
-    "weather": {...},
-    "event": {...},
-    "community": {...}
-  }
-}
-```
-
-**Text Generation**: Uses `rendering/intro_text.py` to combine items with attribution.
-
-### Snapshot Block
-
-**Purpose**: Single cultural highlight from external sources
-
-**Data Sources**: Same as intro, but selects single best item
-
-**Payload Structure**:
-{
-  "title": "Item title",
-  "publisher": "Source name",
-  "url": "...",
-  "comment": "Generated snapshot text with attribution",
-  "suggestions": [...],
-  "selected_id": 123
-}
-```
-
-**Text Generation**: Uses `rendering/snapshot_text.py` for concise attribution.
-
-### Other Block Types
-
-Feature, Products, Category, Evergreen blocks use existing selectors but now:
-- Store suggestions in payload (if available)
-- Support suggestion API endpoints
-- Can use universal editor UI
+- **[Intro Block](blocks/intro.md)** - Welcome message with aggregated weather/event/community content
+- **[Snapshot Block](blocks/snapshot.md)** - Single cultural highlight from external sources
+- **[Feature Block](blocks/feature.md)** - Latest published blog post
+- **[Products Blocks](blocks/products.md)** - New products and spotlight product
+- **[Category Block](blocks/category.md)** - Rotating category features
+- **[Evergreen Block](blocks/evergreen.md)** - Reusable content snippets
+- **[Closing Block](blocks/closing.md)** - Newsletter sign-off
 
 ## Suggestion Flow
 
@@ -138,7 +77,7 @@ Editor can:
 
 ## API Endpoints
 
-All endpoints are JSON-based:
+All endpoints are JSON-based and shared across all block types:
 
 ### Get Suggestions
 ```
@@ -179,7 +118,7 @@ Returns rendered HTML for the block (currently returns payload, full HTML render
 
 ## QA Integration
 
-The QA service (`qa_service.py`) now checks:
+The QA service (`qa_service.py`) checks:
 - **Link validation**: All URLs in suggestions are validated
 - **Content safety**: Safety rules applied to suggestions and selected items
 - **Image checks**: Image URLs validated (for feature/spotlight blocks)
@@ -195,7 +134,11 @@ blog-core/newsletter/
 │   └── scoring.py                   # Scoring rules
 ├── selectors/
 │   ├── intro.py                     # Intro selector
-│   └── snapshot.py                  # Snapshot selector
+│   ├── snapshot.py                  # Snapshot selector
+│   ├── blog_feature.py              # Feature selector
+│   ├── products.py                  # Products selectors
+│   ├── category.py                  # Category selector
+│   └── evergreen.py                 # Evergreen selector
 ├── rendering/
 │   ├── intro_text.py                # Intro text generation
 │   └── snapshot_text.py             # Snapshot text generation

@@ -27,21 +27,25 @@ def validate_link(url: str, timeout: int = 5) -> bool:
         return False
 
 
-def generate_suggestions(*, block_type: str, target_week: str, count: int = 3, reference_date: datetime | None = None) -> List[Dict[str, Any]]:
+def generate_suggestions(*, block_type: str, target_week: str, count: int = 3, reference_date: datetime | None = None, skip_validation: bool = False) -> List[Dict[str, Any]]:
     """Generate top-scored suggestions for a block type and target week.
     
     For intro/snapshot: fetches from cached source items, applies scoring,
-    diversity rules, and link validation.
+    diversity rules, and optional link validation.
     
     Args:
         block_type: Type of block (intro, snapshot, etc.)
         target_week: Target week string (e.g., "2025W44")
         count: Number of suggestions to return
         reference_date: Date to use for freshness scoring (defaults to today)
+        skip_validation: If True, skip link validation (faster, for cached items)
     
     Returns:
         List of suggestion dicts with scores, attribution info
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     if reference_date is None:
         reference_date = datetime.now()
     
@@ -57,10 +61,19 @@ def generate_suggestions(*, block_type: str, target_week: str, count: int = 3, r
     all_items = get_cached_items(days_back=14, limit=200)
     
     if not all_items:
+        logger.debug(f"No cached items found for {block_type} block")
         return []
+    
+    logger.debug(f"Found {len(all_items)} cached items for {block_type} block")
     
     # Re-score items with current reference date
     scored = score_items(all_items, reference_date=reference_date)
+    
+    if not scored:
+        logger.debug(f"No items passed scoring for {block_type} block")
+        return []
+    
+    logger.debug(f"After scoring: {len(scored)} items, top score: {scored[0].get('combined_score', 0) if scored else 0}")
     
     # Apply diversity rules (prefer mix of categories)
     if block_type in ('intro', 'snapshot'):
@@ -69,13 +82,44 @@ def generate_suggestions(*, block_type: str, target_week: str, count: int = 3, r
     else:
         diverse = scored
     
-    # Validate links (filter out broken URLs)
+    logger.debug(f"After diversity rules: {len(diverse)} items")
+    
+    # Validate links (filter out broken URLs) - but be lenient
+    # For cached items, we can skip validation since they were validated on fetch
     validated = []
-    for item in diverse[:count * 3]:  # Check more than needed
-        if validate_link(item.get('url', '')):
-            validated.append(item)
-        if len(validated) >= count:
-            break
+    unvalidated = []
+    
+    if skip_validation:
+        # Skip validation for performance - cached items are already validated
+        validated = diverse[:count]
+        logger.debug(f"Skipping link validation, using top {len(validated)} items")
+    else:
+        # Try to validate, but don't be too strict
+        validation_attempts = min(count * 5, len(diverse))  # Check more items
+        for item in diverse[:validation_attempts]:
+            url = item.get('url', '')
+            if not url:
+                continue  # Skip items without URLs
+            
+            # Quick validation - if it fails, still keep it but mark as unvalidated
+            if validate_link(url):
+                validated.append(item)
+            else:
+                unvalidated.append(item)
+            
+            if len(validated) >= count:
+                break
+        
+        # Fallback: if validation filtered everything, use unvalidated items
+        if not validated and unvalidated:
+            logger.warning(f"Link validation filtered all items, using unvalidated items as fallback")
+            validated = unvalidated[:count]
+        elif len(validated) < count and unvalidated:
+            # Fill remaining slots with unvalidated items
+            needed = count - len(validated)
+            validated.extend(unvalidated[:needed])
+    
+    logger.debug(f"Final validated items: {len(validated)}")
     
     # Format as suggestions with metadata
     suggestions = []

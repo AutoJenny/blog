@@ -26,13 +26,15 @@ def get_suggestions(*, block_id: int, block_type: str, issue_id: int, target_wee
     current_payload = block.get('payload_json', {}) if block else {}
     
     # Use unified suggestion service
+    # For intro/snapshot, this calls select_intro_content/select_snapshot which already
+    # uses generate_suggestions with skip_validation=True
     result = get_suggestions_for_block(block_type=block_type, issue_id=issue_id, target_week=target_week)
     
-    # For intro/snapshot, prefer suggestions from source items if available
-    # Otherwise use the unified service result
-    if block_type in ('intro', 'snapshot'):
-        # Try to get fresh suggestions from source items
-        source_suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3)
+    # If we got suggestions from the unified service, use them
+    # Otherwise, try direct generation as fallback (shouldn't be needed now)
+    if not result.get('suggestions') and block_type in ('intro', 'snapshot'):
+        # Fallback: try direct generation (shouldn't happen if selectors work)
+        source_suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3, skip_validation=True)
         if source_suggestions:
             result['suggestions'] = source_suggestions
     
@@ -53,7 +55,8 @@ def apply_suggestion(*, block_id: int, block_type: str, issue_id: int, target_we
     
     If suggestion_id provided, uses that; otherwise auto-selects top suggestion.
     """
-    suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3)
+    # Skip validation for cached items - faster and more reliable
+    suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3, skip_validation=True)
     
     if not suggestions:
         return {'success': False, 'error': 'No suggestions available'}

@@ -52,10 +52,10 @@
       <div class="mt-4">
     {% if block.type == 'intro' %}
       {% set b = block %}
-      {% include 'newsletter/partials/block_editor_intro.html' %}
+      {% include 'newsletter/partials/block_editor_intro.html' with context %}
     {% elif block.type == 'snapshot' %}
       {% set b = block %}
-      {% include 'newsletter/partials/block_editor_snapshot.html' %}
+      {% include 'newsletter/partials/block_editor_snapshot.html' with context %}
     {% else %}
       {# Fallback: JSON editor for other block types #}
       <details style="margin-top: 12px;">

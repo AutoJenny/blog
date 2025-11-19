@@ -178,11 +178,15 @@ Schedule via cron:
 
 ## Block Editors
 
-Block editors provide suggestion-based content selection with human override. See [Block Editors Documentation](block-editors.md) for detailed information.
+Block editors provide suggestion-based content selection with human override. See [Block Editors Documentation](block-editors.md) for overview and individual block documentation:
 
-- **Intro Block**: Aggregates weather/event/community suggestions, generates 2-3 sentence text
-- **Snapshot Block**: Single-item focus from source suggestions
-- **Other Blocks**: Feature, Products, Category, Evergreen use existing selectors with suggestion storage
+- **[Intro Block](newsletter/blocks/intro.md)**: Aggregates weather/event/community suggestions, generates 2-3 sentence text
+- **[Snapshot Block](newsletter/blocks/snapshot.md)**: Single-item focus from source suggestions
+- **[Feature Block](newsletter/blocks/feature.md)**: Latest published blog post
+- **[Products Blocks](newsletter/blocks/products.md)**: New products and spotlight product
+- **[Category Block](newsletter/blocks/category.md)**: Rotating category features
+- **[Evergreen Block](newsletter/blocks/evergreen.md)**: Reusable content snippets
+- **[Closing Block](newsletter/blocks/closing.md)**: Newsletter sign-off
 
 All blocks support:
 - Auto-select toggle (enabled by default)
