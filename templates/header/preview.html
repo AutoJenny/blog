@@ -234,7 +234,7 @@
             <section class="blog-section{% if section.section_type and section.section_type.startswith('recipe_') %} recipe-section recipe-{{ section.section_type }}{% endif %}" id="section-{{ section.id }}">
                 {# Always add H2 from section_heading if it exists - this is the single source of truth #}
                 {% if section.section_heading %}
-                    <h2>{{ section.section_heading }}</h2>
+                    <h2>{{ section.section_heading|replace('"', '')|replace("'", '')|trim }}</h2>
                 {% endif %}
                 <div class="section-text">
                     {% if section.content %}

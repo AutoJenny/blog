@@ -139,7 +139,7 @@
             
             {% for section in sections %}
             <section>
-                <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                <h2>{{ (section.section_heading or 'Untitled Section')|replace('"', '')|replace("'", '')|trim }}</h2>
                 <div>
                     {% if section.polished %}
                         {{ section.polished|safe }}

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def preview_post(post_id):
     """
     Preview a specific post.
-    Renders HTML and caches it so publishing can use the EXACT SAME HTML.
+    Renders HTML fresh each time (no caching).
     """
     import os
     import hashlib
@@ -27,14 +27,7 @@ def preview_post(post_id):
     # Render HTML using unified rendering function (no image replacements for preview)
     html_content = render_post_html(post, sections, image_replacements=None)
     
-    # CRITICAL: Cache the rendered HTML so publishing uses EXACT SAME HTML
-    # This ensures preview and published HTML are identical (except image URLs)
-    cache_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cache', 'preview_html')
-    os.makedirs(cache_dir, exist_ok=True)
-    cache_file = os.path.join(cache_dir, f'post_{post_id}.html')
-    with open(cache_file, 'w', encoding='utf-8') as f:
-        f.write(html_content)
-    logger.info(f"✅ Cached preview HTML to {cache_file} ({len(html_content)} chars)")
+    # NO CACHING - always generate fresh HTML
     
     # Wrap in preview template (for CSS/styling only)
     # The content comes from the unified renderer, ensuring preview matches published version

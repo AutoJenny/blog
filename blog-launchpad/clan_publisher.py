@@ -1107,50 +1107,23 @@ class ClanPublisher:
             except Exception as e:
                 logger.warning(f"Cross-promotion auto-selection/generation error: {e}")
             
-            # Step 3: Get HTML content from cached preview (NO database queries, NO re-rendering)
-            logger.info("Step 3: Loading cached preview HTML...")
+            # Step 3: Generate HTML content fresh (NO CACHE - always regenerate)
+            logger.info("Step 3: Generating HTML content fresh (no cache)...")
             try:
-                import os
-                # Load the EXACT HTML that was rendered for preview (cached by preview route)
-                cache_dir = os.path.join(os.path.dirname(__file__), '..', 'cache', 'preview_html')
-                cache_file = os.path.join(cache_dir, f'post_{post["id"]}.html')
+                from publish.post_data_loader import prepare_post_data
+                from publish.post_renderer import render_post_html
                 
-                # Auto-generate cache if it doesn't exist (no user visit required)
-                if not os.path.exists(cache_file):
-                    logger.info(f"Cache file not found, auto-generating preview HTML for post {post['id']}...")
-                    try:
-                        from publish.post_data_loader import prepare_post_data
-                        from publish.post_renderer import render_post_html
-                        
-                        # Use unified data preparation (same as preview route)
-                        unified_post, unified_sections = prepare_post_data(post["id"])
-                        if not unified_post or not unified_sections:
-                            return {
-                                'success': False,
-                                'error': f'Failed to prepare post data for preview generation'
-                            }
-                        
-                        # Render HTML using unified rendering function (no image replacements for preview)
-                        html_content = render_post_html(unified_post, unified_sections, image_replacements=None)
-                        
-                        # Cache the rendered HTML
-                        os.makedirs(cache_dir, exist_ok=True)
-                        with open(cache_file, 'w', encoding='utf-8') as f:
-                            f.write(html_content)
-                        logger.info(f"✅ Auto-generated and cached preview HTML to {cache_file} ({len(html_content)} chars)")
-                    except Exception as e:
-                        logger.error(f"Failed to auto-generate preview HTML: {e}")
-                        import traceback
-                        logger.error(f"Traceback: {traceback.format_exc()}")
-                        return {
-                            'success': False,
-                            'error': f'Failed to generate preview HTML: {str(e)}'
-                        }
-                else:
-                    # Load the EXACT HTML that was rendered for preview (NO database queries, NO re-rendering)
-                    with open(cache_file, 'r', encoding='utf-8') as f:
-                        html_content = f.read()
-                    logger.info(f"✅ Loaded cached preview HTML from {cache_file} ({len(html_content)} chars)")
+                # Use unified data preparation (same as preview route)
+                unified_post, unified_sections = prepare_post_data(post["id"])
+                if not unified_post or not unified_sections:
+                    return {
+                        'success': False,
+                        'error': f'Failed to prepare post data for HTML generation'
+                    }
+                
+                # Render HTML using unified rendering function (no image replacements for preview)
+                html_content = render_post_html(unified_post, unified_sections, image_replacements=None)
+                logger.info(f"✅ Generated fresh HTML content ({len(html_content)} chars)")
                 
                 if not html_content:
                     return {

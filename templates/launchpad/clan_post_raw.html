@@ -253,7 +253,7 @@
         {# Always add H2 from section_heading if it exists - this is the single source of truth #}
         {# Content should never contain headings - they come from section_heading only #}
         {% if section.section_heading %}
-            <h2>{{ section.section_heading }}</h2>
+            <h2>{{ section.section_heading|replace('"', '')|replace("'", '')|trim }}</h2>
         {% endif %}
         <div class="section-text">
             {% if section.polished %}

@@ -61,8 +61,12 @@ _jinja_env.filters['strip_html_doc'] = strip_html_doc
 _jinja_env.filters['strip_h2_headings'] = strip_h2_headings
 _jinja_env.tests['is_recipe_section'] = is_recipe_section
 
-# Load template once
-_template = _jinja_env.get_template('clan_post_raw.html')
+# Load template - reload each time to ensure we get the latest version
+# This ensures template changes are picked up without server restart
+def _get_template():
+    """Get the template, reloading it each time to ensure we have the latest version."""
+    return _jinja_env.get_template('clan_post_raw.html')
+_template = _get_template()
 
 
 def render_post_html(post, sections, image_replacements=None):
@@ -82,7 +86,9 @@ def render_post_html(post, sections, image_replacements=None):
         HTML string ready for preview or publication
     """
     # Use standalone Jinja2 environment - NO dependency on Flask's app.py
-    html = _template.render(post=post, sections=sections)
+    # Reload template each time to ensure we have the latest version
+    template = _get_template()
+    html = template.render(post=post, sections=sections)
     
     # ONLY apply image replacements if provided (for publishing)
     if image_replacements:
