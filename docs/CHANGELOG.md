@@ -1,5 +1,56 @@
 # Changelog
 
+## 2025-11-02 - Newsletter Intro Block Modular UI & LLM Weather Generation
+
+### Added
+- **Modular Intro Block Editor**: Reorganized intro block UI into separate component modules
+  - Weather Component: Generates conversational weather summary
+  - Events Component: Generates event announcement text
+  - Theme Component: Generates theme introduction text
+  - Each component has its own "Generate" button and output display
+  - Compile section combines all three into final paragraph with varied order
+- **New API Endpoints**:
+  - `GET /newsletter/issue/<id>/block/<id>/generate-weather` - Generate weather component
+  - `GET /newsletter/issue/<id>/block/<id>/generate-events` - Generate events component
+  - `GET /newsletter/issue/<id>/block/<id>/generate-theme` - Generate theme component
+  - `POST /newsletter/issue/<id>/block/<id>/compile-intro` - Compile all components
+- **Weather Analysis Service** (`weather_analysis_service.py`):
+  - Analyzes weather patterns over 3-week period (1 week before + target week + 1 week after)
+  - Compares actual weather to seasonal norms
+  - Identifies unusual conditions and trends
+  - Uses LLM to generate conversational summaries (no hard-coded templates)
+
+### Changed
+- **Weather Summary Generation**: Now uses LLM instead of hard-coded templates
+  - Removed all hard-coded phrases and examples
+  - LLM analyzes actual weather data vs seasonal norms
+  - Generates unique, natural summaries based on actual conditions
+  - Prompt emphasizes avoiding clichés and using varied language
+- **Intro Block UI**: Complete redesign
+  - Old: Single "Regenerate Suggestions" button with suggestions list
+  - New: Three separate component modules with individual generate buttons
+  - Each module is self-contained with its own JavaScript functions
+  - Final compiled paragraph displayed at top
+  - Manual override section moved to collapsible details
+
+### Improved
+- **Weather Analysis**: 
+  - Aggregates weather data over extended period (not just single day)
+  - Compares to seasonal norms (winter/spring/summer/autumn averages)
+  - Identifies patterns (chilly, mild, rainy, windy, stormy)
+  - Detects unusual conditions (unseasonable temps, storms, etc.)
+- **Text Generation**:
+  - Varies sentence order for natural flow
+  - More conversational tone throughout
+  - Better integration of weather, events, and theme components
+
+### Files Changed
+- `blog-core/newsletter/services/weather_analysis_service.py` - NEW: Weather analysis and LLM generation
+- `templates/newsletter/partials/block_editor_intro.html` - Complete rewrite: modular component UI
+- `blueprints/newsletter.py` - Added 4 new API endpoints for component generation
+- `blog-core/newsletter/selectors/intro.py` - Updated to use new weather analysis service
+- `blog-core/newsletter/rendering/intro_text.py` - Updated to handle new component format
+
 ## 2025-11-02 - Newsletter Intro Block Fixes & Documentation
 
 ### Fixed
