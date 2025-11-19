@@ -464,10 +464,15 @@ def generate_weather_component(issue_id: int, block_id: int):
 
 @bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-events', methods=['GET'])
 def generate_events_component(issue_id: int, block_id: int):
-    """Generate events component for intro block."""
+    """Generate events component for intro block using LLM to create conversational comment."""
     try:
         from newsletter.db.queries_issue import get_block
         from newsletter.services.suggestion_service import generate_suggestions
+        from newsletter.services.events_summary_service import get_event_detail
+        from blueprints.header.llm_service import LLMService
+        import os
+        import logging
+        logger = logging.getLogger(__name__)
         
         block = get_block(block_id=block_id)
         if not block:
@@ -483,32 +488,144 @@ def generate_events_component(issue_id: int, block_id: int):
         event_suggestions = generate_suggestions(block_type='intro', target_week=target_week, count=5, skip_validation=True)
         event_items = [s for s in event_suggestions if s.get('category') == 'event']
         
-        if event_items:
-            event_item = event_items[0]
-            source = event_item.get('source_name', '')
-            title = event_item.get('title', '')
-            location = event_item.get('location', '')
-            
-            if location:
-                text = f"Meanwhile, {source} has announced {title} in {location}."
-            else:
-                text = f"Meanwhile, {source} has announced {title}."
-            
-            return jsonify({
-                'success': True,
-                'text': text,
-                'source_name': source,
-                'title': title,
-                'location': location,
-                'url': event_item.get('url', ''),
-                'suggestion_id': event_item.get('id')
-            })
-        else:
+        if not event_items:
             return jsonify({
                 'success': False,
                 'error': 'No event suggestions available',
                 'text': ''
             })
+        
+        event_item = event_items[0]
+        event_id = event_item.get('id')
+        
+        # Get full event details including description
+        event_detail = get_event_detail(event_id) if event_id else None
+        
+        # Extract event information
+        source = event_item.get('source_name', '')
+        title = event_item.get('title', '')
+        location = event_item.get('location', '')
+        url = event_item.get('url', '')
+        
+        # Get additional details from event_detail or raw_data
+        description = ''
+        date_text = ''
+        if event_detail:
+            description = event_detail.get('description', '') or event_detail.get('raw_data', {}).get('description', '')
+            date_text = event_detail.get('date_text', '') or event_detail.get('raw_data', {}).get('date_text', '')
+        else:
+            # Fallback to raw_data from event_item
+            raw_data = event_item.get('raw_data', {})
+            description = raw_data.get('description', '') or raw_data.get('summary', '')
+            date_text = raw_data.get('date_text', '')
+        
+        # Get event date
+        event_date = event_item.get('event_date') or (event_detail.get('event_date') if event_detail else None)
+        if event_date:
+            if isinstance(event_date, str):
+                from dateutil import parser
+                try:
+                    event_date = parser.parse(event_date)
+                except:
+                    event_date = None
+        
+        # Use LLM to generate conversational comment
+        llm_service = LLMService()
+        
+        system_prompt = """You are writing a conversational, chatty comment about a Scottish cultural event for a heritage newsletter.
+Your audience is primarily US-Scots diaspora - people of Scottish descent living abroad who maintain an interest in Scotland.
+Write in a warm, friendly, observational tone - like you're chatting with a friend about something interesting you've discovered.
+Focus on what makes this event interesting or notable, not just announcing it.
+Keep it to ONE sentence, maximum 30 words.
+Write naturally - avoid clichés or repeated phrases. Each comment should be unique based on what's actually interesting about the event."""
+        
+        # Build user prompt with event details
+        event_info_parts = []
+        event_info_parts.append(f"EVENT: {title}")
+        if location:
+            event_info_parts.append(f"LOCATION: {location}")
+        if source:
+            event_info_parts.append(f"ORGANIZER: {source}")
+        if event_date:
+            event_info_parts.append(f"DATE: {event_date.strftime('%d %B %Y') if hasattr(event_date, 'strftime') else str(event_date)}")
+        if date_text:
+            event_info_parts.append(f"DATE TEXT: {date_text}")
+        if description:
+            # Limit description length for prompt
+            desc_preview = description[:500] if len(description) > 500 else description
+            event_info_parts.append(f"DESCRIPTION: {desc_preview}")
+        
+        user_prompt = f"""Write a single conversational sentence about this Scottish cultural event:
+
+{chr(10).join(event_info_parts)}
+
+Write ONE conversational sentence that:
+1. Comments on what's interesting or notable about this event
+2. Mentions the event naturally (not just "X has announced Y")
+3. Highlights something that would appeal to someone interested in Scottish heritage/culture
+4. Uses natural, varied language - avoid clichés
+5. Sounds like a human observation, not a press release
+
+Think about:
+- What makes this event special or interesting?
+- What would catch someone's attention?
+- What cultural or historical significance does it have?
+- What's the human angle or story?
+
+If the description reveals something interesting (historical context, unique features, cultural significance), mention that naturally.
+
+Your response should be ONLY the sentence, nothing else."""
+        
+        try:
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_prompt}
+            ]
+            
+            # Use Ollama by default (local, fast)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in result:
+                logger.error(f"LLM error generating events component: {result['error']}")
+                # Fallback to simple format
+                if location:
+                    text = f"Meanwhile, {source} has announced {title} in {location}."
+                else:
+                    text = f"Meanwhile, {source} has announced {title}."
+            else:
+                text = result.get('content', '').strip()
+                # Clean up the response
+                text = text.strip('"\'')
+                text = text.strip()
+                # Ensure it ends with proper punctuation
+                if text and not text[-1] in '.!?':
+                    text += '.'
+                
+                # Fallback if LLM returned empty
+                if not text:
+                    if location:
+                        text = f"Meanwhile, {source} has announced {title} in {location}."
+                    else:
+                        text = f"Meanwhile, {source} has announced {title}."
+        
+        except Exception as e:
+            logger.error(f"Error calling LLM for events component: {e}", exc_info=True)
+            # Fallback to simple format
+            if location:
+                text = f"Meanwhile, {source} has announced {title} in {location}."
+            else:
+                text = f"Meanwhile, {source} has announced {title}."
+        
+        return jsonify({
+            'success': True,
+            'text': text,
+            'source_name': source,
+            'title': title,
+            'location': location,
+            'url': url,
+            'suggestion_id': event_id
+        })
+        
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Error generating events component: {e}", exc_info=True)
@@ -517,10 +634,13 @@ def generate_events_component(issue_id: int, block_id: int):
 
 @bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-theme', methods=['GET'])
 def generate_theme_component(issue_id: int, block_id: int):
-    """Generate theme component for intro block."""
+    """Generate theme component for intro block using LLM to create conversational comment."""
     try:
         from newsletter.db.queries_issue import get_block
         from newsletter.selectors.theme import parse_target_week, get_theme_by_id
+        from blueprints.header.llm_service import LLMService
+        import logging
+        logger = logging.getLogger(__name__)
         
         block = get_block(block_id=block_id)
         if not block:
@@ -532,31 +652,126 @@ def generate_theme_component(issue_id: int, block_id: int):
         
         # Get theme from issue
         theme_id = issue.get('theme_id')
-        if theme_id:
-            theme = get_theme_by_id(theme_id)
-            if theme:
-                theme_title = theme.get('idea_title', '')
-                seasonal_context = theme.get('seasonal_context', '')
-                
-                # Generate conversational text about the theme
+        if not theme_id:
+            return jsonify({
+                'success': False,
+                'error': 'No theme selected for this issue',
+                'text': ''
+            })
+        
+        theme = get_theme_by_id(theme_id)
+        if not theme:
+            return jsonify({
+                'success': False,
+                'error': 'Theme not found',
+                'text': ''
+            })
+        
+        # Extract theme information
+        theme_title = theme.get('idea_title', '')
+        idea_description = theme.get('idea_description', '')
+        seasonal_context = theme.get('seasonal_context', '')
+        content_type = theme.get('content_type', '')
+        tags = theme.get('tags', [])
+        week_number = theme.get('week_number', '')
+        
+        # Use LLM to generate conversational comment
+        llm_service = LLMService()
+        
+        system_prompt = """You are writing a conversational, chatty comment about a weekly theme for a Scottish heritage newsletter.
+Your audience is primarily US-Scots diaspora - people of Scottish descent living abroad who maintain an interest in Scotland.
+Write in a warm, friendly, observational tone - like you're chatting with a friend about what you'll be exploring this week.
+Focus on what makes this theme interesting or relevant, not just announcing it.
+Keep it to ONE sentence, maximum 30 words.
+Write naturally - avoid clichés or repeated phrases. Each comment should be unique based on what's actually interesting about the theme."""
+        
+        # Build user prompt with theme details
+        theme_info_parts = []
+        theme_info_parts.append(f"THEME: {theme_title}")
+        if seasonal_context:
+            theme_info_parts.append(f"SEASONAL CONTEXT: {seasonal_context}")
+        if idea_description:
+            # Limit description length for prompt
+            desc_preview = idea_description[:500] if len(idea_description) > 500 else idea_description
+            theme_info_parts.append(f"DESCRIPTION: {desc_preview}")
+        if content_type:
+            theme_info_parts.append(f"CONTENT TYPE: {content_type}")
+        if tags:
+            tags_str = ', '.join(tags) if isinstance(tags, list) else str(tags)
+            theme_info_parts.append(f"TAGS: {tags_str}")
+        if week_number:
+            theme_info_parts.append(f"WEEK: {week_number}")
+        
+        user_prompt = f"""Write a single conversational sentence about this week's theme for the newsletter:
+
+{chr(10).join(theme_info_parts)}
+
+Write ONE conversational sentence that:
+1. Comments on what's interesting or relevant about this theme
+2. Mentions the theme naturally (not just "we're exploring X")
+3. Highlights why this theme matters for someone interested in Scottish heritage/culture
+4. Uses natural, varied language - avoid clichés
+5. Sounds like a human observation, not a formal announcement
+
+Think about:
+- What makes this theme special or relevant?
+- What would catch someone's attention?
+- What cultural or historical significance does it have?
+- Why is this theme timely or interesting?
+- What's the human angle or story?
+
+If the description reveals something interesting (historical context, cultural significance, seasonal relevance), mention that naturally.
+
+Your response should be ONLY the sentence, nothing else."""
+        
+        try:
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_prompt}
+            ]
+            
+            # Use Ollama by default (local, fast)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in result:
+                logger.error(f"LLM error generating theme component: {result['error']}")
+                # Fallback to simple format
                 if seasonal_context:
                     text = f"This week we're exploring {theme_title.lower()}, {seasonal_context.lower()}."
                 else:
                     text = f"This week we're exploring {theme_title.lower()}."
+            else:
+                text = result.get('content', '').strip()
+                # Clean up the response
+                text = text.strip('"\'')
+                text = text.strip()
+                # Ensure it ends with proper punctuation
+                if text and not text[-1] in '.!?':
+                    text += '.'
                 
-                return jsonify({
-                    'success': True,
-                    'text': text,
-                    'theme_title': theme_title,
-                    'seasonal_context': seasonal_context,
-                    'theme_id': theme_id
-                })
+                # Fallback if LLM returned empty
+                if not text:
+                    if seasonal_context:
+                        text = f"This week we're exploring {theme_title.lower()}, {seasonal_context.lower()}."
+                    else:
+                        text = f"This week we're exploring {theme_title.lower()}."
+        
+        except Exception as e:
+            logger.error(f"Error calling LLM for theme component: {e}", exc_info=True)
+            # Fallback to simple format
+            if seasonal_context:
+                text = f"This week we're exploring {theme_title.lower()}, {seasonal_context.lower()}."
+            else:
+                text = f"This week we're exploring {theme_title.lower()}."
         
         return jsonify({
-            'success': False,
-            'error': 'No theme selected for this issue',
-            'text': ''
+            'success': True,
+            'text': text,
+            'theme_title': theme_title,
+            'seasonal_context': seasonal_context,
+            'theme_id': theme_id
         })
+        
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Error generating theme component: {e}", exc_info=True)
@@ -565,10 +780,12 @@ def generate_theme_component(issue_id: int, block_id: int):
 
 @bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/compile-intro', methods=['POST'])
 def compile_intro(issue_id: int, block_id: int):
-    """Compile weather, events, and theme into final intro paragraph."""
+    """Compile weather, events, and theme into final intro paragraph using LLM."""
     try:
         from newsletter.db.queries_issue import get_block, update_block_payload
-        import random
+        from blueprints.header.llm_service import LLMService
+        import logging
+        logger = logging.getLogger(__name__)
         
         block = get_block(block_id=block_id)
         if not block:
@@ -582,33 +799,95 @@ def compile_intro(issue_id: int, block_id: int):
         events_text = data.get('events_text', '').strip()
         theme_text = data.get('theme_text', '').strip()
         
-        # Combine all non-empty components
-        sentences = []
-        if weather_text:
-            sentences.append(weather_text)
-        if events_text:
-            sentences.append(events_text)
-        if theme_text:
-            sentences.append(theme_text)
+        # Filter out placeholder/loading messages
+        def is_valid_component(text):
+            if not text:
+                return False
+            # Filter out placeholder messages
+            invalid_phrases = ['Click "Generate"', 'Generating', 'Error:', 'No content yet']
+            return not any(phrase in text for phrase in invalid_phrases)
         
-        if not sentences:
+        valid_components = []
+        if is_valid_component(weather_text):
+            valid_components.append(('weather', weather_text))
+        if is_valid_component(events_text):
+            valid_components.append(('events', events_text))
+        if is_valid_component(theme_text):
+            valid_components.append(('theme', theme_text))
+        
+        if not valid_components:
             return jsonify({
                 'success': False,
-                'error': 'No components provided to compile',
+                'error': 'No valid components provided to compile',
                 'text': ''
             })
         
-        # Vary the order for natural flow
-        if len(sentences) > 1:
-            random.shuffle(sentences)
+        # Use LLM to create coherent paragraph
+        llm_service = LLMService()
         
-        # Join sentences naturally
-        if len(sentences) == 1:
-            compiled_text = sentences[0]
-        elif len(sentences) == 2:
-            compiled_text = sentences[0] + " " + sentences[1]
-        else:
-            compiled_text = sentences[0] + " " + sentences[1] + " " + sentences[2]
+        system_prompt = """You are writing the opening paragraph for a Scottish heritage newsletter.
+Your audience is primarily US-Scots diaspora - people of Scottish descent living abroad who maintain an interest in Scotland.
+Write in a warm, friendly, welcoming tone - like you're greeting friends and catching them up.
+Create a single, coherent paragraph (2-4 sentences) that weaves together the provided information naturally.
+Do NOT just concatenate the sentences - rewrite them into a flowing, natural paragraph.
+Decide on the best order: which element creates the best opening? Which should close?
+Make it feel like a natural conversation, not a list of announcements."""
+        
+        # Build user prompt with all components
+        components_info = []
+        for comp_type, comp_text in valid_components:
+            components_info.append(f"{comp_type.upper()}: {comp_text}")
+        
+        user_prompt = f"""You have three pieces of information about this week's newsletter:
+
+{chr(10).join(components_info)}
+
+Your task:
+1. Consider all three elements as information (not as sentences to repeat)
+2. Decide on the best order:
+   - Which creates the best opening? (What would naturally start a conversation?)
+   - Which should close? (What provides a good transition into the newsletter content?)
+3. Rewrite them into a single coherent, welcoming paragraph (2-4 sentences) that:
+   - Welcomes readers to this week's newsletter
+   - Weaves the information together naturally
+   - Doesn't just repeat the original wording - use the information to create new, flowing sentences
+   - Feels like a natural conversation, not a list
+   - Creates a warm, inviting opening
+
+Think about:
+- What's the most natural way to start? (Weather? Theme? Event?)
+- How do these elements relate to each other?
+- What creates the best flow and transition into the newsletter?
+
+Your response should be ONLY the paragraph, nothing else."""
+        
+        try:
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_prompt}
+            ]
+            
+            # Use Ollama by default (local, fast)
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in result:
+                logger.error(f"LLM error compiling intro: {result['error']}")
+                # Fallback: simple concatenation
+                compiled_text = ' '.join([text for _, text in valid_components])
+            else:
+                compiled_text = result.get('content', '').strip()
+                # Clean up the response
+                compiled_text = compiled_text.strip('"\'')
+                compiled_text = compiled_text.strip()
+                
+                # Fallback if LLM returned empty
+                if not compiled_text:
+                    compiled_text = ' '.join([text for _, text in valid_components])
+        
+        except Exception as e:
+            logger.error(f"Error calling LLM for compile intro: {e}", exc_info=True)
+            # Fallback: simple concatenation
+            compiled_text = ' '.join([text for _, text in valid_components])
         
         # Save to block payload
         payload = block.get('payload_json', {}) or {}
