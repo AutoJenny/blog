@@ -20,12 +20,16 @@ Two product-related blocks: **Products Spotlight** (formerly New Products) and *
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `blog-core/newsletter/selectors/products.py` | 110 | Product selection logic (new products, spotlight, variant grouping) |
-| `blog-core/newsletter/services/block_suggestion_service.py` | 227 | Unified routing to type-specific logic (includes new_products handling) |
-| `templates/newsletter/partials/new_products.html` | 33 | Email template for rendering products spotlight block |
-| `templates/newsletter/partials/block_editor_base.html` | 81 | Common wrapper for all block editors (new_products uses universal editor) |
+| `blog-core/newsletter/selectors/products.py` | ~400 | Product selection logic (pool management, random selection with category diversity) |
+| `blog-core/newsletter/services/block_suggestion_service.py` | ~350 | Unified routing to type-specific logic (includes new_products pool management) |
+| `blog-core/newsletter/services/products_intro_service.py` | ~115 | LLM service for generating intro paragraph |
+| `blog-core/newsletter/services/product_tracking.py` | ~60 | Service for tracking product launches (`newsletter_launched_at`) |
+| `blog-core/newsletter/services/block_editor_service.py` | ~240 | Handles product selection and payload updates |
+| `templates/newsletter/partials/new_products.html` | ~40 | Email template for rendering products spotlight block |
+| `templates/newsletter/partials/block_editor_new_products.html` | ~200 | Custom editor UI with product selection and intro generation |
+| `templates/newsletter/partials/block_editor_base.html` | ~85 | Common wrapper for all block editors |
 
-**Note**: The products spotlight block now has a custom editor UI for product selection and intro generation.
+**Note**: The products spotlight block has a custom editor UI for product selection, re-choosing, and intro generation.
 
 ### Data Sources
 
@@ -39,13 +43,22 @@ Two product-related blocks: **Products Spotlight** (formerly New Products) and *
 - Product Pool: Up to 50 recent products stored in block payload for consistent random selection
 - Selection: 3 products randomly selected from pool, ensuring category diversity
 
-### Variant Grouping
+### Product Pool & Selection Strategy
 
-The `group_variants()` function groups product variants by parent to avoid showing duplicate products:
-- Looks for `parent_id` or `variant_parent_id` field
-- Groups variants under their parent product
-- Returns only parent products in the final list
-- Tracks number of hidden variants (not currently displayed)
+**Product Pool Management**:
+- `get_product_pool()`: Fetches up to 50 recent products from `clan_products` table
+  - First tries to exclude products with `newsletter_launched_at IS NOT NULL`
+  - If pool is too small (< 10 products), includes launched products to fill pool
+  - Ensures sufficient options for re-choosing without running out
+  - Pool is stored in block payload for persistence across re-chooses
+
+**Random Selection with Category Diversity**:
+- `select_random_from_pool()`: Randomly selects 3 products from pool
+  - Ensures products come from different specific categories (skips generic category ID 12)
+  - Shuffles pool for randomness
+  - First pass: Selects one product from each unique category
+  - Second pass: Fills remaining slots with any products if needed
+  - Prevents showing similar products (e.g., multiple backpacks or mouse mats)
 
 ### Payload Structure
 
@@ -84,23 +97,27 @@ The products spotlight block payload is stored in `newsletter_block.payload_json
 
 ### File Details
 
-#### 1. Selector: `selectors/products.py` (110 lines)
+#### 1. Selector: `selectors/products.py` (~400 lines)
 
 **Location**: `blog-core/newsletter/selectors/products.py`
 
 **Main Functions**:
 
-**`select_new_products(since_iso_timestamp: str, limit: int = 6) -> List[Dict[str, Any]]`**
-- Queries `product` table for products created after the given timestamp
-- Returns published products with images, ordered by creation date (newest first)
-- Defensive error handling: returns empty list on any failure
-- Uses `COALESCE` to handle schema variations (name/title, slug/url, image_url/hero_image)
+**`get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_launched: bool = True, min_product_id: int = 10000) -> List[Dict[str, Any]]`**
+- Fetches up to `pool_size` recent products from `clan_products` table
+- Filters by `first_seen_at > since_iso_timestamp` (default: last 60 days)
+- Excludes products with `id <= min_product_id` (filters out older products)
+- If `exclude_launched=True`, excludes products with `newsletter_launched_at IS NOT NULL`
+- Validates image URLs (must be non-empty and start with `http://` or `https://`)
+- Deduplicates by product name
+- Returns list of product dicts with: `id`, `name`, `sku`, `image_url`, `url`, `short_description`, `category_ids`
 
-**`group_variants(items: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], int]`**
-- Groups product variants by parent ID
-- Detects parent key: `parent_id` or `variant_parent_id`
-- Returns tuple: (grouped parent products, number of hidden variants)
-- If no parent key found, returns items unchanged
+**`select_random_from_pool(*, pool: List[Dict[str, Any]], limit: int = 3) -> List[Dict[str, Any]]`**
+- Randomly selects `limit` products from pool
+- Ensures category diversity by selecting products from different specific categories
+- Skips generic category ID 12 ("CLAN Main Category") for diversity
+- Shuffles pool first for randomness
+- Returns 3 diverse products
 
 **`select_spotlight_product() -> Dict[str, Any]`**
 - Returns single most recently updated published product
@@ -111,27 +128,66 @@ The products spotlight block payload is stored in `newsletter_block.payload_json
 **Function**: `get_suggestions_for_block(block_type='new_products', ...)`
 
 **Process**:
-1. Gets today's date as ISO timestamp: `f"{date.today().isoformat()}T00:00:00Z"`
-2. Calls `select_new_products(since_iso_timestamp=since_date, limit=12)`
-3. Groups variants using `group_variants(products)`
-4. Takes first 6 products from grouped list
-5. Formats as suggestions with: `id`, `title` (from item's `title` field, may be empty if product uses `name`), `url` (from item's `url` field, may be empty if product uses `slug`), `price`, `type: 'product'`
-   
-   **Note**: The suggestion format uses `title`/`url` fields, but products from the selector use `name`/`slug`. The actual payload stored uses `name`/`slug` from the grouped products.
-6. Returns:
+1. Checks if existing `product_pool` exists in any `new_products` block for this issue (pools are shared per issue)
+2. If no pool exists or pool is empty:
+   - Calculates `since_date` (60 days ago)
+   - Calls `get_product_pool(since_iso_timestamp=since_date, pool_size=50, exclude_launched=True, min_product_id=10000)`
+   - If pool has < 10 products, includes launched products to fill pool
+3. Calls `select_random_from_pool(pool=product_pool, limit=3)` to get 3 diverse products
+4. Formats as suggestions with: `id`, `name`, `sku`, `image_url`, `url`, `short_description`, `category_ids`, `type: 'product'`
+5. Returns:
    ```python
    {
-       'suggestions': [...],  # List of 6 product suggestions
-       'current': {'items': grouped[:6]},  # Current selection (auto-selected)
-       'metadata': {'count': len(grouped)}  # Number of products found
+       'suggestions': [...],  # List of 3 randomly selected products
+       'current': {'items': current_items},  # Current selection from payload (if exists)
+       'metadata': {'count': 3, 'pool_size': len(product_pool)},
+       '_product_pool': product_pool  # Pool stored in payload for future re-chooses
    }
    ```
 
-**Auto-Select**: `auto_select_for_block(block_type='new_products', ...)`
-- Returns `{'items': result.get('suggestions', [])[:6]}`
-- Automatically selects top 6 products
+**Note**: Products are NOT marked as launched when selected. They are only marked when user clicks "Confirm Selection & Generate Intro".
 
-#### 3. Template: `templates/newsletter/partials/new_products.html` (33 lines)
+#### 3. Intro Service: `services/products_intro_service.py` (~115 lines)
+
+**Function**: `generate_products_intro(products: List[Dict[str, Any]]) -> str`
+
+**Process**:
+1. Takes list of 3 product dicts with `name`, `short_description`, `sku`
+2. Builds product descriptions for LLM prompt
+3. Uses LLM (Ollama llama3.2:latest) to generate brief intro paragraph
+4. Requirements:
+   - 2-3 sentences, maximum 75 words total
+   - Mentions products are recently added to website
+   - Comments briefly on products based on descriptions
+   - Conversational, warm tone
+5. Returns generated intro paragraph (with fallback if LLM fails)
+
+#### 4. Tracking Service: `services/product_tracking.py` (~60 lines)
+
+**Functions**:
+- `mark_products_newsletter_launched(product_ids: List[int])`: Sets `newsletter_launched_at = CURRENT_TIMESTAMP` for products
+- `extract_product_ids_from_payload(payload: Dict, block_type: str) -> List[int]`: Extracts product IDs from block payload
+- `mark_product_blog_profiled(product_id: int)`: Sets `blog_profiled_at` timestamp (for blog posts, not newsletters)
+
+#### 5. Editor Template: `templates/newsletter/partials/block_editor_new_products.html` (~200 lines)
+
+**Features**:
+- Displays current selection with product thumbnails, names, and SKUs
+- "Re-choose Products" button: Randomly selects 3 new products from pool
+- "Confirm Selection & Generate Intro" button:
+  - Generates intro paragraph via LLM
+  - Saves intro to block payload
+  - Marks products as launched in database
+  - Updates button to show "Confirmed" state
+- Preview of generated intro paragraph
+- Manual override section (collapsible JSON editor)
+
+**JavaScript Functions**:
+- `rechooseProducts(blockId, issueId)`: Fetches new suggestions and applies them
+- `confirmProducts(blockId, issueId)`: Generates intro and confirms selection
+- `loadProductsPreview(blockId, issueId)`: Loads current selection for display
+
+#### 6. Preview Template: `templates/newsletter/partials/new_products.html` (~40 lines)
 
 **Rendering**:
 - Displays products in a 3-column table layout (33.33% width each)
@@ -190,100 +246,146 @@ Body: {"intro": "Generated intro paragraph"}
 - Generates intro via `products_intro_service.generate_products_intro()`
 - Marks products as launched via `product_tracking.mark_products_newsletter_launched()`
 
-### Suggestion Flow
+### User Workflow
 
-1. **User clicks "Regenerate Suggestions"**
-   - JavaScript calls `loadSuggestions(blockId, 'new_products')`
+1. **Initial Selection / Re-choose Products**
+   - User clicks "Re-choose Products" button
+   - JavaScript calls `rechooseProducts(blockId, issueId)`
    - Fetches from `/newsletter/issue/{issueId}/block/{blockId}/suggestions`
+   - Backend: `get_suggestions_for_block()` → `get_product_pool()` → `select_random_from_pool()`
+   - Returns 3 randomly selected products with category diversity
+   - Products displayed in preview grid (thumbnails, names, SKUs)
+   - Products stored in block payload with `product_pool` for future re-chooses
+   - **Products are NOT marked as launched yet**
 
-2. **Backend Processing**
-   - `get_suggestions()` → `get_suggestions_for_block()` → `select_new_products()`
-   - `select_new_products()` queries database for products created today
-   - Groups variants to show only parent products
-   - Returns up to 6 products formatted as suggestions
+2. **Confirm Selection & Generate Intro**
+   - User clicks "Confirm Selection & Generate Intro" button
+   - JavaScript calls `confirmProducts(blockId, issueId)`
+   - First: Fetches from `/newsletter/issue/{issueId}/block/{blockId}/generate-products-intro`
+     - Backend: `products_intro_service.generate_products_intro()` → LLM generates paragraph
+   - Second: Posts to `/newsletter/issue/{issueId}/block/{blockId}/confirm-products`
+     - Backend: Saves intro to block payload
+     - Backend: `product_tracking.mark_products_newsletter_launched()` → Sets `newsletter_launched_at` timestamp
+   - Intro displayed in preview box
+   - Button updates to "Confirmed" state
 
-3. **UI Display**
-   - JavaScript renders suggestions in list
-   - Shows "Use This" button
-   - User can apply suggestion or manually edit JSON
+3. **Preview Display**
+   - Intro paragraph shown above products (if generated)
+   - 3 products displayed in grid (image, name, Explore button)
+   - SKU not shown in preview (only in editor)
 
-4. **Auto-Select Behavior**
-   - When auto-select enabled, top 6 products are automatically selected
-   - Product data stored in block payload as `{'items': [...]}`
-   - No text generation needed (data is already formatted)
+### Current Features
 
-### Current Limitations
+1. **Product Pool Management**: Up to 50 recent products stored in block payload
+   - Enables consistent random selection without running out of options
+   - Pool shared per issue to avoid duplicates across blocks
 
-1. **Time Range**: Only shows products created "today" (since midnight)
-   - Future: Could allow configuration for "last 7 days", "last 30 days", etc.
+2. **Category Diversity**: Ensures selected products come from different categories
+   - Skips generic "CLAN Main Category" (ID 12) for better diversity
+   - Prevents showing similar products (e.g., multiple backpacks)
 
-2. **No Custom Editor**: Uses universal JSON editor instead of custom UI
-   - Future: Could create custom editor with product selection interface
+3. **LLM-Generated Intro**: Brief paragraph mentioning products are recently added
+   - Generated when user confirms selection
+   - 2-3 sentences, ~50-75 words
+   - Conversational tone
 
-3. **No Manual Selection**: No UI to manually pick specific products
-   - Future: Could add product picker with search/filter
+4. **Product Tracking**: Products marked as launched when confirmed
+   - `newsletter_launched_at` timestamp set in `clan_products` table
+   - Prevents same products from appearing in future newsletters
 
-4. **URL Formatting**: Product links use slug directly
-   - Future: Could format as full clan.com URLs if needed
+5. **Custom Editor UI**: Dedicated interface for product selection
+   - Visual preview with thumbnails
+   - Re-choose functionality
+   - Intro generation and preview
 
-5. **Fixed Limit**: Always shows exactly 6 products (or fewer if not enough available)
-   - Future: Could allow configuration of number of products to display
+### Future Enhancements
 
-6. **No Product Details**: Only shows name, image, and link
-   - Future: Could add price, short description, or other product metadata
+1. **Manual Product Selection**: Could add product picker with search/filter
+2. **Configurable Pool Size**: Could allow customization of pool size (currently 50)
+3. **Configurable Time Range**: Could allow configuration for "last 7 days", "last 30 days", etc.
+4. **Product Details**: Could add price, full description, or other metadata to display
 
 ### Database Schema
 
-**Product Table** (assumed structure):
+**clan_products Table** (synced from clan.com API):
 ```sql
-CREATE TABLE product (
+CREATE TABLE clan_products (
     id INTEGER PRIMARY KEY,
-    name VARCHAR(255),           -- or title
-    slug VARCHAR(255),            -- or url
-    image_url VARCHAR(500),       -- or hero_image
+    name VARCHAR(255),
+    sku VARCHAR(255),
+    image_url VARCHAR(500),
+    url VARCHAR(500),              -- Full clan.com URL
     short_description TEXT,
-    created_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ,
-    is_published BOOLEAN,
-    parent_id INTEGER,            -- for variants
-    variant_parent_id INTEGER     -- alternative variant key
+    description TEXT,
+    price DECIMAL(10,2),
+    first_seen_at TIMESTAMPTZ,     -- When product was first synced
+    clan_created_at TIMESTAMPTZ,   -- Creation date from clan.com API
+    clan_updated_at TIMESTAMPTZ,   -- Update date from clan.com API (not yet available)
+    newsletter_launched_at TIMESTAMPTZ,  -- When product was launched in newsletter
+    blog_profiled_at TIMESTAMPTZ,  -- When product was profiled in blog post
+    category_ids JSONB,            -- Array of category IDs
+    last_updated TIMESTAMPTZ,
+    product_content_hash TEXT,
+    has_detailed_data BOOLEAN
 );
 ```
 
-**Note**: The selector uses `COALESCE` to handle schema variations, so it works with different field names.
+**Key Fields**:
+- `first_seen_at`: Used to identify recently added products (last 60 days)
+- `newsletter_launched_at`: Tracks which products have been featured in newsletters
+- `category_ids`: JSON array of category IDs for diversity filtering
+- `id > 10000`: Filter to exclude older products
 
 ### Testing
 
 To test the products spotlight block:
 
-1. **Check for products created today**:
+1. **Check for recent products**:
    ```sql
-   SELECT id, name, slug, image_url, created_at 
-   FROM product 
-   WHERE created_at > CURRENT_DATE 
-     AND COALESCE(is_published, TRUE) = TRUE
-     AND COALESCE(image_url, hero_image, '') <> ''
-   ORDER BY created_at DESC 
-   LIMIT 12;
+   SELECT id, name, sku, image_url, first_seen_at, newsletter_launched_at, category_ids
+   FROM clan_products 
+   WHERE first_seen_at > (CURRENT_TIMESTAMP - INTERVAL '60 days')
+     AND id > 10000
+     AND image_url IS NOT NULL
+     AND image_url LIKE 'http%'
+     AND newsletter_launched_at IS NULL
+   ORDER BY first_seen_at DESC 
+   LIMIT 50;
    ```
 
-2. **Verify variant grouping**:
-   - Create test products with `parent_id` set
-   - Verify only parent products appear in suggestions
-   - Check that hidden variant count is tracked
+2. **Verify product pool**:
+   - Check that pool contains up to 50 products
+   - Verify products have valid image URLs
+   - Check that `category_ids` are populated
 
-3. **Test UI**:
+3. **Test Editor UI**:
    - Navigate to `/newsletter/issue/8`
-   - Find "Products Spotlight" block (should be 3rd section)
-   - Click "Regenerate Suggestions"
-   - Verify products appear in suggestions list
-   - Apply a suggestion and verify it appears in preview
+   - Find "New Products Spotlight" block (should be 3rd section)
+   - Click "Re-choose Products"
+   - Verify 3 products appear in preview grid
+   - Check that products come from different categories
+   - Click "Confirm Selection & Generate Intro"
+   - Verify intro paragraph is generated and displayed
+   - Check that products are marked as launched:
+     ```sql
+     SELECT id, name, newsletter_launched_at 
+     FROM clan_products 
+     WHERE id IN (product_ids_from_payload);
+     ```
 
 4. **Test Preview**:
    - Navigate to `/newsletter/issue/8/preview`
-   - Verify "Products Spotlight" section appears
-   - Check that products display in 3-column layout
-   - Verify images, names, and links render correctly
+   - Verify "New Products Spotlight" section appears
+   - Check that intro paragraph displays above products (if generated)
+   - Verify products display in 3-column layout
+   - Check that images, names, and Explore buttons render correctly
+   - Verify SKU is NOT displayed in preview
+
+5. **Test Re-choose Functionality**:
+   - After confirming products, click "Re-choose Products" again
+   - Verify new random selection from pool
+   - Check that previously launched products are excluded (if pool is large enough)
+   - Verify category diversity is maintained
 
 ---
 
