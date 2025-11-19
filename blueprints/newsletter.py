@@ -260,12 +260,27 @@ def toggle_block(block_id: int):
 @bp.route('/newsletter/block/<int:block_id>/update', methods=['POST'])
 def update_block(block_id: int):
     import json
+    from newsletter.db.queries_issue import get_block
+    from newsletter.services.product_tracking import mark_products_newsletter_launched, extract_product_ids_from_payload
+    
     raw = request.form.get('payload_json') or '{}'
     try:
         payload = json.loads(raw)
     except Exception:
         payload = {}
+    
+    # Get block type to check if we need to mark products as launched
+    block = get_block(block_id=block_id)
+    block_type = block.get('type', '') if block else ''
+    
     update_block_payload(block_id=block_id, payload=payload)
+    
+    # Mark products as newsletter launched if this is a product block
+    if block_type in ('new_products', 'spotlight'):
+        product_ids = extract_product_ids_from_payload(payload, block_type)
+        if product_ids:
+            mark_products_newsletter_launched(product_ids)
+    
     issue_id = int(request.form.get('issue_id', '0'))
     return redirect(url_for('newsletter.view_issue', issue_id=issue_id))
 
@@ -378,19 +393,28 @@ def select_block_suggestion(issue_id: int, block_id: int):
         target_week = issue.get('target_week', '')
         block_type = block.get('type', '')
         
-        suggestion_id = request.json.get('suggestion_id') if request.is_json else None
+        request_data = request.json if request.is_json else {}
+        suggestion_id = request_data.get('suggestion_id')
+        auto_select = request_data.get('auto_select', False)
+        product_ids = request_data.get('product_ids')  # For new_products blocks
+        
         if suggestion_id:
             try:
                 suggestion_id = int(suggestion_id)
             except Exception:
                 suggestion_id = None
         
+        # For auto_select (e.g., re-choose products), ignore suggestion_id
+        if auto_select:
+            suggestion_id = None
+        
         result = apply_suggestion(
             block_id=block_id,
             block_type=block_type,
             issue_id=issue_id,
             target_week=target_week,
-            suggestion_id=suggestion_id
+            suggestion_id=suggestion_id,
+            product_ids=product_ids  # Pass product IDs for new_products
         )
         return jsonify(result)
     except Exception as e:
@@ -421,6 +445,85 @@ def override_block_text(issue_id: int, block_id: int):
         )
         return jsonify(result)
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-products-intro', methods=['POST'])
+def generate_products_intro(issue_id: int, block_id: int):
+    """Generate intro paragraph for New Products Spotlight block."""
+    try:
+        from newsletter.db.queries_issue import get_block
+        from newsletter.services.products_intro_service import generate_products_intro as generate_intro
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        if block.get('type') != 'new_products':
+            return jsonify({'error': 'This endpoint is only for new_products blocks'}), 400
+        
+        payload = block.get('payload_json', {})
+        products = payload.get('items', [])
+        
+        if not products or len(products) == 0:
+            return jsonify({'error': 'No products selected. Please select products first.'}), 400
+        
+        # Generate intro paragraph
+        intro = generate_intro(products)
+        
+        return jsonify({
+            'success': True,
+            'intro': intro
+        })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error generating products intro: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/confirm-products', methods=['POST'])
+def confirm_products(issue_id: int, block_id: int):
+    """Confirm product selection: save intro and mark products as launched."""
+    try:
+        from newsletter.db.queries_issue import get_block, update_block_payload
+        from newsletter.services.product_tracking import mark_products_newsletter_launched, extract_product_ids_from_payload
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        if block.get('type') != 'new_products':
+            return jsonify({'error': 'This endpoint is only for new_products blocks'}), 400
+        
+        # Get intro from request
+        request_data = request.json if request.is_json else {}
+        intro = request_data.get('intro', '')
+        
+        # Get current payload
+        payload = block.get('payload_json', {})
+        products = payload.get('items', [])
+        
+        if not products or len(products) == 0:
+            return jsonify({'error': 'No products selected. Please select products first.'}), 400
+        
+        # Update payload with intro
+        payload['intro'] = intro
+        
+        # Update block payload
+        update_block_payload(block_id=block_id, payload=payload)
+        
+        # Mark products as newsletter launched
+        product_ids = extract_product_ids_from_payload(payload, 'new_products')
+        if product_ids:
+            mark_products_newsletter_launched(product_ids)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Products confirmed and marked as launched'
+        })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error confirming products: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 

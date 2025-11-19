@@ -59,6 +59,9 @@
     {% elif block.type == 'feature' %}
       {% set b = block %}
       {% include 'newsletter/partials/block_editor_feature.html' with context %}
+    {% elif block.type == 'new_products' %}
+      {% set b = block %}
+      {% include 'newsletter/partials/block_editor_new_products.html' with context %}
     {% else %}
       {# Fallback: JSON editor for other block types #}
       <details style="margin-top: 12px;">

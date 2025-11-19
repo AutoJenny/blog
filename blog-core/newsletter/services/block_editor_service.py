@@ -48,13 +48,17 @@ def get_suggestions(*, block_id: int, block_type: str, issue_id: int, target_wee
             # Feature block stores post data directly in payload
             if current_payload.get('id'):
                 result['current'] = current_payload
+        elif block_type == 'new_products':
+            # new_products block stores items array in payload
+            if current_payload.get('items'):
+                result['current'] = {'items': current_payload.get('items')}
         else:
             result['current'] = current_payload.get('selected') or current_payload or result.get('current')
     
     return result
 
 
-def apply_suggestion(*, block_id: int, block_type: str, issue_id: int, target_week: str, suggestion_id: int | None = None) -> Dict[str, Any]:
+def apply_suggestion(*, block_id: int, block_type: str, issue_id: int, target_week: str, suggestion_id: int | None = None, product_ids: List[int] | None = None) -> Dict[str, Any]:
     """Apply a suggestion to a block.
     
     If suggestion_id provided, uses that; otherwise auto-selects top suggestion.
@@ -92,6 +96,50 @@ def apply_suggestion(*, block_id: int, block_type: str, issue_id: int, target_we
             "excerpt": excerpt,
             "hero_image": selected.get('hero_image', ''),
         }
+    elif block_type == 'new_products':
+        # For new_products, get fresh suggestions (which randomly selects 3 products from pool)
+        from newsletter.services.block_suggestion_service import get_suggestions_for_block
+        result = get_suggestions_for_block(block_type=block_type, issue_id=issue_id, target_week=target_week)
+        suggestions = result.get('suggestions', [])
+        product_pool = result.get('_product_pool', [])  # Get the pool to store in payload
+        
+        if not suggestions:
+            return {'success': False, 'error': 'No recent products available. Make sure there are products that haven\'t been launched yet.'}
+        
+        # If product_ids provided (from frontend), use those specific products
+        if product_ids:
+            products = [s for s in suggestions if s.get('id') in product_ids]
+            # If we couldn't find all requested IDs, fall back to first 3
+            if len(products) < 3:
+                products = suggestions[:3]
+        else:
+            # Use suggestions (already randomly selected 3 products)
+            products = suggestions[:3]
+        
+        # Clean product pool: remove non-serializable fields (like datetime objects)
+        cleaned_pool = []
+        for p in product_pool:
+            cleaned_product = {
+                'id': p.get('id'),
+                'name': p.get('name', ''),
+                'sku': p.get('sku', ''),
+                'image_url': p.get('image_url', ''),
+                'url': p.get('url', ''),
+                'short_description': p.get('short_description', ''),
+                'category_ids': p.get('category_ids', []),
+            }
+            cleaned_pool.append(cleaned_product)
+        
+        # Format payload for new_products block (3 products + pool for future re-chooses)
+        # Don't mark as launched yet - wait for user to confirm
+        payload = {
+            'items': products[:3],
+            'product_pool': cleaned_pool,  # Store cleaned pool so we can reuse it for re-chooses
+            # intro will be added when user confirms
+        }
+        
+        # NOTE: Products are NOT marked as launched here
+        # They will be marked when user clicks "Confirm Selection & Generate Intro"
     else:
         # Skip validation for cached items - faster and more reliable
         suggestions = generate_suggestions(block_type=block_type, target_week=target_week, count=3, skip_validation=True)
@@ -139,6 +187,13 @@ def apply_suggestion(*, block_id: int, block_type: str, issue_id: int, target_we
     
     # Update block payload
     update_block_payload(block_id=block_id, payload=payload)
+    
+    # Mark products as newsletter launched if this is a product block
+    if block_type in ('new_products', 'spotlight'):
+        from newsletter.services.product_tracking import mark_products_newsletter_launched, extract_product_ids_from_payload
+        product_ids = extract_product_ids_from_payload(payload, block_type)
+        if product_ids:
+            mark_products_newsletter_launched(product_ids)
     
     return {
         'success': True,
