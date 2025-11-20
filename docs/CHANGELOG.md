@@ -1,5 +1,51 @@
 # Changelog
 
+## 2025-01-XX - Post Type Isolation Audit & Implementation Plan
+
+### Added
+- **Post Type Audit**: Comprehensive audit of post type architecture (themes, profiles, recipes)
+  - `docs/POST_TYPE_ISOLATION_AUDIT.md` - Complete analysis of isolation between post types
+  - `docs/POST_TYPE_FIXES_IMPLEMENTATION_PLAN.md` - Detailed implementation plan for fixes
+  - `docs/POST_TYPE_FIXES_SUMMARY.md` - Executive summary of fixes needed
+- **Findings**: Identified three areas requiring attention:
+  1. Missing `post_type` variables in routes (mostly resolved)
+  2. Workflow substages visibility (needs naming convention and visual indicators)
+  3. `illustration_method` deprecation (needs migration to `post_type`-based system)
+
+### Documentation
+- Audit confirms architecture is mostly robust with good isolation between types
+- Implementation plan ready for 2-3 week execution
+- Profile development can proceed safely with identified precautions
+
+## 2025-01-XX - Publishing System: Removed Caching & Fixed Section Heading Quotes
+
+### Changed
+- **HTML Generation**: Removed all caching mechanisms - HTML is now always generated fresh
+  - `clan_publisher.py` no longer loads from cache files
+  - `preview_handler.py` no longer writes cache files
+  - Template reloads on each render instead of being cached
+- **Section Headings**: Added quote removal filter to all templates
+  - Template filter: `{{ section.section_heading|replace('"', '')|replace("'", '')|trim }}`
+  - Removes inverted commas from section headings on preview and published posts
+  - Applied to: `clan_post_raw.html`, `post_preview.html`, `header/preview.html`, `clan_post.html`
+
+### Fixed
+- **Quote Display**: Section headings no longer display with quotes on live site
+- **Cache Staleness**: Template updates now take effect immediately without server restart
+- **HTML Consistency**: Preview and published HTML are now identical (except image URLs)
+
+### Updated Files
+- `blog-launchpad/clan_publisher.py` - Removed cache loading, always generates fresh HTML
+- `blog-launchpad/publish/preview_handler.py` - Removed cache writing
+- `blog-launchpad/publish/post_renderer.py` - Template reloads each time
+- `templates/launchpad/clan_post_raw.html` - Added quote removal filter
+- `templates/launchpad/post_preview.html` - Added quote removal filter
+- `templates/header/preview.html` - Added quote removal filter
+- `blog-launchpad/templates/clan_post.html` - Added quote removal filter
+
+### Documentation
+- `docs/temp/PUBLISHING_SYSTEM_UPDATE_2025.md` - New documentation for recent changes
+
 ## 2025-01-09 - Snapshot Block Rewritten for Two-Paragraph Chatty Format
 
 ### Changed
