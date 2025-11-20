@@ -1,5 +1,34 @@
 # Changelog
 
+## 2025-01-09 - Snapshot Block Rewritten for Two-Paragraph Chatty Format
+
+### Changed
+- **Snapshot Block Compilation**: Completely rewritten to generate two separate chatty paragraphs
+  - News paragraph: Chatty overview of news stories with embedded markdown links
+  - Events paragraph: Chatty overview of events with embedded markdown links
+  - LLM identifies related/overlapping topics and mentions them together naturally
+  - Uses conversational, engaging language (3-5 sentences per paragraph)
+- **Component Structure**: Reorganized into modular components
+  - News Component: Fetches and displays top 5 news items with summaries
+  - Events Component: Fetches and displays top 5 event items with summaries
+  - Compile Function: Combines both into two LLM-generated paragraphs
+- **UI Updates**: Updated editor to show separate components with individual "Generate" buttons
+  - Each component has its own output area
+  - "Compile Final Selection" button generates the two paragraphs
+  - Preview displays two paragraphs separately with NEWS/EVENTS labels
+
+### Fixed
+- **LLM Service Method**: Fixed incorrect method call (use `execute_llm_request` instead of `generate`)
+- **Event Listener**: Replaced inline onclick with proper event listener for compile button
+- **Link Conversion**: Added markdown-to-HTML link conversion in preview route for email compatibility
+- **Error Handling**: Removed all fallback text generation - now returns proper errors if LLM fails
+
+### Updated Files
+- `blueprints/newsletter.py` - Rewrote compile_snapshot endpoint, added component generation endpoints
+- `templates/newsletter/partials/block_editor_snapshot.html` - Modular component UI with event listeners
+- `templates/newsletter/partials/snapshot.html` - Two-paragraph preview display
+- `docs/newsletter/blocks/snapshot.md` - Updated documentation
+
 ## 2025-11-19 - New Products Spotlight Enhanced with LLM Intro & Product Tracking
 
 ### Added
