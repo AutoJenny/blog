@@ -1,0 +1,171 @@
+{# Post Type Selection Modal #}
+{# Modal for selecting post type (Theme, Profile, Recipe) when creating a new post #}
+
+<div id="post-type-selection-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Create New Post</h3>
+            <span class="close" onclick="closePostTypeSelectionModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p style="color: #cbd5e1; margin-bottom: 1.5rem;">Select the type of post you want to create:</p>
+            
+            <div class="post-type-options" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <button class="post-type-option" data-type="theme" onclick="selectPostType('theme')">
+                    <div class="post-type-icon" style="font-size: 2.5rem; margin-bottom: 0.75rem; color: #3b82f6;">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="post-type-name" style="font-weight: 600; color: #f1f5f9; margin-bottom: 0.5rem;">Theme</div>
+                    <div class="post-type-description" style="font-size: 0.875rem; color: #94a3b8;">Create a themed blog post</div>
+                </button>
+                
+                <button class="post-type-option" data-type="profile" onclick="selectPostType('profile')">
+                    <div class="post-type-icon" style="font-size: 2.5rem; margin-bottom: 0.75rem; color: #8b5cf6;">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="post-type-name" style="font-weight: 600; color: #f1f5f9; margin-bottom: 0.5rem;">Profile</div>
+                    <div class="post-type-description" style="font-size: 0.875rem; color: #94a3b8;">Create a product/category profile</div>
+                </button>
+                
+                <button class="post-type-option" data-type="recipe" onclick="selectPostType('recipe')">
+                    <div class="post-type-icon" style="font-size: 2.5rem; margin-bottom: 0.75rem; color: #f59e0b;">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="post-type-name" style="font-weight: 600; color: #f1f5f9; margin-bottom: 0.5rem;">Recipe</div>
+                    <div class="post-type-description" style="font-size: 0.875rem; color: #94a3b8;">Create a recipe post</div>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openPostTypeSelectionModal() {
+    const modal = document.getElementById('post-type-selection-modal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+function closePostTypeSelectionModal() {
+    const modal = document.getElementById('post-type-selection-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function selectPostType(type) {
+    closePostTypeSelectionModal();
+    
+    if (type === 'theme') {
+        // Get current week and year
+        const now = new Date();
+        const year = now.getFullYear();
+        const thursday = new Date(now);
+        thursday.setDate(now.getDate() + (4 - now.getDay() + 7) % 7);
+        const jan4 = new Date(thursday.getFullYear(), 0, 4);
+        const jan4Thursday = new Date(jan4);
+        jan4Thursday.setDate(jan4.getDate() + (4 - jan4.getDay() + 7) % 7);
+        const weekNumber = Math.ceil((thursday - jan4Thursday) / (7 * 24 * 60 * 60 * 1000)) + 1;
+        
+        // Redirect to calendar ideas week page
+        window.location.href = `/planning/calendar/ideas/week/${weekNumber}?year=${year}&week=${weekNumber}`;
+    } else if (type === 'profile') {
+        // Open profile creation modal
+        openProfileCreationModal();
+    } else if (type === 'recipe') {
+        // Redirect to recipe creation (or open recipe modal if needed)
+        // For now, redirect to recipes page
+        window.location.href = '/recipes';
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('post-type-selection-modal');
+    if (event.target === modal) {
+        closePostTypeSelectionModal();
+    }
+}
+</script>
+
+<style>
+#post-type-selection-modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+#post-type-selection-modal .modal-content {
+    background: #1e293b;
+    margin: 10% auto;
+    padding: 0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+}
+
+#post-type-selection-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+#post-type-selection-modal .modal-header h3 {
+    color: #f1f5f9;
+    margin: 0;
+}
+
+#post-type-selection-modal .close {
+    color: #94a3b8;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#post-type-selection-modal .close:hover {
+    color: #f1f5f9;
+}
+
+#post-type-selection-modal .modal-body {
+    padding: 1.5rem;
+}
+
+.post-type-option {
+    background: #0f172a;
+    border: 2px solid #334155;
+    border-radius: 8px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.post-type-option:hover {
+    background: #1e293b;
+    border-color: #475569;
+    transform: translateY(-2px);
+}
+
+.post-type-option:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .post-type-options {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+

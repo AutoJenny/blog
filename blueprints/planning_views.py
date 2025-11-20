@@ -35,11 +35,10 @@ def planning_concept(post_id):
     from flask import redirect, url_for, request
     from utils.taxonomy_helpers import get_post_type
     
-    # Check post type - redirect recipe/profile posts away from Planning stages
+    # Check post type - redirect recipe posts away from Planning stages
+    # Profile posts now have Planning stage (like themed posts)
     post_type = get_post_type(post_id)
     if post_type == 'recipe':
-        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
-    elif post_type == 'profile':
         return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
     
     # CRITICAL: Preserve year/week query parameters from URL (canonical source)
@@ -78,11 +77,10 @@ def planning_research(post_id):
     from utils.week_post_resolver import resolve_post_for_week
     from utils.taxonomy_helpers import get_post_type
     
-    # Check post type - redirect recipe/profile posts away from Planning stages
+    # Check post type - redirect recipe posts away from Planning stages
+    # Profile posts now have Research stage (like themed posts)
     post_type = get_post_type(post_id)
     if post_type == 'recipe':
-        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
-    elif post_type == 'profile':
         return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
     
     year = request.args.get('year', type=int)

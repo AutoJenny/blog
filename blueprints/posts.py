@@ -381,6 +381,90 @@ def api_posts():
         return jsonify({"error": str(e)}), 500
 
 
+@bp.route('/api/posts/create-profile', methods=['POST'])
+def api_create_profile_post():
+    """Create a new profile post from a product"""
+    try:
+        from flask import request, jsonify
+        from datetime import datetime
+        import re
+        
+        data = request.get_json()
+        product_id = data.get('product_id')
+        product_name = data.get('product_name', 'Unnamed Product')
+        
+        if not product_id:
+            return jsonify({'success': False, 'error': 'product_id is required'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify product exists and get its primary category
+            cursor.execute("""
+                SELECT id, name, category_ids
+                FROM clan_products 
+                WHERE id = %s
+            """, (product_id,))
+            product = cursor.fetchone()
+            if not product:
+                return jsonify({'success': False, 'error': 'Product not found'}), 404
+            
+            # Get primary category from product (first category in category_ids array)
+            import json
+            category_ids = product.get('category_ids')
+            primary_category_id = None
+            if category_ids:
+                if isinstance(category_ids, list) and len(category_ids) > 0:
+                    primary_category_id = category_ids[0]
+                elif isinstance(category_ids, str):
+                    try:
+                        parsed = json.loads(category_ids)
+                        if isinstance(parsed, list) and len(parsed) > 0:
+                            primary_category_id = parsed[0]
+                    except:
+                        pass
+            
+            # Generate slug from product name
+            base = re.sub(r"[^a-z0-9\-]+", '-', (product_name or '').lower().strip().replace(' ', '-'))
+            base = re.sub(r"-+", '-', base).strip('-') or 'profile'
+            slug = base
+            
+            # Ensure slug uniqueness
+            suffix = 1
+            while True:
+                cursor.execute("SELECT 1 FROM post WHERE slug = %s LIMIT 1", (slug,))
+                if not cursor.fetchone():
+                    break
+                suffix += 1
+                slug = f"{base}-{suffix}"
+            
+            # Create post with profile type
+            # Note: post_type is determined by presence of profile_category_id (checked by get_post_type)
+            # We set both profile_product_id and profile_category_id for product profiles
+            cursor.execute("""
+                INSERT INTO post (title, slug, status, profile_type, profile_product_id, profile_category_id, created_at, updated_at)
+                VALUES (%s, %s, 'draft', 'product', %s, %s, NOW(), NOW())
+                RETURNING id
+            """, (product_name, slug, product_id, primary_category_id))
+            
+            post_id = cursor.fetchone()['id']
+            
+            # Create post_development entry
+            cursor.execute("""
+                INSERT INTO post_development (post_id, idea_seed, updated_at)
+                VALUES (%s, %s, NOW())
+            """, (post_id, f"Profile post for {product_name}"))
+            
+            return jsonify({
+                'success': True,
+                'post_id': post_id,
+                'message': 'Profile post created successfully'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error creating profile post: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @bp.route('/api/posts/<int:post_id>/fields/status', methods=['POST'])
 def api_update_post_status(post_id):
     """

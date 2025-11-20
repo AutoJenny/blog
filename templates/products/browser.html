@@ -167,32 +167,9 @@
                 <p>Browse and review CLAN product data</p>
             </div>
 
-            <!-- Select Source Component -->
+            <!-- Product Browser Component -->
             <div class="browser-source-section">
-                {% include 'includes/product_search_component.html' %}
-            </div>
-
-            <!-- Navigation Controls -->
-            <div class="browser-navigation" style="margin: 2rem 0;">
-                <div class="nav-controls" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px;">
-                    <button id="prev-product" class="btn btn-secondary" disabled style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #475569; background: #334155; color: #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
-                        <i class="fas fa-chevron-left"></i> Previous
-                    </button>
-                    <div class="nav-info" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 0;">
-                        <span id="current-product-info" style="color: #f1f5f9; font-weight: 600; text-align: center;">Select a product to browse</span>
-                        <div class="nav-mode-toggle" style="display: flex; gap: 1rem;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; color: #cbd5e1; cursor: pointer; font-size: 0.875rem;">
-                                <input type="radio" name="nav-mode" value="id" checked> By ID
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 0.5rem; color: #cbd5e1; cursor: pointer; font-size: 0.875rem;">
-                                <input type="radio" name="nav-mode" value="name"> A-Z
-                            </label>
-                        </div>
-                    </div>
-                    <button id="next-product" class="btn btn-secondary" disabled style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #475569; background: #334155; color: #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
-                        Next <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
+                {% include 'includes/product_browser_component.html' %}
             </div>
 
             <!-- Product Data Display -->
@@ -245,142 +222,39 @@
 </div>
 
 <script>
-// Product Browser Navigation
+// Product Browser Page - uses product_browser_component.html include
 let currentProductId = null;
-let allProductIds = [];
-let allProductNames = [];
-let currentIndex = -1;
-let navMode = 'id'; // 'id' or 'name'
 
-// Load product list on page load
+// Load product from URL on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if we have a product_id in URL
     const urlParams = new URLSearchParams(window.location.search);
     const productIdParam = urlParams.get('product_id');
     
-    loadProductList();
-    setupNavigation();
-    setupSourceSelection();
-    // Product search is initialized by product_search_component.html include
+    // Set up handler for product browser component
+    window.onProductBrowserSelect = function(productId, productName) {
+        currentProductId = productId;
+        // Update component's current product
+        if (window.productBrowserComponent) {
+            window.productBrowserComponent.setCurrentProduct(productId);
+        }
+        // Load and display product
+        loadProduct(productId);
+    };
     
-    // If product_id in URL, load it after products are loaded
+    // If product_id in URL, load it
     if (productIdParam) {
-        const checkAndLoad = () => {
-            if (allProductIds.length > 0) {
-                const productId = parseInt(productIdParam);
-                if (productId && allProductIds.includes(productId)) {
-                    currentProductId = productId;
-                    updateCurrentIndex();
-                    updateNavigationState();
+        const productId = parseInt(productIdParam);
+        if (productId) {
+            // Wait for component to be ready
+            setTimeout(() => {
+                if (window.productBrowserComponent) {
+                    window.productBrowserComponent.setCurrentProduct(productId);
                 }
-            } else {
-                setTimeout(checkAndLoad, 100);
-            }
-        };
-        setTimeout(checkAndLoad, 100);
+                loadProduct(productId);
+            }, 200);
+        }
     }
 });
-
-// Product search is now handled by product_search_component.html include
-// Override the default select handler for this page
-window.onProductSearchSelect = function(productId, productName) {
-    currentProductId = productId;
-    updateCurrentIndex();
-    updateNavigationState();
-    loadProduct(productId);
-};
-
-function loadProductList() {
-    fetch('/products/api/list')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                allProductIds = data.products.map(p => p.id).sort((a, b) => a - b);
-                allProductNames = data.products
-                    .map(p => ({ id: p.id, name: p.name || 'Unnamed Product' }))
-                    .sort((a, b) => a.name.localeCompare(b.name));
-                
-                // If we have a current product ID, update index
-                if (currentProductId) {
-                    updateCurrentIndex();
-                }
-                updateNavigationState();
-            }
-        })
-        .catch(error => console.error('Error loading products:', error));
-}
-
-function setupNavigation() {
-    const prevBtn = document.getElementById('prev-product');
-    const nextBtn = document.getElementById('next-product');
-    const modeRadios = document.querySelectorAll('input[name="nav-mode"]');
-
-    if (prevBtn) {
-        prevBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateProduct(-1);
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateProduct(1);
-        });
-    }
-
-    modeRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            navMode = e.target.value;
-            if (currentProductId) {
-                updateCurrentIndex();
-                updateNavigationState();
-            }
-        });
-    });
-}
-
-function setupSourceSelection() {
-    // When a product is selected from the search, load it
-    const selectedProductDiv = document.getElementById('content-generator-selected-product');
-    if (selectedProductDiv) {
-        // Listen for product selection (this would be set up by the search component)
-        // For now, we'll add a simple handler
-        document.addEventListener('productSelected', (e) => {
-            loadProduct(e.detail.productId);
-        });
-    }
-}
-
-function navigateProduct(direction) {
-    // Wait for product list to be loaded
-    if (allProductIds.length === 0) {
-        console.log('Product list not loaded yet');
-        return;
-    }
-
-    const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
-    
-    // If no product selected yet, start at first/last
-    if (currentIndex === -1) {
-        currentIndex = direction === 1 ? 0 : list.length - 1;
-    } else {
-        currentIndex += direction;
-    }
-    
-    // Clamp to valid range
-    if (currentIndex < 0) {
-        currentIndex = 0;
-    }
-    if (currentIndex >= list.length) {
-        currentIndex = list.length - 1;
-    }
-
-    const productId = list[currentIndex];
-    if (productId) {
-        loadProduct(productId);
-    }
-}
 
 function loadProduct(productId) {
     fetch(`/products/api/${productId}/full`)
@@ -395,8 +269,6 @@ function loadProduct(productId) {
         .then(data => {
             if (data.success) {
                 currentProductId = productId;
-                updateCurrentIndex();
-                updateNavigationState();
                 displayProduct(data.product_data, data.validation);
             } else {
                 alert('Error loading product: ' + (data.error || 'Unknown error'));
@@ -408,60 +280,8 @@ function loadProduct(productId) {
         });
 }
 
-function updateCurrentIndex() {
-    if (!currentProductId) {
-        currentIndex = -1;
-        return;
-    }
-
-    const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
-    const index = list.indexOf(currentProductId);
-    if (index !== -1) {
-        currentIndex = index;
-    } else {
-        currentIndex = -1;
-    }
-}
-
-function updateNavigationState() {
-    const prevBtn = document.getElementById('prev-product');
-    const nextBtn = document.getElementById('next-product');
-    const infoSpan = document.getElementById('current-product-info');
-
-    if (!prevBtn || !nextBtn || !infoSpan) return;
-
-    const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
-    const total = list.length;
-
-    if (currentIndex === -1 || total === 0) {
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-        prevBtn.style.opacity = '0.5';
-        prevBtn.style.cursor = 'not-allowed';
-        nextBtn.style.opacity = '0.5';
-        nextBtn.style.cursor = 'not-allowed';
-        infoSpan.textContent = 'Select a product to browse';
-    } else {
-        const isAtStart = currentIndex === 0;
-        const isAtEnd = currentIndex >= total - 1;
-        
-        prevBtn.disabled = isAtStart;
-        nextBtn.disabled = isAtEnd;
-        prevBtn.style.opacity = isAtStart ? '0.5' : '1';
-        prevBtn.style.cursor = isAtStart ? 'not-allowed' : 'pointer';
-        nextBtn.style.opacity = isAtEnd ? '0.5' : '1';
-        nextBtn.style.cursor = isAtEnd ? 'not-allowed' : 'pointer';
-        
-        const current = navMode === 'id' 
-            ? `Product ID: ${currentProductId}`
-            : allProductNames.find(p => p.id === currentProductId)?.name || `Product ${currentProductId}`;
-        infoSpan.textContent = `${current} (${currentIndex + 1} of ${total})`;
-    }
-}
-
 function displayProduct(productData, validation) {
-    // This would render the product data using the include
-    // For now, we'll reload the page with the product ID
+    // Reload the page with the product ID to show full product data
     window.location.href = `/products/browser?product_id=${currentProductId}`;
 }
 

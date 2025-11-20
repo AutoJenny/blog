@@ -184,11 +184,10 @@ def planning_calendar_taxonomy(post_id):
     from flask import redirect, url_for
     from utils.taxonomy_helpers import get_post_type
     
-    # Check post type - redirect recipe/profile posts away from Planning stages
+    # Check post type - redirect recipe posts away from Planning stages
+    # Profile posts now have Planning stage (like themed posts)
     post_type = get_post_type(post_id)
     if post_type == 'recipe':
-        return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
-    elif post_type == 'profile':
         return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
     
     try:
@@ -203,6 +202,44 @@ def planning_calendar_taxonomy(post_id):
                                       post_type=post_type,
                                       blueprint_name='planning',
                                       error='Post not found')
+            
+            # Auto-assign taxonomy for profile posts if not already assigned
+            if post_type == 'profile':
+                cursor.execute("""
+                    SELECT content_type_id, theme_id, format_id
+                    FROM post
+                    WHERE id = %s
+                """, (post_id,))
+                post_taxonomy = cursor.fetchone()
+                
+                # If taxonomy not assigned, auto-assign "Products & Producers"
+                if not post_taxonomy.get('content_type_id'):
+                    # Get Products & Producers content type
+                    cursor.execute("""
+                        SELECT id, tier_id, parent_id
+                        FROM taxonomy_item
+                        WHERE slug = 'products-producers'
+                    """)
+                    content_type_result = cursor.fetchone()
+                    
+                    if content_type_result:
+                        content_type_id = content_type_result['id']
+                        theme_id = content_type_result['parent_id']  # Get parent theme
+                        
+                        # Get default format (Article)
+                        cursor.execute("""
+                            SELECT id FROM taxonomy_item WHERE slug = 'article'
+                        """)
+                        format_result = cursor.fetchone()
+                        format_id = format_result['id'] if format_result else None
+                        
+                        # Update post with auto-assigned taxonomy
+                        cursor.execute("""
+                            UPDATE post
+                            SET theme_id = %s, content_type_id = %s, format_id = %s, updated_at = NOW()
+                            WHERE id = %s
+                        """, (theme_id, content_type_id, format_id, post_id))
+                        logger.info(f"Auto-assigned taxonomy to profile post {post_id}: theme={theme_id}, content_type={content_type_id}, format={format_id}")
             
             # Get full post data for header
             cursor.execute("""
