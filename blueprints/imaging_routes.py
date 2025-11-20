@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from config.database import db_manager
 from utils.taxonomy_helpers import get_post_type, get_illustration_method_with_post
 from utils.week_post_resolver import resolve_post_for_week
-from config.authoring_panel_configs import get_panel_config
+from config.authoring_panel_configs import get_panel_config, get_panel_config_by_post_type
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,24 +40,16 @@ def register_routes(bp):
             elif url_post_type == 'recipe':
                 logger.info(f"Recipe post {post_id} - using URL post_id directly (not resolving via week)")
             
-            # Recipe posts should ALWAYS use LLM-creation (image generation), not Photo-harvesting
-            if url_post_type == 'recipe':
-                illustration_method = 'LLM-creation'
-            else:
-                # Use utility function to get illustration_method for non-recipe posts
-                resolved_for_method, illustration_method = get_illustration_method_with_post(
-                    post_id, url_year, url_week
-                )
-                # Use the resolved post_id from illustration method resolution if it's different (but not for recipes)
-                if resolved_for_method != target_post_id:
-                    target_post_id = resolved_for_method
+            # Get post_type for panel configuration (illustration_method is deprecated)
+            post_type = get_post_type(target_post_id)
             
-            # Check if route is active (Photo-harvesting is inactive but kept in reserve)
-            panel_config = get_panel_config(illustration_method)
-            if not panel_config.get('active', True):
-                # Route is inactive, redirect to LLM-creation route
-                illustration_method = 'LLM-creation'
-                panel_config = get_panel_config('LLM-creation')
+            # Get panel configuration for this post type
+            panel_config = get_panel_config_by_post_type(post_type)
+            
+            # Deprecated: illustration_method always 'LLM-creation' for backward compatibility
+            illustration_method = 'LLM-creation'
+            
+            # Photo-harvesting is deprecated - no redirect needed
             
             with db_manager.get_cursor() as cursor:
                 # Get post data
@@ -71,16 +63,7 @@ def register_routes(bp):
                 if not post:
                     return f"Post {target_post_id} not found", 404
                 
-                # Recipe posts should NEVER use Photo-harvesting - skip this check for recipes
-                if url_post_type != 'recipe':
-                    # Check if Photo-harvesting route is active before redirecting (only for non-recipe posts)
-                    photo_harvesting_config = get_panel_config('Photo-harvesting')
-                    if illustration_method == 'Photo-harvesting' and photo_harvesting_config.get('active', True):
-                        redirect_url = url_for('imaging.imaging_sections_photo_selection', post_id=post_id)
-                        if url_year and url_week:
-                            redirect_url += f'?year={url_year}&week={url_week}'
-                        return redirect(redirect_url)
-                # If Photo-harvesting is inactive or this is a recipe post, continue with LLM-creation route
+                # Photo-harvesting is deprecated - always use LLM-creation (image generation)
                 
                 # Format dates for display
                 post_created = post['created_at'].strftime('%Y-%m-%d %H:%M') if post['created_at'] else 'Unknown'

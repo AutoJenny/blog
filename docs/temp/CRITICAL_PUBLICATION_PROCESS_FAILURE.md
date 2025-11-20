@@ -1,11 +1,19 @@
 # CRITICAL: Publication Process Architecture Failure
 
+## ⚠️ NOTE: This document describes the OLD architecture. See `PUBLISHING_SYSTEM_UPDATE_2025.md` for current implementation.
+
 ## Executive Summary
 
-**Status**: CRITICAL BUG - System Architecture Violation  
-**Severity**: HIGH - Causes content discrepancies between preview and live publication  
-**Root Cause**: Implementation of dual rendering processes in direct violation of explicit requirements  
-**Impact**: Days of wasted debugging time, missing content sections, styling inconsistencies, and loss of trust in the system
+**Status**: ~~CRITICAL BUG - System Architecture Violation~~ **FIXED**  
+**Severity**: ~~HIGH~~ **RESOLVED**  
+**Root Cause**: ~~Implementation of dual rendering processes~~ **Now uses single rendering function**  
+**Impact**: ~~Days of wasted debugging time~~ **System now works correctly**
+
+**Current Status (2025)**: 
+- ✅ Single rendering function implemented (`render_post_html()`)
+- ✅ Single template used (`clan_post_raw.html`)
+- ✅ All caching removed - HTML always generated fresh
+- ✅ Section heading quotes removed via template filter
 
 ---
 

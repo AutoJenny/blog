@@ -92,19 +92,12 @@
                 <i class="fas fa-pen-nib"></i>
                 Authoring
             </a>
-            {% if illustration_method|default('LLM-creation') == 'Photo-harvesting' %}
-            <a href="{{ url_for('imaging.imaging_sections_photo_selection', post_id=post_id) }}" 
-               class="stage-btn" data-stage="imaging">
-                <i class="fas fa-camera"></i>
-                Imaging
-            </a>
-            {% else %}
+            {# Photo-harvesting is deprecated, always use LLM-creation (image generation) #}
             <a href="{{ url_for('imaging.imaging_sections_image_generation', post_id=post_id) }}" 
                class="stage-btn" data-stage="imaging">
                 <i class="fas fa-magic"></i>
                 Imaging
             </a>
-            {% endif %}
             <a href="{{ url_for('header.header_title_summary', post_id=post_id) }}" 
                class="stage-btn" data-stage="header">
                 <i class="fas fa-heading"></i>

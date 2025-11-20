@@ -11,7 +11,8 @@
     window.postType = {{ post_type|tojson|safe if post_type else 'null' }};
     window.year = {{ year | default('null') }};
     window.week = {{ week | default('null') }};
-    window.illustrationMethod = "{{ illustration_method | default('LLM-creation') }}";
+    // illustration_method is deprecated, always use LLM-creation
+    window.illustrationMethod = "LLM-creation";
 </script>
 
 {% include 'shared/blog_pipeline_header.html' %}
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Route Indicator -->
             <div class="route-indicator header-page">
                 <i class="fas fa-camera"></i>
-                <span>Illustration Route: <strong>{{ illustration_method | default('LLM-creation') }}</strong></span>
+                <span>Illustration Route: <strong>LLM-creation</strong></span>
                 {% if year and week %}
                 <span>Week {{ week }}, {{ year }}</span>
                 {% endif %}
