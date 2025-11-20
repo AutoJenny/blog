@@ -213,6 +213,68 @@
     color: #64748b;
 }
 
+/* Shared vs Type-Specific Substage Indicators */
+/* Shared substages - subtle styling with small circle indicator */
+.sub-stage-shared {
+    position: relative;
+}
+
+.sub-stage-shared::before {
+    content: '○';
+    font-size: 0.5rem;
+    color: #64748b;
+    margin-right: 0.25rem;
+    vertical-align: middle;
+    opacity: 0.6;
+}
+
+/* Type-specific substages - colored left border matching post type */
+.sub-stage-recipe {
+    border-left: 3px solid #fcd34d;
+    padding-left: 0.5rem;
+    margin-left: 0.25rem;
+}
+
+.sub-stage-recipe:hover {
+    border-left-color: #fbbf24;
+}
+
+.sub-stage-profile {
+    border-left: 3px solid #a5b4fc;
+    padding-left: 0.5rem;
+    margin-left: 0.25rem;
+}
+
+.sub-stage-profile:hover {
+    border-left-color: #818cf8;
+}
+
+.sub-stage-generated {
+    border-left: 3px solid #a78bfa;
+    padding-left: 0.5rem;
+    margin-left: 0.25rem;
+}
+
+.sub-stage-generated:hover {
+    border-left-color: #8b5cf6;
+}
+
+/* Active state for type-specific substages */
+.sub-stage-recipe.active {
+    border-left-color: #f59e0b;
+    background: #451a03;
+}
+
+.sub-stage-profile.active {
+    border-left-color: #6366f1;
+    background: #1e1b4b;
+}
+
+.sub-stage-generated.active {
+    border-left-color: #7c3aed;
+    background: #2e1065;
+}
+
 /* Subtitle */
 .subtitle {
     color: #94a3b8;
