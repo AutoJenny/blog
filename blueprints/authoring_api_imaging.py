@@ -54,19 +54,20 @@ def authoring_sections_image_concepts(post_id):
             if not post:
                 return "Post not found", 404
             
-            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
-            illustration_method = post.get('illustration_method') or 'LLM-creation'
-            
-            # Get panel configuration for this illustration method
-            panel_config = get_panel_config(illustration_method)
-            
-            # Log which post and illustration method are being used
-            if target_post_id != post_id:
-                logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
-            
-            # Get post_type for header
+            # Get post_type and use it for panel configuration
             from utils.taxonomy_helpers import get_post_type
             post_type = get_post_type(target_post_id)
+            
+            # Get panel configuration for this post type
+            from config.authoring_panel_configs import get_panel_config_by_post_type
+            panel_config = get_panel_config_by_post_type(post_type)
+            
+            # Deprecated: illustration_method always 'LLM-creation' for backward compatibility
+            illustration_method = 'LLM-creation'
+            
+            # Log which post and post type are being used
+            if target_post_id != post_id:
+                logger.info(f"Post type determined from post {target_post_id}: {post_type} (URL had post_id {post_id})")
             
             # Get content_type_name for header
             cursor.execute("""
@@ -134,12 +135,12 @@ def authoring_sections_image_prompts(post_id):
             if not post:
                 return "Post not found", 404
             
-            # Get illustration_method from taxonomy (default to 'LLM-creation' if null/not found)
-            illustration_method = post.get('illustration_method') or 'LLM-creation'
-            
-            # Get post_type for header
+            # Get post_type for header and panel config
             from utils.taxonomy_helpers import get_post_type
             post_type = get_post_type(target_post_id)
+            
+            # Deprecated: illustration_method always 'LLM-creation' for backward compatibility
+            illustration_method = 'LLM-creation'
             
             # Get content type name for category banner
             cursor.execute("""
@@ -151,9 +152,9 @@ def authoring_sections_image_prompts(post_id):
             result = cursor.fetchone()
             content_type_name = result.get('content_type_name') if result else None
             
-            # Log which post and illustration method are being used
+            # Log which post and post type are being used
             if target_post_id != post_id:
-                logger.info(f"Illustration method determined from post {target_post_id}: {illustration_method} (URL had post_id {post_id})")
+                logger.info(f"Post type determined from post {target_post_id}: {post_type} (URL had post_id {post_id})")
             
             return render_template('authoring/sections/image_prompts.html', 
                                  post_id=post_id,  # Keep original post_id for URL consistency
@@ -815,8 +816,8 @@ def api_generate_image_concepts(post_id, section_id):
                 except Exception as e:
                     logger.error(f"Error parsing topic_allocation: {e}")
             
-            # Determine prompt by illustration_method (no fallbacks)
-            concepts_prompt_name = 'Image Concepts Generation (Photo-harvesting)' if (post_data.get('illustration_method') == 'Photo-harvesting') else 'Image Concepts Generation'
+            # Photo-harvesting is deprecated, always use LLM-creation prompt
+            concepts_prompt_name = 'Image Concepts Generation'
             # Get the image concepts prompt
             cursor.execute("""
                 SELECT prompt_text, system_prompt
@@ -838,26 +839,15 @@ def api_generate_image_concepts(post_id, section_id):
             logger.info(f"[DEBUG] System prompt preview: {system_prompt[:100] if system_prompt else 'None'}")
             logger.info(f"[DEBUG] *** SYSTEM PROMPT DEBUG ***")
             
-            # Replace placeholders with actual data
-            if post_data.get('illustration_method') == 'Photo-harvesting':
-                # STRICT: Use only section_description; zero out all other inputs
-                only_desc = section['section_description'] or ''
-                prompt_text = prompt_text.replace('[data:idea_seed]', '')
-                prompt_text = prompt_text.replace('[data:expanded_idea]', '')
-                prompt_text = prompt_text.replace('[data:title]', '')
-                prompt_text = prompt_text.replace('[data:subtitle]', only_desc)
-                prompt_text = prompt_text.replace('[data:section_text]', '')
-                prompt_text = prompt_text.replace('[data:selected_concept]', '')
-                prompt_text = prompt_text.replace('[data:topics]', '')
-            else:
-                prompt_text = prompt_text.replace('[data:idea_seed]', post_data['idea_seed'] or '')
-                prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['expanded_idea'] or '')
-                prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
-                prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
-                prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
-                prompt_text = prompt_text.replace('[data:selected_concept]', '')
-                topics_text = '\n'.join([f'- {topic}' for topic in topics])
-                prompt_text = prompt_text.replace('[data:topics]', topics_text)
+            # Replace placeholders with actual data (Photo-harvesting is deprecated)
+            prompt_text = prompt_text.replace('[data:idea_seed]', post_data['idea_seed'] or '')
+            prompt_text = prompt_text.replace('[data:expanded_idea]', post_data['expanded_idea'] or '')
+            prompt_text = prompt_text.replace('[data:title]', section['section_heading'] or '')
+            prompt_text = prompt_text.replace('[data:subtitle]', section['section_description'] or '')
+            prompt_text = prompt_text.replace('[data:section_text]', section['polished'] or section['draft'] or '')
+            prompt_text = prompt_text.replace('[data:selected_concept]', '')
+            topics_text = '\n'.join([f'- {topic}' for topic in topics])
+            prompt_text = prompt_text.replace('[data:topics]', topics_text)
             
             # Prepare messages for LLM
             messages = []

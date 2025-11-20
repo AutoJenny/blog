@@ -9,7 +9,8 @@
         window.postId = {{ post_id }};
         window.originalPostId = {{ original_post_id if original_post_id is defined else post_id }};
         window.weekYear = { year: {{ year if year is defined else 'null' }}, week: {{ week if week is defined else 'null' }} };
-        window.illustrationMethod = '{{ illustration_method if illustration_method is defined else "LLM-creation" }}';
+        // illustration_method is deprecated, always use LLM-creation
+        window.illustrationMethod = 'LLM-creation';
         window.weekHasPost = {{ 'true' if week_has_post is defined and week_has_post else 'false' }};
     </script>
 
@@ -75,8 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Output Panel -->
             {% include 'header/includes/output_panel_title_summary.html' %}
             
-            <!-- Header Image Photo-harvesting Panels (only for Photo-harvesting route) -->
-            {% if illustration_method and illustration_method == 'Photo-harvesting' %}
+            <!-- Header Image Photo-harvesting Panels (DEPRECATED - Photo-harvesting is no longer used) -->
+            {% if False %}
                 <!-- Main Action: Generate & Search Header Image -->
                 <div class="panel" style="background: #f8f9fa; border: 2px solid #1e40af; margin-bottom: 1.5rem;">
                     <div class="panel-content" style="padding: 1.5rem;">

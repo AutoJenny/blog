@@ -19,7 +19,8 @@
     window.currentStage = 'authoring';
         window.currentSubstage = 'image-concepts';
   window.postId = {{ post_id|default(0) }};
-  window.illustrationMethod = '{{ illustration_method|default("LLM-creation") }}';
+  // illustration_method is deprecated, always use LLM-creation
+  window.illustrationMethod = 'LLM-creation';
   
     // SINGLE SOURCE OF TRUTH: URL query parameters only
     // Week context is read from URL via WeekContext module (no window vars needed)
@@ -93,9 +94,9 @@ document.addEventListener('DOMContentLoaded', function() {
         {% include 'shared/sections_panel.html' %}
         <div class="editor-panel">
             <!-- Route Indicator -->
-            <div class="route-indicator" style="background: {% if illustration_method == 'Photo-harvesting' %}#1e40af{% else %}#3b82f6{% endif %};">
-                <i class="fas {% if illustration_method == 'Photo-harvesting' %}fa-camera{% else %}fa-magic{% endif %}" style="font-size: 1.1rem;"></i>
-                <span>Illustration Route: <strong>{{ illustration_method }}</strong></span>
+            <div class="route-indicator" style="background: #3b82f6;">
+                <i class="fas fa-magic" style="font-size: 1.1rem;"></i>
+                <span>Illustration Route: <strong>LLM-creation</strong></span>
             </div>
             
             <!-- Dynamically render panels from configuration (sorted by order) -->
