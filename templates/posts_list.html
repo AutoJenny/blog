@@ -197,6 +197,12 @@
         </table>
     </div>
 </div>
+
+{# Include Post Type Selection Modal #}
+{% include 'includes/post_type_selection_modal.html' %}
+
+{# Include Profile Creation Modal #}
+{% include 'includes/profile_creation_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -261,6 +267,16 @@
             // The backend will restore to previous_status if available, otherwise 'draft'
             await updatePostStatus(postId, 'restore');
         }
+    }
+
+    // New Post button handler - opens post type selection modal
+    const newPostBtn = document.getElementById('newPostBtn');
+    if (newPostBtn) {
+        newPostBtn.addEventListener('click', () => {
+            if (typeof openPostTypeSelectionModal === 'function') {
+                openPostTypeSelectionModal();
+            }
+        });
     }
 
     // Simple client-side sorting

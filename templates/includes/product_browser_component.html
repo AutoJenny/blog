@@ -1,0 +1,315 @@
+{# Product Browser Component Include #}
+{# Reusable component for product browsing and selection #}
+{# Includes all HTML, JavaScript, and CSS #}
+
+<!-- Product Browser Component -->
+<div class="product-browser-component">
+    <!-- Product Search Component -->
+    {% include 'includes/product_search_component.html' %}
+    
+    <!-- Navigation Controls (optional, can be hidden via CSS) -->
+    <div class="browser-navigation" id="product-browser-navigation" style="margin: 1.5rem 0;">
+        <div class="nav-controls" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px;">
+            <button id="product-browser-prev" class="btn btn-secondary" disabled style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #475569; background: #334155; color: #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <div class="nav-info" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 0;">
+                <span id="product-browser-current-info" style="color: #f1f5f9; font-weight: 600; text-align: center;">Select a product to browse</span>
+                <div class="nav-mode-toggle" style="display: flex; gap: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #cbd5e1; cursor: pointer; font-size: 0.875rem;">
+                        <input type="radio" name="product-browser-nav-mode" value="id" checked> By ID
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #cbd5e1; cursor: pointer; font-size: 0.875rem;">
+                        <input type="radio" name="product-browser-nav-mode" value="name"> A-Z
+                    </label>
+                </div>
+            </div>
+            <button id="product-browser-next" class="btn btn-secondary" disabled style="padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #475569; background: #334155; color: #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Product Browser Component JavaScript
+(function() {
+    'use strict';
+    
+    // Product Browser state
+    let currentProductId = null;
+    let allProductIds = [];
+    let allProductNames = [];
+    let currentIndex = -1;
+    let navMode = 'id'; // 'id' or 'name'
+    let showNavigation = true; // Can be set to false to hide navigation
+    
+    // Initialize product browser
+    function initializeProductBrowser() {
+        // Check if navigation should be shown
+        const navElement = document.getElementById('product-browser-navigation');
+        if (navElement) {
+            // Check for data attribute or CSS class to hide navigation
+            if (navElement.hasAttribute('data-hide-navigation') || 
+                navElement.classList.contains('hide-navigation')) {
+                showNavigation = false;
+                navElement.style.display = 'none';
+            }
+        }
+        
+        // Load product list
+        loadProductList();
+        
+        // Setup navigation if shown
+        if (showNavigation) {
+            setupNavigation();
+        }
+        
+        // Override product search select handler
+        window.onProductSearchSelect = function(productId, productName) {
+            currentProductId = productId;
+            if (showNavigation) {
+                updateCurrentIndex();
+                updateNavigationState();
+            }
+            
+            // Notify parent component
+            if (window.onProductBrowserSelect && typeof window.onProductBrowserSelect === 'function') {
+                window.onProductBrowserSelect(productId, productName);
+            }
+        };
+    }
+    
+    // Load product list
+    function loadProductList() {
+        fetch('/products/api/list')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    allProductIds = data.products.map(p => p.id).sort((a, b) => a - b);
+                    allProductNames = data.products
+                        .map(p => ({ id: p.id, name: p.name || 'Unnamed Product' }))
+                        .sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    if (showNavigation && currentProductId) {
+                        updateCurrentIndex();
+                        updateNavigationState();
+                    }
+                }
+            })
+            .catch(error => console.error('Error loading products:', error));
+    }
+    
+    // Setup navigation controls
+    function setupNavigation() {
+        const prevBtn = document.getElementById('product-browser-prev');
+        const nextBtn = document.getElementById('product-browser-next');
+        const modeRadios = document.querySelectorAll('input[name="product-browser-nav-mode"]');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateProduct(-1);
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateProduct(1);
+            });
+        }
+
+        modeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                navMode = e.target.value;
+                if (currentProductId) {
+                    updateCurrentIndex();
+                    updateNavigationState();
+                }
+            });
+        });
+    }
+    
+    // Navigate to previous/next product
+    function navigateProduct(direction) {
+        if (allProductIds.length === 0) {
+            console.log('Product list not loaded yet');
+            return;
+        }
+
+        const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
+        
+        if (currentIndex === -1) {
+            currentIndex = direction === 1 ? 0 : list.length - 1;
+        } else {
+            currentIndex += direction;
+        }
+        
+        if (currentIndex < 0) {
+            currentIndex = 0;
+        }
+        if (currentIndex >= list.length) {
+            currentIndex = list.length - 1;
+        }
+
+        const productId = list[currentIndex];
+        if (productId) {
+            loadProduct(productId);
+        }
+    }
+    
+    // Load a specific product
+    function loadProduct(productId) {
+        fetch(`/products/api/${productId}/full`)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || `HTTP ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    currentProductId = productId;
+                    if (showNavigation) {
+                        updateCurrentIndex();
+                        updateNavigationState();
+                    }
+                    
+                    // Notify parent component
+                    if (window.onProductBrowserSelect && typeof window.onProductBrowserSelect === 'function') {
+                        window.onProductBrowserSelect(productId, data.product_data.name || 'Unnamed Product');
+                    }
+                } else {
+                    alert('Error loading product: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error loading product:', error);
+                alert('Error loading product: ' + error.message);
+            });
+    }
+    
+    // Update current index
+    function updateCurrentIndex() {
+        if (!currentProductId) {
+            currentIndex = -1;
+            return;
+        }
+
+        const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
+        const index = list.indexOf(currentProductId);
+        if (index !== -1) {
+            currentIndex = index;
+        } else {
+            currentIndex = -1;
+        }
+    }
+    
+    // Update navigation button states
+    function updateNavigationState() {
+        const prevBtn = document.getElementById('product-browser-prev');
+        const nextBtn = document.getElementById('product-browser-next');
+        const infoSpan = document.getElementById('product-browser-current-info');
+
+        if (!prevBtn || !nextBtn || !infoSpan) return;
+
+        const list = navMode === 'id' ? allProductIds : allProductNames.map(p => p.id);
+        const total = list.length;
+
+        if (currentIndex === -1 || total === 0) {
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            prevBtn.style.opacity = '0.5';
+            prevBtn.style.cursor = 'not-allowed';
+            nextBtn.style.opacity = '0.5';
+            nextBtn.style.cursor = 'not-allowed';
+            infoSpan.textContent = 'Select a product to browse';
+        } else {
+            const isAtStart = currentIndex === 0;
+            const isAtEnd = currentIndex >= total - 1;
+            
+            prevBtn.disabled = isAtStart;
+            nextBtn.disabled = isAtEnd;
+            prevBtn.style.opacity = isAtStart ? '0.5' : '1';
+            prevBtn.style.cursor = isAtStart ? 'not-allowed' : 'pointer';
+            nextBtn.style.opacity = isAtEnd ? '0.5' : '1';
+            nextBtn.style.cursor = isAtEnd ? 'not-allowed' : 'pointer';
+            
+            const current = navMode === 'id' 
+                ? `Product ID: ${currentProductId}`
+                : allProductNames.find(p => p.id === currentProductId)?.name || `Product ${currentProductId}`;
+            infoSpan.textContent = `${current} (${currentIndex + 1} of ${total})`;
+        }
+    }
+    
+    // Public API
+    window.productBrowserComponent = {
+        setCurrentProduct: function(productId) {
+            currentProductId = productId;
+            if (showNavigation) {
+                updateCurrentIndex();
+                updateNavigationState();
+            }
+        },
+        getCurrentProduct: function() {
+            return currentProductId;
+        },
+        hideNavigation: function() {
+            showNavigation = false;
+            const navElement = document.getElementById('product-browser-navigation');
+            if (navElement) {
+                navElement.style.display = 'none';
+            }
+        },
+        showNavigation: function() {
+            showNavigation = true;
+            const navElement = document.getElementById('product-browser-navigation');
+            if (navElement) {
+                navElement.style.display = 'block';
+            }
+            if (currentProductId) {
+                updateCurrentIndex();
+                updateNavigationState();
+            }
+        }
+    };
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeProductBrowser);
+    } else {
+        initializeProductBrowser();
+    }
+})();
+</script>
+
+<style>
+/* Product Browser Component Styles */
+.product-browser-component {
+    width: 100%;
+}
+
+.browser-navigation {
+    margin: 1.5rem 0;
+}
+
+.browser-navigation.hide-navigation {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .browser-navigation .nav-controls {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .browser-navigation .nav-info {
+        width: 100%;
+    }
+}
+</style>
+

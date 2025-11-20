@@ -174,13 +174,11 @@ def planning_calendar_ideas(post_id):
         from datetime import datetime
         from utils.taxonomy_helpers import get_post_type
         
-        # Check post type - redirect recipe/profile posts away from Planning stages
+        # Check post type - redirect recipe posts away from Planning stages
+        # Profile posts now have Planning stage (like themed posts)
         post_type = get_post_type(post_id)
         if post_type == 'recipe':
             # Redirect recipe posts to authoring (drafting) stage
-            return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
-        elif post_type == 'profile':
-            # Redirect profile posts to authoring stage
             return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
         elif post_type == 'generated':
             # Redirect generated posts to taxonomy (they start there, not at ideas)
