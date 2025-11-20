@@ -142,17 +142,18 @@
             {% if post_type not in ['recipe', 'profile', 'generated'] %}
             <!-- Calendar sub-stages -->
             <div class="sub-stage-group" data-stage="calendar">
+                <!-- All calendar substages are shared -->
                 <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="view">
+                   class="sub-stage-btn sub-stage-shared" data-substage="view">
                     Calendar View
                 </a>
                 <a href="{{ url_for('planning.planning_calendar_week_view', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="week-view">
+                   class="sub-stage-btn sub-stage-shared" data-substage="week-view">
                     Week View
                 </a>
                 <a href="#" 
                    id="week-themes-link"
-                   class="sub-stage-btn" 
+                   class="sub-stage-btn sub-stage-shared" 
                    data-substage="ideas-week">
                     Week Themes
                 </a>
@@ -160,48 +161,55 @@
             
             <!-- Planning sub-stages -->
             <div class="sub-stage-group" data-stage="concept">
+                <!-- All planning substages are shared (themed posts) -->
                 <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="taxonomy">
+                   class="sub-stage-btn sub-stage-shared" data-substage="taxonomy">
                     Taxonomy
                 </a>
                 <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="ideas">
+                   class="sub-stage-btn sub-stage-shared" data-substage="ideas">
                     Idea Generation
                 </a>
                 <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="brainstorm">
+                   class="sub-stage-btn sub-stage-shared" data-substage="brainstorm">
                     Topic Brainstorming
                 </a>
                 <a href="{{ url_for('planning.planning_concept_section_structure', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="section-structure">
+                   class="sub-stage-btn sub-stage-shared" data-substage="section-structure">
                     Section Structure Design
                 </a>
                 <a href="{{ url_for('planning.planning_concept_topic_allocation', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="topic-allocation">
+                   class="sub-stage-btn sub-stage-shared" data-substage="topic-allocation">
                     Section Ideas
                 </a>
                 <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="titling">
+                   class="sub-stage-btn sub-stage-shared" data-substage="titling">
                     Section Titling
                 </a>
             </div>
             {% elif post_type == 'generated' %}
             <!-- Planning sub-stages for generated posts (simplified pipeline) -->
             <div class="sub-stage-group" data-stage="concept">
+                <!-- Shared substage -->
                 <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="taxonomy">
+                   class="sub-stage-btn sub-stage-shared" data-substage="taxonomy">
                     Taxonomy
                 </a>
+                <!-- Type-specific: Generated -->
                 <a href="{{ url_for('planning.planning_calendar_product_data_review', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="product-data-review">
+                   class="sub-stage-btn sub-stage-generated" data-substage="product-data-review">
+                    <i class="fas fa-magic" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
                     Product Data Review
                 </a>
+                <!-- Type-specific: Generated -->
                 <a href="{{ url_for('planning.planning_concept_section_content_mapping', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="section-content-mapping">
+                   class="sub-stage-btn sub-stage-generated" data-substage="section-content-mapping">
+                    <i class="fas fa-magic" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
                     Section Content Mapping
                 </a>
+                <!-- Shared substage -->
                 <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="titling">
+                   class="sub-stage-btn sub-stage-shared" data-substage="titling">
                     Section Titling
                 </a>
             </div>
@@ -209,66 +217,67 @@
             
             <!-- Authoring sub-stages -->
             <div class="sub-stage-group" data-stage="authoring">
+                <!-- Shared substage -->
                 <a href="{{ url_for('authoring.authoring_sections_drafting', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="drafting">
+                   class="sub-stage-btn sub-stage-shared" data-substage="drafting">
                     Drafting
                 </a>
                 {% if post_type == 'recipe' %}
+                <!-- Type-specific: Recipe -->
                 <a href="{{ url_for('recipes_imaging.recipe_image_style_prompt', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="recipe-image-style-prompt">
+                   class="sub-stage-btn sub-stage-recipe" data-substage="recipe-image-style-prompt">
+                    <i class="fas fa-utensils" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
                     Image Style & Prompts
                 </a>
                 {% else %}
+                <!-- Shared substages -->
                 <a href="{{ url_for('authoring_imaging.authoring_sections_image_concepts', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="image-concepts">
+                   class="sub-stage-btn sub-stage-shared" data-substage="image-concepts">
                     Image Concepts
                 </a>
                 <a href="{{ url_for('authoring_imaging.authoring_sections_image_prompts', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="image-prompts">
+                   class="sub-stage-btn sub-stage-shared" data-substage="image-prompts">
                     Image Prompts
                 </a>
                 {% endif %}
+                <!-- Shared substage -->
                 <a href="{{ url_for('authoring_imaging.authoring_sections_image_captions', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="image-captions">
+                   class="sub-stage-btn sub-stage-shared" data-substage="image-captions">
                     Image Captions
                 </a>
             </div>
             
             <!-- Imaging sub-stages -->
             <div class="sub-stage-group" data-stage="imaging">
-                {% if illustration_method|default('LLM-creation') == 'Photo-harvesting' %}
-                <a href="{{ url_for('imaging.imaging_sections_photo_selection', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="photo-selection">
-                    Photo Selection
-                </a>
-                {% else %}
+                <!-- Photo-harvesting is deprecated, always use LLM-creation -->
                 <a href="{{ url_for('imaging.imaging_sections_image_generation', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="image-generation">
+                   class="sub-stage-btn sub-stage-shared" data-substage="image-generation">
                     Image Generation
                 </a>
-                {% endif %}
+                <!-- Shared substage -->
                 <a href="{{ url_for('imaging.imaging_sections_optimise', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="optimise">
+                   class="sub-stage-btn sub-stage-shared" data-substage="optimise">
                     Optimise
                 </a>
             </div>
             
             <!-- Header sub-stages -->
             <div class="sub-stage-group" data-stage="header">
+                <!-- All header substages are shared -->
                 <a href="{{ url_for('header.header_title_summary', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="title-summary">
+                   class="sub-stage-btn sub-stage-shared" data-substage="title-summary">
                     Title & Summary
                 </a>
                 <a href="{{ url_for('header.header_header_image', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="header-image">
+                   class="sub-stage-btn sub-stage-shared" data-substage="header-image">
                     Header Image
                 </a>
                 <a href="{{ url_for('header.header_seo_meta', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="seo-meta">
+                   class="sub-stage-btn sub-stage-shared" data-substage="seo-meta">
                     SEO & Meta
                 </a>
                 <a href="{{ url_for('header.header_final_review', post_id=post_id) }}" 
-                   class="sub-stage-btn" data-substage="final-review">
+                   class="sub-stage-btn sub-stage-shared" data-substage="final-review">
                     Final Review
                 </a>
             </div>

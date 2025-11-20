@@ -12,7 +12,8 @@ def register_routes(bp):
     @bp.route('/posts/<int:post_id>/title-summary')
     def header_title_summary(post_id):
         """Title & Summary substage - Generate post title, subtitle, slug, and summary
-        Week-persistence compliance: resolve target_post_id from ?year&?week and pass illustration_method.
+        Week-persistence compliance: resolve target_post_id from ?year&?week and pass post_type.
+        Note: illustration_method is deprecated, always uses LLM-creation.
         """
         try:
             # Resolve week context
@@ -48,9 +49,10 @@ def register_routes(bp):
                 target_post_id = post_id
                 logger.warning(f"Title-summary route called without week context: year={year}, week={week}")
 
-            # Use utility function to get illustration_method and post_type
-            from utils.taxonomy_helpers import get_illustration_method
-            illustration_method = get_illustration_method(target_post_id)
+            # Get post_type (illustration_method is deprecated, always use LLM-creation)
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(target_post_id)
+            illustration_method = 'LLM-creation'  # Deprecated, kept for backward compatibility
             # Use original post_type for recipe/profile, otherwise get from resolved post
             post_type = original_post_type if original_post_type in ('recipe', 'profile') else get_post_type(target_post_id)
 
@@ -170,9 +172,10 @@ def register_routes(bp):
                 logger.error(f"No post scheduled for year={year}, week={week}")
                 return f"No post scheduled for week {week}, {year}. Please schedule a post for this week first.", 404
         
-        # Use utility function to get illustration_method and post_type
-        from utils.taxonomy_helpers import get_illustration_method
-        illustration_method = get_illustration_method(target_post_id)
+        # Get post_type (illustration_method is deprecated, always use LLM-creation)
+        from utils.taxonomy_helpers import get_post_type
+        post_type = get_post_type(target_post_id)
+        illustration_method = 'LLM-creation'  # Deprecated, kept for backward compatibility
         # Use original post_type for recipe/profile, otherwise get from resolved post
         post_type = original_post_type if original_post_type in ('recipe', 'profile') else get_post_type(target_post_id)
 
