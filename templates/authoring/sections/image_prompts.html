@@ -108,14 +108,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- LLM Prompts Panel -->
             {% include 'authoring/includes/llm_prompts_panel.html' %}
             
-            {% if illustration_method != 'Photo-harvesting' %}
-            <!-- Imaging Model Selection Panel (LLM-creation only) -->
+            {# Photo-harvesting is deprecated, always show LLM-creation panels #}
+            <!-- Imaging Model Selection Panel -->
             {% include 'imaging/includes/model_selection_panel.html' %}
             
-            <!-- Styles Panel (post-wide styles management) (LLM-creation only) -->
+            <!-- Styles Panel (post-wide styles management) -->
             {% include 'authoring/includes/styles_panel.html' %}
             
-            <!-- Prompt Builder Panel (LLM-creation only) -->
+            <!-- Prompt Builder Panel -->
             {% include 'authoring/includes/prompt_builder_panel_image_prompts.html' %}
             
             <!-- LLM Message Intercept Panel (Complete LLM Input) (LLM-creation only) -->
