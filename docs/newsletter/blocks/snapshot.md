@@ -1,10 +1,12 @@
-# Newsletter Snapshot Block
+# Newsletter Snapshot Block ("In the News")
 
 ## Overview
 
-The Snapshot block provides a single cultural highlight from external sources, focusing on one high-quality item rather than aggregating multiple items like the Intro block.
+The Snapshot block (displayed as "In the News" in UI and Preview) provides a single cultural highlight from external sources, focusing on one high-quality item rather than aggregating multiple items like the Intro block.
 
 **Purpose**: Single cultural highlight from external sources
+
+**Display Name**: "In the News" (renamed from "Scottish Snapshot")
 
 **Status**: ✅ Implemented
 

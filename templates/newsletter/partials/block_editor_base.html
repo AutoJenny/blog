@@ -4,7 +4,7 @@
     <summary style="cursor: pointer; padding: 20px; display: flex; align-items: center; justify-content: space-between; background: #151a2e; user-select: none; list-style: none;">
       <div style="flex: 1;">
         <div style="color: #e6e8ef; font-weight: 700; font-size: 28px; line-height: 1.2; margin-bottom: 4px;">
-          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {{ block.type }}
+          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {% if block.type == 'snapshot' %}In the News{% elif block.type == 'new_products' %}Products Spotlight{% elif block.type == 'feature' %}Feature{% elif block.type == 'intro' %}Intro{% else %}{{ block.type }}{% endif %}
         </div>
         {% if block.description %}
           <div style="color: #9ca3af; font-size: 13px; margin-top: 2px;">{{ block.description }}</div>
