@@ -95,7 +95,8 @@ def planning_concept_section_structure(post_id):
         post = cursor.fetchone()
         
         if not post:
-            return render_template('planning/concept/section_structure.html', 
+            template_name = 'planning/concept/section_structure_profile.html' if post_type == 'profile' else 'planning/concept/section_structure.html'
+            return render_template(template_name, 
                                   post_id=resolved_post_id, year=year, week=week, blueprint_name='planning',
                                   post_type=post_type,
                                   error='Post not found')
@@ -110,7 +111,10 @@ def planning_concept_section_structure(post_id):
         result = cursor.fetchone()
         content_type_name = result.get('content_type_name') if result else None
     
-    return render_template('planning/concept/section_structure.html', 
+    # Use profile-specific template for profile posts
+    template_name = 'planning/concept/section_structure_profile.html' if post_type == 'profile' else 'planning/concept/section_structure.html'
+    
+    return render_template(template_name, 
                           post_id=resolved_post_id,
                           post=post,
                           post_type=post_type,
@@ -141,7 +145,8 @@ def planning_concept_topic_allocation(post_id):
         post = cursor.fetchone()
         
         if not post:
-            return render_template('planning/concept/topic_allocation.html', 
+            template_name = 'planning/concept/topic_allocation_profile.html' if post_type == 'profile' else 'planning/concept/topic_allocation.html'
+            return render_template(template_name, 
                                   post_id=resolved_post_id, year=year, week=week, blueprint_name='planning',
                                   post_type=post_type,
                                   error='Post not found')
@@ -156,7 +161,10 @@ def planning_concept_topic_allocation(post_id):
         result = cursor.fetchone()
         content_type_name = result.get('content_type_name') if result else None
     
-    return render_template('planning/concept/topic_allocation.html', 
+    # Use profile-specific template for profile posts
+    template_name = 'planning/concept/topic_allocation_profile.html' if post_type == 'profile' else 'planning/concept/topic_allocation.html'
+    
+    return render_template(template_name, 
                           post_id=resolved_post_id,
                           post=post,
                           post_type=post_type,
