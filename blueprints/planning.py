@@ -28,6 +28,13 @@ from blueprints.planning_api_brainstorm import api_generate_brainstorm_topics as
 from blueprints.planning_api_prompts import api_get_prompt as prompt_api_func
 from blueprints.planning_titling import api_sections_title as sections_title_api_func, api_save_sections as sections_save_api_func
 from blueprints.planning_sections import api_design_section_structure as sections_design_api_func
+from blueprints.planning_api_profile import (
+    api_profile_section_structure as profile_section_structure_func,
+    api_get_profile_section_structure_prompt_selection as profile_prompt_selection_func,
+    api_set_profile_section_structure_prompt_selection as profile_set_prompt_selection_func,
+    api_get_profile_section_structure_prompt as profile_get_prompt_func,
+    api_update_profile_section_structure_prompt as profile_update_prompt_func
+)
 from blueprints.planning_api_topic_allocation import api_generate_section_specific_topics as generate_topics_func, api_get_topic_allocation as get_allocation_func
 from blueprints.planning_llm import LLMService, parse_brainstorm_topics
 
@@ -510,6 +517,35 @@ def api_generate_brainstorm_topics():
 def api_design_section_structure():
     """Design section structure based on topics"""
     return sections_design_api_func()
+
+# ============================================================================
+# PROFILE API ENDPOINTS (imported from planning_api_profile.py)
+# ============================================================================
+
+@bp.route('/api/profile/section-structure', methods=['POST'])
+def api_profile_section_structure():
+    """Generate section structure for product profile posts"""
+    return profile_section_structure_func()
+
+@bp.route('/api/posts/<int:post_id>/profile-section-structure-prompt-selection', methods=['GET'])
+def api_get_profile_section_structure_prompt_selection(post_id):
+    """Get available prompt options and current selection for profile section structure design"""
+    return profile_prompt_selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/profile-section-structure-prompt-selection', methods=['POST'])
+def api_set_profile_section_structure_prompt_selection(post_id):
+    """Set the selected prompt for profile section structure design"""
+    return profile_set_prompt_selection_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/profile-section-structure-prompt', methods=['GET'])
+def api_get_profile_section_structure_prompt(post_id):
+    """Get the profile section structure prompt for a post"""
+    return profile_get_prompt_func(post_id)
+
+@bp.route('/api/posts/<int:post_id>/profile-section-structure-prompt', methods=['PUT'])
+def api_update_profile_section_structure_prompt(post_id):
+    """Update the profile section structure prompt for a post"""
+    return profile_update_prompt_func(post_id)
 
 @bp.route('/api/sections/design-structure/<int:post_id>', methods=['GET'])
 def api_get_section_structure(post_id):
