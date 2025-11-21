@@ -1586,11 +1586,20 @@ Return ONLY valid JSON in the format specified above."""
                         else:
                             matching_title = section.get('title', f'Section {i+1}')
                     
+                    # Strip quotes from titles if present
+                    clean_title = matching_title
+                    if clean_title and isinstance(clean_title, str):
+                        clean_title = clean_title.strip().strip('"').strip("'")
+                    
+                    clean_subtitle = section.get('title', '')
+                    if clean_subtitle and isinstance(clean_subtitle, str):
+                        clean_subtitle = clean_subtitle.strip().strip('"').strip("'")
+                    
                     enhanced_sections.append({
                         'id': i + 1,
                         'index': i + 1,
-                        'title': matching_title,
-                        'subtitle': section.get('title', ''),
+                        'title': clean_title,
+                        'subtitle': clean_subtitle,
                         'order': i + 1,
                         'section_type': section.get('section_type', ''),
                         'topics': []  # Profile posts don't use topics, but keep for compatibility
@@ -1598,10 +1607,90 @@ Return ONLY valid JSON in the format specified above."""
                 
                 logger.info(f"Generated {len(enhanced_sections)} section titles for post {post_id}")
                 
+                # Auto-save sections to database (both post_development and post_section tables)
+                try:
+                    # Prepare sections data for saving
+                    sections_data = {'sections': enhanced_sections}
+                    sections_json = json.dumps(sections_data)
+                    
+                    # Extract section headings (strip quotes if present)
+                    section_headings = []
+                    for i, section in enumerate(enhanced_sections):
+                        title = section.get('title', f'Section {i+1}')
+                        if title and isinstance(title, str):
+                            title = title.strip().strip('"').strip("'")
+                        section_headings.append(title)
+                    headings_json = json.dumps(section_headings)
+                    
+                    # Create section order array
+                    section_order = [section.get('order', section.get('id', i + 1)) for i, section in enumerate(enhanced_sections)]
+                    order_json = json.dumps(section_order)
+                    
+                    logger.info(f"Auto-saving {len(enhanced_sections)} sections to database")
+                    
+                    # Save to post_development table
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            UPDATE post_development 
+                            SET sections = %s, section_headings = %s, section_order = %s, updated_at = %s
+                            WHERE post_id = %s
+                        """, (sections_json, headings_json, order_json, datetime.now(), post_id))
+                        
+                        if cursor.rowcount == 0:
+                            # Insert if no existing record
+                            cursor.execute("""
+                                INSERT INTO post_development (post_id, sections, section_headings, section_order, updated_at)
+                                VALUES (%s, %s, %s, %s, %s)
+                            """, (post_id, sections_json, headings_json, order_json, datetime.now()))
+                        
+                        # Also write directly to post_section table to ensure all sections are saved
+                        logger.info(f"Writing {len(enhanced_sections)} sections to post_section table")
+                        for i, section in enumerate(enhanced_sections):
+                            section_order_val = section.get('order', section.get('id', i + 1))
+                            # Strip quotes from title if present (LLM sometimes returns titles with quotes)
+                            section_title = section.get('title', f'Section {i+1}')
+                            if section_title and isinstance(section_title, str):
+                                section_title = section_title.strip().strip('"').strip("'")
+                            section_description = section.get('subtitle', section.get('section_description', ''))
+                            if section_description and isinstance(section_description, str):
+                                section_description = section_description.strip().strip('"').strip("'")
+                            
+                            # Check if section already exists
+                            cursor.execute("""
+                                SELECT id FROM post_section 
+                                WHERE post_id = %s AND section_order = %s
+                            """, (post_id, section_order_val))
+                            existing = cursor.fetchone()
+                            
+                            if existing:
+                                # Update existing section
+                                cursor.execute("""
+                                    UPDATE post_section 
+                                    SET section_heading = %s, 
+                                        section_description = %s,
+                                        updated_at = %s
+                                    WHERE post_id = %s AND section_order = %s
+                                """, (section_title, section_description, datetime.now(), post_id, section_order_val))
+                                logger.info(f"Updated section {section_order_val}: {section_title}")
+                            else:
+                                # Insert new section
+                                cursor.execute("""
+                                    INSERT INTO post_section (post_id, section_order, section_heading, section_description, status, created_at, updated_at)
+                                    VALUES (%s, %s, %s, %s, 'draft', %s, %s)
+                                """, (post_id, section_order_val, section_title, section_description, datetime.now(), datetime.now()))
+                                logger.info(f"Inserted section {section_order_val}: {section_title}")
+                        
+                        logger.info(f"Successfully auto-saved {len(enhanced_sections)} sections to database")
+                    
+                except Exception as save_error:
+                    # Log error but don't fail the request - sections were generated successfully
+                    logger.error(f"Error auto-saving sections to database: {save_error}", exc_info=True)
+                
                 return jsonify({
                     'success': True,
                     'sections': enhanced_sections,
-                    'raw_response': response['content']
+                    'raw_response': response['content'],
+                    'message': 'Section titles generated and saved successfully'
                 })
                 
             except json.JSONDecodeError as e:

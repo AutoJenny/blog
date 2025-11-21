@@ -81,16 +81,11 @@
                 Research
             </a>
             {% elif post_type == 'profile' %}
-            {# Profile posts have Planning and Research stages (like themed posts) but no Calendar #}
+            {# Profile posts have Planning stage only (no Calendar, no Research) #}
             <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
                class="stage-btn" data-stage="concept">
                 <i class="fas fa-lightbulb"></i>
                 Planning
-            </a>
-            <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
-               class="stage-btn" data-stage="research">
-                <i class="fas fa-search"></i>
-                Research
             </a>
             {% elif post_type == 'generated' %}
             <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
@@ -176,14 +171,6 @@
                    class="sub-stage-btn sub-stage-shared" data-substage="taxonomy">
                     Taxonomy
                 </a>
-                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="ideas">
-                    Idea Generation
-                </a>
-                <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="brainstorm">
-                    Topic Brainstorming
-                </a>
                 <a href="{{ url_for('planning.planning_concept_section_structure', post_id=post_id) }}" 
                    class="sub-stage-btn sub-stage-shared" data-substage="section-structure">
                     Section Structure Design
@@ -222,19 +209,11 @@
                 </a>
             </div>
             {% elif post_type == 'profile' %}
-            <!-- Planning sub-stages for profile posts (same as themed) -->
+            <!-- Planning sub-stages for profile posts -->
             <div class="sub-stage-group" data-stage="concept">
                 <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
                    class="sub-stage-btn sub-stage-shared" data-substage="taxonomy">
                     Taxonomy
-                </a>
-                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="ideas">
-                    Idea Generation
-                </a>
-                <a href="{{ url_for('planning.planning_concept_brainstorm', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="brainstorm">
-                    Topic Brainstorming
                 </a>
                 <a href="{{ url_for('planning.planning_concept_section_structure', post_id=post_id) }}" 
                    class="sub-stage-btn sub-stage-shared" data-substage="section-structure">
@@ -247,30 +226,6 @@
                 <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
                    class="sub-stage-btn sub-stage-shared" data-substage="titling">
                     Section Titling
-                </a>
-            </div>
-            
-            <!-- Research sub-stages for profile posts -->
-            <div class="sub-stage-group" data-stage="research">
-                <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="research">
-                    Research Overview
-                </a>
-                <a href="{{ url_for('planning.planning_research_sources', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="sources">
-                    Sources
-                </a>
-                <a href="{{ url_for('planning.planning_research_visuals', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="visuals">
-                    Visuals
-                </a>
-                <a href="{{ url_for('planning.planning_research_prompts', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="prompts">
-                    Prompts
-                </a>
-                <a href="{{ url_for('planning.planning_research_verification', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="verification">
-                    Verification
                 </a>
             </div>
             {% elif post_type == 'generated' %}

@@ -19,6 +19,7 @@ def api_posts(post_id):
             # Get post data
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.profile_product_id, p.profile_category_id, p.profile_type,
                        pd.idea_scope, pd.section_structure, pd.topic_allocation,
                        pd.refined_topics, pd.expanded_idea, pd.idea_seed, pd.sections
                 FROM post p

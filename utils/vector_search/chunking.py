@@ -320,14 +320,74 @@ class ContentChunker:
             'metadata': metadata
         }
     
+    def chunk_producer(self, producer: Dict) -> Dict:
+        """
+        Create a chunk from a producer record.
+        
+        Args:
+            producer: Dictionary with producer fields from producers table
+            
+        Returns:
+            Dictionary with chunk_text and metadata
+        """
+        # Extract and clean fields (handle None values)
+        name = (producer.get('name') or '').strip()
+        description = self.clean_html(producer.get('description'))
+        location = (producer.get('location') or '').strip()
+        heritage_details = self.clean_html(producer.get('heritage_details'))
+        craftsmanship_methods = self.clean_html(producer.get('craftsmanship_methods'))
+        founding_year = producer.get('founding_year')
+        
+        # Build structured text
+        parts = []
+        
+        if name:
+            parts.append(f"Producer: {name}")
+        
+        if description:
+            parts.append("")
+            parts.append(description)
+        
+        if location:
+            parts.append("")
+            parts.append(f"Location: {location}")
+        
+        if heritage_details:
+            parts.append("")
+            parts.append("Heritage:")
+            parts.append(heritage_details)
+        
+        if craftsmanship_methods:
+            parts.append("")
+            parts.append("Craftsmanship Methods:")
+            parts.append(craftsmanship_methods)
+        
+        if founding_year:
+            parts.append("")
+            parts.append(f"Founded: {founding_year}")
+        
+        chunk_text = "\n".join(parts).strip()
+        
+        # Build metadata
+        metadata = {
+            'producer_name': name,
+            'location': location,
+            'founding_year': founding_year
+        }
+        
+        return {
+            'chunk_text': chunk_text,
+            'metadata': metadata
+        }
+    
     def save_chunk(self, chunk_type: str, source_id: int, chunk_data: Dict, 
                    chunk_index: int = 0) -> int:
         """
         Save chunk to database.
         
         Args:
-            chunk_type: 'product' or 'category'
-            source_id: Product or category ID
+            chunk_type: 'product', 'category', 'producer', 'post', or 'kb'
+            source_id: Product, category, producer, post, or KB article ID
             chunk_data: Dictionary with chunk_text and metadata
             chunk_index: Index for multi-chunk sources (0 for single chunk)
             
@@ -468,6 +528,67 @@ class ContentChunker:
                         
                 except Exception as e:
                     logger.error(f"Error processing category {category.get('id')}: {e}")
+        
+        return {
+            'processed': processed,
+            'created': created,
+            'updated': updated
+        }
+    
+    def process_all_producers(self) -> Dict[str, int]:
+        """
+        Process all producers and create chunks.
+        
+        Returns:
+            Dictionary with counts: {'processed': N, 'created': M, 'updated': K}
+        """
+        processed = 0
+        created = 0
+        updated = 0
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, description, location, founding_year,
+                       heritage_details, craftsmanship_methods
+                FROM producers
+                ORDER BY id
+            """)
+            
+            producers = cursor.fetchall()
+            
+            for producer in producers:
+                try:
+                    chunk_data = self.chunk_producer(producer)
+                    
+                    # Check if chunk exists
+                    cursor.execute("""
+                        SELECT id FROM content_chunks
+                        WHERE chunk_type = 'producer' AND source_id = %s
+                    """, (producer['id'],))
+                    
+                    existing = cursor.fetchone()
+                    
+                    if existing:
+                        # Update existing
+                        import json
+                        cursor.execute("""
+                            UPDATE content_chunks
+                            SET chunk_text = %s, metadata = %s::jsonb, updated_at = CURRENT_TIMESTAMP
+                            WHERE id = %s
+                        """, (chunk_data['chunk_text'], json.dumps(chunk_data['metadata']), existing['id']))
+                        updated += 1
+                    else:
+                        # Create new
+                        self.save_chunk('producer', producer['id'], chunk_data)
+                        created += 1
+                    
+                    processed += 1
+                    
+                    if processed % 50 == 0:
+                        logger.info(f"Processed {processed} producers...")
+                        
+                except Exception as e:
+                    logger.error(f"Error processing producer {producer.get('id')}: {e}")
         
         return {
             'processed': processed,

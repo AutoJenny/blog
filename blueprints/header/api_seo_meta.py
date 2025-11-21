@@ -226,3 +226,269 @@ Return in JSON format:
             logger.error(f"Error saving author for post {post_id}: {e}")
             return jsonify({'error': str(e)}), 500
 
+    @bp.route('/api/posts/<int:post_id>/generate-embeddings', methods=['POST'])
+    def api_generate_post_embeddings(post_id):
+        """Generate vector embeddings for post content and find similar entities"""
+        try:
+            year = request.args.get('year', type=int)
+            week = request.args.get('week', type=int)
+            
+            target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+            if error:
+                return jsonify({'error': error}), 400 if 'required' in error else 404
+            
+            # Import required modules
+            from utils.vector_search.post_extractor import extract_post_content
+            from utils.vector_search.embeddings import EmbeddingGenerator
+            from utils.vector_search.faiss_index import FAISSIndexManager
+            from utils.vector_search.chunking import ContentChunker
+            from utils.profile_matching.post_matcher import find_similar_entities
+            from utils.profile_matching.normalization import normalize_and_select_best
+            import json
+            import numpy as np
+            
+            # Step 1: Extract post content
+            logger.info(f"Extracting content for post {target_post_id}")
+            post_content = extract_post_content(target_post_id)
+            
+            if not post_content:
+                return jsonify({
+                    'success': False,
+                    'error': 'No content found in post_development. Please ensure the post has expanded_idea, idea_seed, summary, or intro_blurb.'
+                }), 400
+            
+            # Step 2: Check if embedding already exists
+            chunker = ContentChunker()
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, faiss_index_id, embedding_model, embedding_dim, last_embedded_at
+                    FROM content_chunks
+                    WHERE chunk_type = 'post' AND source_id = %s
+                """, (target_post_id,))
+                
+                existing_chunk = cursor.fetchone()
+            
+            # Step 3: Generate embedding
+            logger.info(f"Generating embedding for post {target_post_id}")
+            embedding_gen = EmbeddingGenerator()
+            embedding = embedding_gen.generate_embedding(post_content)
+            
+            # Step 4: Store in content_chunks and FAISS index
+            faiss_manager = FAISSIndexManager()
+            if not faiss_manager.load_index():
+                logger.warning("FAISS index not loaded, creating new one")
+                faiss_manager.create_index()
+            
+            if existing_chunk:
+                # Update existing chunk
+                chunk_id = existing_chunk['id']
+                chunk_data = {
+                    'chunk_text': post_content,
+                    'metadata': {
+                        'post_id': target_post_id,
+                        'post_title': None  # Could fetch from post table if needed
+                    }
+                }
+                
+                # Update chunk text and metadata
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        UPDATE content_chunks
+                        SET chunk_text = %s, 
+                            metadata = %s::jsonb,
+                            embedding_model = %s,
+                            embedding_dim = %s,
+                            last_embedded_at = CURRENT_TIMESTAMP,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (
+                        chunk_data['chunk_text'],
+                        json.dumps(chunk_data['metadata']),
+                        embedding_gen.model_name,
+                        len(embedding),
+                        chunk_id
+                    ))
+                
+                # Update FAISS index if needed
+                if existing_chunk['faiss_index_id'] is None:
+                    # Add to index
+                    embeddings_array = np.array([embedding])
+                    faiss_ids = faiss_manager.add_vectors(embeddings_array, [chunk_id])
+                    faiss_index_id = faiss_ids[0] if faiss_ids else None
+                    
+                    if faiss_index_id is not None:
+                        with db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                UPDATE content_chunks
+                                SET faiss_index_id = %s
+                                WHERE id = %s
+                            """, (faiss_index_id, chunk_id))
+                else:
+                    faiss_index_id = existing_chunk['faiss_index_id']
+            else:
+                # Create new chunk
+                chunk_data = {
+                    'chunk_text': post_content,
+                    'metadata': {
+                        'post_id': target_post_id
+                    }
+                }
+                
+                chunk_id = chunker.save_chunk('post', target_post_id, chunk_data)
+                
+                # Add to FAISS index
+                embeddings_array = np.array([embedding])
+                faiss_ids = faiss_manager.add_vectors(embeddings_array, [chunk_id])
+                faiss_index_id = faiss_ids[0] if faiss_ids else None
+                
+                # Update chunk with embedding metadata and FAISS index ID
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        UPDATE content_chunks
+                        SET embedding_model = %s,
+                            embedding_dim = %s,
+                            faiss_index_id = %s,
+                            last_embedded_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (
+                        embedding_gen.model_name,
+                        len(embedding),
+                        faiss_index_id,
+                        chunk_id
+                    ))
+            
+            # Save FAISS index
+            faiss_manager.save_index()
+            
+            # Step 5: Find similar entities (pass post_content to avoid re-extraction)
+            logger.info(f"Finding similar entities for post {target_post_id}")
+            matches = find_similar_entities(target_post_id, limit=3, post_content=post_content)
+            
+            # Step 6: Normalize and select best match
+            best_match = normalize_and_select_best(
+                matches['products'],
+                matches['suppliers'],
+                matches['categories']
+            )
+            
+            # Step 7: Return results
+            return jsonify({
+                'success': True,
+                'embedding': {
+                    'chunk_id': chunk_id,
+                    'faiss_index_id': faiss_index_id,
+                    'filepath': 'data/vector_index/products_categories.faiss',
+                    'table': 'content_chunks',
+                    'model': embedding_gen.model_name,
+                    'dimension': len(embedding),
+                    'generated_at': existing_chunk['last_embedded_at'].isoformat() if existing_chunk and existing_chunk.get('last_embedded_at') else None
+                },
+                'matches': {
+                    'products': matches['products'],
+                    'suppliers': matches['suppliers'],
+                    'categories': matches['categories']
+                },
+                'best_match': best_match
+            })
+            
+        except Exception as e:
+            logger.error(f"Error generating embeddings for post {post_id}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+
+    @bp.route('/api/posts/<int:post_id>/save-embedding-overrides', methods=['POST'])
+    def api_save_embedding_overrides(post_id):
+        """Save manual overrides for embedding similarity matches"""
+        try:
+            year = request.args.get('year', type=int)
+            week = request.args.get('week', type=int)
+            
+            target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+            if error:
+                return jsonify({'error': error}), 400 if 'required' in error else 404
+            
+            data = request.get_json()
+            
+            # Get existing overrides
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT embedding_overrides
+                    FROM post_development
+                    WHERE post_id = %s
+                """, (target_post_id,))
+                
+                result = cursor.fetchone()
+                existing_overrides = result['embedding_overrides'] if result and result.get('embedding_overrides') else {}
+            
+            # Update overrides
+            overrides = existing_overrides.copy() if isinstance(existing_overrides, dict) else {}
+            
+            # Update from request data
+            if 'selected_type' in data:
+                overrides['selected_type'] = data['selected_type']
+            if 'selected_id' in data:
+                overrides['selected_id'] = data['selected_id']
+            # Legacy support for individual type fields
+            if 'selected_product_id' in data:
+                overrides['selected_product_id'] = data['selected_product_id']
+            if 'selected_supplier_id' in data:
+                overrides['selected_supplier_id'] = data['selected_supplier_id']
+            if 'selected_category_id' in data:
+                overrides['selected_category_id'] = data['selected_category_id']
+            
+            overrides['override_reason'] = 'manual'
+            overrides['updated_at'] = 'now'
+            
+            # Save to database
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE post_development
+                    SET embedding_overrides = %s::jsonb,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE post_id = %s
+                """, (json.dumps(overrides), target_post_id))
+            
+            return jsonify({
+                'success': True,
+                'overrides': overrides
+            })
+            
+        except Exception as e:
+            logger.error(f"Error saving embedding overrides for post {post_id}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+
+    @bp.route('/api/posts/<int:post_id>/get-embedding-overrides', methods=['GET'])
+    def api_get_embedding_overrides(post_id):
+        """Get manual overrides for embedding similarity matches"""
+        try:
+            year = request.args.get('year', type=int)
+            week = request.args.get('week', type=int)
+            
+            target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+            if error:
+                return jsonify({'error': error}), 400 if 'required' in error else 404
+            
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT embedding_overrides
+                    FROM post_development
+                    WHERE post_id = %s
+                """, (target_post_id,))
+                
+                result = cursor.fetchone()
+                overrides = result['embedding_overrides'] if result and result.get('embedding_overrides') else {}
+            
+            return jsonify({
+                'success': True,
+                'overrides': overrides
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting embedding overrides for post {post_id}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+

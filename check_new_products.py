@@ -22,18 +22,18 @@ except Exception as e:
     print(f"Error fetching stats: {e}")
     cutoff = "2025-09-16 13:11:43"
 
-print(f"Checking for products first_seen_at >= {cutoff}")
+print(f"Checking for products clan_created_at >= {cutoff}")
 print("-" * 80)
 
 # Connect to database
 try:
     conn = psycopg.connect(host="localhost", dbname="blog", user="autojenny")
     with conn.cursor() as cur:
-        # Count new products
+        # Count new products (using clan_created_at, fallback to first_seen_at for legacy products)
         cur.execute("""
             SELECT COUNT(*) 
             FROM clan_products 
-            WHERE first_seen_at >= to_timestamp(%s, 'YYYY-MM-DD HH24:MI:SS')
+            WHERE COALESCE(clan_created_at, first_seen_at) >= to_timestamp(%s, 'YYYY-MM-DD HH24:MI:SS')
         """, (cutoff,))
         count = cur.fetchone()[0]
         print(f"Total new products since cutoff: {count}")
@@ -42,18 +42,21 @@ try:
             # Get sample of new products
             cur.execute("""
                 SELECT id, sku, name, 
+                       to_char(COALESCE(clan_created_at, first_seen_at), 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as created_at,
+                       to_char(clan_created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as clan_created,
                        to_char(first_seen_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as first_seen,
                        to_char(last_updated, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as last_upd
                 FROM clan_products 
-                WHERE first_seen_at >= to_timestamp(%s, 'YYYY-MM-DD HH24:MI:SS')
-                ORDER BY first_seen_at DESC
+                WHERE COALESCE(clan_created_at, first_seen_at) >= to_timestamp(%s, 'YYYY-MM-DD HH24:MI:SS')
+                ORDER BY COALESCE(clan_created_at, first_seen_at) DESC
                 LIMIT 50
             """, (cutoff,))
             
             print("\nSample of new products (up to 50):")
             print("-" * 80)
             for row in cur.fetchall():
-                print(f"ID: {row[0]} | SKU: {row[1]} | Name: {row[2][:60]}... | First seen: {row[3]} | Last updated: {row[4]}")
+                created_display = row[3] if row[4] else f"{row[5]} (sync discovery)"
+                print(f"ID: {row[0]} | SKU: {row[1]} | Name: {row[2][:60]}... | Created: {created_display} | Last updated: {row[6]}")
         else:
             print("\nNo new products found since the cutoff date.")
             

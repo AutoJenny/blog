@@ -9,18 +9,17 @@ from typing import Any, Dict, List, Tuple
 from config.database import db_manager
 
 
-def get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_launched: bool = True, min_product_id: int = 10000) -> List[Dict[str, Any]]:
+def get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_launched: bool = True) -> List[Dict[str, Any]]:
     """Get a pool of recent products for random selection.
     
-    Returns up to pool_size products from the most recent first_seen_at dates,
+    Returns up to pool_size products from the most recent clan_created_at dates,
     excluding already launched products. This pool can be reused for multiple
     random selections.
     
     Args:
-        since_iso_timestamp: Minimum first_seen_at date (ISO format)
+        since_iso_timestamp: Minimum clan_created_at date (ISO format)
         pool_size: Maximum number of products in the pool (default: 50)
         exclude_launched: If True, exclude products with newsletter_launched_at set
-        min_product_id: Minimum product ID to consider (default: 10000)
     
     Returns:
         List of product dicts with: id, name, sku, image_url, url, short_description, category_ids
@@ -32,6 +31,8 @@ def get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_l
                 exclude_clause = "AND newsletter_launched_at IS NULL" if exclude_launched else ""
                 
                 # Use string concatenation to avoid f-string issues with LIKE patterns containing %
+                # Use clan_created_at (actual creation date) instead of first_seen_at (sync discovery date)
+                # Fallback to first_seen_at for products without clan_created_at (legacy products)
                 query = """
                     SELECT id,
                            name,
@@ -39,22 +40,21 @@ def get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_l
                            COALESCE(image_url, '') AS image_url,
                            COALESCE(url, '') AS url,
                            COALESCE(short_description, '') AS short_description,
-                           first_seen_at,
+                           COALESCE(clan_created_at, first_seen_at) AS created_at,
                            category_ids
                     FROM clan_products
-                    WHERE first_seen_at > %s
-                      AND id > %s
+                    WHERE COALESCE(clan_created_at, first_seen_at) > %s
                       AND image_url IS NOT NULL
                       AND TRIM(image_url) <> ''
                       AND (image_url LIKE 'http://%%' OR image_url LIKE 'https://%%')
                       """ + exclude_clause + """
-                    ORDER BY first_seen_at DESC
+                    ORDER BY COALESCE(clan_created_at, first_seen_at) DESC
                     LIMIT %s
                 """
                 
                 cur.execute(
                     query,
-                    (since_iso_timestamp, min_product_id, pool_size),
+                    (since_iso_timestamp, pool_size),
                 )
                 rows = cur.fetchall() or []
                 products = [dict(r) for r in rows]
@@ -166,20 +166,19 @@ def select_random_from_pool(*, pool: List[Dict[str, Any]], limit: int = 3) -> Li
     return selected
 
 
-def select_new_products(*, since_iso_timestamp: str, limit: int = 6, exclude_launched: bool = True, min_product_id: int = 10000) -> List[Dict[str, Any]]:
+def select_new_products(*, since_iso_timestamp: str, limit: int = 6, exclude_launched: bool = True) -> List[Dict[str, Any]]:
     """Return recent products from clan_products, excluding already launched ones.
     
     DEPRECATED: Use get_product_pool() and select_random_from_pool() instead.
     This function is kept for backward compatibility.
     
-    Selects products by first_seen_at (most recent first), excluding those with
+    Selects products by clan_created_at (most recent first), excluding those with
     newsletter_launched_at set, then randomly selects from the results.
     
     Args:
-        since_iso_timestamp: Minimum first_seen_at date (ISO format)
+        since_iso_timestamp: Minimum clan_created_at date (ISO format)
         limit: Maximum number of products to return (default: 6)
         exclude_launched: If True, exclude products with newsletter_launched_at set
-        min_product_id: Minimum product ID to consider (default: 10000)
     
     Returns:
         List of product dicts with: id, name, sku, image_url, url, short_description
@@ -191,6 +190,8 @@ def select_new_products(*, since_iso_timestamp: str, limit: int = 6, exclude_lau
                 exclude_clause = "AND newsletter_launched_at IS NULL" if exclude_launched else ""
                 
                 # Use string concatenation to avoid f-string issues with LIKE patterns containing %
+                # Use clan_created_at (actual creation date) instead of first_seen_at (sync discovery date)
+                # Fallback to first_seen_at for products without clan_created_at (legacy products)
                 query = """
                     SELECT id,
                            name,
@@ -198,22 +199,21 @@ def select_new_products(*, since_iso_timestamp: str, limit: int = 6, exclude_lau
                            COALESCE(image_url, '') AS image_url,
                            COALESCE(url, '') AS url,
                            COALESCE(short_description, '') AS short_description,
-                           first_seen_at,
+                           COALESCE(clan_created_at, first_seen_at) AS created_at,
                            category_ids
                     FROM clan_products
-                    WHERE first_seen_at > %s
-                      AND id > %s
+                    WHERE COALESCE(clan_created_at, first_seen_at) > %s
                       AND image_url IS NOT NULL
                       AND TRIM(image_url) <> ''
                       AND (image_url LIKE 'http://%%' OR image_url LIKE 'https://%%')
                       """ + exclude_clause + """
-                    ORDER BY first_seen_at DESC
+                    ORDER BY COALESCE(clan_created_at, first_seen_at) DESC
                     LIMIT %s
                 """
                 
                 cur.execute(
                     query,
-                    (since_iso_timestamp, min_product_id, limit * 10),  # Get many more candidates for better randomization
+                    (since_iso_timestamp, limit * 10),  # Get many more candidates for better randomization
                 )
                 rows = cur.fetchall() or []
                 products = [dict(r) for r in rows]

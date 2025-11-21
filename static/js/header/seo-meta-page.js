@@ -74,6 +74,16 @@ class SEOMetaPage {
                 if (metaSiteNameInput) metaSiteNameInput.value = data.meta_site_name || 'Clan.com Blog';
                 
                 console.log('[SEO Meta Page] Meta data generated successfully');
+                
+                // Generate embeddings as well
+                if (window.generatePostEmbeddings) {
+                    try {
+                        await window.generatePostEmbeddings();
+                    } catch (embedError) {
+                        console.error('[SEO Meta Page] Error generating embeddings:', embedError);
+                    }
+                }
+                
                 this.generateBtn.textContent = 'Generated!';
                 setTimeout(() => {
                     this.generateBtn.textContent = 'Generate Meta Data';

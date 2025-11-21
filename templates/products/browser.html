@@ -237,20 +237,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.productBrowserComponent) {
             window.productBrowserComponent.setCurrentProduct(productId);
         }
-        // Load and display product
-        loadProduct(productId);
+        // Load and display product (only if not already on this URL)
+        const currentUrlProductId = urlParams.get('product_id');
+        if (currentUrlProductId !== String(productId)) {
+            loadProduct(productId);
+        }
     };
     
-    // If product_id in URL, load it
+    // If product_id in URL, set currentProductId but don't reload if data already rendered
     if (productIdParam) {
         const productId = parseInt(productIdParam);
         if (productId) {
-            // Wait for component to be ready
+            currentProductId = productId;
+            // Product data is already rendered server-side, so just update component state
+            // Don't call loadProduct to avoid infinite reload loop
             setTimeout(() => {
                 if (window.productBrowserComponent) {
                     window.productBrowserComponent.setCurrentProduct(productId);
                 }
-                loadProduct(productId);
             }, 200);
         }
     }
@@ -281,8 +285,20 @@ function loadProduct(productId) {
 }
 
 function displayProduct(productData, validation) {
-    // Reload the page with the product ID to show full product data
-    window.location.href = `/products/browser?product_id=${currentProductId}`;
+    // Check if we're already on the correct URL to avoid infinite reload
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentUrlProductId = urlParams.get('product_id');
+    
+    // Only redirect if we're not already showing this product
+    if (currentUrlProductId !== String(currentProductId)) {
+        // Update URL without reload if possible, otherwise reload
+        const newUrl = `/products/browser?product_id=${currentProductId}`;
+        window.history.pushState({ productId: currentProductId }, '', newUrl);
+        // Reload to get server-rendered product data
+        window.location.href = newUrl;
+    }
+    // If we're already on the correct URL, the product data should already be displayed
+    // (it was rendered server-side when the page loaded)
 }
 
 // Accordion functionality with localStorage persistence

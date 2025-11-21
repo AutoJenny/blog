@@ -90,11 +90,40 @@ class SectionsPanel {
         });
     }
     
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
     createSectionElement(section) {
         const div = document.createElement('div');
         div.className = 'section-item';
         div.dataset.sectionId = section.id;
         div.dataset.status = section.status || 'draft';
+        
+        // Build data chunks display for profile posts
+        let dataChunksHtml = '';
+        if (section.data_chunks && section.data_chunks.length > 0) {
+            dataChunksHtml = `
+                <div class="section-data-chunks">
+                    <div class="data-chunks-header">
+                        <i class="fas fa-database"></i> Raw Data (${section.data_chunks.length} chunks)
+                    </div>
+                    <div class="data-chunks-list">
+                        ${section.data_chunks.slice(0, 5).map(chunk => `
+                            <div class="data-chunk-item" data-category="${chunk.category || 'data'}">
+                                <div class="data-chunk-title">${this.escapeHtml(chunk.topic_title || chunk.title || 'Data Chunk')}</div>
+                                <div class="data-chunk-source">${this.escapeHtml(chunk.source || 'unknown')}</div>
+                                ${chunk.description ? `<div class="data-chunk-preview">${this.escapeHtml(chunk.description.substring(0, 100))}${chunk.description.length > 100 ? '...' : ''}</div>` : ''}
+                            </div>
+                        `).join('')}
+                        ${section.data_chunks.length > 5 ? `<div class="data-chunks-more">+ ${section.data_chunks.length - 5} more chunks</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
         
         div.innerHTML = `
             <div class="section-header">
@@ -109,6 +138,7 @@ class SectionsPanel {
                     `<span class="topic-tag">${topic}</span>`
                 ).join('')}
             </div>
+            ${dataChunksHtml}
             <div class="section-progress">
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: ${section.progress || 0}%"></div>
