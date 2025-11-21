@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
+{% endblock %}
+
+{% block title %}Section Data Allocation - Product Profile - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Include condensed header -->
+    {% include 'shared/blog_pipeline_header.html' %}
+    
+    {% block process_content %}
+    <div class="brainstorm-main">
+        <!-- Category Indicator Banner -->
+        {% if content_type_name %}
+        <div class="route-indicator">
+            <i class="fas fa-tag"></i>
+            <span>Content Category: <strong>{{ content_type_name }}</strong></span>
+            {% if year and week %}
+            <span class="route-indicator-week">Week {{ week }}, {{ year }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="brainstorm-content">
+            <div class="idea-generator">
+                <div class="input-data">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0;">Section Structure</h4>
+                        <button class="btn btn-primary" id="custom-extract-btn" onclick="extractRawData()" style="margin: 0;">
+                            <i class="fas fa-database"></i> Extract Raw Data
+                        </button>
+                    </div>
+                    
+                    <div class="input-section">
+                        <div id="section-structure-display" class="expanded-idea-content">
+                            <!-- Section structure from previous page will appear here -->
+                            <div class="loading">Loading section structure...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="brainstorm-results">
+                <!-- Results Panel -->
+                <div class="llm-results-panel">
+                    <div class="results-header">
+                        <h4 id="results-title">Extracted Raw Data by Section</h4>
+                    </div>
+                    
+                    <!-- Results Display -->
+                    <div id="llm-results-display" class="llm-results-display">
+                        <!-- Extracted data chunks will appear here -->
+                        <div class="loading">Click "Extract Raw Data" to populate sections with data from product sources</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.brainstorm-main {
+    padding: 2rem 0;
+}
+
+.brainstorm-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.idea-generator {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.input-data {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.input-data h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.brainstorm-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 600px;
+}
+
+.section-structure-results {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.section-item {
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.section-item.required {
+    background: #1e293b;
+    border-left: 4px solid #3b82f6;
+}
+
+.section-item.optional {
+    background: #0f172a;
+    border-left: 4px solid #64748b;
+    opacity: 0.9;
+}
+
+.section-item h5 {
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.section-item.optional h5 {
+    color: #cbd5e1;
+}
+
+.section-item p {
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.section-item.optional p {
+    color: #94a3b8;
+}
+
+.data-allocation-results {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.data-allocation-results h4 {
+    color: #f1f5f9;
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+}
+
+.section-data-allocation {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.section-data-allocation h5 {
+    color: #e2e8f0;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.data-chunk {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+}
+
+.data-chunk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.data-chunk-title {
+    font-weight: 600;
+    color: #f1f5f9;
+    font-size: 0.95rem;
+}
+
+.data-chunk-source {
+    font-size: 0.75rem;
+    color: #64748b;
+    background: #0f172a;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.data-chunk-content {
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #0f172a;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.data-chunk-category {
+    display: inline-block;
+    font-size: 0.7rem;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.loading {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+.error {
+    color: #ef4444;
+    text-align: center;
+    padding: 2rem;
+}
+
+.btn {
+    background: #3b82f6;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn:disabled {
+    background: #64748b;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 1024px) {
+    .brainstorm-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+</style>
+
+<script>
+// Set post ID for API calls
+window.postId = {{ post_id }};
+
+// Set navigation highlighting
+window.currentStage = 'concept';
+window.currentSubstage = 'topic-allocation';
+
+// Utility function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+let sectionStructure = null;
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadSectionStructure();
+    loadExistingAllocation();
+});
+
+// Load section structure from previous page
+async function loadSectionStructure() {
+    try {
+        const response = await fetch(`/planning/api/sections/design-structure/${window.postId}`);
+        const data = await response.json();
+        
+        if (data.success && data.section_structure) {
+            sectionStructure = data.section_structure;
+            displaySectionStructure(sectionStructure);
+        } else {
+            document.getElementById('section-structure-display').innerHTML = '<p class="error">No section structure found. Please design section structure first.</p>';
+        }
+    } catch (error) {
+        console.error('Error loading section structure:', error);
+        document.getElementById('section-structure-display').innerHTML = '<p class="error">Error loading section structure</p>';
+    }
+}
+
+// Load existing data allocation
+async function loadExistingAllocation() {
+    try {
+        const response = await fetch(`/planning/api/sections/allocate-topics/${window.postId}`);
+        const result = await response.json();
+        
+        if (result.success && result.allocations) {
+            displayDataAllocationResults(result);
+        }
+    } catch (error) {
+        console.error('Error loading existing allocation:', error);
+        // Don't show error to user, just log it
+    }
+}
+
+// Display section structure
+function displaySectionStructure(structure) {
+    const container = document.getElementById('section-structure-display');
+    if (!structure) {
+        container.innerHTML = '<p class="error">No section structure available</p>';
+        return;
+    }
+    
+    let html = '<div class="section-structure-results">';
+    
+    // Handle both new format (with sections key) and old format (direct array)
+    let sections = [];
+    if (structure && structure.sections) {
+        sections = structure.sections;
+    } else if (Array.isArray(structure)) {
+        sections = structure;
+    } else {
+        console.error('Invalid structure format:', structure);
+        return;
+    }
+    
+    sections.forEach((section, index) => {
+        const sectionCode = section.section_code || `S${String(index + 1).padStart(2, '0')}`;
+        const title = section.title || section.theme || 'Untitled Section';
+        const description = section.description || 'No description available';
+        const isOptional = section.optional === true;
+        const sectionClass = isOptional ? 'section-item optional' : 'section-item required';
+        
+        html += `
+            <div class="${sectionClass}">
+                <h5>{${sectionCode}} ${escapeHtml(title)}</h5>
+                <p><strong>Description:</strong> ${escapeHtml(description)}</p>
+        `;
+        
+        // Show data sources if available
+        if (section.data_sources && section.data_sources.length > 0) {
+            html += `<p><strong>Data Sources:</strong> <span style="color: #94a3b8; font-size: 0.85rem; font-family: monospace;">${escapeHtml(section.data_sources.join(', '))}</span></p>`;
+        }
+        
+        html += `</div>`;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Extract raw data from product sources
+async function extractRawData() {
+    const btn = document.getElementById('custom-extract-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extracting Data...';
+    
+    try {
+        const response = await fetch('/planning/api/profile/topic-allocation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                post_id: window.postId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('Raw data extracted successfully');
+            displayDataAllocationResults(result);
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error extracting raw data:', error);
+        alert('Error extracting data: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-database"></i> Extract Raw Data';
+    }
+}
+
+// Display data allocation results
+function displayDataAllocationResults(result) {
+    const resultsDisplay = document.getElementById('llm-results-display');
+    if (!resultsDisplay) return;
+    
+    let html = '<div class="data-allocation-results">';
+    html += '<h4>Raw Data Allocation by Section</h4>';
+    
+    if (result.allocations && result.allocations.allocations) {
+        // Sort sections by section_code
+        const sortedSections = result.allocations.allocations.sort((a, b) => {
+            const aCode = a.section_code || '';
+            const bCode = b.section_code || '';
+            return aCode.localeCompare(bCode);
+        });
+        
+        sortedSections.forEach(section => {
+            html += `<div class="section-data-allocation">`;
+            html += `<h5>${escapeHtml(section.section_theme)} <span style="color: #64748b; font-size: 0.85rem; font-weight: normal;">(${section.section_code})</span></h5>`;
+            
+            if (section.data_chunks && section.data_chunks.length > 0) {
+                section.data_chunks.forEach(chunk => {
+                    html += `<div class="data-chunk">`;
+                    html += `<div class="data-chunk-header">`;
+                    html += `<span class="data-chunk-title">${escapeHtml(chunk.topic_title || 'Untitled')}</span>`;
+                    html += `<span class="data-chunk-source">${escapeHtml(chunk.source || 'unknown')}</span>`;
+                    html += `</div>`;
+                    
+                    if (chunk.description) {
+                        html += `<div class="data-chunk-content">${escapeHtml(chunk.description)}</div>`;
+                    }
+                    
+                    if (chunk.category) {
+                        html += `<span class="data-chunk-category">${escapeHtml(chunk.category)}</span>`;
+                    }
+                    
+                    html += `</div>`;
+                });
+            } else {
+                html += `<div style="color: #94a3b8; font-style: italic; padding: 1rem;">No data chunks available for this section</div>`;
+            }
+            
+            html += `</div>`;
+        });
+    } else {
+        html += '<div class="loading">No data allocation found. Click "Extract Raw Data" to populate sections.</div>';
+    }
+    
+    html += '</div>';
+    resultsDisplay.innerHTML = html;
+}
+</script>
+
+    {% endblock %}
+{% endblock %}
+

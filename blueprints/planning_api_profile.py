@@ -187,7 +187,7 @@ STANDARD PRODUCT PROFILE SECTIONS (8 total):
 5. Materials & Making / The Maker (Required, Combined) - Materials, processes, craftsmanship, and producer/workshop story. The Maker content is optional within this section.
 6. Care & Maintenance (Required) - Care instructions, cleaning, storage
 7. Gallery (Optional, Provisional) - Visual showcase (depends on image availability)
-8. Explore Further (Required, Final) - Commerce links
+8. Explore Further (Required, Final Section) - Commerce links
 
 VALIDATION RULES:
 - Create exactly 8 sections
@@ -453,8 +453,561 @@ DESCRIPTION: {product_data.get('description', 'No description available')[:500]}
         }), 500
 
 
+def api_profile_topic_allocation():
+    """
+    Populate sections with raw data from product sources for profile posts.
+    
+    Instead of generating topics, extracts and maps raw data chunks to each section
+    based on section_type and data_sources.
+    """
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        
+        if not post_id:
+            return jsonify({
+                'success': False,
+                'error': 'Post ID is required'
+            }), 400
+        
+        # Get post and verify it's a profile post
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.id, p.title, p.profile_product_id, pd.section_structure
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return jsonify({
+                    'success': False,
+                    'error': f'Post {post_id} not found'
+                }), 404
+            
+            if not post.get('profile_product_id'):
+                return jsonify({
+                    'success': False,
+                    'error': f'Post {post_id} is not a profile post'
+                }), 400
+            
+            product_id = post.get('profile_product_id')
+            section_structure = post.get('section_structure')
+        
+        # Parse section structure
+        if not section_structure:
+            return jsonify({
+                'success': False,
+                'error': 'No section structure found. Please design section structure first.'
+            }), 400
+        
+        try:
+            if isinstance(section_structure, str):
+                section_structure = json.loads(section_structure)
+        except json.JSONDecodeError:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid section structure format'
+            }), 400
+        
+        # Get sections from structure
+        if isinstance(section_structure, dict):
+            sections = section_structure.get('sections', [])
+        elif isinstance(section_structure, list):
+            sections = section_structure
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid section structure format'
+            }), 400
+        
+        if not sections:
+            return jsonify({
+                'success': False,
+                'error': 'No sections found in structure'
+            }), 400
+        
+        # Fetch full product data
+        try:
+            from utils.content_generation.clan_data_extractor import ClanDataExtractor
+            extractor = ClanDataExtractor()
+            product_data = extractor.extract_product_data(product_id)
+        except Exception as e:
+            logger.error(f"Error fetching product data: {e}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': f'Failed to fetch product data: {str(e)}'
+            }), 500
+        
+        # Extract raw data for each section
+        allocations = []
+        
+        for section in sections:
+            section_type = section.get('section_type')
+            section_code = section.get('section_code', '')
+            section_title = section.get('title', 'Untitled Section')
+            data_sources = section.get('data_sources', [])
+            
+            # Extract raw data chunks based on section type and data sources
+            raw_data_chunks = extract_raw_data_for_section(
+                section_type, data_sources, product_data
+            )
+            
+            # Format as "topics" (data chunks) for compatibility with existing frontend
+            formatted_chunks = []
+            for i, chunk in enumerate(raw_data_chunks):
+                formatted_chunks.append({
+                    'idea_code': f"{{{section_code}{str(i+1).zfill(2)}}}",
+                    'topic_title': chunk.get('title', f'Data Chunk {i+1}'),
+                    'section_code': f"{{{section_code}}}",
+                    'description': chunk.get('content', ''),
+                    'category': chunk.get('category', 'data'),
+                    'source': chunk.get('source', 'unknown'),
+                    'raw_data': chunk.get('raw_data', {})
+                })
+            
+            allocations.append({
+                'section_id': f"section_{section_code.replace('S', '')}",
+                'section_code': section_code,
+                'section_theme': section_title,
+                'section_type': section_type,
+                'topics': [chunk.get('topic_title', '') for chunk in formatted_chunks],
+                'data_chunks': formatted_chunks
+            })
+        
+        # Save to database
+        allocation_data = {
+            'allocations': allocations,
+            'metadata': {
+                'total_chunks': sum(len(a.get('data_chunks', [])) for a in allocations),
+                'sections_count': len(allocations),
+                'generated_at': datetime.now().isoformat(),
+                'method': 'raw_data_extraction',
+                'post_id': post_id,
+                'product_id': product_id
+            }
+        }
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE post_development 
+                SET topic_allocation = %s::jsonb, allocation_completed_at = %s, updated_at = %s
+                WHERE post_id = %s
+            """, (json.dumps(allocation_data), datetime.now(), datetime.now(), post_id))
+            
+            if cursor.rowcount == 0:
+                cursor.execute("""
+                    INSERT INTO post_development (post_id, topic_allocation, allocation_completed_at, updated_at)
+                    VALUES (%s, %s::jsonb, %s, %s)
+                """, (post_id, json.dumps(allocation_data), datetime.now(), datetime.now()))
+            
+            cursor.connection.commit()
+        
+        logger.info(f"Topic allocation (raw data) saved for post {post_id}, product {product_id}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Raw data extracted and allocated to {len(allocations)} sections',
+            'allocations': allocation_data,
+            'results': allocation_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in api_profile_topic_allocation: {e}", exc_info=True)
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+def extract_raw_data_for_section(section_type, data_sources, product_data):
+    """
+    Extract raw data chunks for a specific section based on section_type and data_sources.
+    
+    Returns a list of data chunks, each with:
+    - title: Short title for the chunk
+    - content: The actual data content
+    - category: Type of data (description, specification, heritage, etc.)
+    - source: Where the data came from (product_data, supplier_data, etc.)
+    - raw_data: The original raw data object
+    """
+    chunks = []
+    
+    # Map section types to data extraction functions
+    extraction_map = {
+        'profile_hero': extract_hero_data,
+        'profile_object_context': extract_object_context_data,
+        'profile_features': extract_features_data,
+        'profile_heritage': extract_heritage_data,
+        'profile_materials_maker': extract_materials_maker_data,
+        'profile_care': extract_care_data,
+        'profile_gallery': extract_gallery_data,
+        'profile_explore': extract_explore_data
+    }
+    
+    extractor_func = extraction_map.get(section_type)
+    if extractor_func:
+        chunks = extractor_func(product_data, data_sources)
+    else:
+        logger.warning(f"Unknown section type: {section_type}, using generic extraction")
+        chunks = extract_generic_data(product_data, data_sources)
+    
+    return chunks
+
+
+def extract_hero_data(product_data, data_sources):
+    """Extract data for Hero Block section"""
+    chunks = []
+    
+    # Product name
+    if product_data.get('name'):
+        chunks.append({
+            'title': 'Product Name',
+            'content': product_data['name'],
+            'category': 'name',
+            'source': 'product_data.name',
+            'raw_data': {'name': product_data['name']}
+        })
+    
+    # Short description
+    if product_data.get('short_description'):
+        chunks.append({
+            'title': 'Short Description',
+            'content': product_data['short_description'],
+            'category': 'description',
+            'source': 'product_data.short_description',
+            'raw_data': {'short_description': product_data['short_description']}
+        })
+    
+    # Image URL
+    if product_data.get('image_url'):
+        chunks.append({
+            'title': 'Hero Image',
+            'content': product_data['image_url'],
+            'category': 'image',
+            'source': 'product_data.image_url',
+            'raw_data': {'image_url': product_data['image_url']}
+        })
+    
+    # Product type for headline context
+    product_type_data = product_data.get('product_type_data', {})
+    if product_type_data.get('core_type'):
+        chunks.append({
+            'title': 'Product Type',
+            'content': product_type_data['core_type'],
+            'category': 'classification',
+            'source': 'product_data.product_type_data.core_type',
+            'raw_data': {'core_type': product_type_data['core_type']}
+        })
+    
+    return chunks
+
+
+def extract_object_context_data(product_data, data_sources):
+    """Extract data for The Object / In Context combined section"""
+    chunks = []
+    
+    # Main description
+    if product_data.get('description'):
+        chunks.append({
+            'title': 'Product Description',
+            'content': product_data['description'],
+            'category': 'description',
+            'source': 'product_data.description',
+            'raw_data': {'description': product_data['description']}
+        })
+    
+    # Product type data
+    product_type_data = product_data.get('product_type_data', {})
+    
+    # Occasions (In Context)
+    if product_type_data.get('occasions'):
+        chunks.append({
+            'title': 'Gift Occasions',
+            'content': ', '.join(product_type_data['occasions']),
+            'category': 'context',
+            'source': 'product_data.product_type_data.occasions',
+            'raw_data': {'occasions': product_type_data['occasions']}
+        })
+    
+    # Decorations/motifs (The Object)
+    if product_type_data.get('decorations'):
+        chunks.append({
+            'title': 'Decorations & Motifs',
+            'content': ', '.join(product_type_data['decorations']),
+            'category': 'design',
+            'source': 'product_data.product_type_data.decorations',
+            'raw_data': {'decorations': product_type_data['decorations']}
+        })
+    
+    # Specifications for object details
+    if product_data.get('specifications'):
+        chunks.append({
+            'title': 'Specifications',
+            'content': json.dumps(product_data['specifications'], indent=2) if isinstance(product_data['specifications'], dict) else str(product_data['specifications']),
+            'category': 'specification',
+            'source': 'product_data.specifications',
+            'raw_data': {'specifications': product_data['specifications']}
+        })
+    
+    # Dimensions
+    if product_data.get('dimensions'):
+        chunks.append({
+            'title': 'Dimensions',
+            'content': json.dumps(product_data['dimensions'], indent=2) if isinstance(product_data['dimensions'], dict) else str(product_data['dimensions']),
+            'category': 'specification',
+            'source': 'product_data.dimensions',
+            'raw_data': {'dimensions': product_data['dimensions']}
+        })
+    
+    return chunks
+
+
+def extract_features_data(product_data, data_sources):
+    """Extract data for Features & Specifications section"""
+    chunks = []
+    
+    # Specifications
+    if product_data.get('specifications'):
+        chunks.append({
+            'title': 'Technical Specifications',
+            'content': json.dumps(product_data['specifications'], indent=2) if isinstance(product_data['specifications'], dict) else str(product_data['specifications']),
+            'category': 'specification',
+            'source': 'product_data.specifications',
+            'raw_data': {'specifications': product_data['specifications']}
+        })
+    
+    # Configurable options
+    if product_data.get('configurable_options'):
+        chunks.append({
+            'title': 'Configurable Options',
+            'content': json.dumps(product_data['configurable_options'], indent=2) if isinstance(product_data['configurable_options'], dict) else str(product_data['configurable_options']),
+            'category': 'options',
+            'source': 'product_data.configurable_options',
+            'raw_data': {'configurable_options': product_data['configurable_options']}
+        })
+    
+    # Dimensions
+    if product_data.get('dimensions'):
+        chunks.append({
+            'title': 'Dimensions',
+            'content': json.dumps(product_data['dimensions'], indent=2) if isinstance(product_data['dimensions'], dict) else str(product_data['dimensions']),
+            'category': 'specification',
+            'source': 'product_data.dimensions',
+            'raw_data': {'dimensions': product_data['dimensions']}
+        })
+    
+    return chunks
+
+
+def extract_heritage_data(product_data, data_sources):
+    """Extract data for Heritage & Origins section"""
+    chunks = []
+    
+    # Product heritage data
+    if product_data.get('heritage_data'):
+        heritage = product_data['heritage_data']
+        if isinstance(heritage, dict):
+            for key, value in heritage.items():
+                if value:
+                    chunks.append({
+                        'title': f'Heritage: {key.replace("_", " ").title()}',
+                        'content': json.dumps(value, indent=2) if isinstance(value, (dict, list)) else str(value),
+                        'category': 'heritage',
+                        'source': f'product_data.heritage_data.{key}',
+                        'raw_data': {key: value}
+                    })
+        else:
+            chunks.append({
+                'title': 'Heritage Data',
+                'content': str(heritage),
+                'category': 'heritage',
+                'source': 'product_data.heritage_data',
+                'raw_data': {'heritage_data': heritage}
+            })
+    
+    # Category heritage data
+    categories = product_data.get('categories', [])
+    for category in categories:
+        if category and isinstance(category, dict) and category.get('heritage_data'):
+            chunks.append({
+                'title': f'Category Heritage: {category.get("name", "Unknown")}',
+                'content': json.dumps(category['heritage_data'], indent=2) if isinstance(category['heritage_data'], (dict, list)) else str(category['heritage_data']),
+                'category': 'heritage',
+                'source': f'category.heritage_data',
+                'raw_data': {'category_name': category.get('name'), 'heritage_data': category['heritage_data']}
+            })
+    
+    return chunks
+
+
+def extract_materials_maker_data(product_data, data_sources):
+    """Extract data for Materials & Making / The Maker combined section"""
+    chunks = []
+    
+    # Materials
+    product_type_data = product_data.get('product_type_data', {})
+    if product_type_data.get('materials'):
+        chunks.append({
+            'title': 'Materials',
+            'content': ', '.join(product_type_data['materials']),
+            'category': 'materials',
+            'source': 'product_data.product_type_data.materials',
+            'raw_data': {'materials': product_type_data['materials']}
+        })
+    
+    # Supplier/Maker information
+    if product_data.get('supplier_name'):
+        chunks.append({
+            'title': 'Supplier/Maker Name',
+            'content': product_data['supplier_name'],
+            'category': 'maker',
+            'source': 'product_data.supplier_name',
+            'raw_data': {'supplier_name': product_data['supplier_name']}
+        })
+    
+    if product_data.get('supplier_description'):
+        chunks.append({
+            'title': 'Supplier/Maker Description',
+            'content': product_data['supplier_description'],
+            'category': 'maker',
+            'source': 'product_data.supplier_description',
+            'raw_data': {'supplier_description': product_data['supplier_description']}
+        })
+    
+    # Producer data
+    if product_data.get('producer_data'):
+        chunks.append({
+            'title': 'Producer Data',
+            'content': json.dumps(product_data['producer_data'], indent=2) if isinstance(product_data['producer_data'], dict) else str(product_data['producer_data']),
+            'category': 'maker',
+            'source': 'product_data.producer_data',
+            'raw_data': {'producer_data': product_data['producer_data']}
+        })
+    
+    return chunks
+
+
+def extract_care_data(product_data, data_sources):
+    """Extract data for Care & Maintenance section"""
+    chunks = []
+    
+    # Product type data may contain care information
+    product_type_data = product_data.get('product_type_data', {})
+    if product_type_data:
+        chunks.append({
+            'title': 'Product Type Data',
+            'content': json.dumps(product_type_data, indent=2),
+            'category': 'care',
+            'source': 'product_data.product_type_data',
+            'raw_data': {'product_type_data': product_type_data}
+        })
+    
+    # Additional data may contain care instructions
+    if product_data.get('additional_data'):
+        chunks.append({
+            'title': 'Additional Data',
+            'content': json.dumps(product_data['additional_data'], indent=2) if isinstance(product_data['additional_data'], dict) else str(product_data['additional_data']),
+            'category': 'care',
+            'source': 'product_data.additional_data',
+            'raw_data': {'additional_data': product_data['additional_data']}
+        })
+    
+    return chunks
+
+
+def extract_gallery_data(product_data, data_sources):
+    """Extract data for Gallery section"""
+    chunks = []
+    
+    # Main image
+    if product_data.get('image_url'):
+        chunks.append({
+            'title': 'Main Product Image',
+            'content': product_data['image_url'],
+            'category': 'image',
+            'source': 'product_data.image_url',
+            'raw_data': {'image_url': product_data['image_url']}
+        })
+    
+    # Additional images if available
+    if product_data.get('additional_images'):
+        for i, img_url in enumerate(product_data.get('additional_images', [])):
+            chunks.append({
+                'title': f'Additional Image {i+1}',
+                'content': img_url,
+                'category': 'image',
+                'source': 'product_data.additional_images',
+                'raw_data': {'image_index': i, 'image_url': img_url}
+            })
+    
+    return chunks
+
+
+def extract_explore_data(product_data, data_sources):
+    """Extract data for Explore Further section"""
+    chunks = []
+    
+    # Product URL
+    if product_data.get('url'):
+        chunks.append({
+            'title': 'Product URL',
+            'content': product_data['url'],
+            'category': 'link',
+            'source': 'product_data.url',
+            'raw_data': {'url': product_data['url']}
+        })
+    
+    # Categories for navigation
+    categories = product_data.get('categories', [])
+    if categories:
+        category_names = [c.get('name', '') for c in categories if c and isinstance(c, dict)]
+        chunks.append({
+            'title': 'Related Categories',
+            'content': ', '.join(category_names),
+            'category': 'navigation',
+            'source': 'product_data.categories',
+            'raw_data': {'categories': categories}
+        })
+    
+    return chunks
+
+
+def extract_generic_data(product_data, data_sources):
+    """Generic extraction for unknown section types"""
+    chunks = []
+    
+    # Try to extract based on data_sources
+    for source in data_sources:
+        if '.' in source:
+            parts = source.split('.')
+            value = product_data
+            for part in parts:
+                if isinstance(value, dict):
+                    value = value.get(part)
+                else:
+                    value = None
+                    break
+            
+            if value:
+                chunks.append({
+                    'title': source.replace('_', ' ').title(),
+                    'content': json.dumps(value, indent=2) if isinstance(value, (dict, list)) else str(value),
+                    'category': 'generic',
+                    'source': source,
+                    'raw_data': {source: value}
+                })
+    
+    return chunks
+
+
+# ... (keep all the existing prompt selection functions) ...
+
 def api_get_profile_section_structure_prompt_selection(post_id):
-    """Get available prompt options and current selection for profile section structure"""
+    """Get available prompt options and current selection for profile section structure design"""
     try:
         with db_manager.get_cursor() as cursor:
             # Get available prompts
@@ -662,4 +1215,3 @@ def api_update_profile_section_structure_prompt(post_id):
     except Exception as e:
         logger.error(f"Error updating profile section structure prompt: {e}")
         return jsonify({'error': str(e)}), 500
-
