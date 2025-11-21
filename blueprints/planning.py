@@ -34,7 +34,8 @@ from blueprints.planning_api_profile import (
     api_set_profile_section_structure_prompt_selection as profile_set_prompt_selection_func,
     api_get_profile_section_structure_prompt as profile_get_prompt_func,
     api_update_profile_section_structure_prompt as profile_update_prompt_func,
-    api_profile_topic_allocation as profile_topic_allocation_func
+    api_profile_topic_allocation as profile_topic_allocation_func,
+    api_profile_sections_title as profile_sections_title_func
 )
 from blueprints.planning_api_topic_allocation import api_generate_section_specific_topics as generate_topics_func, api_get_topic_allocation as get_allocation_func
 from blueprints.planning_llm import LLMService, parse_brainstorm_topics
@@ -552,6 +553,11 @@ def api_update_profile_section_structure_prompt(post_id):
 def api_profile_topic_allocation():
     """Populate sections with raw data from product sources for profile posts"""
     return profile_topic_allocation_func()
+
+@bp.route('/api/profile/sections/title', methods=['POST'])
+def api_profile_sections_title():
+    """Generate contextual section titles for profile posts"""
+    return profile_sections_title_func()
 
 @bp.route('/api/sections/design-structure/<int:post_id>', methods=['GET'])
 def api_get_section_structure(post_id):
