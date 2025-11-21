@@ -104,8 +104,7 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
             product_pool = get_product_pool(
                 since_iso_timestamp=since_date,
                 pool_size=50,
-                exclude_launched=True,
-                min_product_id=10000
+                exclude_launched=True
             )
             # If we don't have enough products (less than 10), include launched ones to fill the pool
             # This ensures we always have a pool to re-choose from
@@ -113,8 +112,7 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
                 product_pool_with_launched = get_product_pool(
                     since_iso_timestamp=since_date,
                     pool_size=50,
-                    exclude_launched=False,  # Include launched to fill pool
-                    min_product_id=10000
+                    exclude_launched=False  # Include launched to fill pool
                 )
                 # Merge, keeping unlaunched first, then adding launched
                 existing_ids = {p.get('id') for p in product_pool}

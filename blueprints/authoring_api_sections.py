@@ -167,6 +167,20 @@ def api_get_sections(post_id):
                     cursor.connection.commit()
                     logger.info(f"Updated missing headings for recipe post {post_id}")
             
+            # Get topic allocation data for profile posts (raw data chunks) - fetch early so it's available for both paths
+            topic_allocation_data = None
+            if post_type == 'profile':
+                cursor.execute("""
+                    SELECT topic_allocation FROM post_development WHERE post_id = %s
+                """, (post_id,))
+                topic_result = cursor.fetchone()
+                if topic_result and topic_result.get('topic_allocation'):
+                    try:
+                        topic_allocation_data = json.loads(topic_result['topic_allocation']) if isinstance(topic_result['topic_allocation'], str) else topic_result['topic_allocation']
+                    except (json.JSONDecodeError, TypeError):
+                        logger.warning(f"Failed to parse topic_allocation for post {post_id}")
+                        topic_allocation_data = None
+            
             # If no sections found in post_section table, check post_development.sections
             if not sections:
                 cursor.execute("""
@@ -187,6 +201,37 @@ def api_get_sections(post_id):
                         # Convert JSON sections to post_section-like format
                         formatted_sections = []
                         for i, section in enumerate(sections_list):
+                            # Get raw data chunks from topic_allocation for this section (profile posts)
+                            data_chunks = []
+                            if post_type == 'profile' and topic_allocation_data:
+                                try:
+                                    allocations = topic_allocation_data.get('allocations', [])
+                                    section_order = section.get('order', section.get('index', i + 1))
+                                    # Match by section_order (section_01, section_02, etc.) or section_code (S01, S02, etc.)
+                                    for allocation in allocations:
+                                        allocation_section_id = allocation.get('section_id', '')
+                                        allocation_section_code = allocation.get('section_code', '').replace('{', '').replace('}', '')
+                                        # Match by order number - try multiple formats
+                                        section_order_str = str(section_order)
+                                        section_order_padded = f"{section_order:02d}"
+                                        
+                                        # Check if section_id matches (e.g., "section_1" or "section_01")
+                                        if allocation_section_id:
+                                            if (f'section_{section_order}' == allocation_section_id) or \
+                                               (f'section_{section_order_padded}' == allocation_section_id):
+                                                data_chunks = allocation.get('data_chunks', [])
+                                                break
+                                        
+                                        # Check if section_code matches (e.g., "S01" or "S1")
+                                        if allocation_section_code:
+                                            if (f'S{section_order_padded}' == allocation_section_code) or \
+                                               (f'S{section_order}' == allocation_section_code):
+                                                data_chunks = allocation.get('data_chunks', [])
+                                                break
+                                except (KeyError, TypeError, AttributeError) as e:
+                                    logger.warning(f"Error extracting data chunks for section {i + 1}: {e}")
+                                    data_chunks = []
+                            
                             formatted_sections.append({
                                 'id': section.get('id', i + 1),
                                 'section_order': section.get('order', section.get('index', i + 1)),
@@ -206,7 +251,8 @@ def api_get_sections(post_id):
                                 'image_captions': section.get('image_captions'),
                                 'image_alt_text': None,
                                 'selected_image_concept': section.get('selected_image_concept'),
-                                'topics': section.get('topics', [])
+                                'topics': section.get('topics', []),
+                                'data_chunks': data_chunks  # Raw data chunks for profile posts
                             })
                         sections = formatted_sections
                     except (json.JSONDecodeError, TypeError, KeyError) as e:
@@ -256,11 +302,41 @@ def api_get_sections(post_id):
                     section_elements = None
                     if section.get('post_section_elements'):
                         try:
-                            import json
                             section_elements = json.loads(section['post_section_elements']) if isinstance(section['post_section_elements'], str) else section['post_section_elements']
                         except (json.JSONDecodeError, TypeError):
                             logger.warning(f"Failed to parse post_section_elements for section {section['id']}")
                             section_elements = None
+                    
+                    # Get raw data chunks from topic_allocation for this section (profile posts)
+                    data_chunks = []
+                    if post_type == 'profile' and topic_allocation_data:
+                        try:
+                            allocations = topic_allocation_data.get('allocations', [])
+                            section_order = section['section_order']
+                            # Match by section_order (section_01, section_02, etc.) or section_code (S01, S02, etc.)
+                            for allocation in allocations:
+                                allocation_section_id = allocation.get('section_id', '')
+                                allocation_section_code = allocation.get('section_code', '').replace('{', '').replace('}', '')
+                                # Match by order number - try multiple formats
+                                section_order_str = str(section_order)
+                                section_order_padded = f"{section_order:02d}"
+                                
+                                # Check if section_id matches (e.g., "section_1" or "section_01")
+                                if allocation_section_id:
+                                    if (f'section_{section_order}' == allocation_section_id) or \
+                                       (f'section_{section_order_padded}' == allocation_section_id):
+                                        data_chunks = allocation.get('data_chunks', [])
+                                        break
+                                
+                                # Check if section_code matches (e.g., "S01" or "S1")
+                                if allocation_section_code:
+                                    if (f'S{section_order_padded}' == allocation_section_code) or \
+                                       (f'S{section_order}' == allocation_section_code):
+                                        data_chunks = allocation.get('data_chunks', [])
+                                        break
+                        except (KeyError, TypeError, AttributeError) as e:
+                            logger.warning(f"Error extracting data chunks for section {section['id']}: {e}")
+                            data_chunks = []
                     
                     formatted_sections.append({
                         'id': section['id'],
@@ -283,7 +359,8 @@ def api_get_sections(post_id):
                         'image_captions': section.get('image_captions'),
                         'image_alt_text': section.get('image_alt_text'),
                         'selected_image_concept': section.get('selected_image_concept') or selected_concept_from_json,
-                        'topics': []
+                        'topics': [],
+                        'data_chunks': data_chunks  # Raw data chunks for profile posts
                     })
             
             return jsonify({

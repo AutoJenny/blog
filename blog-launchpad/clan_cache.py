@@ -488,7 +488,7 @@ class ClanCache:
             
             detailed_products = []
             
-                for sku in skus:
+            for sku in skus:
                 try:
                     # Fetch detailed product data WITH categories
                     response = requests.get(f"https://clan.com/clan/api/getProductData?sku={sku}&include_categories=1", timeout=10)
@@ -639,8 +639,15 @@ class ClanCache:
                 except Exception:
                     # If parsing fails, try to store as string and let PostgreSQL handle it
                     clan_created_at = created_at_str
-            # updated_at is not available in API - will remain None
+            # updated_at is now available in API (as of 2025-11-20)
             clan_updated_at = product_data.get('updated_at') or product_data.get('clan_updated_at')
+            if clan_updated_at and isinstance(clan_updated_at, str):
+                try:
+                    from dateutil import parser as date_parser
+                    clan_updated_at = date_parser.parse(clan_updated_at)
+                except Exception:
+                    # If parsing fails, store as string and let PostgreSQL handle it
+                    pass
             configurable_options = json.dumps(product_data.get('configurable_options', None))
             additional_data = json.dumps(product_data.get('additional_data', None)) if product_data.get('additional_data') else None
             dimensions = product_data.get('dimensions', '')

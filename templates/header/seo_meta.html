@@ -79,6 +79,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Open Graph Meta Panel (Image, Type, Site Name) -->
             {% include 'header/includes/og_meta_panel.html' %}
             
+            <!-- Vector Embeddings Panel (Similarity Matching) -->
+            {% include 'header/includes/vector_embeddings_panel.html' %}
+            
             <!-- SEO Analysis Panel -->
             {% include 'header/includes/seo_analysis_panel.html' %}
             
@@ -88,5 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
+<script src="{{ url_for('static', filename='js/header/accordion-manager.js') }}"></script>
 <script src="{{ url_for('static', filename='js/header/seo-meta-page.js') }}"></script>
 {% endblock %}

@@ -89,7 +89,10 @@ class ContentRetriever:
         
         try:
             # Search FAISS index
-            distances, faiss_indices = self.faiss_manager.search(query_embedding, k=limit * 2)
+            # If filtering by chunk_type, search more broadly to ensure we find matches
+            # Otherwise, products dominate the top results
+            search_k = limit * 10 if chunk_types else limit * 2
+            distances, faiss_indices = self.faiss_manager.search(query_embedding, k=search_k)
             
             # Convert FAISS indices to chunk IDs
             chunk_ids = self.faiss_manager.get_chunk_ids(faiss_indices)
@@ -109,9 +112,15 @@ class ContentRetriever:
         # Fetch chunk details from database
         results = []
         with db_manager.get_cursor() as cursor:
-            for i, chunk_id in enumerate(chunk_ids[:limit]):
+            # When filtering by chunk_type, we need to check more results
+            check_limit = len(chunk_ids) if chunk_types else limit
+            for i, chunk_id in enumerate(chunk_ids[:check_limit]):
                 if chunk_id is None:
                     continue
+                
+                # Stop if we have enough results
+                if len(results) >= limit:
+                    break
                 
                 # Get chunk details
                 cursor.execute("""

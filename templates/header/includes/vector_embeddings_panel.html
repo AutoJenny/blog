@@ -1,0 +1,68 @@
+<!-- Vector Embeddings Panel -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/vector-embeddings-panel.css') }}?v=9999&t=1737036000">
+
+<div class="vector-embeddings-panel" id="vector-embeddings-panel">
+    <div class="panel-header" onclick="toggleVectorEmbeddingsAccordion()">
+        <h4><span class="panel-name-green">Vector Embeddings:</span> <span id="vector-embeddings-status">Similarity Matching</span></h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-down" id="vector-embeddings-accordion-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content" id="vector-embeddings-content">
+        <!-- Generation Status -->
+        <div class="embedding-status" id="embedding-status">
+            <p style="color: #888; padding: 1rem;">Click "Generate Meta Data" to generate embeddings and find similar entities.</p>
+        </div>
+        
+        <!-- Top Matches Section -->
+        <div class="matches-section" id="matches-section" style="display: none;">
+            <!-- Products -->
+            <div class="match-group">
+                <label class="match-label">Top Products:</label>
+                <select id="product-select" class="match-select">
+                    <option value="">Select product...</option>
+                </select>
+            </div>
+            
+            <!-- Suppliers -->
+            <div class="match-group">
+                <label class="match-label">Top Suppliers:</label>
+                <select id="supplier-select" class="match-select">
+                    <option value="">Select supplier...</option>
+                </select>
+            </div>
+            
+            <!-- Categories -->
+            <div class="match-group">
+                <label class="match-label">Top Categories:</label>
+                <select id="category-select" class="match-select">
+                    <option value="">Select category...</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Best Match Selection -->
+        <div class="best-match-section" id="best-match-section" style="display: none;">
+            <div class="best-match-display">
+                <label class="match-label">Best Match Type:</label>
+                <div class="best-match-info">
+                    <span id="best-match-type" class="match-type-badge"></span>
+                    <span id="best-match-score" class="match-score"></span>
+                </div>
+            </div>
+            
+            <div class="best-match-override">
+                <label class="match-label">Override Selection:</label>
+                <select id="best-match-override-select" class="match-select">
+                    <option value="">Auto-selected</option>
+                    <option value="product">Product</option>
+                    <option value="supplier">Supplier</option>
+                    <option value="category">Category</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/vector-embeddings-panel.js') }}?v=9999&t=1737036000"></script>
+

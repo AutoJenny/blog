@@ -374,7 +374,7 @@ async function startTitling() {
         if (result.success) {
             console.log('Section titles generated successfully');
             generatedSections = { sections: result.sections };
-            displaySections(generatedSections);
+            displaySections(generatedSections, result.message || 'Section titles generated and saved successfully');
         } else {
             alert('Error: ' + result.error);
             resultsDisplay.innerHTML = `<div class="error">Error: ${escapeHtml(result.error)}</div>`;
@@ -390,7 +390,7 @@ async function startTitling() {
 }
 
 // Display generated sections
-function displaySections(sectionsData) {
+function displaySections(sectionsData, saveMessage) {
     const resultsDisplay = document.getElementById('llm-results-display');
     if (!resultsDisplay) return;
     
@@ -399,7 +399,18 @@ function displaySections(sectionsData) {
         return;
     }
     
-    let html = '<div class="sections-list">';
+    let html = '';
+    
+    // Show auto-save success message if provided
+    if (saveMessage) {
+        html += `
+            <div style="background: #10b981; color: white; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; text-align: center; font-size: 0.9rem;">
+                <i class="fas fa-check-circle"></i> ${escapeHtml(saveMessage)}
+            </div>
+        `;
+    }
+    
+    html += '<div class="sections-list">';
     
     sectionsData.sections.forEach((section, index) => {
         html += `
@@ -415,11 +426,11 @@ function displaySections(sectionsData) {
     
     html += '</div>';
     
-    // Add save button
+    // Add optional re-save button (sections are already auto-saved)
     html += `
         <div style="margin-top: 1.5rem; text-align: center;">
-            <button class="btn btn-primary" onclick="saveSections()" id="save-btn">
-                <i class="fas fa-save"></i> Save Sections
+            <button class="btn btn-primary" onclick="saveSections()" id="save-btn" style="background: #64748b;">
+                <i class="fas fa-save"></i> Re-save Sections
             </button>
         </div>
     `;
@@ -439,10 +450,11 @@ async function saveSections() {
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     
     try {
-        const response = await fetch(`/planning/api/sections/save/${window.postId}`, {
+        const response = await fetch('/planning/api/sections/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                post_id: window.postId,
                 sections: generatedSections.sections
             })
         });

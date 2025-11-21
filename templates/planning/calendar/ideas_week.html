@@ -732,6 +732,27 @@ async function confirmSelection() {
         const originalText = confirmBtn.innerHTML;
         confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Post...';
         confirmBtn.disabled = true;
+        
+        // Ensure theme is selected in calendar_week_selection before creating post
+        // This is required by the confirm-idea endpoint
+        try {
+            const selectResp = await fetch('/planning/api/calendar/select-theme', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    theme_id: selectedTheme.id,
+                    year: window.year,
+                    week_number: window.weekNumber
+                })
+            });
+            const selectData = await selectResp.json();
+            if (!selectResp.ok || !selectData.success) {
+                console.warn('Failed to save theme selection, but continuing:', selectData.error);
+            }
+        } catch (e) {
+            console.warn('Error saving theme selection, but continuing:', e);
+        }
+        
         // Single confirm endpoint consolidates logic
         const confirmResp = await fetch('/planning/api/calendar/confirm-idea', {
             method: 'POST',

@@ -90,7 +90,10 @@ def transform_product_for_ui(product: Dict) -> Dict:
             'configurable_options': product.get('configurable_options', None),
             'additional_data': product.get('additional_data', None),
             'dimensions': product.get('dimensions', ''),
-            'category_ids': []
+            'category_ids': [],
+            # Date fields from API (as of 2025-11-20, clan.com API now provides these)
+            'created_at': product.get('created_at'),
+            'updated_at': product.get('updated_at')
         }
 
 def get_random_products(products: List[Dict], count: int = 3) -> List[Dict]:

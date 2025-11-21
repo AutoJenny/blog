@@ -1,5 +1,40 @@
 # Changelog
 
+## 2025-11-20 - Profile Post Theme Matching System Implementation
+
+### Added
+- **Vector Embeddings for Profile Matching**: Complete implementation of semantic matching system for profile posts
+  - `utils/vector_search/post_extractor.py` - Extracts post content for embedding
+  - `utils/profile_matching/post_matcher.py` - Finds similar products, suppliers, and categories
+  - `utils/profile_matching/normalization.py` - Weighted random selection algorithm
+  - `blueprints/header/api_seo_meta.py` - API endpoints for embedding generation and overrides
+  - `templates/header/includes/vector_embeddings_panel.html` - UI panel for visualization
+  - `static/js/header/vector-embeddings-panel.js` - Frontend functionality
+  - `migrations/add_post_embeddings.sql` - Database schema updates
+
+### Changed
+- **Producer Embeddings**: Extended vector search to include producers/suppliers
+  - Added `chunk_producer()` method to `ContentChunker`
+  - Updated `scripts/generate_embeddings.py` to support `--producers` argument
+  - 3 producers embedded and added to FAISS index (2,115 total vectors)
+
+### Features
+- **Post Content Extraction**: Extracts and combines content from `post_development` for embedding
+- **Multi-Type Similarity Search**: Searches products, categories, and suppliers simultaneously
+- **Intelligent Selection**: Weighted random selection algorithm with normalization
+- **Manual Override**: Users can override automatic selection and save preferences
+- **SEO Meta Integration**: Full UI integration on SEO Meta page
+
+### Documentation
+- `docs/PROFILE_POST_THEME_MATCHING_IMPLEMENTATION.md` - Complete implementation documentation
+- Updated `docs/PROFILE_POST_THEME_MATCHING_ANALYSIS.md` to reflect implementation status
+
+### Testing
+- All core functionality tested and verified
+- API endpoints working correctly
+- Frontend UI functional
+- Database operations confirmed
+
 ## 2025-01-XX - Post Type Isolation Audit & Implementation Plan
 
 ### Added

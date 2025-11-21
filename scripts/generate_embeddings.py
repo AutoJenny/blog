@@ -2,11 +2,11 @@
 """
 Generate Embeddings Script
 
-Processes all products and categories, creates chunks, generates embeddings,
+Processes all products, categories, and producers, creates chunks, generates embeddings,
 and builds FAISS index.
 
 Usage:
-    python scripts/generate_embeddings.py [--products] [--categories] [--rebuild-index]
+    python scripts/generate_embeddings.py [--products] [--categories] [--producers] [--rebuild-index]
 """
 
 import sys
@@ -39,7 +39,7 @@ def process_chunks(chunk_type: str, chunker: ContentChunker,
     Process chunks: generate embeddings and add to FAISS index.
     
     Args:
-        chunk_type: 'product' or 'category'
+        chunk_type: 'product', 'category', 'producer', or 'kb'
         chunker: ContentChunker instance
         embedding_gen: EmbeddingGenerator instance
         faiss_manager: FAISSIndexManager instance
@@ -120,6 +120,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generate embeddings for content chunks')
     parser.add_argument('--products', action='store_true', help='Process products')
     parser.add_argument('--categories', action='store_true', help='Process categories')
+    parser.add_argument('--producers', action='store_true', help='Process producers')
     parser.add_argument('--kb', action='store_true', help='Process KB articles')
     parser.add_argument('--rebuild-index', action='store_true', help='Rebuild FAISS index from scratch')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size for embedding generation')
@@ -127,14 +128,16 @@ def main():
     args = parser.parse_args()
     
     # Default: process all if none specified
-    any_specified = args.products or args.categories or args.kb
+    any_specified = args.products or args.categories or args.producers or args.kb
     process_products = args.products or (not any_specified)
     process_categories = args.categories or (not any_specified)
+    process_producers = args.producers or (not any_specified)
     process_kb = args.kb or (not any_specified)
     
     logger.info("Starting embedding generation...")
     logger.info(f"Process products: {process_products}")
     logger.info(f"Process categories: {process_categories}")
+    logger.info(f"Process producers: {process_producers}")
     logger.info(f"Process KB articles: {process_kb}")
     logger.info(f"Rebuild index: {args.rebuild_index}")
     
@@ -176,6 +179,15 @@ def main():
         
         logger.info("Step 2: Generating embeddings for categories...")
         process_chunks('category', chunker, embedding_gen, faiss_manager, args.batch_size)
+    
+    # Process producers
+    if process_producers:
+        logger.info("Step 1: Creating producer chunks...")
+        producer_stats = chunker.process_all_producers()
+        logger.info(f"Producer chunks: {producer_stats}")
+        
+        logger.info("Step 2: Generating embeddings for producers...")
+        process_chunks('producer', chunker, embedding_gen, faiss_manager, args.batch_size)
     
     # Process KB articles
     if process_kb:

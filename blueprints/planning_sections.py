@@ -9,6 +9,7 @@ from config.database import db_manager
 from blueprints.planning_llm import LLMService
 import logging
 import json
+import re
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -17,34 +18,46 @@ logger = logging.getLogger(__name__)
 from blueprints.planning_titling import api_sections_title, api_save_sections
 
 def api_design_section_structure():
-    """Step 1: Design 7-section blog structure"""
+    """Step 1: Design section structure (7-section for themed posts, 11-section for profile posts)"""
     try:
         data = request.get_json()
         topics = data.get('topics', [])
         expanded_idea = data.get('expanded_idea', '')
         post_id = data.get('post_id')
+        product_data = data.get('product_data')
+        post_type = data.get('post_type')
         
-        # Fetch topics and expanded_idea from database if not provided
-        if not topics or not expanded_idea:
-            with db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    SELECT idea_scope, expanded_idea 
-                    FROM post_development 
-                    WHERE post_id = %s AND (idea_scope IS NOT NULL OR expanded_idea IS NOT NULL)
-                """, (post_id,))
-                result = cursor.fetchone()
-                if result:
-                    if not topics and result['idea_scope']:
-                        idea_scope_data = json.loads(result['idea_scope'])
-                        topics = idea_scope_data.get('generated_topics', [])
-                    if not expanded_idea and result['expanded_idea']:
-                        expanded_idea = result['expanded_idea']
-        
-        if not topics:
-            return jsonify({
-                'success': False,
-                'error': 'No topics found in database'
-            }), 400
+        # For profile posts, use product_data instead of topics
+        if post_type == 'profile':
+            if not product_data:
+                logger.error(f"Profile post {post_id} missing product_data in request")
+                return jsonify({
+                    'success': False,
+                    'error': 'Product data is required for profile posts'
+                }), 400
+            # Skip topic fetching for profile posts - product_data is provided
+        else:
+            # Fetch topics and expanded_idea from database if not provided (for themed posts)
+            if not topics or not expanded_idea:
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        SELECT idea_scope, expanded_idea 
+                        FROM post_development 
+                        WHERE post_id = %s AND (idea_scope IS NOT NULL OR expanded_idea IS NOT NULL)
+                    """, (post_id,))
+                    result = cursor.fetchone()
+                    if result:
+                        if not topics and result['idea_scope']:
+                            idea_scope_data = json.loads(result['idea_scope'])
+                            topics = idea_scope_data.get('generated_topics', [])
+                        if not expanded_idea and result['expanded_idea']:
+                            expanded_idea = result['expanded_idea']
+            
+            if not topics:
+                return jsonify({
+                    'success': False,
+                    'error': 'No topics found in database'
+                }), 400
         
         if not post_id:
             return jsonify({
@@ -93,9 +106,40 @@ def api_design_section_structure():
                 if prompt_data and prompt_data['system_prompt']:
                     system_prompt = prompt_data['system_prompt']
                     logger.info("Loaded system prompt from database")
+                    # For profile posts, update the system prompt to specify 11 sections
+                    if post_type == 'profile':
+                        system_prompt = system_prompt.replace('7 sections', '11 sections')
+                        system_prompt = system_prompt.replace('exactly 7', 'exactly 11')
+                        system_prompt = system_prompt.replace('7-section', '11-section')
                 else:
                     logger.warning("Section Structure Design system prompt not found in database, using fallback")
-                    system_prompt = """You are a blog structure specialist. Design a 7-section blog post structure based on the provided topics and expanded idea.
+                    if post_type == 'profile':
+                        system_prompt = """You are a blog structure specialist. Design an 11-section product profile blog post structure based on the provided product data.
+
+CONSTRAINTS:
+- Create exactly 11 sections
+- Each section should have a clear purpose and flow
+- Sections should build logically from introduction to conclusion
+- Use the provided product data to inform section content
+- Follow the standard product profile structure: Hero Block, The Object, Heritage & Origins (if available), The Maker (if available), Materials & Making, In Context, Features & Specifications, Care & Maintenance, Gallery (if images available), Explore Further, Credits & Sources
+
+OUTPUT:
+- STRICT JSON ONLY - NO MARKDOWN, NO CODE BLOCKS, NO EXPLANATORY TEXT
+- Start your response with { and end with }
+- Exactly 11 sections with clear purposes
+- Return ONLY the JSON object, nothing before or after
+
+FORMAT (return this exact structure):
+{
+  "sections": [
+    { "section_code": "S01", "title": "Section Title", "description": "Clear purpose description", "section_type": "profile_hero", "data_sources": ["source1", "source2"], "conditional": "optional conditional logic" },
+    ...
+  ]
+}
+
+CRITICAL: Your response must be valid JSON that can be parsed directly. Do not wrap it in markdown code blocks or add any explanatory text."""
+                    else:
+                        system_prompt = """You are a blog structure specialist. Design a 7-section blog post structure based on the provided topics and expanded idea.
 
 CONSTRAINTS:
 - Create exactly 7 sections
@@ -118,8 +162,42 @@ FORMAT:
                 
                 if prompt_data and prompt_data['prompt_text']:
                     prompt_text = prompt_data['prompt_text']
+                    # For profile posts, update the prompt text to specify 11 sections
+                    if post_type == 'profile':
+                        prompt_text = prompt_text.replace('7 sections', '11 sections')
+                        prompt_text = prompt_text.replace('exactly 7', 'exactly 11')
+                        prompt_text = prompt_text.replace('7-section', '11-section')
                 else:
-                    prompt_text = """Design a 7-section blog structure for this post. Use the provided topics and expanded idea to create logical sections.
+                    if post_type == 'profile':
+                        prompt_text = """Design an 11-section product profile blog structure for this post. Use the provided product data to create logical sections following the standard product profile structure.
+
+PRODUCT DATA:
+[PLACEHOLDER]
+
+STANDARD PRODUCT PROFILE SECTIONS (11 total):
+1. Hero Block (Required) - Visual introduction with headline and standfirst
+2. The Object (Required) - Product concept, design, and distinctive qualities
+3. Heritage & Origins (Conditional) - Historical context if heritage data exists
+4. The Maker (Conditional) - Producer/workshop story if supplier data exists
+5. Materials & Making (Required) - Materials, processes, craftsmanship
+6. In Context (Required) - Usage, occasions, styling, cultural fit
+7. Features & Specifications (Required) - Features, options, technical details
+8. Care & Maintenance (Required) - Care instructions, cleaning, storage
+9. Gallery (Conditional) - Visual showcase if images available
+10. Explore Further (Required) - Commerce links
+11. Credits & Sources (Required) - Attribution
+
+VALIDATION RULES:
+- Create exactly 11 sections
+- Each section needs section_code, title, description, and section_type
+- Mark conditional sections appropriately
+- Output STRICT JSON ONLY - NO MARKDOWN CODE BLOCKS, NO EXPLANATORY TEXT
+- Start response with { and end with }
+- Return ONLY the JSON object, nothing before or after
+
+CRITICAL: Your response must be valid JSON that can be parsed directly. Do not wrap it in ```json code blocks or add any explanatory text."""
+                    else:
+                        prompt_text = """Design a 7-section blog structure for this post. Use the provided topics and expanded idea to create logical sections.
 
 INPUT:
 EXPANDED_IDEA:
@@ -142,30 +220,76 @@ VALIDATION RULES:
             }), 500
         
         # Format the prompt with actual data
-        formatted_topics = "\n".join([f"- {t['title']}: {t['description']}" for t in topics])
-        
-        # Extract a concise topic from expanded_idea for better prompt clarity
-        topic_for_prompt = expanded_idea
-        if expanded_idea:
-            # Try to extract the main topic from the expanded idea
-            lines = expanded_idea.split('\n')
-            for line in lines:
-                if 'blog post' in line.lower() and '"' in line:
-                    # Extract text between quotes
-                    start = line.find('"')
-                    end = line.find('"', start + 1)
-                    if start != -1 and end != -1:
-                        topic_for_prompt = line[start+1:end]
+        if post_type == 'profile':
+            if not product_data:
+                logger.error(f"Profile post {post_id} missing product_data")
+                return jsonify({
+                    'success': False,
+                    'error': 'Product data is required for profile posts. Please ensure the product is linked to this post.'
+                }), 400
+            # For profile posts, format product data
+            try:
+                product_type_data = product_data.get('product_type_data', {}) or {}
+                materials = product_type_data.get('materials', []) or []
+                decorations = product_type_data.get('decorations', []) or []
+                occasions = product_type_data.get('occasions', []) or []
+                categories = product_data.get('categories', []) or []
+                
+                product_summary = f"""
+PRODUCT NAME: {product_data.get('name', 'Unknown')}
+PRODUCT TYPE: {product_type_data.get('core_type', 'Unknown')}
+MATERIALS: {', '.join(materials) if materials else 'Not specified'}
+DECORATIONS: {', '.join(decorations) if decorations else 'None'}
+OCCASIONS: {', '.join(occasions) if occasions else 'Not specified'}
+SUPPLIER: {product_data.get('supplier_name', 'Unknown')}
+HERITAGE DATA: {'Available' if product_data.get('has_heritage_data') else 'Not available'}
+CATEGORIES: {', '.join([c.get('name', '') for c in categories if c and isinstance(c, dict)]) if categories else 'Not specified'}
+"""
+                formatted_prompt = prompt_text.replace('[PLACEHOLDER]', product_summary)
+                formatted_prompt = formatted_prompt.replace('[EXPANDED_IDEA]', product_summary)
+                formatted_prompt = formatted_prompt.replace('[TOPICS]', product_summary)
+            except Exception as e:
+                logger.error(f"Error formatting product data for prompt: {e}", exc_info=True)
+                return jsonify({
+                    'success': False,
+                    'error': f'Error formatting product data: {str(e)}'
+                }), 500
+        else:
+            # For themed posts, format topics
+            try:
+                formatted_topics = "\n".join([f"- {t.get('title', 'Untitled')}: {t.get('description', 'No description')}" for t in topics if t])
+            except Exception as e:
+                logger.error(f"Error formatting topics: {e}", exc_info=True)
+                return jsonify({
+                    'success': False,
+                    'error': f'Error formatting topics: {str(e)}'
+                }), 500
+            
+            # Extract a concise topic from expanded_idea for better prompt clarity
+            topic_for_prompt = expanded_idea
+            if expanded_idea:
+                # Try to extract the main topic from the expanded idea
+                lines = expanded_idea.split('\n')
+                for line in lines:
+                    if 'blog post' in line.lower() and '"' in line:
+                        # Extract text between quotes
+                        start = line.find('"')
+                        end = line.find('"', start + 1)
+                        if start != -1 and end != -1:
+                            topic_for_prompt = line[start+1:end]
+                            break
+                    elif 'Welsh' in line and ('mythology' in line.lower() or 'myths' in line.lower()):
+                        # Extract Welsh mythology topic
+                        topic_for_prompt = "Welsh mythology and folklore"
                         break
-                elif 'Welsh' in line and ('mythology' in line.lower() or 'myths' in line.lower()):
-                    # Extract Welsh mythology topic
-                    topic_for_prompt = "Welsh mythology and folklore"
-                    break
-        
-        # Replace placeholders with actual data
-        formatted_prompt = prompt_text.replace('[USER_TOPIC]', topic_for_prompt)
-        formatted_prompt = formatted_prompt.replace('[TOPICS_DATA]', formatted_topics)
-        formatted_prompt = formatted_prompt.replace('[USER_CULTURE]', 'Celtic')  # Default to Celtic for now
+            
+            # Replace placeholders with actual data
+            formatted_prompt = prompt_text.replace('[USER_TOPIC]', topic_for_prompt)
+            formatted_prompt = formatted_prompt.replace('[TOPICS_DATA]', formatted_topics)
+            formatted_prompt = formatted_prompt.replace('[USER_CULTURE]', 'Celtic')  # Default to Celtic for now
+            formatted_prompt = formatted_prompt.replace('[PLACEHOLDER]', formatted_topics)
+            formatted_prompt = formatted_prompt.replace('[EXPANDED_IDEA]', expanded_idea or '')
+            formatted_prompt = formatted_prompt.replace('[TOPICS]', formatted_topics)
         
         # Call LLM service
         try:
@@ -179,10 +303,63 @@ VALIDATION RULES:
             
             response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=3000)
             
+            # Check for errors in response
+            if 'error' in response:
+                logger.error(f"LLM service returned error: {response['error']}")
+                return jsonify({
+                    'success': False,
+                    'error': f"LLM service error: {response['error']}"
+                }), 500
+            
+            if not response:
+                logger.error("LLM service returned empty response")
+                return jsonify({
+                    'success': False,
+                    'error': 'LLM service returned empty response'
+                }), 500
+            
+            if 'content' not in response:
+                logger.error(f"LLM response missing 'content' key. Response keys: {response.keys() if response else 'None'}")
+                return jsonify({
+                    'success': False,
+                    'error': 'LLM response missing content'
+                }), 500
+            
             if response and 'content' in response:
                 # Parse the JSON response
                 try:
-                    result = json.loads(response['content'])
+                    content = response['content'].strip()
+                    
+                    # Try to extract JSON from markdown code blocks first
+                    import re
+                    json_text = None
+                    
+                    # Try to find JSON object in code blocks
+                    json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', content)
+                    if json_match and json_match.groups():
+                        json_text = json_match.group(1)
+                    else:
+                        # Try to find JSON array in code blocks
+                        json_match = re.search(r'```(?:json)?\s*(\[[\s\S]*?\])\s*```', content)
+                        if json_match and json_match.groups():
+                            json_text = json_match.group(1)
+                    
+                    if not json_text:
+                        # Fallback: try to find JSON object without code blocks
+                        json_match = re.search(r'(\{[\s\S]*\})', content)
+                        if json_match and json_match.groups():
+                            json_text = json_match.group(1)
+                        else:
+                            # Try to find JSON array without code blocks
+                            json_match = re.search(r'(\[[\s\S]*\])', content)
+                            if json_match and json_match.groups():
+                                json_text = json_match.group(1)
+                    
+                    if json_text:
+                        result = json.loads(json_text)
+                    else:
+                        # Last resort: try parsing the entire content
+                        result = json.loads(content)
                     
                     # Handle both old format (with 'sections' key) and new format (direct array)
                     if isinstance(result, list):
@@ -195,8 +372,10 @@ VALIDATION RULES:
                     if not isinstance(sections, list):
                         raise ValueError("'sections' must be a list")
                     
-                    if len(sections) != 7:
-                        raise ValueError(f"Expected exactly 7 sections, got {len(sections)}")
+                    # Profile posts should have 11 sections, themed posts should have 7
+                    expected_sections = 11 if post_type == 'profile' else 7
+                    if len(sections) != expected_sections:
+                        raise ValueError(f"Expected exactly {expected_sections} sections, got {len(sections)}")
                     
                     # Validate each section
                     for i, section in enumerate(sections):
@@ -239,10 +418,14 @@ VALIDATION RULES:
                     
                 except json.JSONDecodeError as e:
                     logger.error(f"Failed to parse LLM response as JSON: {e}")
-                    logger.error(f"Response content: {response['content']}")
+                    logger.error(f"Response content (first 500 chars): {response['content'][:500]}")
+                    logger.error(f"Full response content length: {len(response['content'])}")
+                    # Try to show where the JSON might be
+                    if '```' in response['content']:
+                        logger.error("Response contains code blocks - extraction may have failed")
                     return jsonify({
                         'success': False,
-                        'error': 'Invalid JSON response from LLM'
+                        'error': f'Invalid JSON response from LLM: {str(e)}. Response preview: {response["content"][:200]}...'
                     }), 500
                     
                 except ValueError as e:
@@ -260,15 +443,22 @@ VALIDATION RULES:
                 }), 500
                 
         except Exception as e:
-            logger.error(f"Error calling LLM service: {e}")
+            logger.error(f"Error calling LLM service: {e}", exc_info=True)
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return jsonify({
                 'success': False,
-                'error': 'Failed to generate section structure'
+                'error': f'Failed to generate section structure: {str(e)}'
             }), 500
             
     except Exception as e:
-        logger.error(f"Error in api_design_section_structure: {e}")
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Error in api_design_section_structure: {e}", exc_info=True)
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 
 def sanitize_sections_text(sections_data):
