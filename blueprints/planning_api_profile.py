@@ -1215,3 +1215,424 @@ def api_update_profile_section_structure_prompt(post_id):
     except Exception as e:
         logger.error(f"Error updating profile section structure prompt: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+def api_profile_sections_title():
+    """
+    Generate section titles for profile posts that relate to the specific product.
+    
+    Titles should:
+    - Hint at the section's function
+    - Relate to the specific product/item data
+    - Be contextual and specific to the product
+    """
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        
+        if not post_id:
+            return jsonify({
+                'success': False,
+                'error': 'Post ID is required'
+            }), 400
+        
+        # Get post and verify it's a profile post
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.id, p.title, p.profile_product_id, 
+                       pd.section_structure, pd.topic_allocation
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return jsonify({
+                    'success': False,
+                    'error': f'Post {post_id} not found'
+                }), 404
+            
+            if not post.get('profile_product_id'):
+                return jsonify({
+                    'success': False,
+                    'error': f'Post {post_id} is not a profile post'
+                }), 400
+            
+            product_id = post.get('profile_product_id')
+            post_title = post.get('title', 'Untitled Post')
+            section_structure = post.get('section_structure')
+            topic_allocation = post.get('topic_allocation')
+        
+        # Parse section structure
+        if not section_structure:
+            return jsonify({
+                'success': False,
+                'error': 'No section structure found. Please design section structure first.'
+            }), 400
+        
+        try:
+            if isinstance(section_structure, str):
+                section_structure = json.loads(section_structure)
+        except json.JSONDecodeError:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid section structure format'
+            }), 400
+        
+        # Get sections from structure
+        if isinstance(section_structure, dict):
+            sections = section_structure.get('sections', [])
+        elif isinstance(section_structure, list):
+            sections = section_structure
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid section structure format'
+            }), 400
+        
+        # Parse topic allocation (contains data chunks for profile posts)
+        allocations = []
+        if topic_allocation:
+            try:
+                if isinstance(topic_allocation, str):
+                    topic_allocation = json.loads(topic_allocation)
+                if isinstance(topic_allocation, dict) and 'allocations' in topic_allocation:
+                    allocations = topic_allocation['allocations']
+                elif isinstance(topic_allocation, list):
+                    allocations = topic_allocation
+            except json.JSONDecodeError:
+                logger.warning(f"Could not parse topic_allocation for post {post_id}")
+        
+        # Fetch full product data
+        try:
+            from utils.content_generation.clan_data_extractor import ClanDataExtractor
+            extractor = ClanDataExtractor()
+            product_data = extractor.extract_product_data(product_id)
+        except Exception as e:
+            logger.error(f"Error fetching product data: {e}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': f'Failed to fetch product data: {str(e)}'
+            }), 500
+        
+        product_name = product_data.get('name', 'Product')
+        product_type = product_data.get('product_type_data', {}).get('core_type', 'item')
+        
+        # Build section context for LLM
+        sections_context = []
+        for i, section in enumerate(sections):
+            section_type = section.get('section_type', '')
+            section_title = section.get('title', 'Untitled Section')
+            section_description = section.get('description', '')
+            
+            # Get data chunks for this section from allocations
+            section_data_summary = []
+            matching_allocation = None
+            for allocation in allocations:
+                if allocation.get('section_code') == section.get('section_code'):
+                    matching_allocation = allocation
+                    break
+            
+            if matching_allocation and matching_allocation.get('data_chunks'):
+                for chunk in matching_allocation['data_chunks'][:3]:  # Limit to first 3 chunks
+                    chunk_title = chunk.get('topic_title', '')
+                    chunk_source = chunk.get('source', '')
+                    section_data_summary.append(f"- {chunk_title} (from {chunk_source})")
+            
+            sections_context.append({
+                'index': i + 1,
+                'section_code': section.get('section_code', f'S{str(i+1).zfill(2)}'),
+                'section_type': section_type,
+                'original_title': section_title,
+                'description': section_description,
+                'data_summary': '\n'.join(section_data_summary) if section_data_summary else 'No specific data available'
+            })
+        
+        # Load prompt from database
+        prompt_name = None
+        try:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT extra_settings FROM post WHERE id = %s
+                """, (post_id,))
+                post_result = cursor.fetchone()
+                
+                if post_result and post_result.get('extra_settings'):
+                    settings = post_result['extra_settings']
+                    prompt_name = settings.get('profile_section_titling_prompt_name')
+                
+                if not prompt_name:
+                    prompt_name = 'Profile Section Titling'
+                
+                cursor.execute("""
+                    SELECT system_prompt, prompt_text
+                    FROM llm_prompt 
+                    WHERE name = %s
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                """, (prompt_name,))
+                prompt_data = cursor.fetchone()
+                
+                if prompt_data:
+                    system_prompt = prompt_data['system_prompt']
+                    prompt_text = prompt_data['prompt_text']
+                    # Ensure curly braces are properly escaped for .format() if they're meant to be literal
+                    # (This handles cases where the prompt might have unescaped braces)
+                    if system_prompt and '{' in system_prompt and 'product_name' not in system_prompt:
+                        # If there are braces but no product_name placeholder, they might need escaping
+                        # But we'll handle this by ensuring product_name is always in the format call
+                        pass
+                else:
+                    # Use fallback prompt
+                    system_prompt = """You are a section titling specialist for product profile blog posts. Your job is to craft section titles that:
+1. Hint at the section's function/purpose
+2. Are creative and contextual, relating to the product details
+3. Are engaging and natural
+
+CRITICAL: You MUST return ONLY valid JSON. Do NOT add any explanatory text, prose, or comments before or after the JSON. Your response must start with {{ and end with }}.
+
+CONSTRAINTS:
+- 3-6 words per title (can be longer if needed for context)
+- DO NOT use the full product name "{product_name}" in any title
+- Be creative - use the product details (materials, occasions, heritage, features) to inspire contextual titles
+- Make titles specific to the product context, not generic
+- Use engaging, descriptive language
+- Title Case formatting
+- Vary your phrasing - don't repeat the same structure for every section
+
+OUTPUT REQUIREMENTS:
+- Return ONLY valid JSON, no other text whatsoever
+- Generate exactly one title per section
+- Preserve section order
+- Include both the original section title and your new contextual title
+- Be creative and contextual based on the product details provided
+
+REQUIRED JSON FORMAT:
+{{
+  "sections": [
+    {{ "index": 1, "original": "<original section title>", "title": "<new contextual title>" }},
+    {{ "index": 2, "original": "<original section title>", "title": "<new contextual title>" }}
+  ]
+}}
+
+CRITICAL: Your response must contain ONLY the JSON object above. No other text."""
+                    
+                    prompt_text = """Generate creative, contextual section titles for this product profile blog post.
+
+PRODUCT INFORMATION:
+- Product Name: {product_name} (DO NOT use this full name in titles - be creative instead)
+- Product Type: {product_type}
+- Post Title: {post_title}
+
+CRITICAL INSTRUCTION: 
+- DO NOT use the full product name "{product_name}" in any section title
+- Instead, be creative and use the product details (materials, occasions, heritage, features, design elements) to inspire contextual titles
+- Each title should hint at the section's function while relating creatively to the product context
+
+SECTIONS TO TITLE:
+{sections_context}
+
+For each section, create a title that:
+1. Hints at the section's function (e.g., Hero = introduction, Features = specifications)
+2. Relates creatively to the product details available for that section
+3. Uses the data chunks and product information to inspire contextual phrasing
+4. Keep titles concise and engaging (3-6 words)
+5. Vary your approach - don't use the same structure for every section
+
+CREATIVE EXAMPLES (based on product context, NOT using full product name):
+- Hero Block → "A Scottish Tradition" or "Crafted for the Outdoors" or "Heritage in Your Hand"
+- The Object / In Context → "Design & Purpose" or "Where Tradition Meets Modern Use" or "More Than Meets the Eye"
+- Features & Specifications → "What's Inside" or "Precision & Quality" or "Built to Last"
+- Heritage & Origins → "A Storied Past" or "Roots in Scottish Culture" or "Through the Ages"
+- Materials & Making / The Maker → "Craftsmanship & Care" or "The Art of Making" or "From Workshop to You"
+- Care & Maintenance → "Keeping It Pristine" or "Care & Longevity" or "Preserving Quality"
+- Gallery → "In Detail" or "Visual Journey" or "A Closer Look"
+- Explore Further → "Discover More" or "Continue Exploring" or "Find Your Perfect Match"
+
+IMPORTANT: 
+- DO NOT use "{product_name}" in any title
+- Be creative and contextual based on the product details
+- Use the available data chunks to inspire unique, relevant titles
+- Vary your phrasing and structure across sections
+
+Return ONLY valid JSON in the format specified above."""
+        
+        except Exception as e:
+            logger.error(f"Error loading prompt: {e}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': f'Failed to load prompt: {str(e)}'
+            }), 500
+        
+        # Format sections context for prompt
+        sections_text = ""
+        for section_ctx in sections_context:
+            sections_text += f"Section {section_ctx['index']} ({section_ctx['section_code']}):\n"
+            sections_text += f"  Type: {section_ctx['section_type']}\n"
+            sections_text += f"  Original Title: {section_ctx['original_title']}\n"
+            sections_text += f"  Description: {section_ctx['description']}\n"
+            if section_ctx['data_summary']:
+                sections_text += f"  Available Data:\n{section_ctx['data_summary']}\n"
+            sections_text += "\n"
+        
+        # Format prompt
+        # Handle case where prompt might not have product_name placeholder or has unescaped braces
+        try:
+            formatted_system_prompt = system_prompt.format(product_name=product_name) if system_prompt else ""
+        except (KeyError, ValueError) as e:
+            # If format fails, use the prompt as-is (might not have placeholders)
+            logger.warning(f"Could not format system_prompt: {e}, using as-is")
+            formatted_system_prompt = system_prompt or ""
+        
+        try:
+            formatted_prompt_text = prompt_text.format(
+                product_name=product_name,
+                product_type=product_type,
+                post_title=post_title,
+                sections_context=sections_text.strip()
+            )
+        except (KeyError, ValueError) as e:
+            logger.error(f"Error formatting prompt_text: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'Error formatting prompt: {str(e)}. Please check prompt template.'
+            }), 500
+        
+        # Call LLM service
+        try:
+            messages = [
+                {'role': 'system', 'content': formatted_system_prompt},
+                {'role': 'user', 'content': formatted_prompt_text}
+            ]
+            
+            logger.info(f"Generating section titles for post {post_id}, product {product_id} ({product_name})")
+            
+            response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages, max_tokens=4000)
+            
+            if 'error' in response:
+                logger.error(f"LLM service returned error: {response['error']}")
+                return jsonify({
+                    'success': False,
+                    'error': f"LLM service error: {response['error']}"
+                }), 500
+            
+            if not response or 'content' not in response:
+                return jsonify({
+                    'success': False,
+                    'error': 'LLM service returned empty response'
+                }), 500
+            
+            # Parse JSON response
+            try:
+                content = response['content'].strip()
+                
+                # Extract JSON from markdown code blocks or plain text
+                json_text = None
+                json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', content)
+                if json_match and json_match.groups():
+                    json_text = json_match.group(1)
+                else:
+                    json_match = re.search(r'(\{[\s\S]*\})', content)
+                    if json_match and json_match.groups():
+                        json_text = json_match.group(1)
+                
+                if json_text:
+                    result = json.loads(json_text)
+                else:
+                    result = json.loads(content)
+                
+                # Validate response structure
+                if 'sections' not in result:
+                    raise ValueError("Response must contain 'sections' key")
+                
+                generated_sections = result['sections']
+                if not isinstance(generated_sections, list):
+                    raise ValueError("'sections' must be a list")
+                
+                if len(generated_sections) != len(sections):
+                    logger.warning(f"Expected {len(sections)} titles, got {len(generated_sections)}")
+                
+                # Match generated titles with sections
+                enhanced_sections = []
+                for i, section in enumerate(sections):
+                    # Find matching generated title
+                    matching_title = None
+                    for gen_section in generated_sections:
+                        gen_index = gen_section.get('index')
+                        if gen_index == i + 1 or str(gen_index) == str(i + 1):
+                            matching_title = gen_section.get('title')
+                            break
+                    
+                    if not matching_title:
+                        # Fallback: use original title or generate a simple contextual one
+                        section_type = section.get('section_type', '')
+                        if section_type == 'profile_hero':
+                            matching_title = "A Scottish Tradition"
+                        elif section_type == 'profile_object_context':
+                            matching_title = "Design & Purpose"
+                        elif section_type == 'profile_features':
+                            matching_title = "Features & Specifications"
+                        elif section_type == 'profile_heritage':
+                            matching_title = "A Storied Past"
+                        elif section_type == 'profile_materials_maker':
+                            matching_title = "Craftsmanship & Care"
+                        elif section_type == 'profile_care':
+                            matching_title = "Care & Maintenance"
+                        elif section_type == 'profile_gallery':
+                            matching_title = "In Detail"
+                        elif section_type == 'profile_explore':
+                            matching_title = "Explore Further"
+                        else:
+                            matching_title = section.get('title', f'Section {i+1}')
+                    
+                    enhanced_sections.append({
+                        'id': i + 1,
+                        'index': i + 1,
+                        'title': matching_title,
+                        'subtitle': section.get('title', ''),
+                        'order': i + 1,
+                        'section_type': section.get('section_type', ''),
+                        'topics': []  # Profile posts don't use topics, but keep for compatibility
+                    })
+                
+                logger.info(f"Generated {len(enhanced_sections)} section titles for post {post_id}")
+                
+                return jsonify({
+                    'success': True,
+                    'sections': enhanced_sections,
+                    'raw_response': response['content']
+                })
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse LLM response as JSON: {e}")
+                logger.error(f"Response content (first 500 chars): {content[:500] if 'content' in locals() else 'N/A'}")
+                return jsonify({
+                    'success': False,
+                    'error': f'Invalid JSON response from LLM: {str(e)}. Response preview: {content[:200] if "content" in locals() else "N/A"}...'
+                }), 500
+                
+            except ValueError as e:
+                logger.error(f"Invalid response structure: {e}")
+                return jsonify({
+                    'success': False,
+                    'error': f'Invalid response structure: {str(e)}'
+                }), 500
+                
+        except Exception as e:
+            logger.error(f"Error calling LLM service: {e}", exc_info=True)
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return jsonify({
+                'success': False,
+                'error': f'Failed to generate section titles: {str(e)}'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error in api_profile_sections_title: {e}", exc_info=True)
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
