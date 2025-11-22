@@ -130,17 +130,21 @@ def api_generate_section_draft(post_id, section_id):
             """, (post_id,))
             dev_data = cursor.fetchone()
             
-            # Check if this is a recipe post
+            # Check if this is a recipe or profile post
             from utils.taxonomy_helpers import get_post_type
             post_type = get_post_type(post_id)
             is_recipe_post = (post_type == 'recipe')
+            is_profile_post = (post_type == 'profile')
             
             # Get Section Drafting prompt - prioritize section_type for recipe/profile sections
             prompt_name = None
             section_type = section.get('section_type') if section else None
             
-            # For recipe/profile sections, try section-specific prompt first
-            if section_type and section_type.startswith('recipe_'):
+            # For profile posts, use profile-specific prompt
+            if is_profile_post:
+                prompt_name = 'Profile Section Drafting'
+            # For recipe sections, try section-specific prompt first
+            elif section_type and section_type.startswith('recipe_'):
                 # Map section_type to prompt name (e.g., 'recipe_background' -> 'Recipe Background')
                 section_prompt_map = {
                     'recipe_background': 'Recipe Background',
@@ -337,6 +341,111 @@ def api_generate_section_draft(post_id, section_id):
                     
                     research_text += "\n=== END RESEARCH DATA ===\n"
                     prompt_text += research_text
+            elif is_profile_post:
+                # For profile posts, use raw data chunks from topic_allocation
+                # Get product data
+                cursor.execute("""
+                    SELECT p.title, p.profile_product_id
+                    FROM post p
+                    WHERE p.id = %s
+                """, (post_id,))
+                product_post = cursor.fetchone()
+                
+                if not product_post:
+                    return jsonify({'error': 'Post not found'}), 404
+                
+                product_name = product_post.get('title', 'Unknown Product')
+                
+                # Get section structure to find section description
+                section_structure = None
+                section_type_description = ''
+                if dev_data and dev_data.get('section_structure'):
+                    try:
+                        section_structure = json.loads(dev_data['section_structure']) if isinstance(dev_data['section_structure'], str) else dev_data['section_structure']
+                        sections_list = section_structure.get('sections', []) if isinstance(section_structure, dict) else section_structure
+                        
+                        # Find matching section by section_type or order
+                        section_order = section.get('section_order', 0)
+                        section_type = section.get('section_type', '')
+                        
+                        for struct_section in sections_list:
+                            if (struct_section.get('section_type') == section_type) or \
+                               (str(struct_section.get('section_code', '').replace('S', '')) == str(section_order)):
+                                section_type_description = struct_section.get('description', '')
+                                break
+                    except (json.JSONDecodeError, TypeError, KeyError) as e:
+                        logger.warning(f"Failed to parse section_structure for post {post_id}: {e}")
+                
+                # Get topic_allocation (raw data chunks)
+                topic_allocation = None
+                raw_data_chunks = []
+                if dev_data and dev_data.get('topic_allocation'):
+                    try:
+                        topic_allocation = json.loads(dev_data['topic_allocation']) if isinstance(dev_data['topic_allocation'], str) else dev_data['topic_allocation']
+                        allocations = topic_allocation.get('allocations', [])
+                        
+                        # Find matching allocation by section_order or section_type
+                        section_order = section.get('section_order', 0)
+                        section_type = section.get('section_type', '')
+                        
+                        for allocation in allocations:
+                            allocation_section_id = allocation.get('section_id', '')
+                            allocation_section_code = allocation.get('section_code', '').replace('{', '').replace('}', '')
+                            allocation_section_type = allocation.get('section_type', '')
+                            
+                            # Match by order or type
+                            if (allocation_section_type == section_type) or \
+                               (allocation_section_id and f'section_{section_order:02d}' == allocation_section_id) or \
+                               (allocation_section_code and f'S{section_order:02d}' == allocation_section_code) or \
+                               (allocation_section_code and f'S{section_order}' == allocation_section_code):
+                                raw_data_chunks = allocation.get('data_chunks', [])
+                                break
+                    except (json.JSONDecodeError, TypeError, KeyError) as e:
+                        logger.warning(f"Failed to parse topic_allocation for post {post_id}: {e}")
+                
+                # Format raw data chunks for prompt
+                raw_data_chunks_text = ''
+                if raw_data_chunks:
+                    for i, chunk in enumerate(raw_data_chunks, 1):
+                        chunk_title = chunk.get('topic_title', chunk.get('title', f'Data Chunk {i}'))
+                        chunk_content = chunk.get('description', chunk.get('content', ''))
+                        chunk_source = chunk.get('source', 'unknown')
+                        chunk_category = chunk.get('category', 'data')
+                        
+                        raw_data_chunks_text += f"\n{i}. {chunk_title} ({chunk_category})\n"
+                        raw_data_chunks_text += f"   Source: {chunk_source}\n"
+                        if chunk_content:
+                            # Truncate very long content
+                            if len(chunk_content) > 500:
+                                chunk_content = chunk_content[:500] + '...'
+                            raw_data_chunks_text += f"   Content: {chunk_content}\n"
+                else:
+                    raw_data_chunks_text = "No raw data chunks available for this section."
+                
+                # Section type descriptions mapping
+                section_type_descriptions = {
+                    'profile_hero': 'Hero Block - Visual introduction with headline and standfirst. Focus on product name, key visual identifier, and compelling opening statement.',
+                    'profile_object_context': 'The Object / In Context - Combined section covering product concept, design, distinctive qualities, usage, occasions, styling, and cultural fit. Describe what the product is, how it looks and feels, and where it fits in Scottish culture and traditions.',
+                    'profile_features': 'Features & Specifications - Technical features, options, specifications, dimensions, and configurable details. Focus on factual product capabilities and options.',
+                    'profile_heritage': 'Heritage & Origins - Historical context, cultural significance, traditional connections, and heritage background if available. Connect the product to Scottish traditions and history.',
+                    'profile_materials_maker': 'Materials & Making / The Maker - Combined section covering materials used, manufacturing processes, craftsmanship details, and producer/workshop story. The Maker content is optional if supplier data exists, but the section itself is always required.',
+                    'profile_care': 'Care & Maintenance - Care instructions, cleaning methods, storage recommendations, and maintenance tips. Provide practical guidance for product longevity.',
+                    'profile_gallery': 'Gallery - Visual showcase of product images. This section is provisional and depends on image availability.',
+                    'profile_explore': 'Explore Further - Commerce links and calls-to-action. Final section with links to product, producer, category pages, and related items.'
+                }
+                
+                # Get section type description
+                section_type_desc = section_type_descriptions.get(section_type, section_type_description or f'Section type: {section_type}')
+                
+                # Replace placeholders for profile prompts
+                section_title = section.get('section_heading', '')
+                prompt_text = re.sub(r'\[POST_TITLE\]', post.get('title', ''), prompt_text)
+                prompt_text = re.sub(r'\[PRODUCT_NAME\]', product_name, prompt_text)
+                prompt_text = re.sub(r'\[SECTION_TYPE\]', section_type or 'unknown', prompt_text)
+                prompt_text = re.sub(r'\[SECTION_TITLE\]', section_title, prompt_text)
+                prompt_text = re.sub(r'\[SECTION_DESCRIPTION\]', section_type_description or section_type_desc, prompt_text)
+                prompt_text = re.sub(r'\[SECTION_TYPE_DESCRIPTION\]', section_type_desc, prompt_text)
+                prompt_text = re.sub(r'\[RAW_DATA_CHUNKS\]', raw_data_chunks_text, prompt_text)
             else:
                 # For themed posts, use existing logic
                 if not dev_data:

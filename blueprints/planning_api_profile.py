@@ -1662,23 +1662,27 @@ Return ONLY valid JSON in the format specified above."""
                             """, (post_id, section_order_val))
                             existing = cursor.fetchone()
                             
+                            # Get section_type from section data
+                            section_type = section.get('section_type', '')
+                            
                             if existing:
                                 # Update existing section
                                 cursor.execute("""
                                     UPDATE post_section 
                                     SET section_heading = %s, 
                                         section_description = %s,
+                                        section_type = COALESCE(NULLIF(section_type, ''), %s),
                                         updated_at = %s
                                     WHERE post_id = %s AND section_order = %s
-                                """, (section_title, section_description, datetime.now(), post_id, section_order_val))
-                                logger.info(f"Updated section {section_order_val}: {section_title}")
+                                """, (section_title, section_description, section_type, datetime.now(), post_id, section_order_val))
+                                logger.info(f"Updated section {section_order_val}: {section_title} (type: {section_type})")
                             else:
                                 # Insert new section
                                 cursor.execute("""
-                                    INSERT INTO post_section (post_id, section_order, section_heading, section_description, status, created_at, updated_at)
-                                    VALUES (%s, %s, %s, %s, 'draft', %s, %s)
-                                """, (post_id, section_order_val, section_title, section_description, datetime.now(), datetime.now()))
-                                logger.info(f"Inserted section {section_order_val}: {section_title}")
+                                    INSERT INTO post_section (post_id, section_order, section_heading, section_description, section_type, status, created_at, updated_at)
+                                    VALUES (%s, %s, %s, %s, %s, 'draft', %s, %s)
+                                """, (post_id, section_order_val, section_title, section_description, section_type, datetime.now(), datetime.now()))
+                                logger.info(f"Inserted section {section_order_val}: {section_title} (type: {section_type})")
                         
                         logger.info(f"Successfully auto-saved {len(enhanced_sections)} sections to database")
                     
