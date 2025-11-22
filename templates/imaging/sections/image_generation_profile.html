@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from 'macros/static_assets.html' import css_assets, js_assets %}
+
+{% block css_assets %}
+{{ super() }}
+{{ css_assets('imaging') }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/image-generation.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/data-tab.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/imaging/imaging-workspace.css') }}">
+{% endblock %}
+
+{% block js_assets %}
+{{ js_assets('imaging') }}
+<script>
+    window.currentStage = 'imaging';
+    window.currentSubstage = 'image-generation';
+    window.postId = {{ post_id|default(0) }};
+    window.postType = {{ post_type|tojson|safe if post_type else 'null' }};
+    window.imagingStage = true;
+    window.imagingSubstage = 'image-generation';
+</script>
+{% endblock %}
+
+{% block title %}Image Generation - Profile Posts - Imaging Workflow{% endblock %}
+
+{% block content %}
+{% include 'shared/blog_pipeline_header.html' %}
+
+<div class="imaging-workspace">
+    <div class="workspace-container">
+        <!-- Profile Image Generation - New Paradigm -->
+        <div class="profile-imaging-container">
+            <div class="profile-imaging-header">
+                <h2>Profile Image Generation</h2>
+                <p class="profile-imaging-description">
+                    Image generation for product profile posts. This is a new paradigm specifically designed for profile posts.
+                </p>
+            </div>
+            
+            <!-- Content will be added here as the new paradigm is developed -->
+            <div class="profile-imaging-content">
+                <!-- Placeholder for profile-specific image generation interface -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

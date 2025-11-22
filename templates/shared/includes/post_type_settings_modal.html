@@ -1,0 +1,145 @@
+<!-- Post Type Settings Modal -->
+<div id="post-type-settings-modal" class="post-type-settings-modal" style="display: none;">
+    <div class="post-type-settings-overlay"></div>
+    <div class="post-type-settings-content">
+        <div class="post-type-settings-header">
+            <h2>
+                <span id="settings-modal-title">Post Type Settings</span>
+                <span id="settings-modal-post-type" class="settings-post-type-badge"></span>
+            </h2>
+            <button class="post-type-settings-close" id="post-type-settings-close" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="post-type-settings-body">
+            <!-- Current Context Banner -->
+            <div class="settings-current-context" id="settings-current-context">
+                <div class="context-label">Current Context:</div>
+                <div class="context-value" id="context-value">Loading...</div>
+            </div>
+            
+            <div class="settings-layout">
+                <!-- Left: Navigation Tree -->
+                <div class="settings-navigation">
+                    <h3>Explore Stages</h3>
+                    <div class="navigation-tree" id="navigation-tree">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Right: Settings Display -->
+                <div class="settings-display">
+                    <div class="settings-loading" id="settings-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading settings...
+                    </div>
+                    
+                    <div class="settings-content" id="settings-content" style="display: none;">
+                        <!-- Template Information -->
+                        <div class="settings-section">
+                            <h4>
+                                <i class="fas fa-file-code"></i>
+                                Template
+                            </h4>
+                            <div class="settings-item">
+                                <div class="settings-label">Template Path:</div>
+                                <div class="settings-value code" id="template-path">-</div>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-label">Post Type Specific:</div>
+                                <div class="settings-value" id="template-post-type-specific">-</div>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-label">Route Function:</div>
+                                <div class="settings-value code" id="template-route">-</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="settings-section" id="action-buttons-section" style="display: none;">
+                            <h4>
+                                <i class="fas fa-magic"></i>
+                                Action Buttons
+                            </h4>
+                            <div id="action-buttons-list">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Pipeline Step -->
+                        <div class="settings-section" id="pipeline-step-section" style="display: none;">
+                            <h4>
+                                <i class="fas fa-list-ol"></i>
+                                Pipeline Step
+                            </h4>
+                            <div class="settings-item">
+                                <div class="settings-label">Step ID:</div>
+                                <div class="settings-value code" id="pipeline-step-id">-</div>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-label">Order:</div>
+                                <div class="settings-value" id="pipeline-step-order">-</div>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-label">Label:</div>
+                                <div class="settings-value" id="pipeline-step-label">-</div>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-label">Function:</div>
+                                <div class="settings-value code" id="pipeline-step-function">-</div>
+                            </div>
+                            <div class="pipeline-navigation" id="pipeline-navigation" style="display: none;">
+                                <div class="pipeline-nav-item" id="pipeline-prev">
+                                    <i class="fas fa-arrow-left"></i>
+                                    <span id="pipeline-prev-label"></span>
+                                </div>
+                                <div class="pipeline-nav-item" id="pipeline-next">
+                                    <span id="pipeline-next-label"></span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Panel Configuration -->
+                        <div class="settings-section" id="panel-config-section" style="display: none;">
+                            <h4>
+                                <i class="fas fa-columns"></i>
+                                Panel Configuration
+                            </h4>
+                            <div class="settings-item">
+                                <div class="settings-label">Panels:</div>
+                                <div class="settings-value" id="panel-list">-</div>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-label">Output Panel:</div>
+                                <div class="settings-value code" id="panel-output">-</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Navbar Configuration -->
+                        <div class="settings-section">
+                            <h4>
+                                <i class="fas fa-bars"></i>
+                                Navbar
+                            </h4>
+                            <div class="settings-item">
+                                <div class="settings-label">Visible:</div>
+                                <div class="settings-value" id="navbar-visible">-</div>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-label">Post Types:</div>
+                                <div class="settings-value" id="navbar-post-types">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-error" id="settings-error" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="settings-error-message"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

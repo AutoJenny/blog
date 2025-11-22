@@ -95,7 +95,10 @@ def planning_concept_section_structure(post_id):
         post = cursor.fetchone()
         
         if not post:
-            template_name = 'planning/concept/section_structure_profile.html' if post_type == 'profile' else 'planning/concept/section_structure.html'
+            from config.template_mappings import get_template_path
+            template_name = get_template_path('concept', 'section-structure', post_type)
+            if not template_name:
+                template_name = 'planning/concept/section_structure.html'  # Fallback
             return render_template(template_name, 
                                   post_id=resolved_post_id, year=year, week=week, blueprint_name='planning',
                                   post_type=post_type,
@@ -111,8 +114,11 @@ def planning_concept_section_structure(post_id):
         result = cursor.fetchone()
         content_type_name = result.get('content_type_name') if result else None
     
-    # Use profile-specific template for profile posts
-    template_name = 'planning/concept/section_structure_profile.html' if post_type == 'profile' else 'planning/concept/section_structure.html'
+    # Use centralized template mapping
+    from config.template_mappings import get_template_path
+    template_name = get_template_path('concept', 'section-structure', post_type)
+    if not template_name:
+        template_name = 'planning/concept/section_structure.html'  # Fallback
     
     return render_template(template_name, 
                           post_id=resolved_post_id,
@@ -145,7 +151,10 @@ def planning_concept_topic_allocation(post_id):
         post = cursor.fetchone()
         
         if not post:
-            template_name = 'planning/concept/topic_allocation_profile.html' if post_type == 'profile' else 'planning/concept/topic_allocation.html'
+            from config.template_mappings import get_template_path
+            template_name = get_template_path('concept', 'topic-allocation', post_type)
+            if not template_name:
+                template_name = 'planning/concept/topic_allocation.html'  # Fallback
             return render_template(template_name, 
                                   post_id=resolved_post_id, year=year, week=week, blueprint_name='planning',
                                   post_type=post_type,
@@ -161,8 +170,11 @@ def planning_concept_topic_allocation(post_id):
         result = cursor.fetchone()
         content_type_name = result.get('content_type_name') if result else None
     
-    # Use profile-specific template for profile posts
-    template_name = 'planning/concept/topic_allocation_profile.html' if post_type == 'profile' else 'planning/concept/topic_allocation.html'
+    # Use centralized template mapping
+    from config.template_mappings import get_template_path
+    template_name = get_template_path('concept', 'topic-allocation', post_type)
+    if not template_name:
+        template_name = 'planning/concept/topic_allocation.html'  # Fallback
     
     return render_template(template_name, 
                           post_id=resolved_post_id,
@@ -195,7 +207,10 @@ def planning_concept_titling(post_id):
         post = cursor.fetchone()
         
         if not post:
-            template_name = 'planning/concept/titling_profile.html' if post_type == 'profile' else 'planning/concept/titling.html'
+            from config.template_mappings import get_template_path
+            template_name = get_template_path('concept', 'titling', post_type)
+            if not template_name:
+                template_name = 'planning/concept/titling.html'  # Fallback
             return render_template(template_name, 
                                   post_id=resolved_post_id, year=year, week=week, blueprint_name='planning',
                                   post_type=post_type,
@@ -211,8 +226,11 @@ def planning_concept_titling(post_id):
         result = cursor.fetchone()
         content_type_name = result.get('content_type_name') if result else None
     
-    # Use profile-specific template for profile posts
-    template_name = 'planning/concept/titling_profile.html' if post_type == 'profile' else 'planning/concept/titling.html'
+    # Use centralized template mapping
+    from config.template_mappings import get_template_path
+    template_name = get_template_path('concept', 'titling', post_type)
+    if not template_name:
+        template_name = 'planning/concept/titling.html'  # Fallback
     
     return render_template(template_name, 
                           post_id=resolved_post_id,

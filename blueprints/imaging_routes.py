@@ -82,7 +82,14 @@ def register_routes(bp):
                 result = cursor.fetchone()
                 content_type_name = result.get('content_type_name') if result else None
             
-            return render_template('imaging/sections/image_generation.html', 
+            # Use centralized template mapping
+            from config.template_mappings import get_template_path
+            template_name = get_template_path('imaging', 'image-generation', post_type)
+            if not template_name:
+                # Fallback to default if mapping not found
+                template_name = 'imaging/sections/image_generation.html'
+            
+            return render_template(template_name, 
                                  post_id=post_id,
                                  post=post,
                                  page_title='Image Generation',

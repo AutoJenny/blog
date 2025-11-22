@@ -66,6 +66,12 @@
                     {{ post_type.upper() }}
                 {% endif %}
             </span>
+            <button class="post-type-settings-btn" 
+                    id="post-type-settings-btn"
+                    title="View Post Type Settings"
+                    aria-label="View Post Type Settings">
+                <i class="fas fa-cog"></i>
+            </button>
         </div>
         {% endif %}
         <div class="main-stages-content">
@@ -559,3 +565,8 @@ setTimeout(function() {
 
 <!-- Include shared header functionality -->
 <script src="{{ url_for('static', filename='js/shared/blog-pipeline-header.js') }}"></script>
+
+<!-- Post Type Settings Modal -->
+{% include 'shared/includes/post_type_settings_modal.html' %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/post-type-settings.css') }}">
+<script src="{{ url_for('static', filename='js/shared/post-type-settings.js') }}"></script>
