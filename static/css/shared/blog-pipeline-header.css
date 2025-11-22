@@ -92,8 +92,12 @@
     width: 100%;
     background: #1e3a8a;
     padding: 0.25rem 1rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     border-bottom: 1px solid #334155;
+    position: relative;
 }
 
 .post-type-label {
@@ -109,6 +113,31 @@
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+}
+
+.post-type-settings-btn {
+    position: absolute;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.7rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-type-settings-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.post-type-settings-btn:active {
+    transform: scale(0.95);
 }
 
 /* Main Stages Content */
