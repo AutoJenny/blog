@@ -14,17 +14,6 @@
     
     {% block process_content %}
     <div class="titling-main">
-        <!-- Category Indicator Banner -->
-        {% if content_type_name %}
-        <div class="route-indicator">
-            <i class="fas fa-tag"></i>
-            <span>Content Category: <strong>{{ content_type_name }}</strong></span>
-            {% if year and week %}
-            <span class="route-indicator-week">Week {{ week }}, {{ year }}</span>
-            {% endif %}
-        </div>
-        {% endif %}
-        
         <div class="titling-content">
             <div class="titling-input">
                 <div class="input-data">

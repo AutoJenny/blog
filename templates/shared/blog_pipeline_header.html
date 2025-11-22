@@ -15,7 +15,6 @@
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
             <span class="pipeline-title-theme" id="pipeline-title-theme">Recipe</span>
             {% elif post_type is defined and post_type == 'profile' %}
-            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
             <span class="pipeline-title-theme" id="pipeline-title-theme">Profile</span>
             {% elif post_type is defined and post_type == 'generated' %}
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
@@ -24,19 +23,6 @@
             <!-- Fallback when post_type not defined - show placeholder -->
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
             <span class="pipeline-title-theme" id="pipeline-title-theme">Loading...</span>
-            {% endif %}
-            {% if post_type is defined and post_type %}
-            <span class="post-type-badge-header" id="post-type-badge-header" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; margin-left:0.75rem; {% if post_type == 'recipe' %}background:#fef3c7;color:#92400e;border:1px solid #fcd34d;{% elif post_type == 'profile' %}background:#e0e7ff;color:#4338ca;border:1px solid #a5b4fc;{% elif post_type == 'generated' %}background:#ede9fe;color:#6d28d9;border:1px solid #a78bfa;{% elif post_type == 'themed' %}background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;{% endif %}">
-                {% if post_type == 'recipe' %}
-                    <i class="fas fa-utensils"></i> Recipe
-                {% elif post_type == 'profile' %}
-                    <i class="fas fa-tag"></i> Profile
-                {% elif post_type == 'generated' %}
-                    <i class="fas fa-magic"></i> Generated
-                {% elif post_type == 'themed' %}
-                    <i class="fas fa-book"></i> Themed
-                {% endif %}
-            </span>
             {% endif %}
         </h1>
         {% if post_type is defined and post_type and post_type not in ['recipe', 'profile', 'generated'] %}
@@ -63,8 +49,28 @@
     
     <!-- Main Stage Navigation -->
     <div class="main-stages-line">
-        <div class="main-stages-left">
-            {% if post_type not in ['recipe', 'profile', 'generated'] %}
+        <!-- Post Type Header -->
+        {% if post_type is defined and post_type %}
+        <div class="post-type-header">
+            <span class="post-type-label">Post type:</span>
+            <span class="post-type-value">
+                {% if post_type == 'recipe' %}
+                    RECIPE
+                {% elif post_type == 'profile' %}
+                    PROFILE
+                {% elif post_type == 'generated' %}
+                    GENERATED
+                {% elif post_type == 'themed' %}
+                    THEMED
+                {% else %}
+                    {{ post_type.upper() }}
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+        <div class="main-stages-content">
+            <div class="main-stages-left">
+                {% if post_type not in ['recipe', 'profile', 'generated'] %}
             <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
                class="stage-btn" data-stage="calendar">
                 <i class="fas fa-calendar-alt"></i>
@@ -115,28 +121,27 @@
                 <i class="fas fa-heading"></i>
                 Header
             </a>
-        </div>
-        <div class="main-stages-right">
-            <!-- Process/Data Radio Toggle -->
+            </div>
+            <div class="main-stages-right">
+            <!-- Process/Data Toggle -->
             <div class="process-data-toggle">
-                <input type="radio" id="toggle-process" name="view-mode" value="process" checked>
-                <label for="toggle-process" class="toggle-label">
+                <button type="button" class="toggle-option" data-mode="process" id="toggle-process">
                     <i class="fas fa-cogs"></i>
-                    Process
-                </label>
-                <input type="radio" id="toggle-data" name="view-mode" value="data">
-                <label for="toggle-data" class="toggle-label">
+                    <span>Process</span>
+                </button>
+                <button type="button" class="toggle-option" data-mode="data" id="toggle-data">
                     <i class="fas fa-database"></i>
-                    Data
-                </label>
+                    <span>Data</span>
+                </button>
             </div>
             <a href="/preview/{{ post_id }}" 
-               class="stage-btn preview-btn" data-stage="preview" target="_blank">
+               class="preview-button" data-stage="preview" target="_blank">
                 <i class="fas fa-eye"></i>
-                Preview
+                <span>Preview</span>
             </a>
             <!-- ARCHIVED: Old Interface link removed - old workflow system has been archived -->
             <!-- See ARCHIVED_OLD_WORKFLOW/ for archived code -->
+            </div>
         </div>
     </div>
     
@@ -449,17 +454,21 @@ function updateNavigationHighlighting() {
     }
 }
 
-// Tab switching functionality (now controlled by radio buttons)
+// Tab switching functionality (now controlled by toggle buttons)
 function initializeTabs() {
-    const radioButtons = document.querySelectorAll('input[name="view-mode"]');
+    const toggleButtons = document.querySelectorAll('.toggle-option');
     const tabPanels = document.querySelectorAll('.tab-panel');
     
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            const targetTab = this.value;
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-mode');
             
-            // Remove active class from all panels
+            // Remove active class from all buttons and panels
+            toggleButtons.forEach(btn => btn.classList.remove('active'));
             tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
             
             // Add active class to corresponding panel
             const targetPanel = document.getElementById(targetTab + '-tab');
@@ -473,14 +482,23 @@ function initializeTabs() {
     });
     
     // Restore last active tab from localStorage
-    const lastActiveTab = localStorage.getItem('blog-pipeline-active-tab');
-    if (lastActiveTab) {
-        const savedRadio = document.querySelector(`input[name="view-mode"][value="${lastActiveTab}"]`);
-        const savedPanel = document.getElementById(lastActiveTab + '-tab');
-        if (savedRadio && savedPanel) {
+    const lastActiveTab = localStorage.getItem('blog-pipeline-active-tab') || 'process';
+    const savedButton = document.querySelector(`.toggle-option[data-mode="${lastActiveTab}"]`);
+    const savedPanel = document.getElementById(lastActiveTab + '-tab');
+    if (savedButton && savedPanel) {
+        toggleButtons.forEach(btn => btn.classList.remove('active'));
+        tabPanels.forEach(panel => panel.classList.remove('active'));
+        savedButton.classList.add('active');
+        savedPanel.classList.add('active');
+    } else {
+        // Default to process if nothing saved
+        const defaultButton = document.querySelector('.toggle-option[data-mode="process"]');
+        const defaultPanel = document.getElementById('process-tab');
+        if (defaultButton && defaultPanel) {
+            toggleButtons.forEach(btn => btn.classList.remove('active'));
             tabPanels.forEach(panel => panel.classList.remove('active'));
-            savedRadio.checked = true;
-            savedPanel.classList.add('active');
+            defaultButton.classList.add('active');
+            defaultPanel.classList.add('active');
         }
     }
 }
@@ -525,47 +543,11 @@ function setWeekThemesLink() {
     }
 }
 
-// Set post type badge styling
-function setPostTypeBadgeStyle(postType) {
-    const badgeEl = document.getElementById('post-type-badge-header');
-    if (!badgeEl) {
-        // Create badge if it doesn't exist
-        const themeEl = document.getElementById('pipeline-title-theme');
-        if (themeEl) {
-            badgeEl = document.createElement('span');
-            badgeEl.id = 'post-type-badge-header';
-            badgeEl.className = 'post-type-badge-header';
-            badgeEl.style.cssText = 'display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; margin-left:0.75rem;';
-            themeEl.parentNode.insertBefore(badgeEl, themeEl.nextSibling);
-        } else {
-            return; // Can't create badge without theme element
-        }
-    }
-    
-    const postTypeConfig = {
-        'recipe': { icon: 'fa-utensils', label: 'Recipe', bg: '#fef3c7', color: '#92400e', border: '#fcd34d' },
-        'profile': { icon: 'fa-tag', label: 'Profile', bg: '#e0e7ff', color: '#4338ca', border: '#a5b4fc' },
-        'themed': { icon: 'fa-book', label: 'Themed', bg: '#dbeafe', color: '#1e40af', border: '#93c5fd' }
-    };
-    
-    const config = postTypeConfig[postType] || postTypeConfig['themed'];
-    badgeEl.innerHTML = `<i class="fas ${config.icon}"></i> ${config.label}`;
-    badgeEl.style.background = config.bg;
-    badgeEl.style.color = config.color;
-    badgeEl.style.border = `1px solid ${config.border}`;
-    badgeEl.style.display = 'inline-flex';
-}
-
 // Run on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     updateNavigationHighlighting();
     initializeTabs();
     setWeekThemesLink();
-    
-    // Set post type badge if available
-    {% if post_type is defined and post_type %}
-    setPostTypeBadgeStyle('{{ post_type }}');
-    {% endif %}
 });
 
 // Also run after a short delay to catch pages that set window.currentStage after DOM ready

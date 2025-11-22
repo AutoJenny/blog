@@ -1,5 +1,26 @@
 # Changelog
 
+## 2025-01-XX - Navbar UI Refactoring & Post Type Header
+
+### Changed
+- **Navbar UI Improvements**:
+  - Moved post type indicator from page title to navbar header with deep blue background
+  - Updated Process/Data toggle colors to red tones (mid-red active, deep red/brown inactive) for better visual distinction from stage buttons
+  - Improved Preview button styling for clearer button appearance
+  - Removed separator from profile post title (post type now displayed in navbar header)
+- **Content Category Banners**: Removed "Content Category" banners from Planning and Authoring stage templates
+- **Profile Section Drafting**: Updated to use technical section names and extracted data chunks for better context
+
+### Added
+- **Profile Section Drafting Prompt**: New script `scripts/add_profile_section_drafting_prompt.py` for generating marketing text from raw data chunks
+- **Post Type Header**: Small header at top of navbar showing "Post type: PROFILE" (or other types) with deep blue background
+
+### Technical Details
+- Modified `templates/shared/blog_pipeline_header.html` to restructure navbar with post type header
+- Updated `static/css/shared/blog-pipeline-header.css` with new toggle colors and header styling
+- Removed post type badge JavaScript function (now rendered server-side)
+- Updated profile section drafting API to include technical section names and data chunks in prompts
+
 ## 2025-11-20 - Profile Post Theme Matching System Implementation
 
 ### Added

@@ -69,17 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Authoring Workspace -->
 <div class="authoring-workspace">
-    <!-- Category Indicator Banner -->
-    {% if content_type_name %}
-    <div class="route-indicator">
-        <i class="fas fa-tag"></i>
-        <span>Content Category: <strong>{{ content_type_name }}</strong></span>
-        {% if year and week %}
-        <span>Week {{ week }}, {{ year }}</span>
-        {% endif %}
-    </div>
-    {% endif %}
-    
     <div class="workspace-container">
         <!-- Recipe Sections Management (for recipe posts only) -->
         {% if post_type == 'recipe' %}
