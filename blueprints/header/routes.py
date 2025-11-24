@@ -345,6 +345,113 @@ def register_routes(bp):
         """Deprecated route: Publishing Details substage removed. Redirect to SEO & Meta."""
         return redirect(url_for('header.header_seo_meta', post_id=post_id))
 
+    @bp.route('/posts/<int:post_id>/product-match')
+    def header_product_match(post_id):
+        """Product Match substage - Display and select matching products/categories"""
+        year = request.args.get('year', type=int)
+        week = request.args.get('week', type=int)
+
+        from utils.week_post_resolver import resolve_post_for_week
+        
+        # Get post type for the original post_id first
+        from utils.taxonomy_helpers import get_post_type
+        original_post_type = get_post_type(post_id)
+        
+        # Resolve post_id from week context (required for generation, but allow page to render)
+        # BUT: For non-themed posts (recipe/profile/generated), preserve the original post_id
+        target_post_id = None
+        week_has_post = False
+        
+        # Non-themed post types don't require week context
+        non_themed_types = ('recipe', 'profile', 'generated')
+        
+        if year and week:
+            if original_post_type in non_themed_types:
+                # For non-themed posts, preserve original post_id
+                target_post_id = post_id
+                week_has_post = True  # Non-themed posts don't need week scheduling
+            else:
+                # Only resolve for themed posts
+                resolved = resolve_post_for_week(year, week)
+                if resolved:
+                    target_post_id = resolved
+                    week_has_post = True
+                else:
+                    logger.warning(f"No post scheduled for year={year}, week={week}")
+                    target_post_id = post_id
+        else:
+            # No week context provided
+            target_post_id = post_id
+            if original_post_type in non_themed_types:
+                # Non-themed posts don't require week context - they're standalone
+                week_has_post = True
+                logger.debug(f"Non-themed post {post_id} ({original_post_type}) - week context not required")
+            else:
+                # Themed posts require week context for generation
+                week_has_post = False
+                logger.warning(f"Themed post {post_id} called without week context: year={year}, week={week}")
+        
+        # Use original post_type for non-themed posts, otherwise get from resolved post
+        post_type = original_post_type if original_post_type in non_themed_types else get_post_type(target_post_id)
+        
+        # Check if post has embeddings
+        has_embeddings = False
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, last_embedded_at
+                FROM content_chunks
+                WHERE chunk_type = 'post' AND source_id = %s
+            """, (target_post_id,))
+            embedding_data = cursor.fetchone()
+            has_embeddings = embedding_data is not None
+        
+        # Get post data with all required fields for header
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                       p.content_type_id
+                FROM post p
+                WHERE p.id = %s
+            """, (target_post_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return render_template('header/product_match.html',
+                                      post_id=target_post_id,
+                                      year=year,
+                                      week=week,
+                                      post_type=post_type,
+                                      blueprint_name='header',
+                                      error='Post not found',
+                                      has_embeddings=False)
+            
+            # Get content_type_name for header
+            cursor.execute("""
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+            """, (target_post_id,))
+            result = cursor.fetchone()
+            content_type_name = result.get('content_type_name') if result else None
+        
+        return render_template(
+            'header/product_match.html', 
+            post_id=target_post_id,
+            post=post,
+            post_type=post_type,
+            post_title=post.get('title'),
+            post_status=post.get('status'),
+            post_created=post.get('created_at'),
+            post_updated=post.get('updated_at'),
+            content_type_name=content_type_name,
+            year=year,
+            week=week,
+            week_has_post=week_has_post,
+            has_embeddings=has_embeddings,
+            blueprint_name='header'
+        )
+
     @bp.route('/posts/<int:post_id>/final-review')
     def header_final_review(post_id):
         """Final review - redirects to unified preview route"""

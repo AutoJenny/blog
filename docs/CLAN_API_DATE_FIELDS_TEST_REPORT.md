@@ -236,3 +236,5 @@ LIMIT 10;
 
 Expected: New products should have `clan_created_at` and `clan_updated_at` populated.
 
+
+

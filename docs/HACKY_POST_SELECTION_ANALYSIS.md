@@ -242,3 +242,5 @@ After fixes:
 - The `first_published_at` field may be NULL for older posts, so use `COALESCE()` to fall back to `created_at`
 - Consider adding a `published_at` field if we need to distinguish between first publication and republishing
 
+
+

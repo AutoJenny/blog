@@ -115,3 +115,5 @@ def normalize_and_select_best(products: list, suppliers: list, categories: list)
         }
     }
 
+
+

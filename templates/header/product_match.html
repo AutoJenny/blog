@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Header - Product Match{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/product-match.css') }}?v=9999&t=1737036000">
+{% endblock %}
+
+{% block content %}
+<script>
+    window.currentStage = 'header';
+    window.currentSubstage = 'product-match';
+    window.postId = {{ post_id }};
+    window.postType = {{ post_type|tojson|safe if post_type else 'null' }};
+    window.year = {{ year|tojson|safe if year else 'null' }};
+    window.week = {{ week|tojson|safe if week else 'null' }};
+    window.weekHasPost = {{ 'true' if week_has_post else 'false' }};
+    window.hasEmbeddings = {{ 'true' if has_embeddings else 'false' }};
+</script>
+
+{% include 'shared/blog_pipeline_header.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const headerContent = document.querySelector('.header-workspace');
+    const processTab = document.getElementById('process-tab');
+    if (headerContent && processTab && !processTab.contains(headerContent)) {
+        processTab.appendChild(headerContent);
+    }
+});
+</script>
+
+<div class="header-workspace">
+    <div class="workspace-container">
+        <!-- Left Panel: Mini-Preview -->
+        {% include 'header/includes/mini_preview_panel.html' %}
+        
+        <!-- Right Panel: Content -->
+        <div class="editor-panel">
+            {% if not has_embeddings %}
+            <!-- Warning: No embeddings found -->
+            <div class="alert alert-warning" style="margin-bottom: 1.5rem; padding: 1rem; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
+                <strong><i class="fas fa-exclamation-triangle"></i> No Embeddings Found:</strong> 
+                <p style="margin: 0.5rem 0 0 0;">Please generate embeddings on the <a href="{{ url_for('header.header_seo_meta', post_id=post_id) }}">SEO Meta</a> page first.</p>
+            </div>
+            {% endif %}
+            
+            <!-- Status Panel -->
+            <div class="status-panel" id="status-panel">
+                <div class="status-content">
+                    <p id="status-message">Loading matches...</p>
+                </div>
+            </div>
+            
+            <!-- Top Matches Display -->
+            <div class="matches-container" id="matches-container" style="display: none;">
+                <!-- Products Section -->
+                <div class="match-section" id="products-section">
+                    <div class="match-section-header" onclick="toggleMatchSection('products')">
+                        <h3><i class="fas fa-box"></i> Top Products</h3>
+                        <i class="fas fa-chevron-down" id="products-chevron"></i>
+                    </div>
+                    <div class="match-section-content" id="products-content">
+                        <div class="match-list" id="products-list"></div>
+                    </div>
+                </div>
+                
+                <!-- Categories Section -->
+                <div class="match-section" id="categories-section">
+                    <div class="match-section-header" onclick="toggleMatchSection('categories')">
+                        <h3><i class="fas fa-tags"></i> Top Categories</h3>
+                        <i class="fas fa-chevron-down" id="categories-chevron"></i>
+                    </div>
+                    <div class="match-section-content" id="categories-content">
+                        <div class="match-list" id="categories-list"></div>
+                    </div>
+                </div>
+                
+                <!-- Suppliers Section -->
+                <div class="match-section" id="suppliers-section">
+                    <div class="match-section-header" onclick="toggleMatchSection('suppliers')">
+                        <h3><i class="fas fa-industry"></i> Top Suppliers</h3>
+                        <i class="fas fa-chevron-down" id="suppliers-chevron"></i>
+                    </div>
+                    <div class="match-section-content" id="suppliers-content">
+                        <div class="match-list" id="suppliers-list"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Selected Match Display -->
+            <div class="selected-match-panel" id="selected-match-panel" style="display: none;">
+                <h3>Selected Match</h3>
+                <div class="selected-match-content" id="selected-match-content"></div>
+                <div class="selected-match-actions">
+                    <button class="btn-primary" id="save-selection-btn">Save Selection</button>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons" id="action-buttons" style="display: none;">
+                <button class="btn-secondary" id="regenerate-btn">
+                    <i class="fas fa-sync"></i> Regenerate Matches
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/header/product-match-page.js') }}?v=9999&t=1737036000"></script>
+{% endblock %}
+

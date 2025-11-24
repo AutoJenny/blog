@@ -186,3 +186,5 @@ ORDER BY COALESCE(clan_created_at, first_seen_at) DESC
 - `first_seen_at` is still preserved and updated in the cache management code
 - The fallback to `first_seen_at` ensures legacy products continue to work
 
+
+

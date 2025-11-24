@@ -1,526 +1,1057 @@
-2025-11-24 10:35:52,393 - blueprints.imaging - INFO - ✅ Registered imaging page routes
-2025-11-24 10:35:52,393 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
-2025-11-24 10:35:52,394 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
-2025-11-24 10:35:52,394 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
-2025-11-24 10:35:52,412 - config.database - INFO - Database connection established
-2025-11-24 10:35:52,415 - modules.prompt_service - INFO - Loaded model specs for 3 models
-2025-11-24 10:35:52,416 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
-2025-11-24 10:35:52,416 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
-2025-11-24 10:35:52,416 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
-2025-11-24 10:35:52,456 - blueprints.header - INFO - ✅ Registered header page routes
-2025-11-24 10:35:52,457 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
-2025-11-24 10:35:52,457 - blueprints.header - INFO - ✅ Registered header prompts API routes
-2025-11-24 10:35:52,457 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
-2025-11-24 10:35:52,457 - blueprints.header - INFO - ✅ Registered header image generation API routes
-2025-11-24 10:35:52,457 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
-2025-11-24 10:35:52,457 - blueprints.header - INFO - ✅ Registered header title generation API routes
-2025-11-24 10:35:52,460 - blueprints.header - INFO - ✅ Registered header summary generation API routes
-2025-11-24 10:35:52,460 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
-2025-11-24 10:35:52,461 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
-2025-11-24 10:35:52,461 - blueprints.header - INFO - ✅ Registered header test/utility API routes
-2025-11-24 10:35:52,461 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
-2025-11-24 10:35:53,207 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
-2025-11-24 10:35:53,215 - __main__ - INFO - ✅ Registered publish blueprint
-2025-11-24 10:35:53,223 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 12:57:59,818 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 12:57:59,818 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 12:57:59,818 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 12:57:59,819 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 12:57:59,837 - config.database - INFO - Database connection established
+2025-11-24 12:57:59,839 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 12:57:59,840 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 12:57:59,840 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 12:57:59,840 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 12:57:59,882 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 12:57:59,883 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 12:57:59,883 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 12:57:59,883 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 12:57:59,883 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 12:57:59,883 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 12:57:59,883 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 12:57:59,886 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 12:57:59,886 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 12:57:59,886 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 12:57:59,886 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 12:57:59,886 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 12:58:00,662 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 12:58:00,672 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 12:58:00,679 - __main__ - INFO - ✅ Registered preview routes
  * Serving Flask app 'unified_app'
  * Debug mode: on
-2025-11-24 10:35:53,246 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-11-24 12:58:00,709 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
-2025-11-24 10:35:53,246 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
-2025-11-24 10:35:53,247 - werkzeug - INFO -  * Restarting with stat
-2025-11-24 10:35:53,522 - blueprints.imaging - INFO - ✅ Registered imaging page routes
-2025-11-24 10:35:53,523 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
-2025-11-24 10:35:53,523 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
-2025-11-24 10:35:53,523 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
-2025-11-24 10:35:53,545 - config.database - INFO - Database connection established
-2025-11-24 10:35:53,548 - modules.prompt_service - INFO - Loaded model specs for 3 models
-2025-11-24 10:35:53,548 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
-2025-11-24 10:35:53,548 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
-2025-11-24 10:35:53,548 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
-2025-11-24 10:35:53,591 - blueprints.header - INFO - ✅ Registered header page routes
-2025-11-24 10:35:53,591 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
-2025-11-24 10:35:53,591 - blueprints.header - INFO - ✅ Registered header prompts API routes
-2025-11-24 10:35:53,591 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
-2025-11-24 10:35:53,592 - blueprints.header - INFO - ✅ Registered header image generation API routes
-2025-11-24 10:35:53,592 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
-2025-11-24 10:35:53,592 - blueprints.header - INFO - ✅ Registered header title generation API routes
-2025-11-24 10:35:53,595 - blueprints.header - INFO - ✅ Registered header summary generation API routes
-2025-11-24 10:35:53,595 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
-2025-11-24 10:35:53,595 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
-2025-11-24 10:35:53,595 - blueprints.header - INFO - ✅ Registered header test/utility API routes
-2025-11-24 10:35:53,595 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
-2025-11-24 10:35:54,340 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
-2025-11-24 10:35:54,349 - __main__ - INFO - ✅ Registered publish blueprint
-2025-11-24 10:35:54,357 - __main__ - INFO - ✅ Registered preview routes
-2025-11-24 10:35:54,376 - werkzeug - WARNING -  * Debugger is active!
-2025-11-24 10:35:54,387 - werkzeug - INFO -  * Debugger PIN: 263-852-041
-2025-11-24 10:35:58,628 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 10:35:58,628 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 10:35:58,629 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 10:35:58,629 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 10:35:58,642 - config.database - INFO - Database connection established
-2025-11-24 10:35:58,642 - utils.taxonomy_helpers - ERROR - Error determining post type for post {'post_id': 95, 'title': '6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage', 'subtitle': None, 'created_at': datetime.datetime(2025, 11, 20, 16, 12, 16, 470364), 'updated_at': datetime.datetime(2025, 11, 24, 10, 18, 21, 753247), 'status': 'draft', 'slug': '6oz-matt-black-hip-flask-lion-rampant-timeless-scottish-heritage', 'summary': "The 6oz Matt Black Hip Flask Lion Rampant is a masterful blend of heritage and functionality, inspired by Scotland's iconic symbol of bravery and strength. Crafted from high-quality materials with attention to precision engineering, this hip flask features a sleek design that's both durable and stylish, while proudly showcasing the Lion Rampant emblem on its side panel. Whether you're outdoorsy, adventurous, or simply appreciate Scottish heritage, this 6oz Matt Black Hip Flask Lion Rampant is a testament to Scotland's rich history and craftsmanship, making it an excellent companion for any outdoor enthusiast or Scots heritage aficionado.", 'title_choices': '["6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage", "6oz Matt Black Hip Flask Lion Rampant: Durable and Functional Design", "6oz Matt Black Hip Flask Lion Rampant: Authentic Symbol of Scottish Spirit"]', 'clan_post_id': None, 'clan_uploaded_url': None, 'author_id': None, 'author_name': None, 'idea_seed': 'Profile post for 6oz Matt Black Hip Flask Lion Rampant', 'intro_blurb': None, 'main_title': None, 'cross_promotion_category_id': None, 'cross_promotion_category_title': None, 'cross_promotion_product_id': None, 'cross_promotion_product_title': None, 'cross_promotion_category_position': None, 'cross_promotion_product_position': None, 'cross_promotion_category_widget_html': None, 'cross_promotion_product_widget_html': None, 'profile_product_id': 131256, 'profile_category_id': 12, 'year': None, 'week_number': None, 'header_image': {'path': '/static/content/posts/95/header/optimized/header.jpg', 'alt_text': 'Header image', 'title': 'header.jpg', 'caption': None, 'width': None, 'height': None}, 'id': 95, 'cross_promotion': {'category_id': None, 'category_title': None, 'product_id': None, 'product_title': None, 'category_position': None, 'product_position': None, 'category_widget_html': None, 'product_widget_html': None}}: cannot adapt type 'dict' using placeholder '%s' (format: AUTO)
-2025-11-24 10:35:58,642 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: themed
-2025-11-24 10:35:58,642 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 is not a profile post (type: themed)
-2025-11-24 10:35:58,645 - config.database - INFO - Database connection established
-2025-11-24 10:35:58,646 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 10:35:58,646 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 10:35:58,653 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 10:35:58,653 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 10:35:58,678 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 10:35:58] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 10:36:01,814 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 10:36:01,815 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 10:36:01,815 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 10:36:01,816 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 10:36:01,827 - config.database - INFO - Database connection established
-2025-11-24 10:36:01,828 - utils.taxonomy_helpers - ERROR - Error determining post type for post {'post_id': 95, 'title': '6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage', 'subtitle': None, 'created_at': datetime.datetime(2025, 11, 20, 16, 12, 16, 470364), 'updated_at': datetime.datetime(2025, 11, 24, 10, 18, 21, 753247), 'status': 'draft', 'slug': '6oz-matt-black-hip-flask-lion-rampant-timeless-scottish-heritage', 'summary': "The 6oz Matt Black Hip Flask Lion Rampant is a masterful blend of heritage and functionality, inspired by Scotland's iconic symbol of bravery and strength. Crafted from high-quality materials with attention to precision engineering, this hip flask features a sleek design that's both durable and stylish, while proudly showcasing the Lion Rampant emblem on its side panel. Whether you're outdoorsy, adventurous, or simply appreciate Scottish heritage, this 6oz Matt Black Hip Flask Lion Rampant is a testament to Scotland's rich history and craftsmanship, making it an excellent companion for any outdoor enthusiast or Scots heritage aficionado.", 'title_choices': '["6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage", "6oz Matt Black Hip Flask Lion Rampant: Durable and Functional Design", "6oz Matt Black Hip Flask Lion Rampant: Authentic Symbol of Scottish Spirit"]', 'clan_post_id': None, 'clan_uploaded_url': None, 'author_id': None, 'author_name': None, 'idea_seed': 'Profile post for 6oz Matt Black Hip Flask Lion Rampant', 'intro_blurb': None, 'main_title': None, 'cross_promotion_category_id': None, 'cross_promotion_category_title': None, 'cross_promotion_product_id': None, 'cross_promotion_product_title': None, 'cross_promotion_category_position': None, 'cross_promotion_product_position': None, 'cross_promotion_category_widget_html': None, 'cross_promotion_product_widget_html': None, 'profile_product_id': 131256, 'profile_category_id': 12, 'year': None, 'week_number': None, 'header_image': {'path': '/static/content/posts/95/header/optimized/header.jpg', 'alt_text': 'Header image', 'title': 'header.jpg', 'caption': None, 'width': None, 'height': None}, 'id': 95, 'cross_promotion': {'category_id': None, 'category_title': None, 'product_id': None, 'product_title': None, 'category_position': None, 'product_position': None, 'category_widget_html': None, 'product_widget_html': None}}: cannot adapt type 'dict' using placeholder '%s' (format: AUTO)
-2025-11-24 10:36:01,828 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: themed
-2025-11-24 10:36:01,828 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 is not a profile post (type: themed)
-2025-11-24 10:36:01,831 - config.database - INFO - Database connection established
-2025-11-24 10:36:01,832 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 10:36:01,832 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 10:36:01,839 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 10:36:01,839 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 10:36:01,840 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 10:36:01] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 10:36:26,334 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py', reloading
-2025-11-24 10:36:26,527 - werkzeug - INFO -  * Restarting with stat
-2025-11-24 10:36:26,806 - blueprints.imaging - INFO - ✅ Registered imaging page routes
-2025-11-24 10:36:26,806 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
-2025-11-24 10:36:26,806 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
-2025-11-24 10:36:26,806 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
-2025-11-24 10:36:26,826 - config.database - INFO - Database connection established
-2025-11-24 10:36:26,829 - modules.prompt_service - INFO - Loaded model specs for 3 models
-2025-11-24 10:36:26,829 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
-2025-11-24 10:36:26,829 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
-2025-11-24 10:36:26,829 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
-2025-11-24 10:36:26,870 - blueprints.header - INFO - ✅ Registered header page routes
-2025-11-24 10:36:26,870 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
-2025-11-24 10:36:26,870 - blueprints.header - INFO - ✅ Registered header prompts API routes
-2025-11-24 10:36:26,870 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
-2025-11-24 10:36:26,870 - blueprints.header - INFO - ✅ Registered header image generation API routes
-2025-11-24 10:36:26,870 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
-2025-11-24 10:36:26,871 - blueprints.header - INFO - ✅ Registered header title generation API routes
-2025-11-24 10:36:26,873 - blueprints.header - INFO - ✅ Registered header summary generation API routes
-2025-11-24 10:36:26,874 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
-2025-11-24 10:36:26,874 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
-2025-11-24 10:36:26,874 - blueprints.header - INFO - ✅ Registered header test/utility API routes
-2025-11-24 10:36:26,874 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
-2025-11-24 10:36:27,637 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
-2025-11-24 10:36:27,648 - __main__ - INFO - ✅ Registered publish blueprint
-2025-11-24 10:36:27,657 - __main__ - INFO - ✅ Registered preview routes
-2025-11-24 10:36:27,681 - werkzeug - WARNING -  * Debugger is active!
-2025-11-24 10:36:27,694 - werkzeug - INFO -  * Debugger PIN: 263-852-041
-2025-11-24 10:36:29,482 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 10:36:29,482 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 10:36:29,483 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 10:36:29,484 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 10:36:29,501 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: profile
-2025-11-24 10:36:29,501 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Found Section 1: id=852, heading=Heritage in Your Hand
-2025-11-24 10:36:29,501 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 image: {'path': None, 'alt_text': 'No image available for Heritage in Your Hand', 'placeholder': True}
-2025-11-24 10:36:29,501 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 has_valid_image: None
-2025-11-24 10:36:29,507 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Auto-assigned product image to Section 1 for profile post 95: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg
-2025-11-24 10:36:29,513 - config.database - INFO - Database connection established
-2025-11-24 10:36:29,514 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 10:36:29,514 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 10:36:29,526 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 10:36:29,527 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 10:36:29,548 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 10:36:29] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 10:36:32,803 - publish.post_data_loader - INFO - Using optimized image from database for section 852: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg
-2025-11-24 10:36:32,803 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 10:36:32,803 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 10:36:32,804 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 10:36:32,805 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 10:36:32,819 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: profile
-2025-11-24 10:36:32,819 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Found Section 1: id=852, heading=Heritage in Your Hand
-2025-11-24 10:36:32,819 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 image: {'path': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg', 'alt_text': 'Main image of 6oz Matt Black Hip Flask Lion Rampant', 'title': None, 'width': None, 'height': None}
-2025-11-24 10:36:32,819 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 has_valid_image: True
-2025-11-24 10:36:32,819 - publish.post_data_loader - ERROR - [PROFILE_IMAGE] Error auto-assigning product image for post 95: cannot access local variable 'profile_product_id' where it is not associated with a value
-2025-11-24 10:36:32,820 - publish.post_data_loader - ERROR - Traceback (most recent call last):
-  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py", line 275, in get_post_sections_with_images
-    if profile_product_id:
-       ^^^^^^^^^^^^^^^^^^
-UnboundLocalError: cannot access local variable 'profile_product_id' where it is not associated with a value
+2025-11-24 12:58:00,709 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-24 12:58:00,710 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 12:58:00,990 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 12:58:00,991 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 12:58:00,991 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 12:58:00,991 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 12:58:01,010 - config.database - INFO - Database connection established
+2025-11-24 12:58:01,012 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 12:58:01,012 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 12:58:01,012 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 12:58:01,012 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 12:58:01,053 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 12:58:01,053 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 12:58:01,053 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 12:58:01,053 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 12:58:01,053 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 12:58:01,053 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 12:58:01,053 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 12:58:01,056 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 12:58:01,056 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 12:58:01,057 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 12:58:01,057 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 12:58:01,057 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 12:58:01,804 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 12:58:01,813 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 12:58:01,821 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 12:58:01,841 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 12:58:01,851 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-24 12:58:09,810 - config.database - INFO - Database connection established
+2025-11-24 12:58:09,815 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 12:58:09,822 - config.database - INFO - Database connection established
+2025-11-24 12:58:09,875 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:09] "GET /header/posts/95/seo-meta HTTP/1.1" 200 -
+2025-11-24 12:58:34,901 - config.database - INFO - Database connection established
+2025-11-24 12:58:34,905 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 12:58:34,910 - config.database - INFO - Database connection established
+2025-11-24 12:58:34,916 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /header/posts/95/seo-meta HTTP/1.1" 200 -
+2025-11-24 12:58:34,929 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/shared/dark-theme.css HTTP/1.1" 200 -
+2025-11-24 12:58:34,931 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+2025-11-24 12:58:34,931 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/header/header-workspace.css HTTP/1.1" 200 -
+2025-11-24 12:58:34,932 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/nav.dist.css HTTP/1.1" 200 -
+2025-11-24 12:58:34,932 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/shared/site-header.css HTTP/1.1" 200 -
+2025-11-24 12:58:34,934 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/shared/blog-pipeline-header.css HTTP/1.1" 200 -
+2025-11-24 12:58:34,935 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/shared/site-header.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,935 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/shared/blog-pipeline-header.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,935 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/shared/week-context.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,936 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/shared/post-type-settings.css HTTP/1.1" 200 -
+2025-11-24 12:58:34,937 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/shared/post-type-settings.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,939 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/header/mini-preview-panel.css HTTP/1.1" 200 -
+2025-11-24 12:58:34,939 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/header/mini-preview-panel.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,941 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 12:58:34,941 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 12:58:34,943 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 12:58:34,943 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 12:58:34,944 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 12:58:34,944 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 12:58:34,945 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/header/accordion-manager.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,947 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/header/seo-meta-page.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,947 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,948 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/js/header/header-workspace.js HTTP/1.1" 200 -
+2025-11-24 12:58:34,950 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:34] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+2025-11-24 12:58:35,583 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,583 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,583 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,583 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,583 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,583 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,587 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 12:58:35,590 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /header/api/ui/preferences/header-accordion-og-meta HTTP/1.1" 200 -
+2025-11-24 12:58:35,590 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,591 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /header/api/ui/preferences/header-accordion-meta-title HTTP/1.1" 200 -
+2025-11-24 12:58:35,594 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,597 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 12:58:35,597 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,599 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 12:58:35,601 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 12:58:35,601 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 12:58:35,602 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 12:58:35,615 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,625 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 12:58:35,634 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,640 - config.database - INFO - Database connection established
+2025-11-24 12:58:35,642 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:35] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 12:58:42,022 - config.database - INFO - Database connection established
+2025-11-24 12:58:42,026 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:42] "POST /header/api/ui/preferences/header-accordion-meta-title HTTP/1.1" 200 -
+2025-11-24 12:58:49,706 - config.database - INFO - Database connection established
+2025-11-24 12:58:49,712 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:49] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 12:58:49,725 - config.database - INFO - Database connection established
+2025-11-24 12:58:49,728 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:49] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 12:58:50,688 - config.database - INFO - Database connection established
+2025-11-24 12:58:50,692 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:50] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 12:58:50,706 - config.database - INFO - Database connection established
+2025-11-24 12:58:50,709 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 12:58:50] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:00:49,724 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:00:49] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-24 13:00:49,726 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:00:49] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-24 13:00:49,728 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:00:49] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-24 13:00:49,731 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:00:49] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-24 13:00:49,731 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:00:49] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-24 13:00:49,731 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:00:49] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-24 13:08:13,088 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/header/routes.py', reloading
+2025-11-24 13:08:13,354 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 13:08:13,674 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 13:08:13,674 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 13:08:13,674 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 13:08:13,675 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 13:08:13,694 - config.database - INFO - Database connection established
+2025-11-24 13:08:13,697 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 13:08:13,697 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 13:08:13,697 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 13:08:13,697 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 13:08:13,743 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 13:08:13,743 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 13:08:13,743 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 13:08:13,743 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 13:08:13,743 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 13:08:13,743 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 13:08:13,744 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 13:08:13,747 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 13:08:13,747 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 13:08:13,748 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 13:08:13,748 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 13:08:13,748 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 13:08:14,548 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 13:08:14,556 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 13:08:14,564 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 13:08:14,587 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 13:08:14,597 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-24 13:08:40,503 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/header/api_seo_meta.py', reloading
+2025-11-24 13:08:40,765 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 13:08:41,074 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 13:08:41,074 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 13:08:41,075 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 13:08:41,075 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 13:08:41,095 - config.database - INFO - Database connection established
+2025-11-24 13:08:41,098 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 13:08:41,098 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 13:08:41,098 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 13:08:41,098 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 13:08:41,143 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 13:08:41,144 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 13:08:41,144 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 13:08:41,144 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 13:08:41,144 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 13:08:41,148 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 13:08:41,148 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 13:08:41,151 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 13:08:41,152 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 13:08:41,152 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 13:08:41,152 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 13:08:41,152 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 13:08:41,967 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 13:08:41,979 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 13:08:41,988 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 13:08:42,014 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 13:08:42,026 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-24 13:11:36,829 - config.database - INFO - Database connection established
+2025-11-24 13:11:36,835 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:11:36,840 - config.database - INFO - Database connection established
+2025-11-24 13:11:36,848 - config.database - INFO - Database connection established
+2025-11-24 13:11:36,885 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:11:36] "GET /header/posts/95/product-match HTTP/1.1" 200 -
+2025-11-24 13:11:57,138 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/header/routes.py', reloading
+2025-11-24 13:11:57,353 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 13:11:57,643 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 13:11:57,643 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 13:11:57,643 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 13:11:57,644 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 13:11:57,663 - config.database - INFO - Database connection established
+2025-11-24 13:11:57,667 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 13:11:57,667 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 13:11:57,667 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 13:11:57,667 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 13:11:57,711 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 13:11:57,711 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 13:11:57,711 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 13:11:57,711 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 13:11:57,711 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 13:11:57,714 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 13:11:57,714 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 13:11:57,717 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 13:11:57,717 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 13:11:57,718 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 13:11:57,718 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 13:11:57,718 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 13:11:58,494 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 13:11:58,502 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 13:11:58,510 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 13:11:58,530 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 13:11:58,540 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-24 13:15:44,521 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,528 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:15:44,535 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,594 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /header/posts/95/seo-meta HTTP/1.1" 200 -
+2025-11-24 13:15:44,627 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,629 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,629 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,629 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,630 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,630 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,631 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,632 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,634 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,637 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /static/js/shared/blog-pipeline-header.js HTTP/1.1" 200 -
+2025-11-24 13:15:44,637 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,638 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,638 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,638 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,639 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,642 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,644 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,645 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,645 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/header/seo-meta-page.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,646 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,646 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,647 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,648 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,649 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:44,668 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,669 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,669 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,671 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,671 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,673 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,674 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 13:15:44,675 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /header/api/ui/preferences/header-accordion-meta-title HTTP/1.1" 200 -
+2025-11-24 13:15:44,676 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,676 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /header/api/ui/preferences/header-accordion-og-meta HTTP/1.1" 200 -
+2025-11-24 13:15:44,682 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,684 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,685 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 13:15:44,686 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:44,686 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:44,687 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:15:44,687 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:15:44,701 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,710 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:44,717 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,722 - config.database - INFO - Database connection established
+2025-11-24 13:15:44,723 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:44] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:15:46,665 - config.database - INFO - Database connection established
+2025-11-24 13:15:46,670 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:15:46,676 - config.database - INFO - Database connection established
+2025-11-24 13:15:46,685 - config.database - INFO - Database connection established
+2025-11-24 13:15:46,694 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:46] "GET /header/posts/95/product-match HTTP/1.1" 200 -
+2025-11-24 13:15:47,043 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,053 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,053 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,054 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,054 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,054 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "GET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 13:15:47,054 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,056 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,061 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "GET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 13:15:47,062 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,062 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,062 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,063 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,063 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,064 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,066 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,067 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,068 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,069 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:47,085 - config.database - INFO - Database connection established
+2025-11-24 13:15:47,086 - config.database - INFO - Database connection established
+2025-11-24 13:15:47,087 - config.database - INFO - Database connection established
+2025-11-24 13:15:47,093 - config.database - INFO - Database connection established
+2025-11-24 13:15:47,100 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:47,100 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:47,103 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:15:47,108 - config.database - INFO - Database connection established
+2025-11-24 13:15:47,118 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:47,127 - config.database - INFO - Database connection established
+2025-11-24 13:15:47,136 - config.database - INFO - Database connection established
+2025-11-24 13:15:47,140 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:47] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:15:53,251 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:53] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-24 13:15:53,257 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:53] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-24 13:15:53,259 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:53] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-24 13:15:53,260 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:53] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
+2025-11-24 13:15:53,261 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:53] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
+2025-11-24 13:15:53,261 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:53] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+2025-11-24 13:15:55,087 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,091 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:15:55,097 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,103 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /header/posts/95/seo-meta HTTP/1.1" 200 -
+2025-11-24 13:15:55,105 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,106 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,107 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,107 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,107 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,109 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,110 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,111 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,111 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/seo-meta-page.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,127 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,130 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,131 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,132 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,132 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,133 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,133 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,133 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,136 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,137 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,137 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,138 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,138 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,139 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,140 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,140 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,141 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,142 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,143 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/seo-meta-page.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,143 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,144 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,145 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,146 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,147 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:15:55,164 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,164 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,164 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,167 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,168 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,168 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,170 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /header/api/ui/preferences/header-accordion-meta-title HTTP/1.1" 200 -
+2025-11-24 13:15:55,170 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,171 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /header/api/ui/preferences/header-accordion-og-meta HTTP/1.1" 200 -
+2025-11-24 13:15:55,172 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 13:15:55,177 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:55,177 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,178 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:55,180 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:15:55,180 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,181 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 13:15:55,182 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:15:55,185 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,190 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:15:55,196 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,201 - config.database - INFO - Database connection established
+2025-11-24 13:15:55,202 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:55] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:15:58,463 - config.database - INFO - Database connection established
+2025-11-24 13:15:58,467 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:58] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:15:58,478 - config.database - INFO - Database connection established
+2025-11-24 13:15:58,480 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:58] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:15:59,069 - config.database - INFO - Database connection established
+2025-11-24 13:15:59,074 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:59] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:15:59,085 - config.database - INFO - Database connection established
+2025-11-24 13:15:59,087 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:15:59] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:16:00,569 - config.database - INFO - Database connection established
+2025-11-24 13:16:00,573 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:00] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:16:00,583 - config.database - INFO - Database connection established
+2025-11-24 13:16:00,585 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:00] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:16:01,100 - config.database - INFO - Database connection established
+2025-11-24 13:16:01,102 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:01] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:16:01,110 - config.database - INFO - Database connection established
+2025-11-24 13:16:01,112 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:01] "POST /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:16:11,064 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,069 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:16:11,075 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,083 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,091 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "GET /header/posts/95/product-match HTTP/1.1" 200 -
+2025-11-24 13:16:11,095 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,096 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,116 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,126 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,126 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,127 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,127 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,128 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,128 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,131 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,133 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,133 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,133 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,134 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,135 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,136 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,137 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,138 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,139 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,139 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,140 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:11,155 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,155 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,156 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,162 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,166 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:11,167 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:11,171 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:16:11,176 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,184 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:11,191 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,196 - config.database - INFO - Database connection established
+2025-11-24 13:16:11,197 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:11] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:16:12,653 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,658 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:16:12,666 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,673 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /header/posts/95/seo-meta HTTP/1.1" 200 -
+2025-11-24 13:16:12,678 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,679 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,680 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,680 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,681 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,684 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,686 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,688 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,689 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/seo-meta-page.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,715 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,718 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,720 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,721 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,721 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,721 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,721 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,723 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,724 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,725 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,726 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,726 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,727 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,729 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,729 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,730 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,731 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,731 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,733 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,734 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,735 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,736 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,736 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,737 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "[36mGET /static/js/header/seo-meta-page.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:12,760 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,762 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,762 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,762 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,764 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,765 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /header/api/ui/preferences/header-accordion-meta-title HTTP/1.1" 200 -
+2025-11-24 13:16:12,765 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,766 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /header/api/ui/preferences/header-accordion-og-meta HTTP/1.1" 200 -
+2025-11-24 13:16:12,767 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,770 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 13:16:12,773 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:12,774 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:12,774 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,775 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,777 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 13:16:12,778 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:16:12,780 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:16:12,781 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,790 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:12,797 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,802 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,804 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:12] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:16:12,962 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,971 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,980 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,991 - config.database - INFO - Database connection established
+2025-11-24 13:16:12,996 - modules.llm_service - WARNING - Could not store intercepted message (non-fatal): duplicate key value violates unique constraint "llm_message_intercepts_post_id_null_section_uniq"
+DETAIL:  Key (post_id)=(95) already exists.
+2025-11-24 13:16:13,002 - config.database - INFO - Database connection established
+2025-11-24 13:16:13,004 - modules.llm_service - INFO - Stored raw messages for post 95, section None
+2025-11-24 13:16:13,010 - config.database - INFO - Database connection established
+2025-11-24 13:16:13,012 - modules.llm_service - INFO - Stored complete API request for post 95, section None
+2025-11-24 13:16:13,017 - config.database - INFO - Database connection established
+2025-11-24 13:16:13,024 - config.database - INFO - Database connection established
+2025-11-24 13:16:13,025 - modules.llm_service - INFO - Stored raw HTTP request for post 95, section None
+2025-11-24 13:16:13,025 - modules.llm_service - DEBUG - Making Ollama request to http://localhost:11434/api/chat with model llama3.2:latest, messages count: 1
+2025-11-24 13:16:13,028 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-11-24 13:16:14,843 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 890
+2025-11-24 13:16:14,844 - modules.llm_service - DEBUG - Ollama response received: status=200, url=http://localhost:11434/api/chat
+2025-11-24 13:16:14,844 - modules.llm_service - DEBUG - Successfully parsed JSON response, message content length: 566
+2025-11-24 13:16:14,845 - blueprints.header.api_seo_meta - INFO - LLM response content: Here's the generated SEO metadata for the blog post:
 
-2025-11-24 10:36:32,823 - config.database - INFO - Database connection established
-2025-11-24 10:36:32,824 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 10:36:32,824 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 10:36:32,832 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 10:36:32,832 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 10:36:32,833 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 10:36:32] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 10:36:38,181 - publish.post_data_loader - INFO - Using optimized image from database for section 852: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg
-2025-11-24 10:36:38,181 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 10:36:38,181 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 10:36:38,182 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 10:36:38,182 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 10:36:38,196 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: profile
-2025-11-24 10:36:38,196 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Found Section 1: id=852, heading=Heritage in Your Hand
-2025-11-24 10:36:38,196 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 image: {'path': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg', 'alt_text': 'Main image of 6oz Matt Black Hip Flask Lion Rampant', 'title': None, 'width': None, 'height': None}
-2025-11-24 10:36:38,196 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 has_valid_image: True
-2025-11-24 10:36:38,196 - publish.post_data_loader - ERROR - [PROFILE_IMAGE] Error auto-assigning product image for post 95: cannot access local variable 'profile_product_id' where it is not associated with a value
-2025-11-24 10:36:38,196 - publish.post_data_loader - ERROR - Traceback (most recent call last):
-  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py", line 275, in get_post_sections_with_images
-    if profile_product_id:
-       ^^^^^^^^^^^^^^^^^^
-UnboundLocalError: cannot access local variable 'profile_product_id' where it is not associated with a value
+```
+{
+  "meta_title": "Lion Rampant Hip Flask Scotland Heritage",
+  "meta_description": "Discover the timeless blend of heritage and functionality in this 6oz Matt Black Lion Rampant hip flask.",
+  "meta_tags": "Scotland, Lion Rampant, Hip Flask, Outdoor Gear, Scottish Heritage, Luxury Accessories"
+}
+```
 
-2025-11-24 10:36:38,199 - config.database - INFO - Database connection established
-2025-11-24 10:36:38,201 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 10:36:38,201 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 10:36:38,211 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 10:36:38,211 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 10:36:38,212 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 10:36:38] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 10:36:48,124 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py', reloading
-2025-11-24 10:36:48,335 - werkzeug - INFO -  * Restarting with stat
-2025-11-24 10:36:48,654 - blueprints.imaging - INFO - ✅ Registered imaging page routes
-2025-11-24 10:36:48,654 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
-2025-11-24 10:36:48,655 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
-2025-11-24 10:36:48,655 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
-2025-11-24 10:36:48,674 - config.database - INFO - Database connection established
-2025-11-24 10:36:48,677 - modules.prompt_service - INFO - Loaded model specs for 3 models
-2025-11-24 10:36:48,677 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
-2025-11-24 10:36:48,678 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
-2025-11-24 10:36:48,678 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
-2025-11-24 10:36:48,722 - blueprints.header - INFO - ✅ Registered header page routes
-2025-11-24 10:36:48,722 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
-2025-11-24 10:36:48,722 - blueprints.header - INFO - ✅ Registered header prompts API routes
-2025-11-24 10:36:48,722 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
-2025-11-24 10:36:48,722 - blueprints.header - INFO - ✅ Registered header image generation API routes
-2025-11-24 10:36:48,722 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
-2025-11-24 10:36:48,722 - blueprints.header - INFO - ✅ Registered header title generation API routes
-2025-11-24 10:36:48,726 - blueprints.header - INFO - ✅ Registered header summary generation API routes
-2025-11-24 10:36:48,726 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
-2025-11-24 10:36:48,726 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
-2025-11-24 10:36:48,726 - blueprints.header - INFO - ✅ Registered header test/utility API routes
-2025-11-24 10:36:48,726 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
-2025-11-24 10:36:49,487 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
-2025-11-24 10:36:49,499 - __main__ - INFO - ✅ Registered publish blueprint
-2025-11-24 10:36:49,507 - __main__ - INFO - ✅ Registered preview routes
-2025-11-24 10:36:49,529 - werkzeug - WARNING -  * Debugger is active!
-2025-11-24 10:36:49,540 - werkzeug - INFO -  * Debugger PIN: 263-852-041
-2025-11-24 11:00:24,444 - publish.post_data_loader - INFO - Using optimized image from database for section 852: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg
-2025-11-24 11:00:24,445 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 11:00:24,445 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 11:00:24,446 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 11:00:24,447 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 11:00:24,465 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: profile
-2025-11-24 11:00:24,465 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Found Section 1: id=852, heading=Heritage in Your Hand
-2025-11-24 11:00:24,466 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 image: {'path': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg', 'alt_text': 'Main image of 6oz Matt Black Hip Flask Lion Rampant', 'title': None, 'width': None, 'height': None}
-2025-11-24 11:00:24,466 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 has_valid_image: True
-2025-11-24 11:00:24,466 - publish.post_data_loader - ERROR - [PROFILE_IMAGE] Error auto-assigning product image for post 95: cannot access local variable 'profile_product_id' where it is not associated with a value
-2025-11-24 11:00:24,468 - publish.post_data_loader - ERROR - Traceback (most recent call last):
-  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py", line 275, in get_post_sections_with_images
-    if profile_product_id:
-       ^^^^^^^^^^^^^^^^^^
-UnboundLocalError: cannot access local variable 'profile_product_id' where it is not associated with a value
-
-2025-11-24 11:00:24,475 - config.database - INFO - Database connection established
-2025-11-24 11:00:24,478 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 11:00:24,478 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 11:00:24,497 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 11:00:24,499 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 11:00:24,527 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 11:00:24,538 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "[33mGET /static/css/clan/main.css HTTP/1.1[0m" 404 -
-2025-11-24 11:00:24,539 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "[33mGET /static/css/clan/secondary.css HTTP/1.1[0m" 404 -
-2025-11-24 11:00:24,545 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "[36mGET /static/css/dist/clan_blog.css HTTP/1.1[0m" 304 -
-2025-11-24 11:00:24,545 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "[36mGET /static/site/footer.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:00:24,546 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "[36mGET /static/site/header.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:00:24,546 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "[36mGET /static/content/posts/95/header/optimized/header.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:00:24,548 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "[33mGET /static/css/clan/third.css HTTP/1.1[0m" 404 -
-2025-11-24 11:00:24,550 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:00:24] "[33mGET /api/cross-promotion/95 HTTP/1.1[0m" 404 -
-2025-11-24 11:38:27,992 - publish.post_data_loader - INFO - Using optimized image from database for section 852: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg
-2025-11-24 11:38:27,993 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 11:38:27,993 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 11:38:27,995 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 11:38:27,996 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 11:38:28,013 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: profile
-2025-11-24 11:38:28,013 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Found Section 1: id=852, heading=Heritage in Your Hand
-2025-11-24 11:38:28,013 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 image: {'path': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg', 'alt_text': 'Main image of 6oz Matt Black Hip Flask Lion Rampant', 'title': None, 'width': None, 'height': None}
-2025-11-24 11:38:28,013 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 has_valid_image: True
-2025-11-24 11:38:28,013 - publish.post_data_loader - ERROR - [PROFILE_IMAGE] Error auto-assigning product image for post 95: cannot access local variable 'profile_product_id' where it is not associated with a value
-2025-11-24 11:38:28,013 - publish.post_data_loader - ERROR - Traceback (most recent call last):
-  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py", line 275, in get_post_sections_with_images
-    if profile_product_id:
-       ^^^^^^^^^^^^^^^^^^
-UnboundLocalError: cannot access local variable 'profile_product_id' where it is not associated with a value
-
-2025-11-24 11:38:28,019 - config.database - INFO - Database connection established
-2025-11-24 11:38:28,023 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 11:38:28,023 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 11:38:28,040 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 11:38:28,040 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 11:38:28,041 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 11:38:28,052 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "[33mGET /static/css/clan/main.css HTTP/1.1[0m" 404 -
-2025-11-24 11:38:28,055 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "[33mGET /static/css/clan/secondary.css HTTP/1.1[0m" 404 -
-2025-11-24 11:38:28,057 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "[36mGET /static/site/header.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:38:28,057 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "[36mGET /static/content/posts/95/header/optimized/header.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:38:28,058 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "[36mGET /static/site/footer.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:38:28,058 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "[36mGET /static/css/dist/clan_blog.css HTTP/1.1[0m" 304 -
-2025-11-24 11:38:28,060 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "[33mGET /static/css/clan/third.css HTTP/1.1[0m" 404 -
-2025-11-24 11:38:28,063 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:28] "[33mGET /api/cross-promotion/95 HTTP/1.1[0m" 404 -
-2025-11-24 11:38:38,270 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py', reloading
-2025-11-24 11:38:38,548 - werkzeug - INFO -  * Restarting with stat
-2025-11-24 11:38:38,934 - blueprints.imaging - INFO - ✅ Registered imaging page routes
-2025-11-24 11:38:38,935 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
-2025-11-24 11:38:38,936 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
-2025-11-24 11:38:38,936 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
-2025-11-24 11:38:38,962 - config.database - INFO - Database connection established
-2025-11-24 11:38:38,966 - modules.prompt_service - INFO - Loaded model specs for 3 models
-2025-11-24 11:38:38,966 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
-2025-11-24 11:38:38,967 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
-2025-11-24 11:38:38,967 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
-2025-11-24 11:38:39,027 - blueprints.header - INFO - ✅ Registered header page routes
-2025-11-24 11:38:39,028 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
-2025-11-24 11:38:39,028 - blueprints.header - INFO - ✅ Registered header prompts API routes
-2025-11-24 11:38:39,028 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
-2025-11-24 11:38:39,029 - blueprints.header - INFO - ✅ Registered header image generation API routes
-2025-11-24 11:38:39,030 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
-2025-11-24 11:38:39,030 - blueprints.header - INFO - ✅ Registered header title generation API routes
-2025-11-24 11:38:39,036 - blueprints.header - INFO - ✅ Registered header summary generation API routes
-2025-11-24 11:38:39,036 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
-2025-11-24 11:38:39,037 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
-2025-11-24 11:38:39,037 - blueprints.header - INFO - ✅ Registered header test/utility API routes
-2025-11-24 11:38:39,037 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
-2025-11-24 11:38:40,323 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
-2025-11-24 11:38:40,337 - __main__ - INFO - ✅ Registered publish blueprint
-2025-11-24 11:38:40,346 - __main__ - INFO - ✅ Registered preview routes
-2025-11-24 11:38:40,372 - werkzeug - WARNING -  * Debugger is active!
-2025-11-24 11:38:40,387 - werkzeug - INFO -  * Debugger PIN: 263-852-041
-2025-11-24 11:38:41,033 - publish.post_data_loader - INFO - Using optimized image from database for section 852: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg
-2025-11-24 11:38:41,033 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 11:38:41,033 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 11:38:41,034 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 11:38:41,035 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 11:38:41,054 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: profile
-2025-11-24 11:38:41,054 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Found Section 1: id=852, heading=Heritage in Your Hand
-2025-11-24 11:38:41,054 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 image: {'path': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg', 'alt_text': 'Main image of 6oz Matt Black Hip Flask Lion Rampant', 'title': None, 'width': None, 'height': None}
-2025-11-24 11:38:41,054 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 has_valid_image: True
-2025-11-24 11:38:41,054 - publish.post_data_loader - ERROR - [PROFILE_IMAGE] Error auto-assigning product image for post 95: cannot access local variable 'profile_product_id' where it is not associated with a value
-2025-11-24 11:38:41,055 - publish.post_data_loader - ERROR - Traceback (most recent call last):
-  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py", line 275, in get_post_sections_with_images
-    if profile_product_id:
-       ^^^^^^^^^^^^^^^^^^
-UnboundLocalError: cannot access local variable 'profile_product_id' where it is not associated with a value
-
-2025-11-24 11:38:41,059 - config.database - INFO - Database connection established
-2025-11-24 11:38:41,061 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 11:38:41,061 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 11:38:41,070 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 11:38:41,070 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 11:38:41,092 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:38:41] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 11:38:46,531 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py', reloading
-2025-11-24 11:38:46,794 - werkzeug - INFO -  * Restarting with stat
-2025-11-24 11:38:47,115 - blueprints.imaging - INFO - ✅ Registered imaging page routes
-2025-11-24 11:38:47,116 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
-2025-11-24 11:38:47,116 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
-2025-11-24 11:38:47,116 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
-2025-11-24 11:38:47,136 - config.database - INFO - Database connection established
-2025-11-24 11:38:47,138 - modules.prompt_service - INFO - Loaded model specs for 3 models
-2025-11-24 11:38:47,138 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
-2025-11-24 11:38:47,139 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
-2025-11-24 11:38:47,139 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
-2025-11-24 11:38:47,186 - blueprints.header - INFO - ✅ Registered header page routes
-2025-11-24 11:38:47,186 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
-2025-11-24 11:38:47,186 - blueprints.header - INFO - ✅ Registered header prompts API routes
-2025-11-24 11:38:47,186 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
-2025-11-24 11:38:47,186 - blueprints.header - INFO - ✅ Registered header image generation API routes
-2025-11-24 11:38:47,187 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
-2025-11-24 11:38:47,187 - blueprints.header - INFO - ✅ Registered header title generation API routes
-2025-11-24 11:38:47,190 - blueprints.header - INFO - ✅ Registered header summary generation API routes
-2025-11-24 11:38:47,190 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
-2025-11-24 11:38:47,190 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
-2025-11-24 11:38:47,191 - blueprints.header - INFO - ✅ Registered header test/utility API routes
-2025-11-24 11:38:47,191 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
-2025-11-24 11:38:48,033 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
-2025-11-24 11:38:48,044 - __main__ - INFO - ✅ Registered publish blueprint
-2025-11-24 11:38:48,053 - __main__ - INFO - ✅ Registered preview routes
-2025-11-24 11:38:48,074 - werkzeug - WARNING -  * Debugger is active!
-2025-11-24 11:38:48,087 - werkzeug - INFO -  * Debugger PIN: 263-852-041
-2025-11-24 11:39:08,233 - publish.post_data_loader - INFO - Using optimized image from database for section 852: https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg
-2025-11-24 11:39:08,233 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 853 (A Symbol of Scottish Spirit) - removed 34 chars
-2025-11-24 11:39:08,234 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 854 (Built to Last: Precision & Quality) - removed 41 chars
-2025-11-24 11:39:08,234 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 856 (The Art of Crafting the Finest) - removed 37 chars
-2025-11-24 11:39:08,235 - publish.post_data_loader - INFO - ✅ Stripped H2/duplicate heading from section 858 (A Closer Look at Perfection) - removed 34 chars
-2025-11-24 11:39:08,252 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Post 95 type: profile
-2025-11-24 11:39:08,253 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Found Section 1: id=852, heading=Heritage in Your Hand
-2025-11-24 11:39:08,253 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 image: {'path': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/l/i/lion.jpeg', 'alt_text': 'Main image of 6oz Matt Black Hip Flask Lion Rampant', 'title': None, 'width': None, 'height': None}
-2025-11-24 11:39:08,253 - publish.post_data_loader - INFO - [PROFILE_IMAGE] Section 1 has_valid_image: True
-2025-11-24 11:39:08,253 - publish.post_data_loader - ERROR - [PROFILE_IMAGE] Error auto-assigning product image for post 95: cannot access local variable 'profile_product_id' where it is not associated with a value
-2025-11-24 11:39:08,253 - publish.post_data_loader - ERROR - Traceback (most recent call last):
-  File "/Users/autojenny/Documents/projects/blog/blog-launchpad/publish/post_data_loader.py", line 275, in get_post_sections_with_images
-    if profile_product_id:
-       ^^^^^^^^^^^^^^^^^^
-UnboundLocalError: cannot access local variable 'profile_product_id' where it is not associated with a value
-
-2025-11-24 11:39:08,257 - config.database - INFO - Database connection established
-2025-11-24 11:39:08,259 - publish.header_image_finder - INFO - Normalized header path: '/static/content/posts/95/header/optimized/header.jpg' -> '/static/content/posts/95/header/optimized/header.jpg'
-2025-11-24 11:39:08,259 - publish.header_image_finder - INFO - Found header image in database (image_archive): /static/content/posts/95/header/optimized/header.jpg
-2025-11-24 11:39:08,268 - publish.post_data_loader - INFO - ✅ Prepared post data for post 95
-2025-11-24 11:39:08,269 - publish.post_renderer - INFO - ✅ Added inline styles to recipe section elements
-2025-11-24 11:39:08,291 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "GET /preview/95 HTTP/1.1" 200 -
-2025-11-24 11:39:08,307 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "[33mGET /static/css/clan/main.css HTTP/1.1[0m" 404 -
-2025-11-24 11:39:08,308 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "[33mGET /static/css/clan/secondary.css HTTP/1.1[0m" 404 -
-2025-11-24 11:39:08,314 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "[36mGET /static/content/posts/95/header/optimized/header.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:39:08,315 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "[36mGET /static/site/header.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:39:08,316 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "[36mGET /static/site/footer.jpg HTTP/1.1[0m" 304 -
-2025-11-24 11:39:08,316 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "[36mGET /static/css/dist/clan_blog.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:08,318 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "[33mGET /static/css/clan/third.css HTTP/1.1[0m" 404 -
-2025-11-24 11:39:08,321 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:08] "[33mGET /api/cross-promotion/95 HTTP/1.1[0m" 404 -
-2025-11-24 11:39:36,569 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,576 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
-2025-11-24 11:39:36,584 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,594 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,640 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/posts/95/title-summary HTTP/1.1" 200 -
-2025-11-24 11:39:36,642 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/subtitle-panel.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,643 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,643 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/title-generation-panel.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,644 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/prompt-view-panel.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,644 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/title-generation-panel.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,649 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/prompt-view-panel.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,650 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/summary-generation-panel.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,651 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/slug-panel.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,651 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/summary-generation-panel.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,651 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/slug-panel.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,651 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/subtitle-panel.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,653 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/author-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,654 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/author-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,655 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/output-panel-title-summary.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,656 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/output-panel-title-summary.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,656 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,657 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,679 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,682 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,688 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,688 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,688 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,689 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,689 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,690 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,691 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,692 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,694 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,694 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,694 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,696 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /static/css/authoring/llm-settings-panel.css HTTP/1.1" 200 -
-2025-11-24 11:39:36,696 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /static/js/authoring/llm-settings-panel.js HTTP/1.1" 200 -
-2025-11-24 11:39:36,697 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,697 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:36,712 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 60
-2025-11-24 11:39:36,713 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 61
-2025-11-24 11:39:36,713 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 62
-2025-11-24 11:39:36,716 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 60
-2025-11-24 11:39:36,719 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,719 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,721 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,723 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,723 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,724 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/60 HTTP/1.1" 200 -
-2025-11-24 11:39:36,724 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/61 HTTP/1.1" 200 -
-2025-11-24 11:39:36,725 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,725 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/62 HTTP/1.1" 200 -
-2025-11-24 11:39:36,726 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/ui/preferences/header-accordion-title-generation HTTP/1.1" 200 -
-2025-11-24 11:39:36,727 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 61
-2025-11-24 11:39:36,729 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 62
-2025-11-24 11:39:36,730 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 60
-2025-11-24 11:39:36,732 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/60 HTTP/1.1" 200 -
-2025-11-24 11:39:36,735 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 61
-2025-11-24 11:39:36,736 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,738 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /planning/api/posts/95 HTTP/1.1" 200 -
-2025-11-24 11:39:36,738 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,738 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/61 HTTP/1.1" 200 -
-2025-11-24 11:39:36,738 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,739 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,740 - blueprints.header.api_prompts - INFO - Getting prompts for step_id: 62
-2025-11-24 11:39:36,740 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/62 HTTP/1.1" 200 -
-2025-11-24 11:39:36,743 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,744 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/60 HTTP/1.1" 200 -
-2025-11-24 11:39:36,744 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/ui/preferences/header-accordion-subtitle HTTP/1.1" 200 -
-2025-11-24 11:39:36,747 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,749 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,749 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/62 HTTP/1.1" 200 -
-2025-11-24 11:39:36,750 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/prompts/61 HTTP/1.1" 200 -
-2025-11-24 11:39:36,752 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,753 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/posts/95/get-summary HTTP/1.1" 200 -
-2025-11-24 11:39:36,757 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,760 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,760 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,760 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/posts/95/get-slug HTTP/1.1" 200 -
-2025-11-24 11:39:36,761 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,761 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,762 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/posts/95/get-titles HTTP/1.1" 200 -
-2025-11-24 11:39:36,762 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/ui/preferences/header-accordion-title-summary-output HTTP/1.1" 200 -
-2025-11-24 11:39:36,762 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,766 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/posts/95/get-title-summary HTTP/1.1" 200 -
-2025-11-24 11:39:36,768 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/posts/95/get-subtitles HTTP/1.1" 200 -
-2025-11-24 11:39:36,774 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,774 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,775 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /planning/api/posts/95 HTTP/1.1" 200 -
-2025-11-24 11:39:36,775 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,775 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/ui/preferences/header-accordion-slug HTTP/1.1" 200 -
-2025-11-24 11:39:36,776 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,776 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/ui/preferences/header-accordion-summary-generation HTTP/1.1" 200 -
-2025-11-24 11:39:36,777 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,783 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "POST /header/api/posts/95/save-selected-title HTTP/1.1" 200 -
-2025-11-24 11:39:36,783 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "POST /header/api/posts/95/save-slug HTTP/1.1" 200 -
-2025-11-24 11:39:36,784 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,784 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,784 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,786 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /header/api/posts/95/get-title-summary HTTP/1.1" 200 -
-2025-11-24 11:39:36,787 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "POST /header/api/posts/95/save-author HTTP/1.1" 200 -
-2025-11-24 11:39:36,790 - config.database - INFO - Database connection established
-2025-11-24 11:39:36,792 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:36] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
-2025-11-24 11:39:38,846 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,854 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
-2025-11-24 11:39:38,862 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,883 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /header/posts/95/seo-meta HTTP/1.1" 200 -
-2025-11-24 11:39:38,925 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,933 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,934 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,934 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,934 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,935 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,935 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,938 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,938 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,941 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,941 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,941 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1" 200 -
-2025-11-24 11:39:38,941 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1" 200 -
-2025-11-24 11:39:38,943 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,943 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,945 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,945 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,946 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,948 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,949 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,949 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,950 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,950 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "[36mGET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
-2025-11-24 11:39:38,951 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /static/js/header/seo-meta-page.js HTTP/1.1" 200 -
-2025-11-24 11:39:38,969 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,971 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,971 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,975 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,976 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,977 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,977 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,978 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
-2025-11-24 11:39:38,979 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /header/api/ui/preferences/header-accordion-meta-title HTTP/1.1" 200 -
-2025-11-24 11:39:38,979 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /header/api/ui/preferences/header-accordion-og-meta HTTP/1.1" 200 -
-2025-11-24 11:39:38,986 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /planning/api/posts/95 HTTP/1.1" 200 -
-2025-11-24 11:39:38,987 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /planning/api/posts/95 HTTP/1.1" 200 -
-2025-11-24 11:39:38,987 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,989 - config.database - INFO - Database connection established
-2025-11-24 11:39:38,990 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
-2025-11-24 11:39:38,990 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
-2025-11-24 11:39:38,991 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:38] "GET /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
-2025-11-24 11:39:38,995 - config.database - INFO - Database connection established
-2025-11-24 11:39:39,001 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:39] "GET /planning/api/posts/95 HTTP/1.1" 200 -
-2025-11-24 11:39:39,008 - config.database - INFO - Database connection established
-2025-11-24 11:39:39,013 - config.database - INFO - Database connection established
-2025-11-24 11:39:39,015 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:39] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
-2025-11-24 11:39:49,650 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:49] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
-2025-11-24 11:39:49,651 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:49] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
-2025-11-24 11:39:49,652 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:49] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-2025-11-24 11:39:49,657 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:49] "GET /static/images/site/favicon.ico HTTP/1.1" 200 -
-2025-11-24 11:39:49,657 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:49] "GET /static/images/site/apple-touch-icon-180x180.png HTTP/1.1" 200 -
-2025-11-24 11:39:49,657 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 11:39:49] "GET /static/images/site/apple-touch-icon.png HTTP/1.1" 200 -
+Please note that the meta title is limited to 60 characters, while the meta description is limited to 160 characters. The recommended number of meta tags is 5-8, but it's not uncommon for there to be more.
+2025-11-24 13:16:14,856 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:14] "POST /header/api/posts/95/generate-seo-meta HTTP/1.1" 200 -
+2025-11-24 13:16:14,875 - config.database - INFO - Database connection established
+2025-11-24 13:16:14,887 - config.database - INFO - Database connection established
+2025-11-24 13:16:14,895 - blueprints.header.api_seo_meta - INFO - Extracting content for post 95
+2025-11-24 13:16:14,904 - config.database - INFO - Database connection established
+2025-11-24 13:16:14,913 - config.database - INFO - Database connection established
+2025-11-24 13:16:14,917 - blueprints.header.api_seo_meta - INFO - Generating embedding for post 95
+2025-11-24 13:16:16,337 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,343 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:16:16,355 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,365 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,378 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "GET /header/posts/95/product-match HTTP/1.1" 200 -
+2025-11-24 13:16:16,379 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,380 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,402 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,403 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,403 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,403 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,404 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,405 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,406 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,407 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,407 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,408 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,409 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,409 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,411 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,412 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,412 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,413 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,414 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,414 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,415 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:16,428 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,429 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,431 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,437 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,442 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:16,442 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:16,449 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:16:16,452 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,463 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:16,471 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,484 - config.database - INFO - Database connection established
+2025-11-24 13:16:16,488 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:16] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:16:16,500 - utils.vector_search.embeddings - INFO - Loading embedding model: intfloat/e5-large-v2
+2025-11-24 13:16:16,516 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-11-24 13:16:16,516 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: intfloat/e5-large-v2
+2025-11-24 13:16:16,517 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): huggingface.co:443
+2025-11-24 13:16:16,659 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-24 13:16:16,671 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-24 13:16:16,766 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-24 13:16:16,871 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-24 13:16:16,970 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/README.md HTTP/1.1" 307 0
+2025-11-24 13:16:16,983 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/README.md HTTP/1.1" 200 0
+2025-11-24 13:16:17,082 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-24 13:16:17,097 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-24 13:16:17,196 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 307 0
+2025-11-24 13:16:17,209 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/sentence_bert_config.json HTTP/1.1" 200 0
+2025-11-24 13:16:17,313 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/adapter_config.json HTTP/1.1" 404 0
+2025-11-24 13:16:17,412 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config.json HTTP/1.1" 307 0
+2025-11-24 13:16:17,426 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/config.json HTTP/1.1" 200 0
+2025-11-24 13:16:17,606 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/tokenizer_config.json HTTP/1.1" 307 0
+2025-11-24 13:16:17,619 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/tokenizer_config.json HTTP/1.1" 200 0
+2025-11-24 13:16:17,723 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2/tree/main/additional_chat_templates?recursive=False&expand=False HTTP/1.1" 404 64
+2025-11-24 13:16:17,890 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/1_Pooling/config.json HTTP/1.1" 307 0
+2025-11-24 13:16:17,908 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/1_Pooling%2Fconfig.json HTTP/1.1" 200 0
+2025-11-24 13:16:18,021 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2 HTTP/1.1" 200 149132
+2025-11-24 13:16:18,813 - utils.vector_search.embeddings - INFO - Embedding model loaded successfully
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.71it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.70it/s]
+2025-11-24 13:16:18,945 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-24 13:16:18,986 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-24 13:16:18,986 - faiss.loader - INFO - Loading faiss.
+2025-11-24 13:16:19,012 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-24 13:16:19,020 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-24 13:16:19,021 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2116 chunks
+2025-11-24 13:16:19,027 - config.database - INFO - Database connection established
+2025-11-24 13:16:19,037 - utils.vector_search.faiss_index - INFO - Added 1 vectors to index (FAISS IDs: 2116-2116)
+2025-11-24 13:16:19,043 - config.database - INFO - Database connection established
+2025-11-24 13:16:19,049 - utils.vector_search.faiss_index - INFO - Saved FAISS index to data/vector_index/products_categories.faiss
+2025-11-24 13:16:19,050 - utils.vector_search.faiss_index - INFO - Saved metadata to data/vector_index/products_categories_metadata.json
+2025-11-24 13:16:19,050 - blueprints.header.api_seo_meta - INFO - Finding similar entities for post 95
+2025-11-24 13:16:19,051 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-24 13:16:19,052 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2117 chunks
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 98.04it/s]
+2025-11-24 13:16:19,064 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-24 13:16:19,085 - config.database - INFO - Database connection established
+2025-11-24 13:16:19,110 - config.database - INFO - Database connection established
+2025-11-24 13:16:19,141 - config.database - INFO - Database connection established
+2025-11-24 13:16:19,148 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:19] "POST /header/api/posts/95/generate-embeddings HTTP/1.1" 200 -
+2025-11-24 13:16:55,613 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,617 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:16:55,625 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,633 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /header/posts/95/seo-meta HTTP/1.1" 200 -
+2025-11-24 13:16:55,636 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,639 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,640 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,640 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,643 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,644 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,646 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,647 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,647 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/seo-meta-page.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,674 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,677 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,678 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,679 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,679 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,679 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,680 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,681 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,682 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,682 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,683 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,684 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,684 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,686 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/meta-title-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,686 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,688 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/meta-title-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,688 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/og-meta-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,688 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/og-meta-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,689 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/css/header/vector-embeddings-panel.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,690 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/vector-embeddings-panel.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,692 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,692 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,692 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/seo-meta-page.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,693 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:16:55,710 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,712 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,713 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,713 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,713 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,715 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,716 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /header/api/ui/preferences/header-accordion-meta-title HTTP/1.1" 200 -
+2025-11-24 13:16:55,717 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 13:16:55,717 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /header/api/ui/preferences/header-accordion-og-meta HTTP/1.1" 200 -
+2025-11-24 13:16:55,720 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,723 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,725 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:55,725 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,726 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /header/api/posts/95/get-meta-data HTTP/1.1" 200 -
+2025-11-24 13:16:55,727 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:55,727 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /header/api/ui/preferences/header-accordion-vector-embeddings HTTP/1.1" 200 -
+2025-11-24 13:16:55,731 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:16:55,734 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,744 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:16:55,751 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,757 - config.database - INFO - Database connection established
+2025-11-24 13:16:55,759 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:16:55] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:17:02,846 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,850 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:17:02,858 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,869 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,877 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "GET /header/posts/95/product-match HTTP/1.1" 200 -
+2025-11-24 13:17:02,882 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,883 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,917 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,922 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,922 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,923 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,923 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,924 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,925 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,926 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,928 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,931 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,931 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,932 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,934 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,934 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,935 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,936 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,936 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,937 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,937 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:17:02,957 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,957 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,957 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,959 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,963 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,966 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,967 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:17:02,968 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:17:02,974 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:17:02,974 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,976 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,980 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,982 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-24 13:17:02,983 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:17:02,983 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2117 chunks
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]2025-11-24 13:17:02,990 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,995 - config.database - INFO - Database connection established
+2025-11-24 13:17:02,997 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:02] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+Batches: 100%|██████████| 1/1 [00:00<00:00, 22.43it/s]
+2025-11-24 13:17:03,032 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-24 13:17:03,054 - config.database - INFO - Database connection established
+2025-11-24 13:17:03,080 - config.database - INFO - Database connection established
+2025-11-24 13:17:03,125 - config.database - INFO - Database connection established
+2025-11-24 13:17:03,144 - config.database - INFO - Database connection established
+2025-11-24 13:17:03,146 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:17:03] "GET /header/api/posts/95/product-matches HTTP/1.1" 200 -
+2025-11-24 13:19:05,295 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/profile_matching/post_matcher.py', reloading
+2025-11-24 13:19:05,782 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 13:19:06,102 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 13:19:06,102 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 13:19:06,103 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 13:19:06,103 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 13:19:06,122 - config.database - INFO - Database connection established
+2025-11-24 13:19:06,124 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 13:19:06,125 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 13:19:06,125 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 13:19:06,125 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 13:19:06,168 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 13:19:06,168 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 13:19:06,168 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 13:19:06,168 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 13:19:06,169 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 13:19:06,169 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 13:19:06,169 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 13:19:06,172 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 13:19:06,172 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 13:19:06,172 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 13:19:06,172 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 13:19:06,172 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 13:19:06,982 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 13:19:06,991 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 13:19:07,000 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 13:19:07,021 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 13:19:07,032 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-24 13:19:17,926 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/utils/profile_matching/post_matcher.py', reloading
+2025-11-24 13:19:18,173 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 13:19:18,468 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 13:19:18,469 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 13:19:18,469 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 13:19:18,469 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 13:19:18,490 - config.database - INFO - Database connection established
+2025-11-24 13:19:18,494 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 13:19:18,494 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 13:19:18,494 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 13:19:18,494 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 13:19:18,535 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 13:19:18,535 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 13:19:18,536 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 13:19:18,536 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 13:19:18,536 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 13:19:18,540 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 13:19:18,540 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 13:19:18,543 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 13:19:18,543 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 13:19:18,544 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 13:19:18,544 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 13:19:18,544 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 13:19:19,308 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 13:19:19,317 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 13:19:19,324 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 13:19:19,344 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 13:19:19,354 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-24 13:19:30,264 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,270 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:19:30,277 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,287 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,320 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "GET /header/posts/95/product-match HTTP/1.1" 200 -
+2025-11-24 13:19:30,352 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,353 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,354 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,355 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,355 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,356 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,357 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,357 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,358 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,358 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,359 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,360 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,361 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,362 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,363 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,364 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,364 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,365 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,366 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:19:30,380 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,381 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,382 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,383 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,386 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,391 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,393 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:19:30,394 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:19:30,398 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:19:30,399 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,402 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,406 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,407 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:19:30,408 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-24 13:19:30,409 - faiss.loader - INFO - Loading faiss.
+2025-11-24 13:19:30,423 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-24 13:19:30,429 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-24 13:19:30,429 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2117 chunks
+2025-11-24 13:19:30,429 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,440 - config.database - INFO - Database connection established
+2025-11-24 13:19:30,445 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:30] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:19:31,711 - utils.vector_search.embeddings - INFO - Loading embedding model: intfloat/e5-large-v2
+2025-11-24 13:19:31,726 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-11-24 13:19:31,726 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: intfloat/e5-large-v2
+2025-11-24 13:19:31,728 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): huggingface.co:443
+2025-11-24 13:19:32,046 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-24 13:19:32,102 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-24 13:19:32,244 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-24 13:19:32,384 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-24 13:19:32,525 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/README.md HTTP/1.1" 307 0
+2025-11-24 13:19:32,581 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/README.md HTTP/1.1" 200 0
+2025-11-24 13:19:32,721 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-24 13:19:32,736 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-24 13:19:32,835 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 307 0
+2025-11-24 13:19:32,849 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/sentence_bert_config.json HTTP/1.1" 200 0
+2025-11-24 13:19:32,969 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/adapter_config.json HTTP/1.1" 404 0
+2025-11-24 13:19:33,114 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config.json HTTP/1.1" 307 0
+2025-11-24 13:19:33,167 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/config.json HTTP/1.1" 200 0
+2025-11-24 13:19:33,411 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/tokenizer_config.json HTTP/1.1" 307 0
+2025-11-24 13:19:33,464 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/tokenizer_config.json HTTP/1.1" 200 0
+2025-11-24 13:19:33,616 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2/tree/main/additional_chat_templates?recursive=False&expand=False HTTP/1.1" 404 64
+2025-11-24 13:19:33,794 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/1_Pooling/config.json HTTP/1.1" 307 0
+2025-11-24 13:19:33,851 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/1_Pooling%2Fconfig.json HTTP/1.1" 200 0
+2025-11-24 13:19:34,006 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2 HTTP/1.1" 200 149132
+2025-11-24 13:19:34,453 - utils.vector_search.embeddings - INFO - Embedding model loaded successfully
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.95it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.94it/s]
+2025-11-24 13:19:34,567 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-24 13:19:34,610 - config.database - INFO - Database connection established
+2025-11-24 13:19:34,638 - config.database - INFO - Database connection established
+2025-11-24 13:19:34,674 - config.database - INFO - Database connection established
+2025-11-24 13:19:34,690 - config.database - INFO - Database connection established
+2025-11-24 13:19:34,691 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:19:34] "GET /header/api/posts/95/product-matches HTTP/1.1" 200 -
+2025-11-24 13:22:48,196 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/header/api_seo_meta.py', reloading
+2025-11-24 13:22:48,662 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 13:22:48,995 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 13:22:48,995 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 13:22:48,995 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 13:22:48,996 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 13:22:49,014 - config.database - INFO - Database connection established
+2025-11-24 13:22:49,017 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 13:22:49,017 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 13:22:49,017 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 13:22:49,017 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 13:22:49,061 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 13:22:49,061 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 13:22:49,061 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 13:22:49,061 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 13:22:49,061 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 13:22:49,064 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 13:22:49,064 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 13:22:49,067 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 13:22:49,068 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 13:22:49,068 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 13:22:49,068 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 13:22:49,068 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 13:22:49,879 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 13:22:49,887 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 13:22:49,896 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 13:22:49,916 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 13:22:49,927 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-24 13:24:00,686 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/header/api_seo_meta.py', reloading
+2025-11-24 13:24:00,952 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 13:24:01,245 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-24 13:24:01,245 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-24 13:24:01,245 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-24 13:24:01,246 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-24 13:24:01,266 - config.database - INFO - Database connection established
+2025-11-24 13:24:01,270 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-24 13:24:01,270 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-24 13:24:01,270 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-24 13:24:01,270 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-24 13:24:01,311 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-24 13:24:01,311 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-24 13:24:01,311 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-24 13:24:01,311 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-24 13:24:01,312 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-24 13:24:01,314 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-24 13:24:01,314 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-24 13:24:01,317 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-24 13:24:01,318 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-24 13:24:01,318 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-24 13:24:01,318 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-24 13:24:01,318 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-24 13:24:02,068 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-24 13:24:02,076 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-24 13:24:02,084 - __main__ - INFO - ✅ Registered preview routes
+2025-11-24 13:24:02,105 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 13:24:02,115 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-24 13:39:28,553 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,560 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 13:39:28,565 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,576 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,612 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "GET /header/posts/95/product-match HTTP/1.1" 200 -
+2025-11-24 13:39:28,645 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,646 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "GET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 13:39:28,647 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,647 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,647 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,647 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,648 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,649 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,650 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,651 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,652 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,653 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,654 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,655 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,655 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,656 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "GET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 13:39:28,657 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,658 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,658 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 13:39:28,674 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,674 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,676 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,678 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,680 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,684 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,690 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 13:39:28,691 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,692 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:39:28,693 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:39:28,697 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,699 - faiss.loader - DEBUG - Environment variable FAISS_OPT_LEVEL is not set, so let's pick the instruction set according to the current CPU
+2025-11-24 13:39:28,699 - faiss.loader - INFO - Loading faiss.
+2025-11-24 13:39:28,716 - faiss.loader - INFO - Successfully loaded faiss.
+2025-11-24 13:39:28,718 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,720 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-24 13:39:28,720 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2117 chunks
+2025-11-24 13:39:28,733 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 13:39:28,743 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,755 - config.database - INFO - Database connection established
+2025-11-24 13:39:28,760 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:28] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+2025-11-24 13:39:30,077 - utils.vector_search.embeddings - INFO - Loading embedding model: intfloat/e5-large-v2
+2025-11-24 13:39:30,095 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-11-24 13:39:30,095 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: intfloat/e5-large-v2
+2025-11-24 13:39:30,097 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): huggingface.co:443
+2025-11-24 13:39:30,251 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-24 13:39:30,263 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-24 13:39:30,360 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-24 13:39:30,492 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 404 0
+2025-11-24 13:39:30,625 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/README.md HTTP/1.1" 307 0
+2025-11-24 13:39:30,673 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/README.md HTTP/1.1" 200 0
+2025-11-24 13:39:30,804 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/modules.json HTTP/1.1" 307 0
+2025-11-24 13:39:30,853 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/modules.json HTTP/1.1" 200 0
+2025-11-24 13:39:30,987 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 307 0
+2025-11-24 13:39:31,036 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/sentence_bert_config.json HTTP/1.1" 200 0
+2025-11-24 13:39:31,194 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/adapter_config.json HTTP/1.1" 404 0
+2025-11-24 13:39:31,323 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/config.json HTTP/1.1" 307 0
+2025-11-24 13:39:31,369 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/config.json HTTP/1.1" 200 0
+2025-11-24 13:39:31,582 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/tokenizer_config.json HTTP/1.1" 307 0
+2025-11-24 13:39:31,629 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/tokenizer_config.json HTTP/1.1" 200 0
+2025-11-24 13:39:31,768 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2/tree/main/additional_chat_templates?recursive=False&expand=False HTTP/1.1" 404 64
+2025-11-24 13:39:31,937 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /intfloat/e5-large-v2/resolve/main/1_Pooling/config.json HTTP/1.1" 307 0
+2025-11-24 13:39:31,990 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/intfloat/e5-large-v2/f169b11e22de13617baa190a028a32f3493550b6/1_Pooling%2Fconfig.json HTTP/1.1" 200 0
+2025-11-24 13:39:32,137 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "GET /api/models/intfloat/e5-large-v2 HTTP/1.1" 200 149132
+2025-11-24 13:39:32,630 - utils.vector_search.embeddings - INFO - Embedding model loaded successfully
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.52it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.51it/s]
+2025-11-24 13:39:32,750 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-24 13:39:32,796 - config.database - INFO - Database connection established
+2025-11-24 13:39:32,821 - config.database - INFO - Database connection established
+2025-11-24 13:39:32,857 - config.database - INFO - Database connection established
+2025-11-24 13:39:32,875 - config.database - INFO - Database connection established
+2025-11-24 13:39:32,877 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:39:32] "GET /header/api/posts/95/product-matches HTTP/1.1" 200 -
+2025-11-24 13:40:25,359 - config.database - INFO - Database connection established
+2025-11-24 13:40:25,378 - config.database - INFO - Database connection established
+2025-11-24 13:40:25,386 - config.database - INFO - Database connection established
+2025-11-24 13:40:25,395 - config.database - INFO - Database connection established
+2025-11-24 13:40:25,399 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-24 13:40:25,400 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2117 chunks
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 17.69it/s]
+2025-11-24 13:40:25,459 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-24 13:40:25,482 - config.database - INFO - Database connection established
+2025-11-24 13:40:25,510 - config.database - INFO - Database connection established
+2025-11-24 13:40:25,545 - config.database - INFO - Database connection established
+2025-11-24 13:40:25,565 - config.database - INFO - Database connection established
+2025-11-24 13:40:25,566 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:40:25] "GET /header/api/posts/95/product-matches HTTP/1.1" 200 -
+2025-11-24 13:55:45,935 - config.database - INFO - Database connection established
+2025-11-24 13:55:45,944 - config.database - INFO - Database connection established
+2025-11-24 13:55:45,951 - config.database - INFO - Database connection established
+2025-11-24 13:55:45,960 - config.database - INFO - Database connection established
+2025-11-24 13:55:45,963 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-24 13:55:45,963 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2117 chunks
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.12it/s]
+2025-11-24 13:55:46,042 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-24 13:55:46,064 - config.database - INFO - Database connection established
+2025-11-24 13:55:46,088 - config.database - INFO - Database connection established
+2025-11-24 13:55:46,121 - config.database - INFO - Database connection established
+2025-11-24 13:55:46,140 - config.database - INFO - Database connection established
+2025-11-24 13:55:46,142 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 13:55:46] "GET /header/api/posts/95/product-matches HTTP/1.1" 200 -
+2025-11-24 15:36:41,620 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,626 - blueprints.header.routes - DEBUG - Non-themed post 95 (profile) - week context not required
+2025-11-24 15:36:41,634 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,644 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,651 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "GET /header/posts/95/product-match HTTP/1.1" 200 -
+2025-11-24 15:36:41,687 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,691 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,691 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,693 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/header/product-match.css?v=9999&t=1737036000 HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,693 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/header/header-workspace.css HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,693 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,694 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,695 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/shared/blog-pipeline-header.css HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,697 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/js/shared/blog-pipeline-header.js HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,697 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/js/shared/week-context.js HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,698 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/shared/post-type-settings.css HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,699 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/js/shared/post-type-settings.js HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,699 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,700 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/js/header/mini-preview-panel.js HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,701 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/css/header/mini-preview-panel.css HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,702 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,702 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "GET /static/js/header/product-match-page.js?v=9999&t=1737036000 HTTP/1.1" 200 -
+2025-11-24 15:36:41,703 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/js/header/accordion-manager.js HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,704 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "[36mGET /static/js/header/header-workspace.js HTTP/1.1[0m" 304 -
+2025-11-24 15:36:41,725 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,725 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,725 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,727 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,733 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,737 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,739 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 15:36:41,740 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 15:36:41,744 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "GET /authoring/api/posts/95/sections HTTP/1.1" 200 -
+2025-11-24 15:36:41,746 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,750 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,753 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,756 - utils.vector_search.faiss_index - INFO - Loaded FAISS index with dimension 1024
+2025-11-24 15:36:41,756 - utils.vector_search.faiss_index - INFO - Loaded metadata for 2117 chunks
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]2025-11-24 15:36:41,762 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "GET /planning/api/posts/95 HTTP/1.1" 200 -
+2025-11-24 15:36:41,770 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,777 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,781 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "GET /api/post-type-pipeline/posts/95/pipeline HTTP/1.1" 200 -
+Batches: 100%|██████████| 1/1 [00:00<00:00, 12.52it/s]
+2025-11-24 15:36:41,839 - utils.vector_search.embeddings - INFO - Embedding dimension: 1024
+2025-11-24 15:36:41,862 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,887 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,927 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,949 - config.database - INFO - Database connection established
+2025-11-24 15:36:41,951 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:41] "GET /header/api/posts/95/product-matches HTTP/1.1" 200 -
+2025-11-24 15:36:55,908 - config.database - INFO - Database connection established
+2025-11-24 15:36:55,923 - config.database - INFO - Database connection established
+2025-11-24 15:36:55,937 - config.database - INFO - Database connection established
+2025-11-24 15:36:55,946 - config.database - INFO - Database connection established
+2025-11-24 15:36:55,956 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:55] "POST /header/api/posts/95/update-product-match HTTP/1.1" 200 -
+2025-11-24 15:36:55,973 - config.database - INFO - Database connection established
+2025-11-24 15:36:55,986 - config.database - INFO - Database connection established
+2025-11-24 15:36:55,998 - config.database - INFO - Database connection established
+2025-11-24 15:36:56,008 - config.database - INFO - Database connection established
+2025-11-24 15:36:56,015 - werkzeug - INFO - 127.0.0.1 - - [24/Nov/2025 15:36:56] "POST /header/api/posts/95/update-product-match HTTP/1.1" 200 -

@@ -91,9 +91,15 @@ def find_similar_entities(post_id: int, limit: int = 3, post_content: str = None
     if categories_result.get('success') and categories_result.get('results'):
         for result in categories_result['results']:
             metadata = result.get('metadata', {})
+            category_name = metadata.get('category_name', f"Category {result['source_id']}")
+            
+            # Filter out "Scotweb Wholesale Main Category"
+            if category_name == 'Scotweb Wholesale Main Category':
+                continue
+            
             categories.append({
                 'id': result['source_id'],
-                'name': metadata.get('category_name', f"Category {result['source_id']}"),
+                'name': category_name,
                 'score': result['score'],
                 'distance': result.get('distance'),
                 'metadata': metadata
