@@ -39,6 +39,7 @@ def get_post_with_development(post_id):
                    p.cross_promotion_product_id, p.cross_promotion_product_title,
                    p.cross_promotion_category_position, p.cross_promotion_product_position,
                    p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html,
+                   p.profile_product_id, p.profile_category_id,
                    cs.year, cr.week_number
             FROM post p
             LEFT JOIN author a ON p.author_id = a.id
@@ -214,6 +215,151 @@ def get_post_sections_with_images(post_id):
             
             sections.append(section_dict)
         
+        # Special handling for Profile posts: Auto-assign product image to Section 1
+        # This treats the product image as if it were generated for Section 1 (like Theme posts)
+        if sections:
+            try:
+                # Get post type
+                import sys
+                project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+                sys.path.insert(0, project_root)
+                from utils.taxonomy_helpers import get_post_type
+                
+                # Get post data to determine post_type and profile_product_id
+                # Use a simple query to get just the fields needed for post_type determination
+                cur.execute("""
+                    SELECT profile_product_id, profile_category_id, recipe_id, generated_source_type
+                    FROM post
+                    WHERE id = %s
+                """, (post_id,))
+                post_type_data = cur.fetchone()
+                
+                if post_type_data:
+                    # Determine post_type from the simple data
+                    if post_type_data.get('recipe_id'):
+                        post_type = 'recipe'
+                    elif post_type_data.get('profile_category_id'):
+                        post_type = 'profile'
+                    elif post_type_data.get('generated_source_type'):
+                        post_type = 'generated'
+                    else:
+                        post_type = 'themed'
+                    
+                    # Get full post data for profile_product_id
+                    post_data = get_post_with_development(post_id)
+                    logger.info(f"[PROFILE_IMAGE] Post {post_id} type: {post_type}")
+                    
+                    if post_type == 'profile':
+                        # Find Section 1 (section_order = 1)
+                        section_1 = None
+                        for section in sections:
+                            if section.get('section_order') == 1:
+                                section_1 = section
+                                break
+                        
+                        if section_1:
+                            logger.info(f"[PROFILE_IMAGE] Found Section 1: id={section_1.get('id')}, heading={section_1.get('section_heading')}")
+                            section_1_image = section_1.get('image')
+                            logger.info(f"[PROFILE_IMAGE] Section 1 image: {section_1_image}")
+                            
+                            # Check if image exists and has a valid path (not placeholder)
+                            has_valid_image = (section_1_image and 
+                                             section_1_image.get('path') and 
+                                             section_1_image.get('path') != None and
+                                             not section_1_image.get('placeholder', False))
+                            
+                            logger.info(f"[PROFILE_IMAGE] Section 1 has_valid_image: {has_valid_image}")
+                            
+                            if not has_valid_image:
+                                profile_product_id = post_data.get('profile_product_id')
+                            if profile_product_id:
+                                # Fetch product image URL from clan_products
+                                cur.execute("""
+                                    SELECT image_url, name
+                                    FROM clan_products
+                                    WHERE id = %s
+                                """, (profile_product_id,))
+                                product = cur.fetchone()
+                                
+                                if product and product.get('image_url'):
+                                    product_image_url = product['image_url']
+                                    product_name = product.get('name', 'Product')
+                                    
+                                    # Check which table to use (image_archive or images)
+                                    # Check if image_archive table exists
+                                    cur.execute("""
+                                        SELECT column_name FROM information_schema.columns 
+                                        WHERE table_name = 'image_archive' AND column_name = 'path'
+                                    """)
+                                    use_image_archive = cur.fetchone() is not None
+                                    
+                                    # Create image record
+                                    if use_image_archive:
+                                        cur.execute("""
+                                            INSERT INTO image_archive (filename, path, alt_text, caption)
+                                            VALUES (%s, %s, %s, %s)
+                                            RETURNING id
+                                        """, (
+                                            'product_main.jpg',
+                                            product_image_url,
+                                            f"Main image of {product_name}",
+                                            f"Main product image for {product_name}"
+                                        ))
+                                    else:
+                                        cur.execute("""
+                                            INSERT INTO images (filename, file_path, alt_text, caption)
+                                            VALUES (%s, %s, %s, %s)
+                                            RETURNING id
+                                        """, (
+                                            'product_main.jpg',
+                                            product_image_url,
+                                            f"Main image of {product_name}",
+                                            f"Main product image for {product_name}"
+                                        ))
+                                    
+                                    image_record = cur.fetchone()
+                                    if image_record:
+                                        image_id = image_record['id']
+                                        
+                                        # Create post_images link for Section 1
+                                        # Use ON CONFLICT to avoid duplicates if already exists
+                                        cur.execute("""
+                                            INSERT INTO post_images (post_id, section_id, image_id, image_type)
+                                            VALUES (%s, %s, %s, 'section_optimized')
+                                            ON CONFLICT (post_id, image_type, section_id) DO UPDATE
+                                            SET image_id = EXCLUDED.image_id
+                                        """, (post_id, section_1['id'], image_id))
+                                        
+                                        # Add image to section_1 dict
+                                        section_1['image'] = {
+                                            'path': product_image_url,
+                                            'alt_text': f"Main image of {product_name}",
+                                            'title': 'product_main.jpg',
+                                            'width': None,
+                                            'height': None,
+                                            'caption': f"Main product image for {product_name}"
+                                        }
+                                        section_1['image_captions'] = f"Main product image for {product_name}"
+                                        
+                                    logger.info(f"[PROFILE_IMAGE] Auto-assigned product image to Section 1 for profile post {post_id}: {product_image_url}")
+                                    
+                                    # Commit the transaction
+                                    conn.commit()
+                                else:
+                                    logger.warning(f"[PROFILE_IMAGE] Failed to create image record for post {post_id}")
+                            else:
+                                logger.info(f"[PROFILE_IMAGE] Section 1 already has a valid image, skipping")
+                        else:
+                            logger.warning(f"[PROFILE_IMAGE] Section 1 not found for post {post_id}")
+                    else:
+                        logger.info(f"[PROFILE_IMAGE] Post {post_id} is not a profile post (type: {post_type})")
+                else:
+                    logger.warning(f"[PROFILE_IMAGE] Could not load post data for post {post_id}")
+            except Exception as e:
+                logger.error(f"[PROFILE_IMAGE] Error auto-assigning product image for post {post_id}: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+        
         return sections
 
 
@@ -291,14 +437,30 @@ def prepare_post_data(post_id):
         with get_db_connection() as conn:
             cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             cur.execute("""
-                SELECT header_image_caption, header_image_title, header_image_width, header_image_height
+                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                       profile_category_id, recipe_id, generated_source_type
                 FROM post WHERE id = %s
             """, (post_id,))
             header_data = cur.fetchone()
             if header_data:
-                # Update header image with database metadata if not already set
-                if not post['header_image'].get('caption') and header_data.get('header_image_caption'):
+                # Determine post type
+                if header_data.get('recipe_id'):
+                    post_type = 'recipe'
+                elif header_data.get('profile_category_id'):
+                    post_type = 'profile'
+                elif header_data.get('generated_source_type'):
+                    post_type = 'generated'
+                else:
+                    post_type = 'themed'
+                
+                # For Profile posts, always set the special caption
+                if post_type == 'profile':
+                    post['header_image']['caption'] = 'Generated artistic impression - not guaranteed accurate'
+                # For other post types, use database caption if available
+                elif not post['header_image'].get('caption') and header_data.get('header_image_caption'):
                     post['header_image']['caption'] = header_data['header_image_caption']
+                
+                # Update other metadata
                 if not post['header_image'].get('title') and header_data.get('header_image_title'):
                     post['header_image']['title'] = header_data['header_image_title']
                 if not post['header_image'].get('width') and header_data.get('header_image_width'):

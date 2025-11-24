@@ -292,6 +292,117 @@ def start_incremental_basic():
     return jsonify({'success': True, 'message': 'Incremental refresh started', 'state': _INC_STATE})
 
 
+@bp.route('/api/clan/products/<sku>/full')
+def get_product_full(sku):
+    """
+    Get full product data with optional all_images.
+    Reads from database and merges with live API data (does not persist).
+    
+    Query params:
+    - all_images: Set to 'true' to fetch complete image gallery
+    """
+    try:
+        all_images = request.args.get('all_images', 'false').lower() == 'true'
+        
+        # Load cache and API client
+        sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-launchpad'))
+        from clan_cache import ClanCache  # type: ignore
+        
+        sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-clan-api'))
+        from clan_client import ClanAPIClient  # type: ignore
+        
+        cache = ClanCache()
+        client = ClanAPIClient()
+        
+        # Get product from database using db_manager
+        from config.database import db_manager
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, sku, name, price, image_url, url,
+                       short_description, description,
+                       supplier_name, supplier_description,
+                       configurable_options, category_ids,
+                       clan_created_at, clan_updated_at,
+                       additional_data, dimensions
+                FROM clan_products
+                WHERE sku = %s
+            """, (sku,))
+            
+            product = cursor.fetchone()
+            if not product:
+                return jsonify({
+                    'success': False,
+                    'error': f'Product with SKU {sku} not found in database'
+                }), 404
+        
+        # Fetch live data from API
+        api_result = client.get_product_data(sku, all_images=all_images)
+        
+        if not api_result.get('success', True):
+            # If API fails, return database data only
+            logger.warning(f"API fetch failed for SKU {sku}, returning database data only")
+            return jsonify({
+                'success': True,
+                'product': dict(product)
+            })
+        
+        # Merge: database as base, API data as overlay
+        api_data = api_result.get('data', {})
+        merged_product = dict(product)
+        
+        # Overlay API data (prefer API for freshness, but keep DB fields as fallback)
+        if api_data:
+            # Map API fields to our structure
+            if 'title' in api_data:
+                merged_product['name'] = api_data['title']
+            if 'price' in api_data:
+                merged_product['price'] = api_data['price']
+            if 'image' in api_data or 'image_url' in api_data:
+                merged_product['image_url'] = api_data.get('image') or api_data.get('image_url')
+            if 'short_description' in api_data:
+                merged_product['short_description'] = api_data.get('short_description')
+            if 'description' in api_data:
+                merged_product['description'] = api_data.get('description')
+            if 'supplier_name' in api_data:
+                merged_product['supplier_name'] = api_data.get('supplier_name')
+            if 'supplier_description' in api_data:
+                merged_product['supplier_description'] = api_data.get('supplier_description')
+            if 'configurable_options' in api_data:
+                merged_product['configurable_options'] = api_data.get('configurable_options')
+            
+            # Handle images array if all_images=true
+            if all_images and 'images' in api_data:
+                images = api_data['images']
+                if isinstance(images, list):
+                    merged_product['all_images'] = [
+                        {
+                            'url': img.get('url') or img.get('image_url') or img,
+                            'alt': img.get('alt') or img.get('title') or f'Product image {i+1}'
+                        }
+                        for i, img in enumerate(images)
+                        if isinstance(img, (dict, str))
+                    ]
+                elif isinstance(images, str):
+                    # Single image URL
+                    merged_product['all_images'] = [{
+                        'url': images,
+                        'alt': 'Product image'
+                    }]
+        
+        return jsonify({
+            'success': True,
+            'product': merged_product
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching full product data for SKU {sku}: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 def _do_incremental_basic_refresh(limit=200, max_pages=100, known_streak_limit=2000):
     """Core logic for incremental basic refresh. Updates _INC_STATE."""
     global _INC_STATE

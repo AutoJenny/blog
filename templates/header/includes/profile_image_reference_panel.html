@@ -1,0 +1,45 @@
+<!-- Product Image Reference Panel - Profile-specific -->
+<div class="accordion-panel" id="product-image-reference-panel">
+    <div class="panel-header" onclick="toggleAccordion('product-image-reference-content', 'product-image-reference-icon')">
+        <h4><i class="fas fa-images"></i> Product Image Reference</h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-down" id="product-image-reference-icon"></i>
+        </div>
+    </div>
+    <div class="panel-content collapsed" id="product-image-reference-content">
+        <div id="product-images-display">
+            <p style="color: #94a3b8; margin: 0.5rem 0;">Loading product images...</p>
+        </div>
+    </div>
+</div>
+
+<style>
+#product-images-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.product-image-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.product-image-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.product-image-item .image-alt {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0;
+}
+</style>
+

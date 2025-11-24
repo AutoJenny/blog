@@ -44,6 +44,7 @@ def register_routes(bp):
             image_prompt = data.get('image_prompt', '').strip()
             model_name = data.get('model_name', 'gpt-image-1')
             parameters = data.get('parameters', {})
+            reference_image_url = data.get('reference_image_url')  # For profile posts
             
             if not image_prompt:
                 return jsonify({'error': 'No image prompt provided'}), 400
@@ -59,6 +60,8 @@ def register_routes(bp):
             # Generate landscape image
             logger.info(f"[HEADER_IMAGE] Generating landscape image for post {post_id}")
             landscape_params = {'size': landscape_size, 'quality': quality}
+            if reference_image_url:
+                landscape_params['reference_image_url'] = reference_image_url
             if model_name == 'gpt-image-1':
                 landscape_result = imaging_generate_gpt_image_1(image_prompt, post_id, 'header', landscape_params, 'landscape')
             elif model_name.startswith('dall-e') or model_name.startswith('openai'):
@@ -74,6 +77,8 @@ def register_routes(bp):
             # Generate portrait image
             logger.info(f"[HEADER_IMAGE] Generating portrait image for post {post_id}")
             portrait_params = {'portrait_size': portrait_size, 'quality': quality}
+            if reference_image_url:
+                portrait_params['reference_image_url'] = reference_image_url
             if model_name == 'gpt-image-1':
                 portrait_result = imaging_generate_gpt_image_1(image_prompt, post_id, 'header', portrait_params, 'portrait')
             elif model_name.startswith('dall-e') or model_name.startswith('openai'):
@@ -93,6 +98,101 @@ def register_routes(bp):
             
             if not optimize_result.get('success'):
                 return jsonify({'error': f'Optimization failed: {optimize_result.get("error")}'}), 500
+            
+            # Save optimized image to database (same logic as api_optimize_header_image)
+            optimized_path = optimize_result.get('optimized_path')
+            if optimized_path:
+                with db_manager.get_cursor() as cursor:
+                    # Normalize path
+                    optimized_path = optimized_path.lstrip('/')
+                    if not optimized_path.startswith('static/'):
+                        optimized_path = 'static/' + optimized_path.lstrip('/')
+                    optimized_path = '/' + optimized_path
+                    
+                    # Get caption from post
+                    cursor.execute("SELECT header_image_caption, header_image_id FROM post WHERE id = %s", (post_id,))
+                    post_row = cursor.fetchone()
+                    caption = post_row['header_image_caption'] if post_row else None
+                    existing_header_image_id = post_row['header_image_id'] if post_row else None
+                    
+                    # Check if we need to use image_archive or images table
+                    # First check what post_images references
+                    cursor.execute("""
+                        SELECT pi.image_id, 
+                               CASE WHEN EXISTS (SELECT 1 FROM image_archive WHERE id = pi.image_id) THEN 'image_archive'
+                                    WHEN EXISTS (SELECT 1 FROM images WHERE id = pi.image_id) THEN 'images'
+                                    ELSE NULL END as table_name
+                        FROM post_images pi
+                        WHERE pi.post_id = %s AND pi.image_type = 'header_optimized'
+                        LIMIT 1
+                    """, (post_id,))
+                    existing_link = cursor.fetchone()
+                    
+                    # Determine which table to use based on existing data or default to image_archive
+                    use_image_archive = True
+                    if existing_link and existing_link.get('table_name'):
+                        use_image_archive = (existing_link['table_name'] == 'image_archive')
+                    else:
+                        # Check if image_archive table exists and has the right structure
+                        cursor.execute("""
+                            SELECT column_name FROM information_schema.columns 
+                            WHERE table_name = 'image_archive' AND column_name = 'path'
+                        """)
+                        if cursor.fetchone():
+                            use_image_archive = True
+                        else:
+                            use_image_archive = False
+                    
+                    if use_image_archive:
+                        # Use image_archive table (path column)
+                        if existing_header_image_id:
+                            cursor.execute("""
+                                UPDATE image_archive 
+                                SET filename = %s, path = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, ('header.jpg', optimized_path, 'Header image', caption, existing_header_image_id))
+                            image_id = existing_header_image_id
+                        else:
+                            cursor.execute("""
+                                INSERT INTO image_archive (filename, path, alt_text, caption)
+                                VALUES (%s, %s, %s, %s)
+                                RETURNING id
+                            """, ('header.jpg', optimized_path, 'Header image', caption))
+                            image_record = cursor.fetchone()
+                            image_id = image_record['id']
+                            cursor.execute("UPDATE post SET header_image_id = %s WHERE id = %s", (image_id, post_id))
+                    else:
+                        # Use images table (file_path column)
+                        if existing_header_image_id:
+                            cursor.execute("""
+                                UPDATE images 
+                                SET filename = %s, file_path = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, ('header.jpg', optimized_path, 'Header image', caption, existing_header_image_id))
+                            image_id = existing_header_image_id
+                        else:
+                            cursor.execute("""
+                                INSERT INTO images (filename, file_path, alt_text, caption)
+                                VALUES (%s, %s, %s, %s)
+                                RETURNING id
+                            """, ('header.jpg', optimized_path, 'Header image', caption))
+                            image_record = cursor.fetchone()
+                            image_id = image_record['id']
+                            cursor.execute("UPDATE post SET header_image_id = %s WHERE id = %s", (image_id, post_id))
+                    
+                    # Delete any existing post_images link for header_optimized
+                    cursor.execute("""
+                        DELETE FROM post_images 
+                        WHERE post_id = %s AND section_id IS NULL AND image_type = 'header_optimized'
+                    """, (post_id,))
+                    
+                    # Create post_images link for header_optimized
+                    cursor.execute("""
+                        INSERT INTO post_images (post_id, section_id, image_id, image_type)
+                        VALUES (%s, NULL, %s, 'header_optimized')
+                    """, (post_id, image_id))
+                    
+                    logger.info(f"[HEADER_IMAGE] Saved optimized image to database: image_id={image_id}, path={optimized_path}")
             
             # Return success with paths
             return jsonify({
@@ -296,7 +396,7 @@ def register_routes(bp):
             result = optimize_image_with_watermark(post_id, 'header', params)
             
             if result['success']:
-                # Save optimized image to image table and create post_images link
+                # Save optimized image to database and create post_images link
                 with db_manager.get_cursor() as cursor:
                     # Get optimized image paths and normalize consistently
                     optimized_path = result.get('optimized_path')
@@ -312,41 +412,76 @@ def register_routes(bp):
                     
                     portrait_optimized_path = result.get('portrait_path', '').lstrip('/') if result.get('portrait_path') else None
                     
-                    # CRITICAL: Write to image table (singular) with path column - foreign keys point here
                     # Get the caption from the post's header_image_caption field
                     cursor.execute("SELECT header_image_caption, header_image_id FROM post WHERE id = %s", (post_id,))
                     post_row = cursor.fetchone()
                     caption = post_row['header_image_caption'] if post_row else None
                     existing_header_image_id = post_row['header_image_id'] if post_row else None
                     
-                    if existing_header_image_id:
-                        # Update existing image record
-                        cursor.execute("""
-                            UPDATE images 
-                            SET filename = %s, file_path = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
-                            WHERE id = %s
-                        """, (
-                            'header.jpg',
-                            optimized_path,
-                            'Header image',
-                            caption,
-                            existing_header_image_id
-                        ))
-                        image_id = existing_header_image_id
+                    # Check if we need to use image_archive or images table
+                    # First check what post_images references
+                    cursor.execute("""
+                        SELECT pi.image_id, 
+                               CASE WHEN EXISTS (SELECT 1 FROM image_archive WHERE id = pi.image_id) THEN 'image_archive'
+                                    WHEN EXISTS (SELECT 1 FROM images WHERE id = pi.image_id) THEN 'images'
+                                    ELSE NULL END as table_name
+                        FROM post_images pi
+                        WHERE pi.post_id = %s AND pi.image_type = 'header_optimized'
+                        LIMIT 1
+                    """, (post_id,))
+                    existing_link = cursor.fetchone()
+                    
+                    # Determine which table to use based on existing data or default to image_archive
+                    use_image_archive = True
+                    if existing_link and existing_link.get('table_name'):
+                        use_image_archive = (existing_link['table_name'] == 'image_archive')
                     else:
-                        # Insert new record
+                        # Check if image_archive table exists and has the right structure
                         cursor.execute("""
-                            INSERT INTO images (filename, file_path, alt_text, caption)
-                            VALUES (%s, %s, %s, %s)
-                            RETURNING id
-                        """, (
-                            'header.jpg',
-                            optimized_path,
-                            'Header image',
-                            caption
-                        ))
-                        image_record = cursor.fetchone()
-                        image_id = image_record['id']
+                            SELECT column_name FROM information_schema.columns 
+                            WHERE table_name = 'image_archive' AND column_name = 'path'
+                        """)
+                        if cursor.fetchone():
+                            use_image_archive = True
+                        else:
+                            use_image_archive = False
+                    
+                    if use_image_archive:
+                        # Use image_archive table (path column)
+                        if existing_header_image_id:
+                            cursor.execute("""
+                                UPDATE image_archive 
+                                SET filename = %s, path = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, ('header.jpg', optimized_path, 'Header image', caption, existing_header_image_id))
+                            image_id = existing_header_image_id
+                        else:
+                            cursor.execute("""
+                                INSERT INTO image_archive (filename, path, alt_text, caption)
+                                VALUES (%s, %s, %s, %s)
+                                RETURNING id
+                            """, ('header.jpg', optimized_path, 'Header image', caption))
+                            image_record = cursor.fetchone()
+                            image_id = image_record['id']
+                            cursor.execute("UPDATE post SET header_image_id = %s WHERE id = %s", (image_id, post_id))
+                    else:
+                        # Use images table (file_path column)
+                        if existing_header_image_id:
+                            cursor.execute("""
+                                UPDATE images 
+                                SET filename = %s, file_path = %s, alt_text = %s, caption = %s, updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, ('header.jpg', optimized_path, 'Header image', caption, existing_header_image_id))
+                            image_id = existing_header_image_id
+                        else:
+                            cursor.execute("""
+                                INSERT INTO images (filename, file_path, alt_text, caption)
+                                VALUES (%s, %s, %s, %s)
+                                RETURNING id
+                            """, ('header.jpg', optimized_path, 'Header image', caption))
+                            image_record = cursor.fetchone()
+                            image_id = image_record['id']
+                            cursor.execute("UPDATE post SET header_image_id = %s WHERE id = %s", (image_id, post_id))
                     
                     # Delete any existing post_images link for header_optimized
                     cursor.execute("""
@@ -360,10 +495,7 @@ def register_routes(bp):
                         VALUES (%s, NULL, %s, 'header_optimized')
                     """, (post_id, image_id))
                     
-                    # Update post.header_image_id to point to optimized version
-                    cursor.execute("""
-                        UPDATE post SET header_image_id = %s WHERE id = %s
-                    """, (image_id, post_id))
+                    logger.info(f"[HEADER_IMAGE] Saved optimized image to database: image_id={image_id}, path={optimized_path}, table={'image_archive' if use_image_archive else 'images'}")
                 
                 response = {
                     'success': True,

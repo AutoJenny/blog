@@ -52,9 +52,9 @@ def register_routes(bp):
             # Photo-harvesting is deprecated - no redirect needed
             
             with db_manager.get_cursor() as cursor:
-                # Get post data
+                # Get post data (including profile_product_id for profile posts)
                 cursor.execute("""
-                    SELECT p.id, p.title, p.status, p.created_at, p.updated_at
+                    SELECT p.id, p.title, p.status, p.created_at, p.updated_at, p.profile_product_id
                     FROM post p
                     WHERE p.id = %s
                 """, (target_post_id,))
@@ -81,6 +81,27 @@ def register_routes(bp):
                 """, (target_post_id,))
                 result = cursor.fetchone()
                 content_type_name = result.get('content_type_name') if result else None
+                
+                # For profile posts, fetch product data with all images
+                product_data = None
+                product_images = []
+                if post_type == 'profile' and post.get('profile_product_id'):
+                    product_id = post['profile_product_id']
+                    # Get product SKU
+                    cursor.execute("""
+                        SELECT sku, name, image_url
+                        FROM clan_products
+                        WHERE id = %s
+                    """, (product_id,))
+                    product = cursor.fetchone()
+                    if product:
+                        product_data = {
+                            'id': product_id,
+                            'sku': product['sku'],
+                            'name': product['name'],
+                            'image_url': product['image_url']
+                        }
+                        # Fetch all images via API (will be done in template via JavaScript)
             
             # Use centralized template mapping
             from config.template_mappings import get_template_path
@@ -101,7 +122,8 @@ def register_routes(bp):
                                  content_type_name=content_type_name,
                                  currentStage='imaging',
                                  currentSubstage='image-generation',
-                                 illustration_method=illustration_method)
+                                 illustration_method=illustration_method,
+                                 product_data=product_data)
         except Exception as e:
             logger.error(f"Error rendering image generation page: {str(e)}")
             return f"Error: {str(e)}", 500

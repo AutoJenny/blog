@@ -8,10 +8,11 @@
     window.currentSubstage = 'title-summary';
         window.postId = {{ post_id }};
         window.originalPostId = {{ original_post_id if original_post_id is defined else post_id }};
-        window.weekYear = { year: {{ year if year is defined else 'null' }}, week: {{ week if week is defined else 'null' }} };
+        window.weekYear = { year: {{ year|tojson|safe if year is defined and year is not none else 'null' }}, week: {{ week|tojson|safe if week is defined and week is not none else 'null' }} };
         // illustration_method is deprecated, always use LLM-creation
         window.illustrationMethod = 'LLM-creation';
         window.weekHasPost = {{ 'true' if week_has_post is defined and week_has_post else 'false' }};
+        window.postType = {{ post_type|tojson|safe if post_type is defined and post_type is not none else 'null' }};
     </script>
 
 {% include 'shared/blog_pipeline_header.html' %}
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p style="color: #cbd5e1; margin: 0 0 1rem 0; font-size: 0.95rem;">
                         Click the button below to generate all header content at once
                     </p>
-                    <button class="btn-primary btn-large" id="uber-generate-btn" style="padding: 1rem 2rem; font-size: 1.2rem; font-weight: 700; background: #10b981; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; color: white;" {% if not week_has_post %}disabled title="No post scheduled for this week" style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                    <button class="btn-primary btn-large" id="uber-generate-btn" style="padding: 1rem 2rem; font-size: 1.2rem; font-weight: 700; background: #10b981; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; color: white;" {% if not week_has_post and post_type not in ['recipe', 'profile', 'generated'] %}disabled title="No post scheduled for this week" style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
                         <i class="fas fa-magic"></i> Generate All
                     </button>
                 </div>

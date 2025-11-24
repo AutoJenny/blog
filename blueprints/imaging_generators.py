@@ -251,6 +251,9 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters, 
         
         # GPT-Image-1 API endpoint
         # NOTE: GPT-Image-1 does NOT support 'style' or 'response_format' parameters (only DALL-E does)
+        # Check if reference image URL is provided (for profile posts)
+        reference_image_url = parameters.get('reference_image_url')
+        
         api_data = {
             'model': 'gpt-image-1',
             'prompt': image_prompt,
@@ -258,6 +261,15 @@ def imaging_generate_gpt_image_1(image_prompt, post_id, section_id, parameters, 
             'size': image_size,
             'quality': quality
         }
+        
+        # If reference image URL is provided, include it in the API request
+        # Note: OpenAI's image generation API may support reference images via the prompt or a separate parameter
+        # For now, we'll enhance the prompt with the image URL if provided
+        if reference_image_url:
+            # Add reference image context to the prompt
+            enhanced_prompt = f"{image_prompt}\n\nReference image: {reference_image_url}. Integrate the product from this reference image into the generated scene."
+            api_data['prompt'] = enhanced_prompt
+            logger.info(f"GPT-Image-1 {orientation} generation: Including reference image URL: {reference_image_url}")
         
         logger.info(f"GPT-Image-1 {orientation} API request: {api_data}")
         try:

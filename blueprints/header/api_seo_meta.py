@@ -1,7 +1,7 @@
 """SEO meta API endpoints for header blueprint"""
 from flask import Blueprint, jsonify, request
 from config.database import db_manager
-from .helpers import resolve_target_post_id
+from .helpers import resolve_target_post_id, resolve_target_post_id_with_auto_week_check
 import logging
 import json
 import re
@@ -21,7 +21,7 @@ def register_routes(bp):
             year = request.args.get('year', type=int)
             week = request.args.get('week', type=int)
             
-            target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+            target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
             if error:
                 return jsonify({'error': error}), 400 if 'required' in error else 404
             
@@ -233,7 +233,7 @@ Return in JSON format:
             year = request.args.get('year', type=int)
             week = request.args.get('week', type=int)
             
-            target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+            target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
             if error:
                 return jsonify({'error': error}), 400 if 'required' in error else 404
             
@@ -404,7 +404,7 @@ Return in JSON format:
             year = request.args.get('year', type=int)
             week = request.args.get('week', type=int)
             
-            target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+            target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
             if error:
                 return jsonify({'error': error}), 400 if 'required' in error else 404
             
@@ -467,7 +467,7 @@ Return in JSON format:
             year = request.args.get('year', type=int)
             week = request.args.get('week', type=int)
             
-            target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+            target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
             if error:
                 return jsonify({'error': error}), 400 if 'required' in error else 404
             

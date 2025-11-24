@@ -1,0 +1,73 @@
+<!-- Product Information Panel - Always visible, no accordion -->
+<div class="product-info-panel" id="product-info-panel">
+    <div class="panel-header">
+        <h4><span class="panel-name-green">Product Information:</span> Linked Product Details</h4>
+        <div class="header-actions">
+            <i class="fas fa-chevron-down" style="visibility: hidden;"></i>
+        </div>
+    </div>
+    <div class="panel-content" style="display: block;">
+        <div id="product-info-display">
+            <div class="info-item">
+                <div class="info-label">Product Name:</div>
+                <div class="info-value" id="product-name-display">Loading...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Product Type:</div>
+                <div class="info-value" id="product-type-display">Loading...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Product Description:</div>
+                <div class="info-value" id="product-description-display">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-info-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.product-info-panel .panel-header {
+    padding: 0.75rem 1rem;
+    background: #0f172a;
+    border-bottom: 1px solid #334155;
+    border-radius: 8px 8px 0 0;
+}
+
+.product-info-panel .panel-header h4 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.product-info-panel .panel-content {
+    padding: 1rem;
+}
+
+.info-item {
+    margin-bottom: 1rem;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.info-value {
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+</style>
+
