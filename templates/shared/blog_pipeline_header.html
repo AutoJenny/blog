@@ -48,9 +48,12 @@
     </div>
     
     <!-- Main Stage Navigation -->
+    <!-- CRITICAL: Hide entire stages navbar in calendar week view - calendar is week-centric, not post-centric -->
+    {# Check if we're in calendar week view by checking if post_type is NOT defined (we don't pass it for week view) #}
+    {% if post_type is defined %}
     <div class="main-stages-line">
         <!-- Post Type Header -->
-        {% if post_type is defined and post_type %}
+        {% if post_type %}
         <div class="post-type-header">
             <span class="post-type-label">Post type:</span>
             <span class="post-type-value">
@@ -150,8 +153,11 @@
             </div>
         </div>
     </div>
+    {% endif %}
     
     <!-- Sub-stages with Subtitle and Tabs -->
+    <!-- CRITICAL: Hide sub-stages navbar in calendar week view -->
+    {% if post_type is defined %}
     <div class="sub-stages-line" id="sub-stages-line">
         <!-- Sub-stage Navigation -->
         <div class="sub-stages" id="sub-stages">
@@ -344,6 +350,7 @@
             <!-- Subtitle will be dynamically inserted here based on current substage -->
         </div>
     </div>
+    {% endif %}
 </div>
 
 <!-- Tab Content Container -->

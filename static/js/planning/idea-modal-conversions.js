@@ -13,6 +13,11 @@ class IdeaModalConversions {
         const wasTheme = this.modal.originalType === 'theme' && this.modal.currentIdeaId;
         const isConvertingThemeToIdea = !isTheme && wasTheme;
         
+        // Check if we're converting an idea to a theme
+        // We started with an idea (currentIdeaId exists, originalType is 'idea') but now saving as a theme (type is "theme")
+        const wasIdea = this.modal.originalType === 'idea' && this.modal.currentIdeaId && !this.modal.currentEventId;
+        const isConvertingIdeaToTheme = isTheme && wasIdea;
+        
         // Check if we're converting an event to an idea
         // We started with an event (currentEventId exists) but now saving as an idea (type is "idea", not "event")
         // Also check if ideaId matches currentEventId (event ID was put in idea-id field when loading event)
@@ -30,13 +35,16 @@ class IdeaModalConversions {
             currentIdeaId: this.modal.currentIdeaId,
             currentEventId: this.modal.currentEventId,
             wasTheme,
+            wasIdea,
             isConvertingThemeToIdea,
+            isConvertingIdeaToTheme,
             isConvertingEventToIdea,
             isConvertingIdeaToEvent
         });
         
         return {
             isConvertingThemeToIdea,
+            isConvertingIdeaToTheme,
             isConvertingEventToIdea,
             isConvertingIdeaToEvent
         };
@@ -114,6 +122,68 @@ class IdeaModalConversions {
         }
 
         return { success: true, newIdeaId };
+    }
+
+    async convertIdeaToTheme(formData) {
+        console.log('[IdeaModal] Converting idea to theme', {
+            ideaId: this.modal.currentIdeaId,
+            formData
+        });
+        
+        // Map idea_title to theme_title for theme creation
+        const themeData = { ...formData };
+        if (themeData.idea_title) {
+            themeData.theme_title = themeData.idea_title;
+            delete themeData.idea_title;
+        }
+        if (themeData.idea_description) {
+            themeData.theme_description = themeData.idea_description;
+            delete themeData.idea_description;
+        }
+        
+        // Create new theme with idea data
+        const response = await fetch('/planning/api/calendar/themes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(themeData)
+        });
+
+        if (!response.ok) {
+            let message = 'Failed to create theme';
+            try {
+                const error = await response.json();
+                message = error.error || message;
+                console.error('[IdeaModal] Failed to create theme:', error);
+            } catch (_) {
+                message = `Failed to create theme: ${response.statusText}`;
+            }
+            throw new Error(message);
+        }
+
+        const result = await response.json();
+        const newThemeId = result.theme?.id || result.id;
+        console.log('[IdeaModal] Created new theme:', newThemeId);
+
+        // Delete the original idea (ideas are not scheduled, so no schedule updates needed)
+        if (this.modal.currentIdeaId && newThemeId) {
+            try {
+                console.log('[IdeaModal] Deleting original idea...');
+                const deleteResponse = await fetch(`/planning/api/calendar/ideas/${this.modal.currentIdeaId}`, {
+                    method: 'DELETE'
+                });
+                if (!deleteResponse.ok) {
+                    const errorText = await deleteResponse.text();
+                    console.error('[IdeaModal] Failed to delete idea:', errorText);
+                    throw new Error('Failed to delete original idea');
+                }
+                console.log('[IdeaModal] Idea deleted successfully');
+            } catch (e) {
+                console.error('[IdeaModal] Error deleting idea:', e);
+                alert('Theme created but failed to delete original idea: ' + e.message);
+            }
+        }
+
+        return { success: true, newThemeId };
     }
 
     async convertEventToIdea(formData) {

@@ -292,7 +292,7 @@ class IdeaModal {
         try {
             // Detect conversions
             const conversions = this.conversions.detectConversion(isTheme, isEvent, ideaId);
-            const { isConvertingThemeToIdea, isConvertingEventToIdea, isConvertingIdeaToEvent } = conversions;
+            const { isConvertingThemeToIdea, isConvertingIdeaToTheme, isConvertingEventToIdea, isConvertingIdeaToEvent } = conversions;
             
             let url, method;
             let result;
@@ -316,6 +316,14 @@ class IdeaModal {
             } else if (isConvertingThemeToIdea) {
                 await this.conversions.convertThemeToIdea(formData);
                 alert('Theme converted to idea successfully');
+                this.close();
+                if (window.location.pathname.includes('/calendar')) {
+                    window.location.reload();
+                }
+                return;
+            } else if (isConvertingIdeaToTheme) {
+                await this.conversions.convertIdeaToTheme(formData);
+                alert('Idea converted to theme successfully');
                 this.close();
                 if (window.location.pathname.includes('/calendar')) {
                     window.location.reload();
