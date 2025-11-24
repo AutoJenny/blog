@@ -1,27 +1,14 @@
 #!/usr/bin/env python3
 """
-Import Weekly Words and Phrases from CSV files into calendar_ideas
+Pair Weekly Words and Phrases
 
-This script reads:
-- scottish_word_of_the_week.csv
-- scots_phrase_of_the_week.csv
-
-And imports them as calendar_ideas with:
-- item_classification: 'weekly_word' or 'weekly_phrase'
-- week_number: Starting from current week, distributed across next 104 weeks (2 years)
-- is_recurring: FALSE (one-time, not annually recurring)
-- tags: JSON containing Word/Phrase, Meaning, Provenance, Example Usage
-
-Note: calendar_ideas uses week_number (1-52) only, not year. Items will appear
-in the correct week each year, but since is_recurring=FALSE, they are marked
-as one-time items.
+This script ensures each week has both a weekly_word and a weekly_phrase.
+It pairs existing entries or creates missing ones from the CSV files.
 """
 
 import sys
 import os
 import csv
-import json
-from datetime import datetime, timedelta
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,16 +16,16 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from config.database import db_manager
 from psycopg.types.json import Json
+from datetime import datetime
 
-def import_weekly_words_and_phrases():
-    """Import both words and phrases, distributing across next 104 weeks"""
+def pair_weekly_words_phrases():
+    """Ensure each week has both a word and a phrase"""
     
     # Get current week
     today = datetime.now()
     start_year, start_week = today.isocalendar()[0], today.isocalendar()[1]
     
-    print(f"📅 Current week: {start_week} of {start_year}")
-    print(f"📅 Distributing across next 104 weeks (2 years)\n")
+    print(f"📅 Current week: {start_week} of {start_year}\n")
     
     # Read words CSV
     words_csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'scottish_word_of_the_week.csv')
@@ -46,10 +33,11 @@ def import_weekly_words_and_phrases():
     if os.path.exists(words_csv_path):
         with open(words_csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
-            words = [row for row in reader if row.get('Word', '').strip()]
+            words = [row for row in reader if row.get('Word', '').strip() and not row.get('Word', '').strip().lower().startswith('word')]
         print(f"📖 Found {len(words)} words in CSV")
     else:
         print(f"❌ CSV file not found: {words_csv_path}")
+        return
     
     # Read phrases CSV
     phrases_csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'scots_phrase_of_the_week.csv')
@@ -57,40 +45,50 @@ def import_weekly_words_and_phrases():
     if os.path.exists(phrases_csv_path):
         with open(phrases_csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
-            phrases = [row for row in reader if row.get('Phrase', '').strip()]
-        print(f"📖 Found {len(phrases)} phrases in CSV")
+            phrases = [row for row in reader if row.get('Phrase', '').strip() and not row.get('Phrase', '').strip().lower().startswith('phrase')]
+        print(f"📖 Found {len(phrases)} phrases in CSV\n")
     else:
         print(f"❌ CSV file not found: {phrases_csv_path}")
+        return
     
-    total_items = len(words) + len(phrases)
-    total_weeks = 104  # 2 years
+    max_pairs = min(len(words), len(phrases))
+    print(f"📊 Will pair {max_pairs} words and phrases across 52 weeks\n")
     
-    print(f"📊 Total items: {total_items}")
-    print(f"📊 Weeks available: {total_weeks}")
-    print(f"📊 Average: ~{total_items / total_weeks:.1f} items per week\n")
-    
-    imported_words = 0
-    imported_phrases = 0
+    added_words = 0
+    added_phrases = 0
+    updated_words = 0
+    updated_phrases = 0
     
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
-            # Pair words and phrases together - one of each per week
-            # This ensures each week gets exactly one word and one phrase
-            max_pairs = min(len(words), len(phrases))
-            
-            # Distribute pairs across 52 weeks (one year cycle)
-            for pair_idx in range(max_pairs):
-                # Calculate week number (1-52, cycling through)
-                week_number = ((start_week - 1 + pair_idx) % 52) + 1
+            # Process each week (1-52)
+            for week_number in range(1, 53):
+                # Calculate which pair index this week should have
+                # Start from current week and cycle through
+                week_offset = (week_number - start_week) % 52
+                if week_offset < 0:
+                    week_offset += 52
+                
+                pair_idx = week_offset % max_pairs
                 
                 word_data = words[pair_idx]
                 phrase_data = phrases[pair_idx]
                 
-                # Import word for this week
-                word = word_data.get('Word', '').strip()
+                # Check what exists for this week
+                cur.execute("""
+                    SELECT id, idea_title, item_classification
+                    FROM calendar_ideas
+                    WHERE week_number = %s 
+                    AND item_classification IN ('weekly_word', 'weekly_phrase')
+                """, (week_number,))
                 
-                # Skip placeholder/test entries
-                if word and not word.lower().startswith('word') and not word.lower().startswith('phrase'):
+                existing = cur.fetchall()
+                existing_word = next((e for e in existing if e['item_classification'] == 'weekly_word'), None)
+                existing_phrase = next((e for e in existing if e['item_classification'] == 'weekly_phrase'), None)
+                
+                # Process word
+                word = word_data.get('Word', '').strip()
+                if word:
                     meaning = word_data.get('Meaning', '').strip()
                     provenance = word_data.get('Provenance / Notes', '').strip()
                     example = word_data.get('Example Usage', '').strip()
@@ -117,16 +115,8 @@ def import_weekly_words_and_phrases():
                     
                     idea_description = "\n\n".join(description_parts) if description_parts else f"Scottish word: {word}"
                     
-                    # Check if this week already has a weekly_word (enforce one per week)
-                    cur.execute("""
-                        SELECT id FROM calendar_ideas
-                        WHERE week_number = %s 
-                        AND item_classification = 'weekly_word'
-                    """, (week_number,))
-                    
-                    existing_word = cur.fetchone()
-                    
                     if not existing_word:
+                        # Add missing word
                         cur.execute("""
                             INSERT INTO calendar_ideas
                             (week_number, idea_title, idea_description, item_classification, tags, is_recurring, priority)
@@ -137,30 +127,25 @@ def import_weekly_words_and_phrases():
                             idea_description,
                             'weekly_word',
                             Json(tags_data),
-                            False,  # NOT recurring annually
+                            False,
                             'random'
                         ))
-                        imported_words += 1
+                        added_words += 1
+                        print(f"  ✓ Week {week_number}: Added word '{word}'")
                     else:
-                        # Update existing entry if it's a placeholder
-                        cur.execute("""
-                            SELECT idea_title FROM calendar_ideas WHERE id = %s
-                        """, (existing_word['id'],))
-                        existing_title = cur.fetchone()['idea_title']
-                        if 'word' in existing_title.lower() and len(existing_title.split()) <= 3:
-                            # Likely a placeholder, update it
+                        # Update existing word if it's different
+                        if existing_word['idea_title'] != idea_title:
                             cur.execute("""
                                 UPDATE calendar_ideas
                                 SET idea_title = %s, idea_description = %s, tags = %s
                                 WHERE id = %s
                             """, (idea_title, idea_description, Json(tags_data), existing_word['id']))
-                            imported_words += 1
+                            updated_words += 1
+                            print(f"  ↻ Week {week_number}: Updated word to '{word}'")
                 
-                # Import phrase for this week
+                # Process phrase
                 phrase = phrase_data.get('Phrase', '').strip()
-                
-                # Skip placeholder/test entries
-                if phrase and not phrase.lower().startswith('phrase') and not phrase.lower().startswith('word'):
+                if phrase:
                     meaning = phrase_data.get('Meaning', '').strip()
                     provenance = phrase_data.get('Provenance / Notes', '').strip()
                     example = phrase_data.get('Example Usage', '').strip()
@@ -187,16 +172,8 @@ def import_weekly_words_and_phrases():
                     
                     idea_description = "\n\n".join(description_parts) if description_parts else f"Scots phrase: {phrase}"
                     
-                    # Check if this week already has a weekly_phrase (enforce one per week)
-                    cur.execute("""
-                        SELECT id FROM calendar_ideas
-                        WHERE week_number = %s 
-                        AND item_classification = 'weekly_phrase'
-                    """, (week_number,))
-                    
-                    existing_phrase = cur.fetchone()
-                    
                     if not existing_phrase:
+                        # Add missing phrase
                         cur.execute("""
                             INSERT INTO calendar_ideas
                             (week_number, idea_title, idea_description, item_classification, tags, is_recurring, priority)
@@ -207,40 +184,31 @@ def import_weekly_words_and_phrases():
                             idea_description,
                             'weekly_phrase',
                             Json(tags_data),
-                            False,  # NOT recurring annually
+                            False,
                             'random'
                         ))
-                        imported_phrases += 1
+                        added_phrases += 1
+                        print(f"  ✓ Week {week_number}: Added phrase '{phrase[:40]}...'")
                     else:
-                        # Update existing entry if it's a placeholder
-                        cur.execute("""
-                            SELECT idea_title FROM calendar_ideas WHERE id = %s
-                        """, (existing_phrase['id'],))
-                        existing_title = cur.fetchone()['idea_title']
-                        if 'phrase' in existing_title.lower() and ('phrase' in existing_title.lower().split()[-1] or len(existing_title.split()) <= 3):
-                            # Likely a placeholder, update it
+                        # Update existing phrase if it's different
+                        if existing_phrase['idea_title'] != idea_title:
                             cur.execute("""
                                 UPDATE calendar_ideas
                                 SET idea_title = %s, idea_description = %s, tags = %s
                                 WHERE id = %s
                             """, (idea_title, idea_description, Json(tags_data), existing_phrase['id']))
-                            imported_phrases += 1
-                
-                if (imported_words + imported_phrases) % 20 == 0 and (imported_words + imported_phrases) > 0:
-                    print(f"  ✓ Processed week {week_number} ({imported_words + imported_phrases} items imported so far)...")
+                            updated_phrases += 1
+                            print(f"  ↻ Week {week_number}: Updated phrase to '{phrase[:40]}...'")
             
             conn.commit()
     
-    print(f"\n✅ Import complete!")
-    print(f"   Words: {imported_words}")
-    print(f"   Phrases: {imported_phrases}")
-    print(f"   Total: {imported_words + imported_phrases}")
-    print(f"\n📝 Note: Items are stored with week_number only (calendar_ideas structure).")
-    print(f"   They will appear in the correct week each year, but is_recurring=FALSE")
-    print(f"   marks them as one-time items (not automatically repeating).")
-    return imported_words, imported_phrases
+    print(f"\n✅ Pairing complete!")
+    print(f"   Added words: {added_words}")
+    print(f"   Added phrases: {added_phrases}")
+    print(f"   Updated words: {updated_words}")
+    print(f"   Updated phrases: {updated_phrases}")
 
 if __name__ == '__main__':
-    print("🚀 Starting Weekly Words & Phrases Import\n")
-    
-    words_count, phrases_count = import_weekly_words_and_phrases()
+    print("🔗 Starting Weekly Words & Phrases Pairing\n")
+    pair_weekly_words_phrases()
+
