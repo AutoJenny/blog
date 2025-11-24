@@ -42,11 +42,16 @@ class VectorEmbeddingsPanel {
     
     async generateEmbeddings() {
         try {
-            // Build URL with week context
-            const url = `/header/api/posts/${this.postId}/generate-embeddings?year=${this.year}&week=${this.week}`;
-            
             // Show loading state
             this.statusDiv.innerHTML = '<p style="color: #888;">Generating embeddings...</p>';
+            
+            // Build URL - only include year/week for themed posts
+            const postType = window.postType;
+            const isThemedPost = postType === 'themed' || postType === null || postType === 'null';
+            let url = `/header/api/posts/${this.postId}/generate-embeddings`;
+            if (isThemedPost && this.year && this.week) {
+                url += `?year=${this.year}&week=${this.week}`;
+            }
             
             const response = await fetch(url, {
                 method: 'POST',

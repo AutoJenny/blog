@@ -295,3 +295,5 @@ ORDER BY first_seen_at DESC
 
 **Status:** `clan_created_at` is now populated and ready to use! ✅
 
+
+

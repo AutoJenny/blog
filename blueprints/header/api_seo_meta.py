@@ -492,3 +492,191 @@ Return in JSON format:
             logger.error(traceback.format_exc())
             return jsonify({'error': str(e)}), 500
 
+    @bp.route('/api/posts/<int:post_id>/product-matches', methods=['GET'])
+    def api_get_product_matches(post_id):
+        """Get product/category matches for a post"""
+        try:
+            year = request.args.get('year', type=int)
+            week = request.args.get('week', type=int)
+            
+            target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
+            if error:
+                return jsonify({'error': error}), 400 if 'required' in error else 404
+            
+            # Check if embedding exists
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, last_embedded_at
+                    FROM content_chunks
+                    WHERE chunk_type = 'post' AND source_id = %s
+                """, (target_post_id,))
+                embedding_data = cursor.fetchone()
+                
+                if not embedding_data:
+                    return jsonify({
+                        'success': False,
+                        'error': 'No embeddings found. Please generate embeddings on the SEO Meta page first.',
+                        'has_embeddings': False
+                    }), 400
+            
+            # Find similar entities using existing embedding
+            from utils.profile_matching.post_matcher import find_similar_entities
+            from utils.profile_matching.normalization import normalize_and_select_best
+            
+            matches = find_similar_entities(target_post_id, limit=10)
+            best_match = normalize_and_select_best(
+                matches['products'],
+                matches['suppliers'],
+                matches['categories']
+            )
+            
+            # Get current overrides
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT embedding_overrides
+                    FROM post_development
+                    WHERE post_id = %s
+                """, (target_post_id,))
+                result = cursor.fetchone()
+                overrides = result['embedding_overrides'] if result and result.get('embedding_overrides') else {}
+            
+            return jsonify({
+                'success': True,
+                'has_embeddings': True,
+                'matches': {
+                    'products': matches['products'],
+                    'suppliers': matches['suppliers'],
+                    'categories': matches['categories']
+                },
+                'best_match': best_match,
+                'current_selection': overrides
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting product matches for post {post_id}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+
+    @bp.route('/api/posts/<int:post_id>/regenerate-matches', methods=['POST'])
+    def api_regenerate_matches(post_id):
+        """Regenerate product/category matches using existing embedding"""
+        try:
+            year = request.args.get('year', type=int)
+            week = request.args.get('week', type=int)
+            
+            target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
+            if error:
+                return jsonify({'error': error}), 400 if 'required' in error else 404
+            
+            # Check if embedding exists
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, last_embedded_at
+                    FROM content_chunks
+                    WHERE chunk_type = 'post' AND source_id = %s
+                """, (target_post_id,))
+                embedding_data = cursor.fetchone()
+                
+                if not embedding_data:
+                    return jsonify({
+                        'success': False,
+                        'error': 'No embeddings found. Please generate embeddings on the SEO Meta page first.'
+                    }), 400
+            
+            # Find similar entities
+            from utils.profile_matching.post_matcher import find_similar_entities
+            from utils.profile_matching.normalization import normalize_and_select_best
+            
+            matches = find_similar_entities(target_post_id, limit=10)
+            best_match = normalize_and_select_best(
+                matches['products'],
+                matches['suppliers'],
+                matches['categories']
+            )
+            
+            return jsonify({
+                'success': True,
+                'matches': {
+                    'products': matches['products'],
+                    'suppliers': matches['suppliers'],
+                    'categories': matches['categories']
+                },
+                'best_match': best_match
+            })
+            
+        except Exception as e:
+            logger.error(f"Error regenerating matches for post {post_id}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+
+    @bp.route('/api/posts/<int:post_id>/update-product-match', methods=['POST'])
+    def api_update_product_match(post_id):
+        """Update selected product/category match"""
+        try:
+            year = request.args.get('year', type=int)
+            week = request.args.get('week', type=int)
+            
+            target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
+            if error:
+                return jsonify({'error': error}), 400 if 'required' in error else 404
+            
+            data = request.get_json()
+            selected_type = data.get('selected_type')
+            selected_id = data.get('selected_id')
+            
+            if not selected_type or not selected_id:
+                return jsonify({'error': 'selected_type and selected_id are required'}), 400
+            
+            # Get existing overrides
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT embedding_overrides
+                    FROM post_development
+                    WHERE post_id = %s
+                """, (target_post_id,))
+                
+                result = cursor.fetchone()
+                existing_overrides = result['embedding_overrides'] if result and result.get('embedding_overrides') else {}
+            
+            # Update overrides - support multiple selections (product, category, supplier)
+            overrides = existing_overrides.copy() if isinstance(existing_overrides, dict) else {}
+            
+            # Store each type separately
+            if selected_type == 'product':
+                overrides['selected_product_type'] = 'product'
+                overrides['selected_product_id'] = selected_id
+            elif selected_type == 'category':
+                overrides['selected_category_type'] = 'category'
+                overrides['selected_category_id'] = selected_id
+            elif selected_type == 'supplier':
+                overrides['selected_supplier_type'] = 'supplier'
+                overrides['selected_supplier_id'] = selected_id
+            
+            # Also keep legacy fields for backward compatibility
+            overrides['selected_type'] = selected_type
+            overrides['selected_id'] = selected_id
+            overrides['override_reason'] = 'manual'
+            overrides['updated_at'] = 'now'
+            
+            # Save to database
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE post_development
+                    SET embedding_overrides = %s::jsonb,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE post_id = %s
+                """, (json.dumps(overrides), target_post_id))
+            
+            return jsonify({
+                'success': True,
+                'overrides': overrides
+            })
+            
+        except Exception as e:
+            logger.error(f"Error updating product match for post {post_id}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+

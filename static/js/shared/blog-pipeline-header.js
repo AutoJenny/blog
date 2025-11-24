@@ -859,6 +859,7 @@ class BlogPipelineHeader {
         if (path.includes('/title-summary')) return 'title-summary';
         if (path.includes('/header-image')) return 'header-image';
         if (path.includes('/seo-meta')) return 'seo-meta';
+        if (path.includes('/product-match')) return 'product-match';
         if (path.includes('/publishing-details')) return 'publishing-details';
         if (path.includes('/final-review')) return 'final-review';
         return null;
@@ -892,6 +893,7 @@ class BlogPipelineHeader {
                 'title-summary': 'Generate post title, subtitle, slug, and summary blurb.',
                 'header-image': 'Create header image with caption and alt text.',
                 'seo-meta': 'Generate SEO metadata including meta title, description, and tags.',
+                'product-match': 'Select matching products and categories based on vector similarity.',
                 'publishing-details': 'Set author, word count, publish date, and status.',
                 'final-review': 'Review and finalize all header elements before publishing.'
             }
