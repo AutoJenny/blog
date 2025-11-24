@@ -595,44 +595,55 @@ class BlogPipelineHeader {
             weekInfoEl.textContent = '';
         }
         
-        // Check if this is a recipe post - if so, show recipe title instead of theme
-        const postId = this.getPostId();
-        if (postId && postId !== '0' && parseInt(postId) !== 0) {
-            try {
-                // Check post type from API
-                const postTypeResp = await fetch(`/api/post-type-pipeline/posts/${postId}/pipeline`);
-                if (postTypeResp.ok) {
-                    const postTypeData = await postTypeResp.json();
-                    if (postTypeData.success && postTypeData.post_type === 'recipe') {
-                        // For recipe posts, show the recipe title instead of theme
-                        const recipeTitle = postTypeData.post_title || 'Recipe';
-                        if (themeEl) {
-                            themeEl.textContent = recipeTitle;
-                        }
-                        return; // Don't continue with theme lookup
-                    }
-                    if (postTypeData.success && postTypeData.post_type === 'profile') {
-                        // For profile posts, show the profile title instead of theme
-                        const profileTitle = postTypeData.post_title || 'Profile';
-                        if (themeEl) {
-                            themeEl.textContent = profileTitle;
-                        }
-                        return; // Don't continue with theme lookup
-                    }
-                    if (postTypeData.success && postTypeData.post_type === 'generated') {
-                        // For generated posts with "Products & Producers" content type, show post title instead of theme
-                        if (postTypeData.content_type_slug === 'products-producers') {
-                            const generatedTitle = postTypeData.post_title || 'Generated Post';
+        // CRITICAL: In calendar week-view, calendar is WEEK-CENTRIC, not post-centric
+        // The post_id is only for navigation through pipeline stages, NOT for displaying post data
+        // We should NOT fetch or display any post information in calendar week view
+        const isCalendarWeekView = this.isCalendarWeekViewContext();
+        if (isCalendarWeekView) {
+            // In calendar week view, don't fetch post data or override template defaults
+            // The template already shows "Profile" or "Recipe" - leave it as is
+            // Just continue to theme lookup for themed posts
+            // (Profile/Recipe posts will have already been handled by template, so theme lookup won't run)
+        } else {
+            // In other contexts (planning, authoring, etc.), fetch and display post data
+            const postId = this.getPostId();
+            if (postId && postId !== '0' && parseInt(postId) !== 0) {
+                try {
+                    // Check post type from API
+                    const postTypeResp = await fetch(`/api/post-type-pipeline/posts/${postId}/pipeline`);
+                    if (postTypeResp.ok) {
+                        const postTypeData = await postTypeResp.json();
+                        if (postTypeData.success && postTypeData.post_type === 'recipe') {
+                            // For recipe posts, show the recipe title instead of theme
+                            const recipeTitle = postTypeData.post_title || 'Recipe';
                             if (themeEl) {
-                                themeEl.textContent = generatedTitle;
+                                themeEl.textContent = recipeTitle;
                             }
                             return; // Don't continue with theme lookup
                         }
-                        // For other generated posts, fall through to theme lookup
+                        if (postTypeData.success && postTypeData.post_type === 'profile') {
+                            // For profile posts, show the profile title instead of theme
+                            const profileTitle = postTypeData.post_title || 'Profile';
+                            if (themeEl) {
+                                themeEl.textContent = profileTitle;
+                            }
+                            return; // Don't continue with theme lookup
+                        }
+                        if (postTypeData.success && postTypeData.post_type === 'generated') {
+                            // For generated posts with "Products & Producers" content type, show post title instead of theme
+                            if (postTypeData.content_type_slug === 'products-producers') {
+                                const generatedTitle = postTypeData.post_title || 'Generated Post';
+                                if (themeEl) {
+                                    themeEl.textContent = generatedTitle;
+                                }
+                                return; // Don't continue with theme lookup
+                            }
+                            // For other generated posts, fall through to theme lookup
+                        }
                     }
+                } catch (e) {
+                    console.warn('[Blog Pipeline Header] Error checking post type:', e);
                 }
-            } catch (e) {
-                console.warn('[Blog Pipeline Header] Error checking post type:', e);
             }
         }
         
@@ -843,6 +854,27 @@ class BlogPipelineHeader {
         if (path.includes('/imaging/')) return 'imaging';
         if (path.includes('/header/')) return 'header';
         return null;
+    }
+
+    isCalendarWeekViewContext() {
+        // Check if we're in a calendar week-view context
+        // This can be determined by:
+        // 1. URL path contains '/calendar/week-view'
+        // 2. window.currentSubstage is 'week-view' and window.currentStage is 'calendar'
+        // 3. Presence of week-view specific elements
+        
+        const path = window.location.pathname;
+        const isWeekViewPath = path.includes('/calendar/week-view');
+        
+        const currentStage = window.currentStage;
+        const currentSubstage = window.currentSubstage;
+        const isWeekViewSubstage = currentStage === 'calendar' && currentSubstage === 'week-view';
+        
+        // Check for week-view specific elements
+        const hasWeekControls = document.querySelector('.week-controls') !== null;
+        const hasWeekViewContainer = document.querySelector('.calendar-week-view') !== null;
+        
+        return isWeekViewPath || (isWeekViewSubstage && (hasWeekControls || hasWeekViewContainer));
     }
 
     getCurrentSubstageFromURL() {

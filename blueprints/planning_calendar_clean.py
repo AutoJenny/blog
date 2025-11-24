@@ -102,7 +102,12 @@ def planning_calendar_view(post_id):
                           blueprint_name='planning')
 
 def planning_calendar_week_view(post_id):
-    """Calendar Week View sub-stage (week-per-view)"""
+    """Calendar Week View sub-stage (week-per-view)
+    
+    IMPORTANT: Calendar week view is WEEK-CENTRIC, not post-centric.
+    The post_id is only used for navigation through pipeline stages.
+    We do NOT treat any post as "active" in calendar view - it's about the week.
+    """
     from flask import request
     from utils.week_post_resolver import resolve_post_for_week
     from utils.taxonomy_helpers import get_post_type
@@ -111,7 +116,7 @@ def planning_calendar_week_view(post_id):
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
     
-    # Get post type for the original post_id first
+    # Get post type for the original post_id first (for UI purposes only)
     original_post_type = get_post_type(post_id)
     
     # Resolve post if week context provided
@@ -123,46 +128,30 @@ def planning_calendar_week_view(post_id):
         if resolved:
             resolved_post_id = resolved
     
-    # Get post type for template (use original if recipe/profile, otherwise use resolved)
-    post_type = original_post_type if original_post_type in ('recipe', 'profile') else get_post_type(resolved_post_id)
+    # CRITICAL: Calendar week view is WEEK-CENTRIC, not post-centric
+    # We do NOT pass any post-related data to the template
+    # post_id is ONLY used for navigation through pipeline stages (in URLs)
+    # No post_type, no post data, nothing - just week context
     
-    # Get post data with all required fields for header
-    with db_manager.get_cursor() as cursor:
-        cursor.execute("""
-            SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                   p.content_type_id
-            FROM post p
-            WHERE p.id = %s
-        """, (resolved_post_id,))
-        post = cursor.fetchone()
-        
-        if not post:
-            return render_template('planning/calendar/week_view.html',
-                                  post_id=resolved_post_id,
-                                  year=year,
-                                  week=week,
-                                  post_type=post_type,
-                                  blueprint_name='planning',
-                                  error='Post not found')
-        
-        cursor.execute("""
-            SELECT ti.display_name as content_type_name
-            FROM post p
-            LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
-            WHERE p.id = %s
-        """, (resolved_post_id,))
-        result = cursor.fetchone()
-        content_type_name = result.get('content_type_name') if result else None
+    # Only verify post exists if we resolved to a different post (themed posts)
+    # This is just for error handling, not for displaying data
+    if year and week and original_post_type not in ('recipe', 'profile'):
+        # For themed posts, verify resolved post exists (if we resolved to a different one)
+        resolved = resolve_post_for_week(year, week)
+        if resolved and resolved != post_id:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("SELECT id FROM post WHERE id = %s", (resolved,))
+                if not cursor.fetchone():
+                    return render_template('planning/calendar/week_view.html',
+                                          post_id=post_id,  # Use original for navigation
+                                          year=year,
+                                          week=week,
+                                          blueprint_name='planning',
+                                          error='Post not found')
     
+    # Render template with NO post data - only post_id for navigation
     return render_template('planning/calendar/week_view.html',
-                          post_id=resolved_post_id,
-                          post=post,
-                          post_type=post_type,
-                          post_title=post.get('title'),
-                          post_status=post.get('status'),
-                          post_created=post.get('created_at'),
-                          post_updated=post.get('updated_at'),
-                          content_type_name=content_type_name,
+                          post_id=post_id,  # Only for navigation links
                           year=year,
                           week=week,
                           blueprint_name='planning')
