@@ -420,6 +420,162 @@ def register_routes(bp):
             logger.error(f"Error compiling header prompt for post {post_id}: {e}")
             return jsonify({'error': str(e)}), 500
 
+    @bp.route('/api/posts/<int:post_id>/generate-profile-header-prompt', methods=['POST'])
+    def api_generate_profile_header_prompt(post_id):
+        """Generate header image prompt for profile posts based on product information"""
+        try:
+            from utils.taxonomy_helpers import get_post_type
+            post_type = get_post_type(post_id)
+            
+            if post_type != 'profile':
+                return jsonify({
+                    'success': False,
+                    'error': 'This endpoint is only for profile posts'
+                }), 400
+            
+            data = request.get_json() or {}
+            product_name = data.get('product_name', '')
+            product_description = data.get('product_description', '')
+            product_type = data.get('product_type', '')
+            post_title = data.get('post_title', '')
+            post_summary = data.get('post_summary', '')
+            
+            # If product data not provided, fetch from database
+            if not product_name:
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        SELECT cp.name, cp.short_description, cp.description, cp.additional_data
+                        FROM post p
+                        LEFT JOIN clan_products cp ON cp.id = p.profile_product_id
+                        WHERE p.id = %s
+                    """, (post_id,))
+                    product_data = cursor.fetchone()
+                    
+                    if product_data:
+                        product_name = product_data.get('name', '')
+                        product_description = product_data.get('short_description', '') or product_data.get('description', '')
+                        if product_data.get('additional_data'):
+                            additional = product_data['additional_data']
+                            if isinstance(additional, dict):
+                                product_type = additional.get('product_type', '')
+            
+            # Get post title and summary if not provided
+            if not post_title or not post_summary:
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute("""
+                        SELECT title, summary
+                        FROM post
+                        WHERE id = %s
+                    """, (post_id,))
+                    post_data = cursor.fetchone()
+                    if post_data:
+                        if not post_title:
+                            post_title = post_data.get('title', '')
+                        if not post_summary:
+                            post_summary = post_data.get('summary', '')
+            
+            if not product_name:
+                return jsonify({
+                    'success': False,
+                    'error': 'Product name is required'
+                }), 400
+            
+            # Use a specific system prompt for profile header image generation
+            system_prompt = """You are a creative assistant specialized in generating detailed, inspiring image prompts for product photography. Your prompts should be vivid, specific, and create compelling visual scenes that showcase products in authentic, traditional settings."""
+            
+            # Get product image URL for reference
+            product_image_url = None
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT cp.image_url
+                    FROM post p
+                    LEFT JOIN clan_products cp ON cp.id = p.profile_product_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                product_data = cursor.fetchone()
+                if product_data and product_data.get('image_url'):
+                    product_image_url = product_data['image_url']
+            
+            # Create profile-specific prompt with traditional setting requirement
+            # CRITICAL: Must include instructions to use the product from the reference image
+            reference_image_instruction = ""
+            if product_image_url:
+                reference_image_instruction = f"""
+
+CRITICAL REQUIREMENT - REFERENCE IMAGE:
+- A reference image of the product is provided at: {product_image_url}
+- The main item/product shown in this reference image MUST be included EXACTLY as a focus in the generated image
+- The product from the reference image should be the central focus of the scene
+- Use the exact appearance, design, and details of the product as shown in the reference image
+- The generated image should feature this specific product prominently, integrated into the traditional setting"""
+
+            profile_prompt = f"""Generate a detailed, inspiring image prompt for a header image for a product profile blog post.
+
+POST CONTENT (use this as the primary inspiration):
+- Post Title: {post_title if post_title else product_name}
+- Post Summary: {post_summary[:300] if post_summary else 'No summary available'}
+
+PRODUCT INFORMATION:
+- Product Name: {product_name}
+- Product Type: {product_type if product_type else 'Product'}
+- Product Description: {product_description[:500] if product_description else 'No description available'}{reference_image_instruction}
+
+REQUIREMENTS:
+- Create an inspiring, professional, high-quality product photography prompt
+- Base the scene and mood on the post title and summary provided above
+- Show the product IN USE in a traditional setting (e.g., traditional Scottish home, heritage context, classic environment)
+- Integrate the product naturally into a traditional scene that reflects its heritage and cultural context
+- Focus on showcasing the product being used or displayed in an authentic, traditional lifestyle context
+- Include specific details about lighting, composition, styling, and atmosphere that evoke tradition and heritage
+- Consider the product type and category when suggesting the traditional setting
+- Make it suitable for a blog header image (horizontal/landscape orientation)
+- Keep it detailed but concise (2-4 sentences)
+- The prompt should be inspiring and create a compelling visual scene
+
+Return ONLY the image prompt text, no explanations, no markdown formatting, no code blocks, just the plain text prompt."""
+
+            # Use LLM to generate the prompt
+            llm_service = LLMService()
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': profile_prompt}
+            ]
+            
+            logger.info(f"[Profile Header Prompt] Generating prompt for post {post_id}")
+            logger.info(f"[Profile Header Prompt] Title: {post_title}, Summary: {post_summary[:100] if post_summary else 'None'}...")
+            logger.info(f"[Profile Header Prompt] Product: {product_name}, Image URL: {product_image_url}")
+            
+            llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'error' in llm_response:
+                logger.error(f"LLM generation failed: {llm_response['error']}")
+                # Fallback to a simple prompt
+                generated_prompt = f"Professional product photography of {product_name}, high quality, well-lit, lifestyle setting, horizontal composition, suitable for blog header"
+            else:
+                generated_prompt = llm_response.get('content', '').strip()
+                # Clean up the prompt
+                generated_prompt = generated_prompt.strip('"').strip("'").strip()
+                # Remove any markdown code blocks
+                if generated_prompt.startswith('```'):
+                    lines = generated_prompt.split('\n')
+                    generated_prompt = '\n'.join(lines[1:-1]) if len(lines) > 2 else generated_prompt
+                # Fallback if empty
+                if not generated_prompt:
+                    generated_prompt = f"Professional product photography of {product_name}, high quality, well-lit, lifestyle setting, horizontal composition, suitable for blog header"
+            
+            return jsonify({
+                'success': True,
+                'prompt': generated_prompt,
+                'reference_image_url': product_image_url  # Return product image URL for use in generation
+            })
+            
+        except Exception as e:
+            logger.error(f"Error generating profile header prompt: {e}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
     @bp.route('/api/posts/<int:post_id>/prompt-assembly-data', methods=['GET'])
     def api_get_prompt_assembly_data(post_id):
         """Get system/task prompts and section data for Prompt Assembly display"""

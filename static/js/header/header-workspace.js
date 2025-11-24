@@ -22,20 +22,55 @@ function initUberGenerate() {
     if (!uberBtn) return;
 
     uberBtn.addEventListener('click', async function() {
-        // Check if week has a post scheduled
-        if (!window.weekHasPost) {
-            alert('Cannot generate content: No post is scheduled for this week. Please schedule a post first.');
-            return;
+        // Check post type - only themed posts require week context
+        // Handle null, undefined, or string "null" cases
+        let postType = '';
+        if (window.postType && window.postType !== null && window.postType !== 'null') {
+            postType = String(window.postType).toLowerCase().trim();
         }
         
-        // Validate week context
-        const urlParams = new URLSearchParams(window.location.search);
-        const year = urlParams.get('year') || (window.weekYear && window.weekYear.year);
-        const week = urlParams.get('week') || (window.weekYear && window.weekYear.week);
+        const nonThemedTypes = ['recipe', 'profile', 'generated'];
+        const isNonThemedPost = postType && nonThemedTypes.includes(postType);
+        const isThemedPost = postType && !nonThemedTypes.includes(postType);
         
-        if (!year || !week) {
-            alert('Cannot generate content: Week context (year and week) is required.');
-            return;
+        // Convert weekHasPost to boolean if it's a string
+        const weekHasPost = window.weekHasPost === true || window.weekHasPost === 'true' || window.weekHasPost === 1;
+        
+        console.log('[Uber Generate] Post type:', postType, 'Is non-themed:', isNonThemedPost, 'Is themed:', isThemedPost, 'WeekHasPost:', weekHasPost, 'Raw postType:', window.postType, 'Raw weekHasPost:', window.weekHasPost);
+        
+        // For non-themed posts, skip week context checks entirely
+        if (isNonThemedPost) {
+            console.log('[Uber Generate] Non-themed post (' + postType + ') - skipping week context checks');
+            // Proceed directly to generation - no week context needed
+        } else if (isThemedPost) {
+            // For themed posts, check week context
+            // Check if week has a post scheduled
+            if (!weekHasPost) {
+                alert('Cannot generate content: No post is scheduled for this week. Please schedule a post first.');
+                return;
+            }
+            
+            // Validate week context for themed posts
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year') || (window.weekYear && window.weekYear.year);
+            const week = urlParams.get('week') || (window.weekYear && window.weekYear.week);
+            
+            if (!year || !week) {
+                alert('Cannot generate content: Week context (year and week) is required for themed posts.');
+                return;
+            }
+        } else {
+            // Post type not recognized or not set
+            // If weekHasPost is true, backend already validated this is OK (likely a non-themed post)
+            if (weekHasPost) {
+                console.log('[Uber Generate] Unknown/missing post type but weekHasPost is true - backend validated, proceeding');
+                // Proceed - backend already validated this is OK
+            } else {
+                // No postType and weekHasPost is false - require week context
+                console.warn('[Uber Generate] Unknown post type:', postType, 'and weekHasPost is false - requiring week context');
+                alert('Cannot generate content: No post is scheduled for this week. Please schedule a post first.');
+                return;
+            }
         }
         
         console.log('[Uber Generate] Starting generation of all header elements');
@@ -45,8 +80,17 @@ function initUberGenerate() {
         uberBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
         
         try {
-            // Make single API call to generate all elements (with week context required)
-            const url = `/header/api/posts/${window.postId}/generate-title-summary?year=${year}&week=${week}`;
+            // Build API URL - only include week params for themed posts
+            let url = `/header/api/posts/${window.postId}/generate-title-summary`;
+            if (isThemedPost) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const year = urlParams.get('year') || (window.weekYear && window.weekYear.year);
+                const week = urlParams.get('week') || (window.weekYear && window.weekYear.week);
+                if (year && week) {
+                    url += `?year=${year}&week=${week}`;
+                }
+            }
+            
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {

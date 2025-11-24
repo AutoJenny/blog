@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Header - Header Image - Profile Posts{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header/header-image-full-width.css') }}">
+<script>
+    window.currentStage = 'header';
+    window.currentSubstage = 'header-image';
+    window.postId = {{ post_id }};
+    window.postType = {{ post_type|tojson|safe if post_type else 'null' }};
+    window.year = {{ year|tojson|safe if year else 'null' }};
+    window.week = {{ week|tojson|safe if week else 'null' }};
+    // illustration_method is deprecated, always use LLM-creation
+    window.illustrationMethod = "LLM-creation";
+</script>
+
+{% include 'shared/blog_pipeline_header.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const headerContent = document.querySelector('.header-workspace');
+    const processTab = document.getElementById('process-tab');
+    if (headerContent && processTab && !processTab.contains(headerContent)) {
+        processTab.appendChild(headerContent);
+    }
+});
+</script>
+
+<div class="header-workspace">
+    <div class="workspace-container">
+        <!-- Full Width Content (no left panel for header images) -->
+        <div class="editor-panel">
+            <!-- Route Indicator -->
+            <div class="route-indicator header-page">
+                <i class="fas fa-camera"></i>
+                <span>Illustration Route: <strong>LLM-creation</strong></span>
+                <span>Post Type: <strong>Profile</strong></span>
+            </div>
+            
+            <!-- Profile-specific panels -->
+            <!-- Panel 1: Product Information (Always visible) -->
+            {% include 'header/includes/profile_product_info_panel.html' %}
+            
+            <!-- Panel 2: Product Image Reference (Profile-specific) -->
+            {% include 'header/includes/profile_image_reference_panel.html' %}
+            
+            <!-- Panel 3: Header Image Prompt Generation (Profile-specific) -->
+            {% include 'header/includes/profile_header_prompt_panel.html' %}
+            
+            <!-- Panel 4: Image Generation Settings -->
+            {% include 'header/includes/image_generation_settings_panel.html' %}
+            
+            <!-- Panel 5: Raw Generated Images (Auto-expands when generated) -->
+            {% include 'header/includes/raw_images_panel.html' %}
+            
+            <!-- Panel 6: Image Optimization -->
+            {% include 'header/includes/image_optimization_panel.html' %}
+            
+            <!-- Panel 7: Optimized Images (Auto-expands when optimized) -->
+            {% include 'header/includes/optimized_images_panel.html' %}
+            
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for profile header image workflow -->
+<script src="{{ url_for('static', filename='js/header/accordion-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/header/profile-header-image.js') }}?v={{ range(1000, 9999) | random }}"></script>
+<script src="{{ url_for('static', filename='js/header/header-workspace.js') }}"></script>
+{% endblock %}
+

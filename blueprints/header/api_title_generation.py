@@ -1,7 +1,7 @@
 """Title and subtitle generation API endpoints for header blueprint"""
 from flask import Blueprint, jsonify, request
 from config.database import db_manager
-from .helpers import resolve_target_post_id
+from .helpers import resolve_target_post_id, resolve_target_post_id_with_auto_week_check
 from .llm_service import LLMService
 import logging
 import json
@@ -22,7 +22,7 @@ def register_routes(bp):
         year = request.args.get('year', type=int)
         week = request.args.get('week', type=int)
         
-        target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+        target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
         if error:
             return jsonify({'error': error}), 400 if 'required' in error else 404
         
@@ -153,7 +153,131 @@ Return ONLY a single subtitle string, not an array. Do not use quotes or bracket
                             'subtitle': generated_subtitle
                         })
             
-            # For non-recipe posts, use normal title generation
+            # For profile posts, generate title starting with product name
+            if post_type == 'profile':
+                with db_manager.get_cursor() as cursor:
+                    # Get product name
+                    cursor.execute("""
+                        SELECT cp.name, cp.short_description, cp.description
+                        FROM post p
+                        LEFT JOIN clan_products cp ON cp.id = p.profile_product_id
+                        WHERE p.id = %s
+                    """, (post_id,))
+                    product_data = cursor.fetchone()
+                    
+                    if product_data and product_data.get('name'):
+                        product_name = product_data['name']
+                        product_description = product_data.get('short_description', '') or product_data.get('description', '')
+                        
+                        # Get section content for benefit generation
+                        data = request.get_json() or {}
+                        section_content = data.get('section_content', '')
+                        if not section_content:
+                            cursor.execute("""
+                                SELECT section_heading, draft
+                                FROM post_section
+                                WHERE post_id = %s
+                                ORDER BY section_order
+                            """, (post_id,))
+                            sections = cursor.fetchall()
+                            section_content = '\n'.join([f"{s.get('section_heading', '')}: {s.get('draft', '')}" for s in sections])
+                        
+                        # Generate benefit summary using LLM
+                        cursor.execute("""
+                            SELECT 
+                                sp.system_prompt,
+                                tp.prompt_text as task_prompt
+                            FROM workflow_step_prompt wsp
+                            LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+                            LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+                            WHERE wsp.step_id = 60
+                        """)
+                        prompt_result = cursor.fetchone()
+                        
+                        system_prompt = prompt_result.get('system_prompt', '') if prompt_result else ''
+                        
+                        # Create profile-specific title prompt
+                        profile_title_prompt = f"""Generate 3 title options for a product profile blog post.
+
+CRITICAL REQUIREMENTS:
+- Each title MUST start with the full product name verbatim: "{product_name}"
+- Followed by a colon and space: ": "
+- Then add 3-6 words summarizing a key benefit or appeal of this product
+- Do NOT repeat the product name after the initial mention
+- Focus on benefits like: quality, heritage, craftsmanship, functionality, design, tradition, etc.
+- Keep the benefit summary concise and compelling
+
+Product Name: {product_name}
+Product Description: {product_description[:500] if product_description else 'No description available'}
+
+Section Content (for context):
+{section_content[:1000] if section_content else 'No section content available'}
+
+Examples of good titles:
+- "Luxury Scottish Cashmere Sweater, V‑Neck: Timeless Elegance and Comfort"
+- "Traditional Tartan Scarf: Heritage Woven in Every Thread"
+- "Handcrafted Leather Sporran: Authentic Scottish Accessory"
+
+Return ONLY a JSON array of exactly 3 title strings, like this:
+["{product_name}: Benefit 1", "{product_name}: Benefit 2", "{product_name}: Benefit 3"]"""
+                        
+                        messages = [
+                            {'role': 'system', 'content': system_prompt},
+                            {'role': 'user', 'content': profile_title_prompt}
+                        ]
+                        
+                        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+                        
+                        if 'error' not in llm_response and llm_response.get('content'):
+                            generated_content = llm_response['content'].strip()
+                            
+                            # Parse JSON response
+                            try:
+                                json_match = re.search(r'\[.*?\]', generated_content, re.DOTALL)
+                                if json_match:
+                                    json_str = json_match.group(0)
+                                    title_options = json.loads(json_str)
+                                    
+                                    if not isinstance(title_options, list) or len(title_options) != 3:
+                                        raise ValueError("Response must be an array of exactly 3 titles")
+                                    
+                                    # Clean up titles and ensure they start with product name
+                                    cleaned_titles = []
+                                    for title in title_options:
+                                        title = title.strip().strip('"').strip("'")
+                                        # Ensure it starts with product name
+                                        if not title.lower().startswith(product_name.lower()):
+                                            title = f"{product_name}: {title}"
+                                        cleaned_titles.append(title)
+                                    
+                                    title_options = cleaned_titles
+                                else:
+                                    raise ValueError("No JSON array found in response")
+                            except (json.JSONDecodeError, ValueError) as e:
+                                logger.warning(f"Failed to parse LLM response for profile title: {e}, using fallback")
+                                # Fallback: use product name with generic benefits
+                                title_options = [
+                                    f"{product_name}: Quality Craftsmanship and Heritage",
+                                    f"{product_name}: Timeless Design and Functionality",
+                                    f"{product_name}: Authentic Scottish Tradition"
+                                ]
+                        else:
+                            # Fallback if LLM fails
+                            title_options = [
+                                f"{product_name}: Quality Craftsmanship and Heritage",
+                                f"{product_name}: Timeless Design and Functionality",
+                                f"{product_name}: Authentic Scottish Tradition"
+                            ]
+                        
+                        return jsonify({
+                            'success': True,
+                            'title_options': title_options,
+                            'selected_index': 0
+                        })
+                    else:
+                        return jsonify({'error': 'Product not found for profile post'}), 404
+            
+            # For non-recipe, non-profile posts, use normal title generation
             data = request.get_json()
             idea_seed = data.get('idea_seed', '')
             expanded_idea = data.get('expanded_idea', '')
@@ -246,7 +370,7 @@ Return ONLY a single subtitle string, not an array. Do not use quotes or bracket
         year = request.args.get('year', type=int)
         week = request.args.get('week', type=int)
         
-        target_post_id, error = resolve_target_post_id(post_id, year, week, require_week=True)
+        target_post_id, error = resolve_target_post_id_with_auto_week_check(post_id, year, week)
         if error:
             return jsonify({'error': error}), 400 if 'required' in error else 404
         

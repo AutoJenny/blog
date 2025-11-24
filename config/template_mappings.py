@@ -91,6 +91,10 @@ TEMPLATE_MAPPINGS = {
         'title-summary': {
             'default': 'header/title_summary.html'
         },
+        'header-image': {
+            'profile': 'header/header_image_profile.html',
+            'default': 'header/header_image.html'
+        },
         'image-prompt': {
             'default': 'header/image_prompt.html'
         },

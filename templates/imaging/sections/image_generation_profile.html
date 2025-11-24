@@ -18,6 +18,11 @@
     window.postType = {{ post_type|tojson|safe if post_type else 'null' }};
     window.imagingStage = true;
     window.imagingSubstage = 'image-generation';
+    {% if product_data %}
+    window.productData = {{ product_data|tojson|safe }};
+    {% else %}
+    window.productData = null;
+    {% endif %}
 </script>
 {% endblock %}
 
@@ -37,12 +42,313 @@
                 </p>
             </div>
             
-            <!-- Content will be added here as the new paradigm is developed -->
+            <!-- Product Images Display -->
             <div class="profile-imaging-content">
-                <!-- Placeholder for profile-specific image generation interface -->
+                <div class="product-images-section">
+                    <div class="product-images-header">
+                        <h3>Product Images</h3>
+                        <button id="load-all-images-btn" class="btn btn-primary">Load All Images</button>
+                    </div>
+                    
+                    <div id="product-info" class="product-info">
+                        {% if product_data %}
+                        <p><strong>Product:</strong> {{ product_data.name }}</p>
+                        <p><strong>SKU:</strong> {{ product_data.sku }}</p>
+                        {% else %}
+                        <p class="error">No product linked to this profile post</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="main-image-container" class="main-image-container">
+                        {% if product_data and product_data.image_url %}
+                        <div class="main-image">
+                            <h4>Main Image</h4>
+                            <img src="{{ product_data.image_url }}" alt="{{ product_data.name }}" class="product-main-image" />
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="images-gallery" class="images-gallery" style="display: none;">
+                        <h4>All Product Images</h4>
+                        <div id="images-grid" class="images-grid">
+                            <!-- Images will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div id="images-loading" class="images-loading" style="display: none;">
+                        <p>Loading images...</p>
+                    </div>
+                    
+                    <div id="images-error" class="images-error" style="display: none;">
+                        <p class="error"></p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loadAllImagesBtn = document.getElementById('load-all-images-btn');
+    const imagesGallery = document.getElementById('images-gallery');
+    const imagesGrid = document.getElementById('images-grid');
+    const imagesLoading = document.getElementById('images-loading');
+    const imagesError = document.getElementById('images-error');
+    
+    if (!window.productData || !window.productData.sku) {
+        if (loadAllImagesBtn) loadAllImagesBtn.disabled = true;
+        if (imagesError) {
+            imagesError.style.display = 'block';
+            imagesError.querySelector('p').textContent = 'No product SKU available';
+        }
+        return;
+    }
+    
+    if (loadAllImagesBtn) {
+        loadAllImagesBtn.addEventListener('click', async function() {
+            await loadAllImages();
+        });
+    }
+    
+    async function loadAllImages() {
+        if (!window.productData || !window.productData.sku) {
+            return;
+        }
+        
+        const sku = window.productData.sku;
+        
+        // Show loading state
+        if (imagesLoading) imagesLoading.style.display = 'block';
+        if (imagesError) imagesError.style.display = 'none';
+        if (loadAllImagesBtn) loadAllImagesBtn.disabled = true;
+        if (imagesGrid) imagesGrid.innerHTML = '';
+        
+        try {
+            // Fetch product data with all images
+            const response = await fetch(`/api/clan/products/${sku}/full?all_images=true`);
+            const data = await response.json();
+            
+            if (!data.success || !data.product) {
+                throw new Error(data.message || 'Failed to fetch product images');
+            }
+            
+            const product = data.product;
+            const allImages = product.all_images || [];
+            
+            // If no images array, but we have image_url, use that
+            if (allImages.length === 0 && product.image_url) {
+                allImages.push({
+                    url: product.image_url,
+                    alt: 'Main product image'
+                });
+            }
+            
+            // Display images
+            if (allImages.length > 0) {
+                if (imagesGrid) {
+                    imagesGrid.innerHTML = '';
+                    allImages.forEach((img, index) => {
+                        const imgDiv = document.createElement('div');
+                        imgDiv.className = 'image-item';
+                        imgDiv.innerHTML = `
+                            <img src="${img.url}" alt="${img.alt || `Image ${index + 1}`}" class="gallery-image" />
+                            <p class="image-alt">${img.alt || `Image ${index + 1}`}</p>
+                        `;
+                        imagesGrid.appendChild(imgDiv);
+                    });
+                }
+                
+                if (imagesGallery) imagesGallery.style.display = 'block';
+                if (loadAllImagesBtn) {
+                    loadAllImagesBtn.textContent = `Reload Images (${allImages.length} found)`;
+                    loadAllImagesBtn.disabled = false;
+                }
+            } else {
+                if (imagesError) {
+                    imagesError.style.display = 'block';
+                    imagesError.querySelector('p').textContent = 'No images found for this product';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading images:', error);
+            if (imagesError) {
+                imagesError.style.display = 'block';
+                imagesError.querySelector('p').textContent = `Error: ${error.message}`;
+            }
+            if (loadAllImagesBtn) loadAllImagesBtn.disabled = false;
+        } finally {
+            if (imagesLoading) imagesLoading.style.display = 'none';
+        }
+    }
+});
+</script>
+
+<style>
+.profile-imaging-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.profile-imaging-header {
+    margin-bottom: 2rem;
+}
+
+.profile-imaging-header h2 {
+    margin-bottom: 0.5rem;
+    color: #1e293b;
+}
+
+.profile-imaging-description {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.product-images-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.product-images-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.product-images-header h3 {
+    margin: 0;
+    color: #1e293b;
+}
+
+.product-info {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.product-info p {
+    margin: 0.5rem 0;
+    color: #475569;
+}
+
+.main-image-container {
+    margin-bottom: 2rem;
+}
+
+.main-image {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.main-image h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #1e293b;
+}
+
+.product-main-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.images-gallery {
+    margin-top: 2rem;
+}
+
+.images-gallery h4 {
+    margin-bottom: 1rem;
+    color: #1e293b;
+}
+
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.image-item {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.75rem;
+    transition: box-shadow 0.2s;
+}
+
+.image-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.image-alt {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+    text-align: center;
+}
+
+.images-loading {
+    text-align: center;
+    padding: 2rem;
+    color: #64748b;
+}
+
+.images-error {
+    padding: 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    margin-top: 1rem;
+}
+
+.images-error .error {
+    color: #dc2626;
+    margin: 0;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.btn-primary:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+.error {
+    color: #dc2626;
+}
+</style>
 {% endblock %}
