@@ -493,7 +493,7 @@
     };
 
     // Pipeline definition (order can be adjusted)
-    const pipeline = [
+    let pipeline = [
         { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
         { id:'taxonomy', label:'Planning — Taxonomy', run: runTaxonomy },
         { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
@@ -1654,23 +1654,104 @@
         return `${days[d.getUTCDay()]} ${String(d.getUTCDate()).padStart(2,'0')} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
     }
 
+    // Get run function for a step based on post type
+    function getStepRunFunction(stepId, postType) {
+        // Recipe-specific steps
+        if (postType === 'recipe') {
+            if (stepId === 'recipe-selection') return runRecipeSelection;
+            if (stepId === 'recipe-research') return runRecipeResearch;
+            if (stepId === 'recipe-image-style-prompt') return runRecipeImageStylePrompt;
+        }
+        
+        // Profile-specific steps
+        if (postType === 'profile') {
+            if (stepId === 'profile-selection') return runProfileSelection;
+            if (stepId === 'profile-data-sync') return runProfileDataSync;
+            if (stepId === 'profile-sections') return runProfileSections;
+            if (stepId === 'profile-image-concepts') return runProfileImageConcepts;
+            if (stepId === 'profile-image-prompts') return runProfileImagePrompts;
+            if (stepId === 'profile-image-generation') return runProfileImageGeneration;
+            if (stepId === 'profile-image-optimise') return runProfileImageOptimise;
+        }
+        
+        // Themed steps (existing)
+        if (stepId === 'week-ideas') return runWeekIdeas;
+        if (stepId === 'taxonomy') return runTaxonomy;
+        if (stepId === 'idea-generation') return runIdeaGeneration;
+        if (stepId === 'topic-brainstorming') return runTopicBrainstorming;
+        if (stepId === 'section-structure-design') return runSectionStructure;
+        if (stepId === 'section-ideas') return runSectionIdeas;
+        if (stepId === 'section-titling') return runSectionTitling;
+        if (stepId === 'drafting') return runDrafting;
+        if (stepId === 'image-concepts') return runImageConcepts;
+        if (stepId === 'image-prompts') return runImagePrompts;
+        if (stepId === 'image-captions') return runImageCaptions;
+        if (stepId === 'image-generation') return runImageGeneration;
+        if (stepId === 'optimise') return runImageOptimise;
+        if (stepId === 'header-title-summary') return () => { const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); };
+        if (stepId === 'header-image-prompt') return runHeaderImagePrompt;
+        if (stepId === 'header-image-details') return runHeaderImageDetails;
+        if (stepId === 'header-image-generate') return runHeaderImageGenerate;
+        if (stepId === 'header-image-optimise') return runHeaderImageOptimize;
+        if (stepId === 'header-seo-meta') return runHeaderSeoMeta;
+        if (stepId === 'final-review') return runFinalReview;
+        
+        // Default: no-op
+        return () => { console.warn(`No run function for step: ${stepId}`); };
+    }
+
+    // Load pipeline dynamically based on post type
+    async function loadPipelineForPostType(postId, postType) {
+        try {
+            const response = await fetch(`/api/post-type-pipeline/${postType}`);
+            const data = await response.json();
+            if (!data.success) {
+                console.warn('Failed to load pipeline, using default:', data.error);
+                return;
+            }
+            
+            const steps = data.steps || [];
+            
+            // Map step IDs to run functions
+            pipeline = steps.map(step => {
+                const runFunction = getStepRunFunction(step.id, postType);
+                return {
+                    id: step.id,
+                    label: step.label || step.id,
+                    run: runFunction,
+                    completeEvent: step.complete_event || null
+                };
+            });
+            
+            console.log(`Loaded ${pipeline.length} steps for ${postType} post type`);
+        } catch (error) {
+            console.error('Error loading pipeline:', error);
+            // Keep default pipeline
+        }
+    }
+
     async function updateSelectedPostSummary(postId){
         const titleTextEl = document.getElementById('post-title-text');
         const badgeEl = document.getElementById('post-type-badge');
         const subtitleEl = document.getElementById('selected-post-subtitle');
         try {
-            // Fetch post data and pipeline info
-            const [postResp, pipelineResp] = await Promise.all([
+            // Fetch post data, pipeline info, and pipeline status
+            const [postResp, pipelineResp, statusResp] = await Promise.all([
                 fetch(`/planning/api/posts/${postId}`),
-                fetch(`/api/post-type-pipeline/posts/${postId}/pipeline`)
+                fetch(`/api/post-type-pipeline/posts/${postId}/pipeline`),
+                fetch(`/launchpad/one-click-blog/api/pipeline-status/${postId}`)
             ]);
             
             const postData = await postResp.json();
             const pipelineData = await pipelineResp.json();
+            const statusData = statusResp.ok ? await statusResp.json() : { success: false, data: null };
             const post = postData.post || {};
             const schedule = postData.schedule || null;
             const postType = pipelineData.post_type || 'themed';
             const title = post.title || 'Untitled';
+            
+            // Extract pipeline status data for sections and completion status
+            const pipelineStatus = statusData.success && statusData.data ? statusData.data : null;
             
             // Update title text
             if (titleTextEl) titleTextEl.textContent = `#${postId} — ${title}`;
@@ -1776,7 +1857,9 @@
             if (draftingBtn) {
                 // Check if sections exist (either in post_section table or post_development.sections)
                 let hasSections = false;
-                if (data.sections && data.sections.length > 0) {
+                // Try to get sections from pipeline status data first, then fallback to post.sections
+                const sectionsFromStatus = pipelineStatus?.stages?.authoring?.substages?.author_first_drafts;
+                if (sectionsFromStatus && sectionsFromStatus.progress > 0) {
                     hasSections = true;
                 } else if (post.sections) {
                     try {
@@ -1804,18 +1887,18 @@
             if (imageConceptsBtn) {
                 // Check if sections exist and have drafts
                 let hasSectionsWithDrafts = false;
-                if (data.sections && data.sections.length > 0) {
-                    // Check if at least one section has a draft
-                    hasSectionsWithDrafts = data.sections.some(s => s.draft && s.draft.trim());
+                // Check pipeline status for authoring progress
+                const authoringStatus = pipelineStatus?.stages?.authoring?.substages?.author_first_drafts;
+                if (authoringStatus && authoringStatus.progress > 0) {
+                    hasSectionsWithDrafts = authoringStatus.progress >= 100 || authoringStatus.status === 'in_progress';
                 } else if (post.sections) {
                     try {
                         const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
                         const sectionsList = Array.isArray(sectionsData) ? sectionsData : (sectionsData.sections || []);
                         if (sectionsList.length > 0) {
-                            // Check sections in post_section for drafts
-                            if (data.sections) {
-                                hasSectionsWithDrafts = data.sections.some(s => s.draft && s.draft.trim());
-                            }
+                            // Check if sections have drafts by checking post_section table via API
+                            // For now, assume if sections exist, drafts might exist
+                            hasSectionsWithDrafts = sectionsList.length > 0;
                         }
                     } catch (e) {
                         // sections is not valid JSON
@@ -1835,11 +1918,10 @@
             if (imagePromptsBtn) {
                 // Check if sections have image_concepts with selected concepts
                 let hasImageConcepts = false;
-                if (data.sections && data.sections.length > 0) {
-                    // Ready if at least one section has image_concepts
-                    hasImageConcepts = data.sections.some(s => (
-                        s.image_concepts && (typeof s.image_concepts === 'string' ? s.image_concepts.trim() !== '' : true)
-                    ));
+                // Check pipeline status for image_concepts completion
+                const imageConceptsStatus = pipelineStatus?.stages?.authoring?.substages?.image_concepts;
+                if (imageConceptsStatus && imageConceptsStatus.progress > 0) {
+                    hasImageConcepts = imageConceptsStatus.status === 'complete' || imageConceptsStatus.status === 'in_progress';
                 } else if (post.sections) {
                     try {
                         const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
@@ -1870,24 +1952,17 @@
             if (imageCaptionsBtn) {
                 // Check if sections have image_prompts
                 let hasImagePrompts = false;
-                if (data.sections && data.sections.length > 0) {
-                    // Check if at least one section has image_prompts
-                    hasImagePrompts = data.sections.some(s => {
-                        return s.image_prompts && (typeof s.image_prompts === 'string' ? s.image_prompts.trim() !== '' : true);
-                    });
+                // Check pipeline status for image_prompts completion
+                const imagePromptsStatus = pipelineStatus?.stages?.authoring?.substages?.image_prompts;
+                if (imagePromptsStatus && imagePromptsStatus.progress > 0) {
+                    hasImagePrompts = imagePromptsStatus.status === 'complete' || imagePromptsStatus.status === 'in_progress';
                 } else if (post.sections) {
                     try {
                         const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
                         const sectionsList = Array.isArray(sectionsData) ? sectionsData : (sectionsData.sections || []);
                         if (sectionsList.length > 0) {
-                            // Check sections in post_section or JSON for image_prompts
-                            if (data.sections) {
-                                hasImagePrompts = data.sections.some(s => {
-                                    return s.image_prompts && (typeof s.image_prompts === 'string' ? s.image_prompts.trim() !== '' : true);
-                                });
-                            } else {
-                                hasImagePrompts = sectionsList.some(s => s.image_prompts);
-                            }
+                            // Check sections in JSON for image_prompts
+                            hasImagePrompts = sectionsList.some(s => s.image_prompts);
                         }
                     } catch (e) {
                         // sections is not valid JSON
@@ -1943,9 +2018,98 @@
                     titlingBtn.classList.add('dead');
                 }
             }
+            
+            // Update UI with green dots for completed substages
+            if (pipelineStatus && pipelineStatus.stages) {
+                updatePipelineStatusIndicators(pipelineStatus);
+            }
         } catch (e){
             console.error('Failed to load post details:', e);
         }
+    }
+    
+    // Function to update pipeline status indicators (green dots) based on API data
+    function updatePipelineStatusIndicators(pipelineStatus) {
+        if (!pipelineStatus || !pipelineStatus.stages) return;
+        
+        const stages = pipelineStatus.stages;
+        
+        // Mapping of substage keys to their button/indicator IDs
+        const substageMappings = {
+            // Calendar stage
+            'calendar_view': null, // View-only, no indicator
+            'idea_generation': 'run-week-ideas',
+            
+            // Planning stage
+            'ideas': 'run-idea-generation',
+            'taxonomy': 'run-taxonomy',
+            'topic_brainstorming': 'run-topic-brainstorming',
+            'section_structure': 'run-section-structure',
+            'topic_allocation': 'run-section-ideas',
+            'section_titling': 'run-section-titling',
+            
+            // Authoring stage
+            'author_first_drafts': 'run-drafting',
+            'image_concepts': 'run-image-concepts',
+            'image_prompts': 'run-image-prompts',
+            'image_captions': 'run-image-captions',
+            
+            // Imaging stage
+            'image_generation': 'run-image-generation',
+            'optimise': 'run-image-optimise',
+            
+            // Header stage
+            'title_summary': 'run-header-title-summary',
+            'header_image': 'run-header-image-generate',
+            'seo_meta': 'run-header-seo-meta',
+            'product_match': null, // May not have a run button
+            'final_review': 'run-final-review'
+        };
+        
+        // Iterate through all stages and update indicators
+        Object.keys(stages).forEach(stageKey => {
+            const stage = stages[stageKey];
+            if (!stage || !stage.substages) return;
+            
+            Object.keys(stage.substages).forEach(substageKey => {
+                const substage = stage.substages[substageKey];
+                const buttonId = substageMappings[substageKey];
+                
+                if (!buttonId) return; // Skip if no button mapping
+                
+                const button = document.getElementById(buttonId);
+                if (!button) return; // Button doesn't exist in template
+                
+                // Update button state based on completion status
+                if (substage.status === 'complete') {
+                    button.classList.remove('dead', 'ready');
+                    button.classList.add('complete');
+                    
+                    // Add visual indicator (green dot) - check if there's a parent row/cell
+                    const row = button.closest('tr');
+                    if (row) {
+                        const substageCell = row.querySelector('.substage-cell');
+                        if (substageCell) {
+                            // Remove existing indicator
+                            const existingIndicator = substageCell.querySelector('.completion-indicator');
+                            if (existingIndicator) existingIndicator.remove();
+                            
+                            // Add green dot indicator
+                            const indicator = document.createElement('span');
+                            indicator.className = 'completion-indicator';
+                            indicator.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981; margin-left: 8px;"></i>';
+                            indicator.title = substage.completed_at ? `Completed ${new Date(substage.completed_at).toLocaleString()}` : 'Completed';
+                            substageCell.appendChild(indicator);
+                        }
+                    }
+                } else if (substage.status === 'in_progress') {
+                    button.classList.remove('dead', 'complete');
+                    if (!button.classList.contains('ready')) {
+                        button.classList.add('ready');
+                    }
+                }
+            });
+        });
     }
 
     // Initial load
@@ -2066,82 +2230,6 @@
             { id:'header-seo-meta', label:'Header — SEO & Meta', run: runHeaderSeoMeta, completeEvent: events.header_seo_meta_complete },
             { id:'final-review', label:'Final Review — Preview', run: runFinalReview }
         ];
-        
-        // Load pipeline dynamically based on post type
-        async function loadPipelineForPostType(postId, postType) {
-            try {
-                const response = await fetch(`/api/post-type-pipeline/${postType}`);
-                const data = await response.json();
-                if (!data.success) {
-                    console.warn('Failed to load pipeline, using default:', data.error);
-                    return;
-                }
-                
-                const steps = data.steps || [];
-                
-                // Map step IDs to run functions
-                pipeline = steps.map(step => {
-                    const runFunction = getStepRunFunction(step.id, postType);
-                    return {
-                        id: step.id,
-                        label: step.label || step.id,
-                        run: runFunction,
-                        completeEvent: step.complete_event || null
-                    };
-                });
-                
-                console.log(`Loaded ${pipeline.length} steps for ${postType} post type`);
-            } catch (error) {
-                console.error('Error loading pipeline:', error);
-                // Keep default pipeline
-            }
-        }
-        
-        // Get run function for a step based on post type
-        function getStepRunFunction(stepId, postType) {
-            // Recipe-specific steps
-            if (postType === 'recipe') {
-                if (stepId === 'recipe-selection') return runRecipeSelection;
-                if (stepId === 'recipe-research') return runRecipeResearch;
-                if (stepId === 'recipe-image-style-prompt') return runRecipeImageStylePrompt;
-            }
-            
-            // Profile-specific steps
-            if (postType === 'profile') {
-                if (stepId === 'profile-selection') return runProfileSelection;
-                if (stepId === 'profile-data-sync') return runProfileDataSync;
-                if (stepId === 'profile-sections') return runProfileSections;
-                if (stepId === 'profile-image-concepts') return runProfileImageConcepts;
-                if (stepId === 'profile-image-prompts') return runProfileImagePrompts;
-                if (stepId === 'profile-image-generation') return runProfileImageGeneration;
-                if (stepId === 'profile-image-optimise') return runProfileImageOptimise;
-            }
-            
-            // Themed steps (existing)
-            if (stepId === 'week-ideas') return runWeekIdeas;
-            if (stepId === 'taxonomy') return runTaxonomy;
-            if (stepId === 'idea-generation') return runIdeaGeneration;
-            if (stepId === 'topic-brainstorming') return runTopicBrainstorming;
-            if (stepId === 'section-structure-design') return runSectionStructure;
-            if (stepId === 'section-ideas') return runSectionIdeas;
-            if (stepId === 'section-titling') return runSectionTitling;
-            if (stepId === 'drafting') return runDrafting;
-            if (stepId === 'image-concepts') return runImageConcepts;
-            if (stepId === 'image-prompts') return runImagePrompts;
-            if (stepId === 'image-captions') return runImageCaptions;
-            if (stepId === 'image-generation') return runImageGeneration;
-            if (stepId === 'optimise') return runImageOptimise;
-            if (stepId === 'header-title-summary') return () => { const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); };
-            if (stepId === 'header-image-prompt') return runHeaderImagePrompt;
-            if (stepId === 'header-image-details') return runHeaderImageDetails;
-            if (stepId === 'header-image-generate') return runHeaderImageGenerate;
-            if (stepId === 'header-image-optimise') return runHeaderImageOptimize;
-            if (stepId === 'header-seo-meta') return runHeaderSeoMeta;
-            if (stepId === 'final-review') return runFinalReview;
-            
-            // Default: no-op
-            return () => { console.warn(`No run function for step: ${stepId}`); };
-        }
 
         function waitForEvent(eventName, timeoutMs=120000){
             return new Promise((resolve, reject)=>{
