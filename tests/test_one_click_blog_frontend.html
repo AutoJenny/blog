@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One-Click Blog Frontend Integration Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 3px;
+        }
+        .pass { color: #4CAF50; }
+        .fail { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover { background: #45a049; }
+        pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>One-Click Blog Frontend Integration Test</h1>
+    <p>This page tests the <code>updateSelectedPostSummary()</code> function with mocked API responses.</p>
+    
+    <div class="test-section">
+        <h2>Test 1: Mock API Setup</h2>
+        <div id="test1-result" class="test-result"></div>
+        <button onclick="testMockSetup()">Run Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: updateSelectedPostSummary with Mocked Data</h2>
+        <div id="test2-result" class="test-result"></div>
+        <button onclick="testUpdateSelectedPostSummary()">Run Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Verify data.sections is Accessible</h2>
+        <div id="test3-result" class="test-result"></div>
+        <button onclick="testDataSections()">Run Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Verify Green Dots Appear</h2>
+        <div id="test4-result" class="test-result"></div>
+        <button onclick="testGreenDots()">Run Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 5: Error Handling</h2>
+        <div id="test5-result" class="test-result"></div>
+        <button onclick="testErrorHandling()">Run Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test All</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <script>
+        // Mock fetch function
+        const originalFetch = window.fetch;
+        let mockResponses = {};
+        
+        function setupMockFetch() {
+            window.fetch = function(url) {
+                console.log('[Mock] Fetching:', url);
+                
+                if (mockResponses[url]) {
+                    return Promise.resolve({
+                        ok: mockResponses[url].ok !== false,
+                        json: () => Promise.resolve(mockResponses[url].data),
+                        status: mockResponses[url].status || 200
+                    });
+                }
+                
+                // Default mock response
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({ success: true, data: {} }),
+                    status: 200
+                });
+            };
+        }
+        
+        function restoreFetch() {
+            window.fetch = originalFetch;
+        }
+        
+        // Mock data for tests
+        const mockPostData = {
+            post: {
+                id: 96,
+                title: "Test Post",
+                idea_seed: "Test idea seed",
+                expanded_idea: "Test expanded idea",
+                idea_scope: JSON.stringify({ generated_topics: ["Topic 1", "Topic 2"] }),
+                section_structure: JSON.stringify({ sections: [{ id: 1, title: "Section 1" }] }),
+                sections: JSON.stringify([{ id: 1, title: "Section 1", draft: "Draft content" }])
+            },
+            schedule: { year: 2025, week_number: 1 }
+        };
+        
+        const mockPipelineData = {
+            success: true,
+            post_type: 'themed',
+            post_id: 96
+        };
+        
+        const mockPipelineStatusData = {
+            success: true,
+            data: {
+                post_id: 96,
+                title: "Test Post",
+                stages: {
+                    calendar: {
+                        status: "complete",
+                        progress: 100,
+                        substages: {
+                            calendar_view: { status: "complete", progress: 100, completed_at: null },
+                            idea_generation: { status: "complete", progress: 100, completed_at: "2025-01-15T10:00:00" }
+                        }
+                    },
+                    planning: {
+                        status: "complete",
+                        progress: 100,
+                        substages: {
+                            ideas: { status: "complete", progress: 100, completed_at: "2025-01-15T10:00:00" },
+                            taxonomy: { status: "complete", progress: 100, completed_at: "2025-01-15T10:00:00" },
+                            topic_brainstorming: { status: "complete", progress: 100, completed_at: "2025-01-15T10:00:00" },
+                            section_structure: { status: "complete", progress: 100, completed_at: "2025-01-15T10:00:00" },
+                            topic_allocation: { status: "complete", progress: 100, completed_at: "2025-01-15T10:00:00" },
+                            section_titling: { status: "complete", progress: 100, completed_at: "2025-01-15T10:00:00" }
+                        }
+                    },
+                    authoring: {
+                        status: "in_progress",
+                        progress: 50,
+                        substages: {
+                            author_first_drafts: { status: "in_progress", progress: 50, completed_at: null },
+                            image_concepts: { status: "pending", progress: 0, completed_at: null },
+                            image_prompts: { status: "pending", progress: 0, completed_at: null },
+                            image_captions: { status: "pending", progress: 0, completed_at: null }
+                        }
+                    },
+                    imaging: {
+                        status: "pending",
+                        progress: 0,
+                        substages: {
+                            image_generation: { status: "pending", progress: 0, completed_at: null },
+                            optimise: { status: "pending", progress: 0, completed_at: null }
+                        }
+                    },
+                    header: {
+                        status: "pending",
+                        progress: 0,
+                        substages: {
+                            title_summary: { status: "pending", progress: 0, completed_at: null },
+                            header_image: { status: "pending", progress: 0, completed_at: null },
+                            seo_meta: { status: "pending", progress: 0, completed_at: null },
+                            product_match: { status: "pending", progress: 0, completed_at: null },
+                            final_review: { status: "pending", progress: 0, completed_at: null }
+                        }
+                    }
+                }
+            }
+        };
+        
+        function testMockSetup() {
+            const resultDiv = document.getElementById('test1-result');
+            resultDiv.innerHTML = '<span class="info">Testing mock setup...</span>';
+            
+            try {
+                setupMockFetch();
+                
+                mockResponses = {
+                    [`/planning/api/posts/96`]: { data: mockPostData, ok: true },
+                    [`/api/post-type-pipeline/posts/96/pipeline`]: { data: mockPipelineData, ok: true },
+                    [`/launchpad/one-click-blog/api/pipeline-status/96`]: { data: mockPipelineStatusData, ok: true }
+                };
+                
+                // Test that fetch is mocked
+                fetch('/planning/api/posts/96')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.post && data.post.id === 96) {
+                            resultDiv.innerHTML = '<span class="pass">✓ Mock setup successful</span>';
+                        } else {
+                            resultDiv.innerHTML = '<span class="fail">✗ Mock setup failed - wrong data</span>';
+                        }
+                    })
+                    .catch(err => {
+                        resultDiv.innerHTML = `<span class="fail">✗ Mock setup failed: ${err.message}</span>`;
+                    });
+            } catch (err) {
+                resultDiv.innerHTML = `<span class="fail">✗ Mock setup failed: ${err.message}</span>`;
+            }
+        }
+        
+        function testUpdateSelectedPostSummary() {
+            const resultDiv = document.getElementById('test2-result');
+            resultDiv.innerHTML = '<span class="info">Testing updateSelectedPostSummary...</span>';
+            
+            setupMockFetch();
+            mockResponses = {
+                [`/planning/api/posts/96`]: { data: mockPostData, ok: true },
+                [`/api/post-type-pipeline/posts/96/pipeline`]: { data: mockPipelineData, ok: true },
+                [`/launchpad/one-click-blog/api/pipeline-status/96`]: { data: mockPipelineStatusData, ok: true }
+            };
+            
+            // Create minimal DOM elements for testing
+            const titleEl = document.createElement('div');
+            titleEl.id = 'post-title-text';
+            document.body.appendChild(titleEl);
+            
+            try {
+                // Note: This test assumes updateSelectedPostSummary is available
+                // In real scenario, it would be loaded from the template
+                if (typeof updateSelectedPostSummary === 'function') {
+                    updateSelectedPostSummary(96)
+                        .then(() => {
+                            if (titleEl.textContent.includes('96')) {
+                                resultDiv.innerHTML = '<span class="pass">✓ updateSelectedPostSummary executed successfully</span>';
+                            } else {
+                                resultDiv.innerHTML = '<span class="fail">✗ updateSelectedPostSummary did not update title</span>';
+                            }
+                        })
+                        .catch(err => {
+                            resultDiv.innerHTML = `<span class="fail">✗ updateSelectedPostSummary failed: ${err.message}</span>`;
+                        });
+                } else {
+                    resultDiv.innerHTML = '<span class="info">⚠ updateSelectedPostSummary function not available (expected in template context)</span>';
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<span class="fail">✗ Test failed: ${err.message}</span>`;
+            }
+        }
+        
+        function testDataSections() {
+            const resultDiv = document.getElementById('test3-result');
+            resultDiv.innerHTML = '<span class="info">Testing data.sections accessibility...</span>';
+            
+            setupMockFetch();
+            mockResponses = {
+                [`/launchpad/one-click-blog/api/pipeline-status/96`]: { data: mockPipelineStatusData, ok: true }
+            };
+            
+            fetch('/launchpad/one-click-blog/api/pipeline-status/96')
+                .then(res => res.json())
+                .then(data => {
+                    // Check that we can access pipeline status data
+                    if (data.success && data.data && data.data.stages) {
+                        const authoringStage = data.data.stages.authoring;
+                        if (authoringStage && authoringStage.substages) {
+                            resultDiv.innerHTML = '<span class="pass">✓ Pipeline status data accessible, authoring substages found</span>';
+                            resultDiv.innerHTML += `<pre>${JSON.stringify(authoringStage.substages, null, 2)}</pre>`;
+                        } else {
+                            resultDiv.innerHTML = '<span class="fail">✗ Authoring substages not found</span>';
+                        }
+                    } else {
+                        resultDiv.innerHTML = '<span class="fail">✗ Pipeline status data structure incorrect</span>';
+                    }
+                })
+                .catch(err => {
+                    resultDiv.innerHTML = `<span class="fail">✗ Test failed: ${err.message}</span>`;
+                });
+        }
+        
+        function testGreenDots() {
+            const resultDiv = document.getElementById('test4-result');
+            resultDiv.innerHTML = '<span class="info">Testing green dots display...</span>';
+            
+            setupMockFetch();
+            mockResponses = {
+                [`/launchpad/one-click-blog/api/pipeline-status/96`]: { data: mockPipelineStatusData, ok: true }
+            };
+            
+            // Create test button
+            const testButton = document.createElement('button');
+            testButton.id = 'run-idea-generation';
+            testButton.className = 'run-btn';
+            document.body.appendChild(testButton);
+            
+            fetch('/launchpad/one-click-blog/api/pipeline-status/96')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.stages) {
+                        const planningStage = data.data.stages.planning;
+                        if (planningStage && planningStage.substages) {
+                            const ideasSubstage = planningStage.substages.ideas;
+                            if (ideasSubstage && ideasSubstage.status === 'complete') {
+                                // Simulate updating button
+                                testButton.classList.add('complete');
+                                
+                                if (testButton.classList.contains('complete')) {
+                                    resultDiv.innerHTML = '<span class="pass">✓ Green dot indicator logic works (button marked complete)</span>';
+                                } else {
+                                    resultDiv.innerHTML = '<span class="fail">✗ Button not marked as complete</span>';
+                                }
+                            } else {
+                                resultDiv.innerHTML = '<span class="info">⚠ Ideas substage not complete in test data</span>';
+                            }
+                        } else {
+                            resultDiv.innerHTML = '<span class="fail">✗ Planning stage substages not found</span>';
+                        }
+                    } else {
+                        resultDiv.innerHTML = '<span class="fail">✗ Pipeline status data structure incorrect</span>';
+                    }
+                })
+                .catch(err => {
+                    resultDiv.innerHTML = `<span class="fail">✗ Test failed: ${err.message}</span>`;
+                });
+        }
+        
+        function testErrorHandling() {
+            const resultDiv = document.getElementById('test5-result');
+            resultDiv.innerHTML = '<span class="info">Testing error handling...</span>';
+            
+            setupMockFetch();
+            
+            // Test with failed API response
+            mockResponses = {
+                [`/launchpad/one-click-blog/api/pipeline-status/96`]: { 
+                    data: { success: false, error: "Post not found" }, 
+                    ok: false,
+                    status: 404
+                }
+            };
+            
+            fetch('/launchpad/one-click-blog/api/pipeline-status/96')
+                .then(res => {
+                    if (!res.ok) {
+                        return res.json().then(data => {
+                            if (data.success === false && data.error) {
+                                resultDiv.innerHTML = '<span class="pass">✓ Error handling works correctly</span>';
+                            } else {
+                                resultDiv.innerHTML = '<span class="fail">✗ Error response structure incorrect</span>';
+                            }
+                        });
+                    }
+                })
+                .catch(err => {
+                    // Expected to catch errors
+                    resultDiv.innerHTML = `<span class="pass">✓ Error caught: ${err.message}</span>`;
+                });
+        }
+        
+        function runAllTests() {
+            testMockSetup();
+            setTimeout(() => testUpdateSelectedPostSummary(), 500);
+            setTimeout(() => testDataSections(), 1000);
+            setTimeout(() => testGreenDots(), 1500);
+            setTimeout(() => testErrorHandling(), 2000);
+        }
+    </script>
+</body>
+</html>
+

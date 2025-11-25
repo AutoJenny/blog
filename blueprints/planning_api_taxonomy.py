@@ -128,9 +128,9 @@ def generate_taxonomy():
         if not expanded_idea:
             return jsonify({'success': False, 'error': 'expanded_idea is required'}), 400
         
-        # CRITICAL: If year/week provided, find the correct post_id for that week
-        # This ensures taxonomy is assigned to the right post, not the URL's post_id
-        if year and week_number and post_id:
+        # Get week theme_id if year/week provided (for LLM context, but don't change post_id)
+        # Always use the requested post_id - don't redirect to a different post
+        if year and week_number:
             with db_manager.get_cursor() as cursor:
                 # Check if new tables exist
                 cursor.execute("""
@@ -149,8 +149,7 @@ def generate_taxonomy():
                 has_new_tables = table_check['has_selection'] and table_check['has_posts']
                 
                 if has_new_tables:
-                    # Use new V2 architecture - get selected theme and post from same week
-                    # Get selected theme for this week
+                    # Use new V2 architecture - get selected theme for this week
                     cursor.execute("""
                         SELECT selected_theme_id
                         FROM calendar_week_selection
@@ -161,25 +160,6 @@ def generate_taxonomy():
                     if week_selection:
                         week_theme_id = week_selection['selected_theme_id']
                         logger.info(f"Week {year}/{week_number} has selected theme_id {week_theme_id}")
-                        
-                        # Get post from same week (first post if multiple)
-                        cursor.execute("""
-                            SELECT cwp.post_id
-                            FROM calendar_week_posts cwp
-                            WHERE cwp.year = %s AND cwp.week_number = %s
-                            ORDER BY cwp.created_at DESC
-                            LIMIT 1
-                        """, (year, week_number))
-                        
-                        week_post = cursor.fetchone()
-                        
-                        if week_post and week_post['post_id']:
-                            # Use the post from this week (not cross-week matching)
-                            old_post_id = post_id
-                            post_id = week_post['post_id']
-                            logger.info(f"Found post {post_id} for week {year}/{week_number} (instead of URL post_id {old_post_id})")
-                        else:
-                            logger.warn(f"No post found for week {year}/{week_number}, using provided post_id {post_id}")
                     else:
                         week_theme_id = None
                 else:
@@ -199,25 +179,6 @@ def generate_taxonomy():
                     if week_theme:
                         week_theme_id = week_theme['theme_id']
                         logger.info(f"Week {year}/{week_number} has theme_id {week_theme_id}")
-                        
-                        # Find post from same week
-                        cursor.execute("""
-                            SELECT cs2.post_id
-                            FROM calendar_schedule cs2
-                            WHERE cs2.year = %s AND cs2.week_number = %s
-                              AND cs2.post_id IS NOT NULL
-                            ORDER BY cs2.created_at DESC
-                            LIMIT 1
-                        """, (year, week_number))
-                        
-                        theme_post = cursor.fetchone()
-                        
-                        if theme_post and theme_post['post_id']:
-                            old_post_id = post_id
-                            post_id = theme_post['post_id']
-                            logger.info(f"Found post {post_id} for week {year}/{week_number} (instead of URL post_id {old_post_id})")
-                        else:
-                            logger.warn(f"No post found for week {year}/{week_number}, using provided post_id {post_id}")
                     else:
                         week_theme_id = None
         
@@ -800,55 +761,11 @@ Return ONLY the JSON object, no other text, no markdown code blocks, no explanat
                     'error': f'Content type {content_type_id} does not belong to theme {theme_id}. Content type belongs to theme {content_type["parent_id"]}.'
                 }), 400
         
-        # CRITICAL: If year/week provided, validate that post_id matches the week's theme
-        # This prevents assigning wrong taxonomy when viewing a different week
-        if post_id and year and week_number:
-            with db_manager.get_cursor() as cursor:
-                # Check if the post_id being used has a different theme than what we generated
-                cursor.execute("""
-                    SELECT p.theme_id, cs.theme_id as schedule_theme_id
-                    FROM post p
-                    LEFT JOIN calendar_schedule cs ON p.id = cs.post_id
-                    WHERE p.id = %s
-                    ORDER BY cs.created_at DESC
-                    LIMIT 1
-                """, (post_id,))
-                
-                post_check = cursor.fetchone()
-                
-                # Find the week's theme
-                cursor.execute("""
-                    SELECT cs.theme_id
-                    FROM calendar_schedule cs
-                    WHERE cs.year = %s 
-                      AND cs.week_number = %s
-                      AND cs.theme_id IS NOT NULL
-                    ORDER BY cs.created_at DESC
-                    LIMIT 1
-                """, (year, week_number))
-                
-                week_theme_check = cursor.fetchone()
-                
-                # If post's schedule theme doesn't match week's theme, find the correct post
-                if week_theme_check and post_check:
-                    if post_check.get('schedule_theme_id') != week_theme_check['theme_id']:
-                        logger.warn(f"Post {post_id} theme mismatch: post has theme_id {post_check.get('schedule_theme_id')}, week has {week_theme_check['theme_id']}")
-                        
-                        # Find post with the week's theme
-                        cursor.execute("""
-                            SELECT cs2.post_id
-                            FROM calendar_schedule cs2
-                            WHERE cs2.theme_id = %s
-                              AND cs2.post_id IS NOT NULL
-                            ORDER BY cs2.created_at DESC
-                            LIMIT 1
-                        """, (week_theme_check['theme_id'],))
-                        
-                        correct_post = cursor.fetchone()
-                        
-                        if correct_post and correct_post['post_id']:
-                            logger.info(f"Redirecting taxonomy assignment from post {post_id} to post {correct_post['post_id']} (matches week {year}/{week_number} theme)")
-                            post_id = correct_post['post_id']
+        # NOTE: Always assign taxonomy to the requested post_id
+        # The redirect logic was removed because users expect taxonomy to be assigned
+        # to the post they're viewing, regardless of theme mismatches.
+        # If there's a theme mismatch, the taxonomy assignment will update the post's theme_id
+        # to match the generated taxonomy, which is the correct behavior.
         
         # If post_id provided, automatically assign the taxonomy
         assigned_post_id = post_id
