@@ -169,191 +169,113 @@
     <div class="sub-stages-line" id="sub-stages-line">
         <!-- Sub-stage Navigation -->
         <div class="sub-stages" id="sub-stages">
-            {% if post_type not in ['recipe', 'profile', 'generated'] %}
+            {% set calendar_substages = get_substages_for_navbar(post_type or 'themed', 'calendar') %}
+            {% if calendar_substages %}
             <!-- Calendar sub-stages -->
             <div class="sub-stage-group" data-stage="calendar">
-                <!-- All calendar substages are shared -->
-                <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="view">
-                    Calendar View
-                </a>
-                <a href="{{ url_for('planning.planning_calendar_week_view', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="week-view">
-                    Week View
-                </a>
-                <a href="#" 
-                   id="week-themes-link"
-                   class="sub-stage-btn sub-stage-shared" 
-                   data-substage="ideas-week">
-                    Week Themes
-                </a>
+                {% for substage in calendar_substages %}
+                    {% if substage.route_function %}
+                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
+                           class="sub-stage-btn sub-stage-shared" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {{ substage.label }}
+                        </a>
+                    {% else %}
+                        <a href="#" 
+                           id="week-themes-link"
+                           class="sub-stage-btn sub-stage-shared" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {{ substage.label }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
+            {% endif %}
             
             <!-- Planning sub-stages -->
             <div class="sub-stage-group" data-stage="concept">
-                <!-- All planning substages are shared (themed posts) -->
-                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="ideas">
-                    Ideas
-                </a>
-                <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="taxonomy">
-                    Taxonomy
-                </a>
-                <a href="{{ url_for('planning.planning_concept_section_structure', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="section-structure">
-                    Section Structure Design
-                </a>
-                <a href="{{ url_for('planning.planning_concept_topic_allocation', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="topic-allocation">
-                    Section Ideas
-                </a>
-                <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="titling">
-                    Section Titling
-                </a>
+                {% set planning_substages = get_substages_for_navbar(post_type or 'themed', 'planning') %}
+                {% for substage in planning_substages %}
+                    {% if substage.route_function %}
+                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
+                           class="sub-stage-btn {% if post_type == 'generated' and substage.key in ['product_data_review', 'section_content_mapping'] %}sub-stage-generated{% elif post_type == 'recipe' and substage.key == 'recipe_image_style_prompt' %}sub-stage-recipe{% else %}sub-stage-shared{% endif %}" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {% if post_type == 'generated' and substage.key in ['product_data_review', 'section_content_mapping'] %}
+                                <i class="fas fa-magic" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                            {% elif post_type == 'recipe' and substage.key == 'recipe_image_style_prompt' %}
+                                <i class="fas fa-utensils" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                            {% endif %}
+                            {{ substage.label }}
+                        </a>
+                    {% else %}
+                        <a href="#" 
+                           class="sub-stage-btn sub-stage-shared" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {{ substage.label }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
             
+            {% set research_substages = get_substages_for_navbar(post_type or 'themed', 'research') %}
+            {% if research_substages %}
             <!-- Research sub-stages -->
             <div class="sub-stage-group" data-stage="research">
-                <a href="{{ url_for('planning.planning_research', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="research">
-                    Research Overview
-                </a>
-                <a href="{{ url_for('planning.planning_research_sources', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="sources">
-                    Sources
-                </a>
-                <a href="{{ url_for('planning.planning_research_visuals', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="visuals">
-                    Visuals
-                </a>
-                <a href="{{ url_for('planning.planning_research_prompts', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="prompts">
-                    Prompts
-                </a>
-                <a href="{{ url_for('planning.planning_research_verification', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="verification">
-                    Verification
-                </a>
-            </div>
-            {% elif post_type == 'profile' %}
-            <!-- Planning sub-stages for profile posts -->
-            <div class="sub-stage-group" data-stage="concept">
-                <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="taxonomy">
-                    Taxonomy
-                </a>
-                <a href="{{ url_for('planning.planning_concept_section_structure', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="section-structure">
-                    Section Structure Design
-                </a>
-                <a href="{{ url_for('planning.planning_concept_topic_allocation', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="topic-allocation">
-                    Section Ideas
-                </a>
-                <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="titling">
-                    Section Titling
-                </a>
-            </div>
-            {% elif post_type == 'generated' %}
-            <!-- Planning sub-stages for generated posts (simplified pipeline) -->
-            <div class="sub-stage-group" data-stage="concept">
-                <!-- Shared substage -->
-                <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="taxonomy">
-                    Taxonomy
-                </a>
-                <!-- Type-specific: Generated -->
-                <a href="{{ url_for('planning.planning_calendar_product_data_review', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-generated" data-substage="product-data-review">
-                    <i class="fas fa-magic" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
-                    Product Data Review
-                </a>
-                <!-- Type-specific: Generated -->
-                <a href="{{ url_for('planning.planning_concept_section_content_mapping', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-generated" data-substage="section-content-mapping">
-                    <i class="fas fa-magic" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
-                    Section Content Mapping
-                </a>
-                <!-- Shared substage -->
-                <a href="{{ url_for('planning.planning_concept_titling', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="titling">
-                    Section Titling
-                </a>
+                {% for substage in research_substages %}
+                    {% if substage.route_function %}
+                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
+                           class="sub-stage-btn sub-stage-shared" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {{ substage.label }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
             {% endif %}
             
             <!-- Authoring sub-stages -->
             <div class="sub-stage-group" data-stage="authoring">
-                <!-- Shared substage -->
-                <a href="{{ url_for('authoring.authoring_sections_drafting', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="drafting">
-                    Drafting
-                </a>
-                {% if post_type == 'recipe' %}
-                <!-- Type-specific: Recipe -->
-                <a href="{{ url_for('recipes_imaging.recipe_image_style_prompt', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-recipe" data-substage="recipe-image-style-prompt">
-                    <i class="fas fa-utensils" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
-                    Image Style & Prompts
-                </a>
-                {% else %}
-                <!-- Shared substages -->
-                <a href="{{ url_for('authoring_imaging.authoring_sections_image_concepts', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="image-concepts">
-                    Image Concepts
-                </a>
-                <a href="{{ url_for('authoring_imaging.authoring_sections_image_prompts', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="image-prompts">
-                    Image Prompts
-                </a>
-                {% endif %}
-                <!-- Shared substage -->
-                <a href="{{ url_for('authoring_imaging.authoring_sections_image_captions', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="image-captions">
-                    Image Captions
-                </a>
+                {% set authoring_substages = get_substages_for_navbar(post_type or 'themed', 'authoring') %}
+                {% for substage in authoring_substages %}
+                    {% if substage.route_function %}
+                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
+                           class="sub-stage-btn {% if post_type == 'recipe' and substage.key == 'recipe_image_style_prompt' %}sub-stage-recipe{% else %}sub-stage-shared{% endif %}" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {% if post_type == 'recipe' and substage.key == 'recipe_image_style_prompt' %}
+                                <i class="fas fa-utensils" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                            {% endif %}
+                            {{ substage.label }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
             
             <!-- Imaging sub-stages -->
             <div class="sub-stage-group" data-stage="imaging">
-                <!-- Photo-harvesting is deprecated, always use LLM-creation -->
-                <a href="{{ url_for('imaging.imaging_sections_image_generation', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="image-generation">
-                    Image Generation
-                </a>
-                <!-- Shared substage -->
-                <a href="{{ url_for('imaging.imaging_sections_optimise', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="optimise">
-                    Optimise
-                </a>
+                {% set imaging_substages = get_substages_for_navbar(post_type or 'themed', 'imaging') %}
+                {% for substage in imaging_substages %}
+                    {% if substage.route_function %}
+                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
+                           class="sub-stage-btn sub-stage-shared" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {{ substage.label }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
             
             <!-- Header sub-stages -->
             <div class="sub-stage-group" data-stage="header">
-                <!-- All header substages are shared -->
-                <a href="{{ url_for('header.header_title_summary', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="title-summary">
-                    Title & Summary
-                </a>
-                <a href="{{ url_for('header.header_header_image', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="header-image">
-                    Header Image
-                </a>
-                <a href="{{ url_for('header.header_seo_meta', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="seo-meta">
-                    SEO & Meta
-                </a>
-                <a href="{{ url_for('header.header_product_match', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="product-match">
-                    Product Match
-                </a>
-                <a href="{{ url_for('header.header_final_review', post_id=post_id) }}" 
-                   class="sub-stage-btn sub-stage-shared" data-substage="final-review">
-                    Final Review
-                </a>
+                {% set header_substages = get_substages_for_navbar(post_type or 'themed', 'header') %}
+                {% for substage in header_substages %}
+                    {% if substage.route_function %}
+                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
+                           class="sub-stage-btn sub-stage-shared" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {{ substage.label }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
         
