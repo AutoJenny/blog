@@ -5,7 +5,9 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const postId = window.postId;
-    let assignedPostId = postId; // Track the post_id that taxonomy is actually assigned to
+    // CRITICAL: Load assignedPostId from localStorage if available, otherwise use postId
+    const storageKey = `taxonomy_assigned_post_${postId}`;
+    let assignedPostId = localStorage.getItem(storageKey) ? parseInt(localStorage.getItem(storageKey)) : postId;
     
     // DOM elements
     const themeSelect = document.getElementById('theme-select');
@@ -97,7 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                     if (postByThemeData.success && postByThemeData.post_id) {
                                         targetPostId = postByThemeData.post_id;
                                         assignedPostId = targetPostId; // Remember it for future operations
-                                        console.log(`[Taxonomy Display] Using post ${targetPostId} for week ${year}/${week} theme`);
+                                        localStorage.setItem(storageKey, assignedPostId.toString());
+                                        console.log(`[Taxonomy Display] Using post ${targetPostId} for week ${year}/${week} theme - saved to localStorage`);
                                     }
                                 }
                             }
@@ -114,6 +117,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success && data.taxonomy.theme_id) {
                 currentTaxonomy = data.taxonomy;
                 displayCurrentTaxonomy(data.taxonomy);
+                
+                // CRITICAL: Update assignedPostId to the post we just loaded from, and persist it
+                if (targetPostId !== assignedPostId) {
+                    assignedPostId = targetPostId;
+                    localStorage.setItem(storageKey, assignedPostId.toString());
+                    console.log(`[Taxonomy] Updated assignedPostId to ${assignedPostId} after loading taxonomy`);
+                }
                 
                 // Pre-select in form
                 themeSelect.value = data.taxonomy.theme_id;
@@ -326,7 +336,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // CRITICAL: Update assignedPostId to the post that actually received the taxonomy
                 if (data.assigned_post_id) {
                     assignedPostId = data.assigned_post_id;
-                    console.log(`[Taxonomy] Taxonomy assigned to post ${assignedPostId} (was ${postId})`);
+                    // Persist to localStorage so it survives page reloads
+                    localStorage.setItem(storageKey, assignedPostId.toString());
+                    console.log(`[Taxonomy] Taxonomy assigned to post ${assignedPostId} (was ${postId}) - saved to localStorage`);
                 }
                 
                 // Populate form with generated taxonomy
@@ -415,6 +427,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (data.success) {
+                // Ensure assignedPostId is persisted
+                localStorage.setItem(storageKey, assignedPostId.toString());
                 // Reload current taxonomy display
                 await loadCurrentTaxonomy();
                 

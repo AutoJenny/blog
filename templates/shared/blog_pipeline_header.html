@@ -55,20 +55,28 @@
         <!-- Post Type Header -->
         {% if post_type %}
         <div class="post-type-header">
-            <span class="post-type-label">Post type:</span>
-            <span class="post-type-value">
-                {% if post_type == 'recipe' %}
-                    RECIPE
-                {% elif post_type == 'profile' %}
-                    PROFILE
-                {% elif post_type == 'generated' %}
-                    GENERATED
-                {% elif post_type == 'themed' %}
-                    THEMED
-                {% else %}
-                    {{ post_type.upper() }}
-                {% endif %}
-            </span>
+            <!-- 1-click link - left aligned -->
+            <a href="/launchpad/one-click-blog?post_id={{ post_id }}{% if request.args.get('year') %}&year={{ request.args.get('year') }}{% endif %}{% if request.args.get('week') %}&week={{ request.args.get('week') }}{% endif %}" 
+               class="one-click-link" 
+               style="color: white; text-decoration: none; font-size: 0.875rem; position: absolute; left: 1rem;">
+                1-click
+            </a>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="post-type-label">Post type:</span>
+                <span class="post-type-value">
+                    {% if post_type == 'recipe' %}
+                        RECIPE
+                    {% elif post_type == 'profile' %}
+                        PROFILE
+                    {% elif post_type == 'generated' %}
+                        GENERATED
+                    {% elif post_type == 'themed' %}
+                        THEMED
+                    {% else %}
+                        {{ post_type.upper() }}
+                    {% endif %}
+                </span>
+            </div>
             <button class="post-type-settings-btn" 
                     id="post-type-settings-btn"
                     title="View Post Type Settings"
@@ -184,6 +192,10 @@
             <!-- Planning sub-stages -->
             <div class="sub-stage-group" data-stage="concept">
                 <!-- All planning substages are shared (themed posts) -->
+                <a href="{{ url_for('planning.planning_calendar_ideas', post_id=post_id) }}" 
+                   class="sub-stage-btn sub-stage-shared" data-substage="ideas">
+                    Ideas
+                </a>
                 <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
                    class="sub-stage-btn sub-stage-shared" data-substage="taxonomy">
                     Taxonomy
