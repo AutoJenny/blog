@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, request
 import json
 from datetime import datetime, timedelta, date
 from config.database import db_manager
+from config.post_type_substages import get_substages_for_post_type, is_substage_valid_for_post_type
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,11 +21,19 @@ def get_pipeline_status(post_id):
             # Get post basic info with timestamps
             cursor.execute("""
                 SELECT p.id, p.title, p.status, p.updated_at,
+                       p.theme_id, p.content_type_id, p.format_id,
+                       p.summary, p.subtitle, p.header_image_id, 
+                       p.header_image_caption, p.header_image_alt_text,
+                       p.meta_title, p.meta_description, p.meta_tags, p.slug,
+                       p.profile_product_id, p.cross_promotion_product_id,
+                       p.recipe_id, p.profile_category_id, p.generated_source_type,
                        pd.sections, pd.topic_allocation, pd.section_structure,
-                       pd.idea_scope, pd.structure_design_at, pd.allocation_completed_at,
+                       pd.idea_scope, pd.expanded_idea,
+                       pd.structure_design_at, pd.allocation_completed_at,
                        pd.refinement_completed_at, pd.updated_at as sections_updated_at,
                        pd.updated_at as authoring_updated_at,
                        pd.updated_at as image_concepts_updated_at,
+                       pd.updated_at as planning_updated_at,
                        p.created_at as post_updated_at
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
@@ -36,18 +45,54 @@ def get_pipeline_status(post_id):
             if not post:
                 return jsonify({"success": False, "error": "Post not found"}), 404
             
-            # Get section completion status
+            # Determine post_type from post fields (same logic as get_post_type())
+            if post.get('recipe_id') is not None:
+                post_type = 'recipe'
+            elif post.get('profile_category_id') is not None:
+                post_type = 'profile'
+            elif post.get('generated_source_type') is not None:
+                post_type = 'generated'
+            else:
+                post_type = 'themed'
+            
+            # Get section completion status (limit to section_order <= 7)
             cursor.execute("""
                 SELECT COUNT(*) as total,
                        SUM(CASE WHEN draft IS NOT NULL AND draft != '' THEN 1 ELSE 0 END) as drafted,
                        SUM(CASE WHEN image_concepts IS NOT NULL AND image_concepts != '' THEN 1 ELSE 0 END) as image_concepts_count,
                        SUM(CASE WHEN image_prompts IS NOT NULL AND image_prompts != '' THEN 1 ELSE 0 END) as image_prompts_count,
-                       SUM(CASE WHEN image_captions IS NOT NULL AND image_captions != '' THEN 1 ELSE 0 END) as image_captions_count
+                       SUM(CASE WHEN image_captions IS NOT NULL AND image_captions != '' THEN 1 ELSE 0 END) as image_captions_count,
+                       SUM(CASE WHEN image_filename IS NOT NULL AND image_filename != '' THEN 1 ELSE 0 END) as image_generated_count,
+                       MAX(image_generated_at) as last_image_generated_at
                 FROM post_section
-                WHERE post_id = %s
+                WHERE post_id = %s AND section_order <= 7
             """, (post_id,))
             
             section_stats = cursor.fetchone()
+            
+            # Check image optimization completion
+            cursor.execute("""
+                SELECT 
+                    COUNT(DISTINCT ps.id) as total_sections,
+                    COUNT(DISTINCT pi.section_id) as optimized_sections,
+                    MAX(pi.created_at) as last_optimized_at
+                FROM post_section ps
+                LEFT JOIN post_images pi ON ps.id = pi.section_id AND pi.image_type = 'section_optimized'
+                WHERE ps.post_id = %s AND ps.section_order <= 7
+            """, (post_id,))
+            
+            optimization_stats = cursor.fetchone()
+            
+            # Check calendar assignment
+            cursor.execute("""
+                SELECT EXISTS(
+                    SELECT 1 FROM calendar_schedule 
+                    WHERE post_id = %s
+                ) as is_scheduled
+            """, (post_id,))
+            
+            calendar_result = cursor.fetchone()
+            is_calendar_assigned = calendar_result['is_scheduled'] if calendar_result else False
             
             # Check image concepts completion from JSON data
             image_concepts_complete = False
@@ -90,11 +135,71 @@ def get_pipeline_status(post_id):
                     image_prompts_complete = False
                     image_captions_complete = False
             
-            # Calculate stage statuses
-            planning_complete = bool(post['topic_allocation'] and post['section_structure'])
+            # Calculate completion statuses for each substage
+            
+            # Planning substages
+            ideas_complete = bool(post.get('expanded_idea') and post['expanded_idea'].strip() != '')
+            taxonomy_complete = bool(
+                post.get('theme_id') is not None and 
+                post.get('content_type_id') is not None and 
+                post.get('format_id') is not None
+            )
+            topic_brainstorming_complete = bool(post.get('idea_scope') and post['idea_scope'].strip() != '')
+            section_structure_complete = bool(post.get('section_structure'))
+            topic_allocation_complete = bool(post.get('topic_allocation'))
+            section_titling_complete = bool(post.get('sections') and post['sections'].strip() != '')
+            
+            # Planning stage complete if all planning substages are complete
+            planning_complete = bool(
+                ideas_complete and taxonomy_complete and 
+                topic_brainstorming_complete and section_structure_complete and
+                topic_allocation_complete and section_titling_complete
+            )
+            
+            # Authoring substages
             authoring_progress = 0
             if section_stats and section_stats['total'] > 0:
                 authoring_progress = int((section_stats['drafted'] / section_stats['total']) * 100)
+            
+            author_first_drafts_complete = (authoring_progress == 100 and section_stats['total'] > 0)
+            
+            # Image generation and optimization
+            image_generation_complete = False
+            image_generation_progress = 0
+            if section_stats and section_stats['total'] > 0:
+                image_generation_progress = int((section_stats['image_generated_count'] / section_stats['total']) * 100)
+                image_generation_complete = (section_stats['image_generated_count'] == section_stats['total'])
+            
+            image_optimization_complete = False
+            image_optimization_progress = 0
+            if optimization_stats and optimization_stats['total_sections'] > 0:
+                image_optimization_progress = int((optimization_stats['optimized_sections'] / optimization_stats['total_sections']) * 100)
+                image_optimization_complete = (optimization_stats['optimized_sections'] == optimization_stats['total_sections'])
+            
+            # Header substages
+            title_summary_complete = bool(
+                post.get('title') and post['title'].strip() != '' and
+                post.get('summary') and post['summary'].strip() != ''
+            )
+            
+            header_image_complete = bool(post.get('header_image_id') is not None)
+            
+            seo_meta_complete = bool(
+                post.get('meta_title') and post['meta_title'].strip() != '' and
+                post.get('meta_description') and post['meta_description'].strip() != '' and
+                post.get('slug') and post['slug'].strip() != ''
+            )
+            
+            product_match_complete = bool(
+                post.get('profile_product_id') is not None or 
+                post.get('cross_promotion_product_id') is not None
+            )
+            
+            # Final review: all header substages complete
+            final_review_complete = bool(
+                title_summary_complete and header_image_complete and 
+                seo_meta_complete
+            )
             
             # Determine overall progress
             overall_progress = 0
@@ -102,9 +207,12 @@ def get_pipeline_status(post_id):
                 overall_progress += 40
             overall_progress += int(authoring_progress * 0.6)
             
-            # Extract topic brainstorming timestamp from idea_scope
+            # Extract timestamps
+            ideas_completed_at = post.get('planning_updated_at') if ideas_complete and post.get('planning_updated_at') else None
+            taxonomy_completed_at = post.get('updated_at') if taxonomy_complete and post.get('updated_at') else None
+            
             topic_brainstorming_at = None
-            if post['idea_scope']:
+            if post.get('idea_scope'):
                 try:
                     idea_scope_data = json.loads(post['idea_scope']) if isinstance(post['idea_scope'], str) else post['idea_scope']
                     if isinstance(idea_scope_data, dict) and 'generated_at' in idea_scope_data:
@@ -112,60 +220,168 @@ def get_pipeline_status(post_id):
                 except (json.JSONDecodeError, ValueError, TypeError):
                     pass
             
+            image_generation_completed_at = section_stats.get('last_image_generated_at') if image_generation_complete and section_stats and section_stats.get('last_image_generated_at') else None
+            image_optimization_completed_at = optimization_stats.get('last_optimized_at') if image_optimization_complete and optimization_stats and optimization_stats.get('last_optimized_at') else None
+            
+            header_completed_at = post.get('updated_at') if final_review_complete and post.get('updated_at') else None
+            
+            # Build all substage data (before filtering by post_type)
+            all_substages_data = {
+                "calendar": {
+                    "calendar_view": {
+                        "status": "complete",
+                        "completed_at": None,
+                        "progress": 100
+                    },
+                    "idea_generation": {
+                        "status": "complete" if is_calendar_assigned else "pending",
+                        "completed_at": None,
+                        "progress": 100 if is_calendar_assigned else 0
+                    }
+                },
+                "planning": {
+                    "ideas": {
+                        "status": "complete" if ideas_complete else "pending",
+                        "completed_at": ideas_completed_at.isoformat() if ideas_completed_at else None,
+                        "progress": 100 if ideas_complete else 0
+                    },
+                    "taxonomy": {
+                        "status": "complete" if taxonomy_complete else "pending",
+                        "completed_at": taxonomy_completed_at.isoformat() if taxonomy_completed_at else None,
+                        "progress": 100 if taxonomy_complete else 0
+                    },
+                    "topic_brainstorming": {
+                        "status": "complete" if topic_brainstorming_complete else "pending",
+                        "completed_at": topic_brainstorming_at.isoformat() if topic_brainstorming_at else None,
+                        "progress": 100 if topic_brainstorming_complete else 0
+                    },
+                    "section_structure": {
+                        "status": "complete" if section_structure_complete else "pending",
+                        "completed_at": post.get('structure_design_at').isoformat() if post.get('structure_design_at') else None,
+                        "progress": 100 if section_structure_complete else 0
+                    },
+                    "topic_allocation": {
+                        "status": "complete" if topic_allocation_complete else "pending",
+                        "completed_at": post.get('allocation_completed_at').isoformat() if post.get('allocation_completed_at') else None,
+                        "progress": 100 if topic_allocation_complete else 0
+                    },
+                    "section_titling": {
+                        "status": "complete" if section_titling_complete else "pending",
+                        "completed_at": post.get('sections_updated_at').isoformat() if post.get('sections_updated_at') else None,
+                        "progress": 100 if section_titling_complete else 0
+                    },
+                    "product_data_review": {
+                        "status": "pending",  # TODO: Add completion logic for generated posts
+                        "completed_at": None,
+                        "progress": 0
+                    },
+                    "section_content_mapping": {
+                        "status": "pending",  # TODO: Add completion logic for generated posts
+                        "completed_at": None,
+                        "progress": 0
+                    }
+                },
+                "authoring": {
+                    "author_first_drafts": {
+                        "status": "complete" if author_first_drafts_complete else ("in_progress" if authoring_progress > 0 else "pending"),
+                        "completed_at": post['updated_at'].isoformat() if author_first_drafts_complete and post['updated_at'] else None,
+                        "progress": authoring_progress
+                    },
+                    "image_concepts": {
+                        "status": "complete" if image_concepts_complete else ("in_progress" if sections_with_concepts > 0 else "pending"),
+                        "completed_at": post.get('authoring_updated_at').isoformat() if image_concepts_complete and post.get('authoring_updated_at') else None,
+                        "progress": int((sections_with_concepts / total_sections * 100)) if total_sections > 0 else 0
+                    },
+                    "image_prompts": {
+                        "status": "complete" if image_prompts_complete else ("in_progress" if sections_with_prompts > 0 else "pending"),
+                        "completed_at": post.get('sections_updated_at').isoformat() if image_prompts_complete and post.get('sections_updated_at') else None,
+                        "progress": int((sections_with_prompts / total_sections * 100)) if total_sections > 0 else 0
+                    },
+                    "image_captions": {
+                        "status": "complete" if image_captions_complete else ("in_progress" if sections_with_captions > 0 else "pending"),
+                        "completed_at": post.get('post_updated_at').isoformat() if image_captions_complete and post.get('post_updated_at') else None,
+                        "progress": int((sections_with_captions / total_sections * 100)) if total_sections > 0 else 0
+                    },
+                    "recipe_image_style_prompt": {
+                        "status": "pending",  # TODO: Add completion logic for recipe posts
+                        "completed_at": None,
+                        "progress": 0
+                    }
+                },
+                "imaging": {
+                    "image_generation": {
+                        "status": "complete" if image_generation_complete else ("in_progress" if image_generation_progress > 0 else "pending"),
+                        "completed_at": image_generation_completed_at.isoformat() if image_generation_completed_at else None,
+                        "progress": image_generation_progress
+                    },
+                    "optimise": {
+                        "status": "complete" if image_optimization_complete else ("in_progress" if image_optimization_progress > 0 else "pending"),
+                        "completed_at": image_optimization_completed_at.isoformat() if image_optimization_completed_at else None,
+                        "progress": image_optimization_progress
+                    }
+                },
+                "header": {
+                    "title_summary": {
+                        "status": "complete" if title_summary_complete else "pending",
+                        "completed_at": post.get('updated_at').isoformat() if title_summary_complete and post.get('updated_at') else None,
+                        "progress": 100 if title_summary_complete else 0
+                    },
+                    "header_image": {
+                        "status": "complete" if header_image_complete else "pending",
+                        "completed_at": post.get('updated_at').isoformat() if header_image_complete and post.get('updated_at') else None,
+                        "progress": 100 if header_image_complete else 0
+                    },
+                    "seo_meta": {
+                        "status": "complete" if seo_meta_complete else "pending",
+                        "completed_at": post.get('updated_at').isoformat() if seo_meta_complete and post.get('updated_at') else None,
+                        "progress": 100 if seo_meta_complete else 0
+                    },
+                    "product_match": {
+                        "status": "complete" if product_match_complete else "pending",
+                        "completed_at": post.get('updated_at').isoformat() if product_match_complete and post.get('updated_at') else None,
+                        "progress": 100 if product_match_complete else 0
+                    },
+                    "final_review": {
+                        "status": "complete" if final_review_complete else "pending",
+                        "completed_at": header_completed_at.isoformat() if header_completed_at else None,
+                        "progress": 100 if final_review_complete else 0
+                    }
+                }
+            }
+            
+            # Filter substages by post_type
+            filtered_stages = {}
+            for stage_name, substages_data in all_substages_data.items():
+                # Get valid substages for this post_type and stage
+                valid_substages = get_substages_for_post_type(post_type, stage_name)
+                
+                # Only include substages that are valid for this post_type
+                filtered_substages = {
+                    key: data for key, data in substages_data.items()
+                    if key in valid_substages
+                }
+                
+                if filtered_substages:
+                    # Calculate stage-level status and progress
+                    stage_status = "complete" if all(s.get("status") == "complete" for s in filtered_substages.values()) else ("in_progress" if any(s.get("status") == "in_progress" for s in filtered_substages.values()) else "pending")
+                    stage_progress = int(sum(s.get("progress", 0) for s in filtered_substages.values()) / len(filtered_substages)) if filtered_substages else 0
+                    
+                    filtered_stages[stage_name] = {
+                        "status": stage_status,
+                        "progress": stage_progress,
+                        "substages": filtered_substages
+                    }
+            
             # Build response
             response_data = {
                 "success": True,
                 "data": {
                     "post_id": post_id,
+                    "post_type": post_type,
                     "title": post['title'],
                     "status": post['status'],
                     "overall_progress": overall_progress,
-                    "stages": {
-                        "planning": {
-                            "status": "complete" if planning_complete else "pending",
-                            "progress": 100 if planning_complete else 0,
-                            "substages": {
-                                "topic_brainstorming": {
-                                    "status": "complete" if post['idea_scope'] else "pending",
-                                    "completed_at": topic_brainstorming_at.isoformat() if topic_brainstorming_at else None
-                                },
-                                "section_structure": {
-                                    "status": "complete" if post['section_structure'] else "pending",
-                                    "completed_at": post['structure_design_at'].isoformat() if post['structure_design_at'] else None
-                                },
-                                "topic_allocation": {
-                                    "status": "complete" if post['topic_allocation'] else "pending",
-                                    "completed_at": post['allocation_completed_at'].isoformat() if post['allocation_completed_at'] else None
-                                },
-                                "section_titling": {
-                                    "status": "complete" if post['sections'] else "pending",
-                                    "completed_at": post['sections_updated_at'].isoformat() if post['sections_updated_at'] else None
-                                }
-                            }
-                        },
-                        "authoring": {
-                            "status": "complete" if authoring_progress == 100 else ("in_progress" if authoring_progress > 0 else "pending"),
-                            "progress": authoring_progress,
-                            "substages": {
-                                "author_first_drafts": {
-                                    "status": "complete" if authoring_progress == 100 else ("in_progress" if authoring_progress > 0 else "pending"),
-                                    "completed_at": post['updated_at'].isoformat() if post['updated_at'] else None
-                                },
-                                "image_concepts": {
-                                    "status": "complete" if image_concepts_complete else ("in_progress" if sections_with_concepts > 0 else "pending"),
-                                    "completed_at": post['authoring_updated_at'].isoformat() if post['authoring_updated_at'] else None
-                                },
-                                "image_prompts": {
-                                    "status": "complete" if image_prompts_complete else ("in_progress" if sections_with_prompts > 0 else "pending"),
-                                    "completed_at": post['sections_updated_at'].isoformat() if post['sections_updated_at'] else None
-                                },
-                                "image_captions": {
-                                    "status": "complete" if image_captions_complete else ("in_progress" if sections_with_captions > 0 else "pending"),
-                                    "completed_at": post['post_updated_at'].isoformat() if post['post_updated_at'] else None
-                                }
-                            }
-                        }
-                    }
+                    "stages": filtered_stages
                 }
             }
             
@@ -173,6 +389,30 @@ def get_pipeline_status(post_id):
             
     except Exception as e:
         logger.error(f"Error getting pipeline status: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/post-types/<post_type>/substages', methods=['GET'])
+def get_substages_for_post_type_api(post_type):
+    """Get substages configuration for a post type"""
+    try:
+        from config.post_type_substages import get_substages_with_metadata
+        
+        # Normalize post_type
+        if post_type not in ['themed', 'profile', 'generated', 'recipe']:
+            post_type = 'themed'
+        
+        # Get substages with metadata
+        stage = request.args.get('stage')
+        substages = get_substages_with_metadata(post_type, stage)
+        
+        return jsonify({
+            "success": True,
+            "post_type": post_type,
+            "stage": stage,
+            "substages": substages
+        })
+    except Exception as e:
+        logger.error(f"Error getting substages for post type: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/posts-in-development', methods=['GET'])
