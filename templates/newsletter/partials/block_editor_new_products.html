@@ -161,6 +161,9 @@
           `;
         }
         previewDiv.innerHTML = html;
+        
+        // Trigger page reload to show products in header
+        setTimeout(() => window.location.reload(), 500);
       } else {
         // Fallback: reload from suggestions endpoint
         await loadProductsPreview(blockId, issueId);
@@ -276,16 +279,55 @@
     }
   }
 
-  // Load preview on page load
+  // Auto-generate products on page load if not already selected
   (function() {
     const blockId = {{ b.id }};
     const issueId = {{ issue_id }};
-    document.addEventListener('DOMContentLoaded', function() {
+    const hasProducts = {{ 'true' if (b.payload_json and b.payload_json.get('items') and b.payload_json.get('items')|length > 0) else 'false' }};
+    let hasGenerated = false;
+    
+    function autoGenerate() {
+      if (hasGenerated) return; // Only run once
+      
       const editor = document.querySelector(`.block-editor-new-products[data-block-id="${blockId}"]`);
-      if (editor) {
+      if (!editor) return;
+      
+      // Find the accordion details element
+      const accordionDetails = document.getElementById(`block-${blockId}`);
+      if (!accordionDetails) return;
+      
+      // Only auto-generate if accordion is open and no products selected
+      if (!accordionDetails.open) {
+        // Set up listener for when accordion opens
+        accordionDetails.addEventListener('toggle', function() {
+          if (this.open && !hasGenerated && hasProducts !== true) {
+            hasGenerated = true;
+            console.log('Auto-generating products for block', blockId);
+            setTimeout(() => rechooseProducts(blockId, issueId), 500);
+          }
+        }, { once: true });
+        return;
+      }
+      
+      // Accordion is already open, generate if no products
+      if (hasProducts !== true) {
+        hasGenerated = true;
+        console.log('Auto-generating products for block', blockId);
+        setTimeout(() => rechooseProducts(blockId, issueId), 1000);
+      } else {
+        // Just load preview if products exist
         loadProductsPreview(blockId, issueId);
       }
-    });
+    }
+    
+    // Wait for page to be fully loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(autoGenerate, 1000);
+      });
+    } else {
+      setTimeout(autoGenerate, 1000);
+    }
   })();
 </script>
 

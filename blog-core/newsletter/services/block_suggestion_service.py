@@ -97,30 +97,14 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
             pass
         
         # If no pool found, create a new one
-        # Use 60 days to get more products
+        # Get top 30 most recently added products that haven't been launched
+        # No date filter - just get the most recent products
         if not product_pool or len(product_pool) == 0:
-            since_date = (datetime.now() - timedelta(days=60)).isoformat()
-            # First try excluding launched products
             product_pool = get_product_pool(
-                since_iso_timestamp=since_date,
-                pool_size=50,
-                exclude_launched=True
+                since_iso_timestamp=None,  # No date filter - get top 30 regardless of date
+                pool_size=30,
+                exclude_launched=True  # Only get products that haven't been launched
             )
-            # If we don't have enough products (less than 10), include launched ones to fill the pool
-            # This ensures we always have a pool to re-choose from
-            if len(product_pool) < 10:
-                product_pool_with_launched = get_product_pool(
-                    since_iso_timestamp=since_date,
-                    pool_size=50,
-                    exclude_launched=False  # Include launched to fill pool
-                )
-                # Merge, keeping unlaunched first, then adding launched
-                existing_ids = {p.get('id') for p in product_pool}
-                for p in product_pool_with_launched:
-                    if p.get('id') not in existing_ids:
-                        product_pool.append(p)
-                        if len(product_pool) >= 50:
-                            break
         
         # Randomly select 3 products from the pool with category diversity
         selected_products = select_random_from_pool(pool=product_pool, limit=3)
