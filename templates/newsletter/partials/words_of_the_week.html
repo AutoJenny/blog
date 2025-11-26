@@ -1,4 +1,4 @@
-{% if block %}
+{% if word_data or phrase_data %}
 <!-- Words of the Week Block Panel -->
 <tr>
   <td style="padding:16px 24px 0 24px;">
@@ -7,27 +7,27 @@
         <td style="padding:20px;">
           <h3 style="margin:0 0 16px 0; font-size:18px; font-weight:700; color:#0c4a6e; font-family:Georgia, 'Times New Roman', serif;">Words of the Week</h3>
           
-          {% if block.word %}
+          {% if word_data %}
           <div style="margin-bottom: 20px; padding: 16px; background: #ffffff; border-radius: 6px; border-left: 4px solid #10b981;">
             <div style="font-size:16px; font-weight:600; color:#0c4a6e; margin:0 0 8px 0; font-family:Arial, Helvetica, sans-serif;">
-              <i class="fa-solid fa-book" style="color: #10b981; margin-right: 8px;"></i>Word: {{ block.word.title }}
+              <i class="fa-solid fa-book" style="color: #10b981; margin-right: 8px;"></i>Word: {{ word_data.title }}
             </div>
-            {% if block.word.description %}
+            {% if word_data.description %}
             <div style="font-size:14px; line-height:1.6; color:#1e293b; font-family:Arial, Helvetica, sans-serif;">
-              {{ block.word.description | safe }}
+              {{ word_data.description | safe }}
             </div>
             {% endif %}
           </div>
           {% endif %}
           
-          {% if block.phrase %}
+          {% if phrase_data %}
           <div style="padding: 16px; background: #ffffff; border-radius: 6px; border-left: 4px solid #10b981;">
             <div style="font-size:16px; font-weight:600; color:#0c4a6e; margin:0 0 8px 0; font-family:Arial, Helvetica, sans-serif;">
-              <i class="fa-solid fa-quote-left" style="color: #10b981; margin-right: 8px;"></i>Phrase: {{ block.phrase.title }}
+              <i class="fa-solid fa-quote-left" style="color: #10b981; margin-right: 8px;"></i>Phrase: {{ phrase_data.title }}
             </div>
-            {% if block.phrase.description %}
+            {% if phrase_data.description %}
             <div style="font-size:14px; line-height:1.6; color:#1e293b; font-family:Arial, Helvetica, sans-serif;">
-              {{ block.phrase.description | safe }}
+              {{ phrase_data.description | safe }}
             </div>
             {% endif %}
           </div>
