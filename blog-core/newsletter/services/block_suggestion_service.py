@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from newsletter.services.suggestion_service import generate_suggestions
 from newsletter.selectors.blog_feature import select_feature_article, select_feature_articles
-from newsletter.selectors.products import select_new_products, select_spotlight_product, group_variants
+from newsletter.selectors.products import select_new_products, select_spotlight_product, select_spotlight_profile_post, group_variants
 from newsletter.selectors.category import select_category_feature
 from newsletter.selectors.evergreen import select_evergreen
 from newsletter.selectors.intro import select_intro_content
@@ -151,15 +151,17 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
         }
     
     elif block_type == 'spotlight':
-        spotlight = select_spotlight_product()
+        # Use profile posts instead of products
+        spotlight = select_spotlight_profile_post()
         suggestions = []
         if spotlight:
             suggestions.append({
                 'id': spotlight.get('id'),
                 'title': spotlight.get('title', ''),
                 'url': spotlight.get('url', ''),
-                'description': spotlight.get('description', ''),
-                'type': 'product',
+                'description': spotlight.get('summary', ''),
+                'hero_image': spotlight.get('hero_image', ''),
+                'type': 'post',
             })
         return {
             'suggestions': suggestions,
@@ -278,10 +280,10 @@ def auto_select_for_block(*, block_type: str, issue_id: int, target_week: str) -
         return payload
     
     elif block_type == 'spotlight':
-        # Mark product as newsletter launched
+        # Mark profile post as newsletter spotlighted
         if current and current.get('id'):
-            from newsletter.services.product_tracking import mark_products_newsletter_launched
-            mark_products_newsletter_launched([current.get('id')])
+            from newsletter.services.product_tracking import mark_post_newsletter_spotlighted
+            mark_post_newsletter_spotlighted(current.get('id'))
         return current  # Already in correct format
     
     elif block_type == 'category':
