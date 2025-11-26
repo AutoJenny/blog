@@ -44,8 +44,8 @@
       <div style="color: #a5b4fc; font-size: 14px; font-weight: 600;">
         <i class="fa-solid fa-newspaper"></i> News Component
       </div>
-      <button type="button" class="component-generate-btn" data-component="news" onclick="generateNewsComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
+      <button type="button" class="component-generate-btn" data-component="news" id="news-btn-{{ b.id }}" onclick="generateNewsComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> {% if b.payload_json and b.payload_json.news_items %}Regenerate{% else %}Generate{% endif %}
       </button>
     </div>
     <div id="news-output-{{ b.id }}" style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; min-height: 40px; font-size: 13px; line-height: 1.6; {% if b.payload_json and b.payload_json.news_items %}color: #e6e8ef;{% else %}color: #9ca3af;{% endif %}">
@@ -79,8 +79,8 @@
       <div style="color: #a5b4fc; font-size: 14px; font-weight: 600;">
         <i class="fa-solid fa-calendar-days"></i> Events Component
       </div>
-      <button type="button" class="component-generate-btn" data-component="events" onclick="generateEventsComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
+      <button type="button" class="component-generate-btn" data-component="events" id="events-btn-{{ b.id }}" onclick="generateEventsComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> {% if b.payload_json and b.payload_json.events_items %}Regenerate{% else %}Generate{% endif %}
       </button>
     </div>
     <div id="events-output-{{ b.id }}" style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; min-height: 40px; font-size: 13px; line-height: 1.6; {% if b.payload_json and b.payload_json.events_items %}color: #e6e8ef;{% else %}color: #9ca3af;{% endif %}">
@@ -151,7 +151,7 @@
 // News Component Module
 function generateNewsComponent(blockId, issueId) {
   const outputEl = document.getElementById(`news-output-${blockId}`);
-  const btn = document.querySelector(`[data-component="news"] .component-generate-btn`);
+  const btn = document.getElementById(`news-btn-${blockId}`);
   
   // Show loading state
   outputEl.innerHTML = '<em style="color: #9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching top news items...</em>';
@@ -193,6 +193,14 @@ function generateNewsComponent(blockId, issueId) {
         });
         outputEl.innerHTML = html;
         outputEl.style.color = '#e6e8ef';
+        
+        // Update button text to "Regenerate"
+        if (btn) {
+          btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Regenerate';
+        }
+        
+        // Trigger page reload to show headlines in header
+        setTimeout(() => window.location.reload(), 500);
       } else {
         outputEl.innerHTML = `<em style="color: #ef4444;">${data.error || 'Failed to generate news component'}</em>`;
       }
@@ -210,7 +218,7 @@ function generateNewsComponent(blockId, issueId) {
 // Events Component Module
 function generateEventsComponent(blockId, issueId) {
   const outputEl = document.getElementById(`events-output-${blockId}`);
-  const btn = document.querySelector(`[data-component="events"] .component-generate-btn`);
+  const btn = document.getElementById(`events-btn-${blockId}`);
   
   // Show loading state
   outputEl.innerHTML = '<em style="color: #9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching top event items...</em>';
@@ -256,6 +264,14 @@ function generateEventsComponent(blockId, issueId) {
         });
         outputEl.innerHTML = html;
         outputEl.style.color = '#e6e8ef';
+        
+        // Update button text to "Regenerate"
+        if (btn) {
+          btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Regenerate';
+        }
+        
+        // Trigger page reload to show headlines in header
+        setTimeout(() => window.location.reload(), 500);
       } else {
         outputEl.innerHTML = `<em style="color: #ef4444;">${data.error || 'Failed to generate events component'}</em>`;
       }
@@ -422,6 +438,74 @@ if (typeof window !== 'undefined') {
   
   // Also try after a short delay in case the template loads async
   setTimeout(attachCompileListeners, 500);
+})();
+
+// Auto-generate news and events components on page load
+(function() {
+  const blockId = {{ b.id }};
+  const issueId = {{ issue_id }};
+  const hasNews = {{ 'true' if (b.payload_json and b.payload_json.news_items) else 'false' }};
+  const hasEvents = {{ 'true' if (b.payload_json and b.payload_json.events_items) else 'false' }};
+  let hasGenerated = false;
+  
+  function autoGenerate() {
+    if (hasGenerated) return; // Only run once
+    
+    const snapshotEditor = document.getElementById(`snapshot-editor-${blockId}`);
+    if (!snapshotEditor) return;
+    
+    // Find the accordion details element
+    const accordionDetails = document.getElementById(`block-${blockId}`);
+    if (!accordionDetails) return;
+    
+    // Only auto-generate if accordion is open
+    if (!accordionDetails.open) {
+      // Set up listener for when accordion opens
+      accordionDetails.addEventListener('toggle', function() {
+        if (this.open && !hasGenerated) {
+          hasGenerated = true;
+          setTimeout(() => {
+            // Auto-generate news if not already generated
+            if (hasNews !== true) {
+              console.log('Auto-generating news component for block', blockId);
+              generateNewsComponent(blockId, issueId);
+            }
+            
+            // Auto-generate events if not already generated (after news completes)
+            if (hasEvents !== true) {
+              console.log('Auto-generating events component for block', blockId);
+              setTimeout(() => generateEventsComponent(blockId, issueId), 800);
+            }
+          }, 500);
+        }
+      }, { once: true });
+      return;
+    }
+    
+    // Accordion is already open, generate immediately
+    hasGenerated = true;
+    
+    // Auto-generate news if not already generated
+    if (hasNews !== true) {
+      console.log('Auto-generating news component for block', blockId);
+      setTimeout(() => generateNewsComponent(blockId, issueId), 500);
+    }
+    
+    // Auto-generate events if not already generated (after news completes)
+    if (hasEvents !== true) {
+      console.log('Auto-generating events component for block', blockId);
+      setTimeout(() => generateEventsComponent(blockId, issueId), 1000);
+    }
+  }
+  
+  // Wait for page to be fully loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(autoGenerate, 1000);
+    });
+  } else {
+    setTimeout(autoGenerate, 1000);
+  }
 })();
 
 // Override functions (reused from intro block)

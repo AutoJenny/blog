@@ -27,6 +27,28 @@
             </div>
           {% endif %}
         {% endif %}
+        {% if block.type == 'snapshot' %}
+          {% if block.payload_json %}
+            {% if block.payload_json.news_items and block.payload_json.news_items|length > 0 %}
+              <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+                <i class="fa-solid fa-newspaper"></i> News: 
+                <span style="color: #6ee7b7; font-weight: 600;">
+                  {% for item in block.payload_json.news_items[:3] %}{{ item.title }}{% if not loop.last %}, {% endif %}{% endfor %}
+                  {% if block.payload_json.news_items|length > 3 %} (+{{ block.payload_json.news_items|length - 3 }} more){% endif %}
+                </span>
+              </div>
+            {% endif %}
+            {% if block.payload_json.events_items and block.payload_json.events_items|length > 0 %}
+              <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+                <i class="fa-solid fa-calendar-days"></i> Events: 
+                <span style="color: #6ee7b7; font-weight: 600;">
+                  {% for item in block.payload_json.events_items[:3] %}{{ item.title }}{% if not loop.last %}, {% endif %}{% endfor %}
+                  {% if block.payload_json.events_items|length > 3 %} (+{{ block.payload_json.events_items|length - 3 }} more){% endif %}
+                </span>
+              </div>
+            {% endif %}
+          {% endif %}
+        {% endif %}
         {% if block.description %}
           <div style="color: #9ca3af; font-size: 13px; margin-top: 2px;">{{ block.description }}</div>
         {% endif %}

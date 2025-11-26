@@ -1225,13 +1225,52 @@ def generate_news_component(issue_id: int, block_id: int):
         
         target_week = issue.get('target_week', '')
         
+        # Get used news item IDs from previous newsletters (exclude current issue)
+        used_item_ids = set()
+        try:
+            from config.database import db_manager
+            with db_manager.get_connection() as conn:
+                with conn.cursor() as cur:
+                    # Get all snapshot blocks from other issues that have news_items
+                    cur.execute("""
+                        SELECT nb.payload_json
+                        FROM newsletter_block nb
+                        JOIN newsletter_issue ni ON nb.issue_id = ni.id
+                        WHERE nb.type = 'snapshot'
+                        AND nb.issue_id != %s
+                        AND nb.payload_json IS NOT NULL
+                        AND nb.payload_json != '{}'::jsonb
+                        AND nb.payload_json ? 'news_items'
+                    """, (issue_id,))
+                    blocks = cur.fetchall()
+                    for block_row in blocks:
+                        payload = dict(block_row)['payload_json']
+                        news_items_list = payload.get('news_items', [])
+                        for item in news_items_list:
+                            if isinstance(item, dict) and item.get('id'):
+                                used_item_ids.add(item['id'])
+        except Exception as e:
+            logger.warning(f"Error getting used news items: {e}")
+        
         # Get top news items (category='news')
-        news_items = get_cached_items(category='news', days_back=14, limit=20)
+        news_items = get_cached_items(category='news', days_back=14, limit=50)  # Get more to filter out used ones
         
         if not news_items:
             return jsonify({
                 'success': False,
                 'error': 'No news items available',
+                'items': []
+            })
+        
+        # Filter out items already used in previous newsletters
+        if used_item_ids:
+            news_items = [item for item in news_items if item.get('id') not in used_item_ids]
+            logger.info(f"Filtered out {len(used_item_ids)} used news items, {len(news_items)} remaining")
+        
+        if not news_items:
+            return jsonify({
+                'success': False,
+                'error': 'No new news items available (all have been used in previous newsletters)',
                 'items': []
             })
         
@@ -1300,13 +1339,52 @@ def generate_snapshot_events_component(issue_id: int, block_id: int):
         
         target_week = issue.get('target_week', '')
         
+        # Get used event item IDs from previous newsletters (exclude current issue)
+        used_item_ids = set()
+        try:
+            from config.database import db_manager
+            with db_manager.get_connection() as conn:
+                with conn.cursor() as cur:
+                    # Get all snapshot blocks from other issues that have events_items
+                    cur.execute("""
+                        SELECT nb.payload_json
+                        FROM newsletter_block nb
+                        JOIN newsletter_issue ni ON nb.issue_id = ni.id
+                        WHERE nb.type = 'snapshot'
+                        AND nb.issue_id != %s
+                        AND nb.payload_json IS NOT NULL
+                        AND nb.payload_json != '{}'::jsonb
+                        AND nb.payload_json ? 'events_items'
+                    """, (issue_id,))
+                    blocks = cur.fetchall()
+                    for block_row in blocks:
+                        payload = dict(block_row)['payload_json']
+                        events_items_list = payload.get('events_items', [])
+                        for item in events_items_list:
+                            if isinstance(item, dict) and item.get('id'):
+                                used_item_ids.add(item['id'])
+        except Exception as e:
+            logger.warning(f"Error getting used event items: {e}")
+        
         # Get top event items (category='event')
-        event_items = get_cached_items(category='event', days_back=14, limit=20)
+        event_items = get_cached_items(category='event', days_back=14, limit=50)  # Get more to filter out used ones
         
         if not event_items:
             return jsonify({
                 'success': False,
                 'error': 'No event items available',
+                'items': []
+            })
+        
+        # Filter out items already used in previous newsletters
+        if used_item_ids:
+            event_items = [item for item in event_items if item.get('id') not in used_item_ids]
+            logger.info(f"Filtered out {len(used_item_ids)} used event items, {len(event_items)} remaining")
+        
+        if not event_items:
+            return jsonify({
+                'success': False,
+                'error': 'No new event items available (all have been used in previous newsletters)',
                 'items': []
             })
         
