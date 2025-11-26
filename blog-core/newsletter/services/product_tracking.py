@@ -73,6 +73,38 @@ def mark_product_blog_profiled(product_id: int) -> None:
         logger.error(f"Error marking product as blog profiled: {e}", exc_info=True)
 
 
+def mark_post_newsletter_spotlighted(post_id: int) -> None:
+    """Mark a profile post as spotlighted in newsletter by setting newsletter_spotlighted_at.
+    
+    Only sets the timestamp if it's not already set (first spotlight only).
+    
+    Args:
+        post_id: Post ID to mark as spotlighted
+    """
+    if not post_id:
+        return
+    
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Update only if newsletter_spotlighted_at is not already set
+                cur.execute(
+                    """
+                    UPDATE post
+                    SET newsletter_spotlighted_at = NOW()
+                    WHERE id = %s
+                      AND newsletter_spotlighted_at IS NULL
+                    """,
+                    (post_id,)
+                )
+                updated_count = cur.rowcount
+                conn.commit()
+                if updated_count > 0:
+                    logger.info(f"Marked post {post_id} as newsletter spotlighted")
+    except Exception as e:
+        logger.error(f"Error marking post as newsletter spotlighted: {e}", exc_info=True)
+
+
 def extract_product_ids_from_payload(payload: Dict[str, Any], block_type: str) -> List[int]:
     """Extract product IDs from newsletter block payload.
     
@@ -97,6 +129,8 @@ def extract_product_ids_from_payload(payload: Dict[str, Any], block_type: str) -
                     pass
     
     elif block_type == 'spotlight':
+        # Spotlight now uses profile posts, not products
+        # But keep this for backwards compatibility with old payloads
         product_id = payload.get('id')
         if product_id:
             try:
@@ -105,4 +139,22 @@ def extract_product_ids_from_payload(payload: Dict[str, Any], block_type: str) -
                 pass
     
     return product_ids
+
+
+def extract_post_id_from_spotlight_payload(payload: Dict[str, Any]) -> int | None:
+    """Extract post ID from spotlight block payload.
+    
+    Args:
+        payload: Spotlight block payload JSON
+    
+    Returns:
+        Post ID if found, None otherwise
+    """
+    post_id = payload.get('id')
+    if post_id:
+        try:
+            return int(post_id)
+        except (ValueError, TypeError):
+            pass
+    return None
 

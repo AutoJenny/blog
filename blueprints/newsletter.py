@@ -230,7 +230,29 @@ def view_issue(issue_id: int):
             logging.getLogger(__name__).warning(f"Error getting themed post: {e}")
             pass
     
-    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme, themed_post=themed_post)
+    # Get spotlight profile post (most recent published, not yet used)
+    spotlight_post = None
+    try:
+        from newsletter.selectors.products import select_spotlight_profile_post
+        spotlight_post = select_spotlight_profile_post()
+        if spotlight_post:
+            # Get post status
+            with db_manager.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT status
+                        FROM post
+                        WHERE id = %s
+                    """, (spotlight_post.get('id'),))
+                    status_row = cur.fetchone()
+                    if status_row:
+                        spotlight_post['status'] = dict(status_row).get('status', 'unknown')
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Error getting spotlight post: {e}")
+        pass
+    
+    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme, themed_post=themed_post, spotlight_post=spotlight_post)
 
 
 @bp.route('/newsletter/issue/<int:issue_id>/preview')
@@ -415,11 +437,18 @@ def update_block(block_id: int):
     
     update_block_payload(block_id=block_id, payload=payload)
     
-    # Mark products as newsletter launched if this is a product block
-    if block_type in ('new_products', 'spotlight'):
+    # Mark products as newsletter launched if this is a new_products block
+    if block_type == 'new_products':
         product_ids = extract_product_ids_from_payload(payload, block_type)
         if product_ids:
             mark_products_newsletter_launched(product_ids)
+    
+    # Mark profile post as newsletter spotlighted if this is a spotlight block
+    if block_type == 'spotlight':
+        from newsletter.services.product_tracking import mark_post_newsletter_spotlighted, extract_post_id_from_spotlight_payload
+        post_id = extract_post_id_from_spotlight_payload(payload)
+        if post_id:
+            mark_post_newsletter_spotlighted(post_id)
     
     issue_id = int(request.form.get('issue_id', '0'))
     return redirect(url_for('newsletter.view_issue', issue_id=issue_id))

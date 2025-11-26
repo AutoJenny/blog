@@ -1,0 +1,156 @@
+{# Spotlight block editor: profile post selection with suggestions #}
+<div class="block-editor-spotlight" data-block-id="{{ b.id }}" data-issue-id="{{ issue_id }}">
+  <div style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+    <div style="color: #e6e8ef; font-size: 14px; line-height: 1.6;" id="spotlight-preview-{{ b.id }}">
+      {% if b.payload_json and (b.payload_json.title or b.payload_json.name) %}
+        <div style="margin-bottom: 8px;">
+          <strong style="color: #a5b4fc;">Selected:</strong>
+          <span style="color: #e6e8ef;">{{ b.payload_json.title or b.payload_json.name }}</span>
+        </div>
+        {% if b.payload_json.summary or b.payload_json.short_description %}
+          <div style="color: #9ca3af; font-size: 13px; margin-bottom: 8px;">
+            {{ (b.payload_json.summary or b.payload_json.short_description)[:100] }}...
+          </div>
+        {% endif %}
+        {% if b.payload_json.url or b.payload_json.slug %}
+          <div style="font-size: 12px;">
+            <a href="{{ b.payload_json.url or ('/posts/' + b.payload_json.slug) }}" target="_blank" style="color: #7b8dff; text-decoration: none;">
+              View post <i class="fa-solid fa-external-link"></i>
+            </a>
+          </div>
+        {% endif %}
+      {% else %}
+        <em style="color: #9ca3af;">No profile post selected</em>
+      {% endif %}
+    </div>
+    
+    <div style="display: flex; gap: 12px; margin-top: 12px;">
+      <button type="button" style="background: #4e6bff; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;" onclick="loadSpotlightSuggestions({{ b.id }}, {{ issue_id }})">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Get Suggestions
+      </button>
+    </div>
+    
+    <div id="spotlight-suggestions-{{ b.id }}" style="margin-top: 16px; space-y: 8px;">
+      {# Suggestions will be loaded here via JavaScript #}
+    </div>
+  </div>
+</div>
+
+<script>
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function loadSpotlightSuggestions(blockId, issueId) {
+  const suggestionsDiv = document.getElementById(`spotlight-suggestions-${blockId}`);
+  const previewDiv = document.getElementById(`spotlight-preview-${blockId}`);
+  
+  suggestionsDiv.innerHTML = '<em style="color: #9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i> Loading suggestions...</em>';
+  
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        suggestionsDiv.innerHTML = `<em style="color: #ef4444;">Error: ${data.error}</em>`;
+        return;
+      }
+      
+      const suggestions = data.suggestions || [];
+      const current = data.current;
+      
+      if (suggestions.length === 0 && !current) {
+        suggestionsDiv.innerHTML = '<em style="color: #9ca3af;">No profile posts available. All published profile posts have been used.</em>';
+        return;
+      }
+      
+      let html = '<div style="color: #a5b4fc; font-weight: 600; margin-bottom: 12px;">Suggestions:</div>';
+      
+      // Show current selection if exists
+      if (current && current.id) {
+        const isCurrent = b.payload_json && (b.payload_json.id == current.id || b.payload_json.id === current.id);
+        html += `
+          <div style="background: ${isCurrent ? '#0f1a1f' : '#1b2138'}; border: 1px solid ${isCurrent ? '#10b981' : '#2d3246'}; border-radius: 6px; padding: 12px; margin-bottom: 8px;">
+            <div style="font-weight: 600; color: #e6e8ef; margin-bottom: 4px;">${escapeHtml(current.title || current.name || 'Untitled')}</div>
+            ${current.summary || current.short_description ? `<div style="color: #9ca3af; font-size: 13px; margin-bottom: 8px;">${escapeHtml((current.summary || current.short_description).substring(0, 100))}...</div>` : ''}
+            <button type="button" onclick="applySpotlightPost(${blockId}, ${current.id}, ${issueId})" style="background: ${isCurrent ? '#10b981' : '#4e6bff'}; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+              ${isCurrent ? '<i class=\"fa-solid fa-check\"></i> Currently Selected' : '<i class=\"fa-solid fa-check\"></i> Select'}
+            </button>
+          </div>
+        `;
+      }
+      
+      suggestionsDiv.innerHTML = html;
+    })
+    .catch(error => {
+      console.error(`[Spotlight Editor] Failed to load suggestions for block ${blockId}:`, error);
+      suggestionsDiv.innerHTML = `<em style="color: #ef4444;">Error loading suggestions</em>`;
+    });
+}
+
+function applySpotlightPost(blockId, postId, issueId) {
+  // Get suggestions to find the post data
+  fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`)
+    .then(r => r.json())
+    .then(data => {
+      const suggestions = data.suggestions || [];
+      const current = data.current || {};
+      
+      // Find the post in suggestions or use current
+      let postData = null;
+      if (current && current.id == postId) {
+        postData = current;
+      } else {
+        postData = suggestions.find(s => s.id == postId);
+      }
+      
+      if (!postData) {
+        alert('Post not found in suggestions');
+        return;
+      }
+      
+      // Apply the suggestion
+      fetch(`/newsletter/issue/${issueId}/block/${blockId}/select-suggestion`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({suggestion_id: postId})
+      })
+        .then(r => r.json())
+        .then(result => {
+          if (result.error) {
+            alert(`Error: ${result.error}`);
+            return;
+          }
+          
+          // Reload page to show updated selection
+          window.location.reload();
+        })
+        .catch(error => {
+          console.error(`[Spotlight Editor] Failed to apply post ${postId}:`, error);
+          alert('Error applying selection');
+        });
+    })
+    .catch(error => {
+      console.error(`[Spotlight Editor] Failed to get post data:`, error);
+      alert('Error loading post data');
+    });
+}
+
+// Auto-load suggestions on page load if no selection
+(function() {
+  const blockId = {{ b.id }};
+  const issueId = {{ issue_id }};
+  document.addEventListener('DOMContentLoaded', function() {
+    const spotlightEditor = document.querySelector(`.block-editor-spotlight[data-block-id="${blockId}"]`);
+    if (spotlightEditor) {
+      const previewDiv = document.getElementById(`spotlight-preview-${blockId}`);
+      if (previewDiv && previewDiv.textContent.includes('No profile post selected')) {
+        // Auto-load suggestions if nothing is selected
+        setTimeout(() => loadSpotlightSuggestions(blockId, issueId), 500);
+      }
+    }
+  });
+})();
+</script>
+

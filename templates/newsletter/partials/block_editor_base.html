@@ -12,6 +12,21 @@
             <span style="color: #6ee7b7; font-weight: 600;">({{ themed_post.status }})</span>
           </div>
         {% endif %}
+        {% if block.type == 'spotlight' %}
+          {% if block.payload_json and (block.payload_json.title or block.payload_json.name) %}
+            {# Show selected post from block payload #}
+            <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+              <i class="fa-solid fa-file-lines"></i> {{ block.payload_json.title or block.payload_json.name }} 
+              <span style="color: #6ee7b7; font-weight: 600;">(selected)</span>
+            </div>
+          {% elif spotlight_post %}
+            {# Show most recent available profile post #}
+            <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+              <i class="fa-solid fa-file-lines"></i> {{ spotlight_post.title }} 
+              <span style="color: #6ee7b7; font-weight: 600;">({{ spotlight_post.status }})</span>
+            </div>
+          {% endif %}
+        {% endif %}
         {% if block.description %}
           <div style="color: #9ca3af; font-size: 13px; margin-top: 2px;">{{ block.description }}</div>
         {% endif %}
@@ -68,6 +83,9 @@
     {% elif block.type == 'new_products' %}
       {% set b = block %}
       {% include 'newsletter/partials/block_editor_new_products.html' with context %}
+    {% elif block.type == 'spotlight' %}
+      {% set b = block %}
+      {% include 'newsletter/partials/block_editor_spotlight.html' with context %}
     {% else %}
       {# Fallback: JSON editor for other block types #}
       <details style="margin-top: 12px;">
