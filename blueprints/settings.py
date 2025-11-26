@@ -46,14 +46,14 @@ def taxonomy():
             for tier in tiers:
                 tier_items = [item for item in items if item['tier_id'] == tier['id']]
                 
-                if tier['name'] == 'theme':
-                    # Themes have no parents, list them directly
+                if tier['name'] == 'category':
+                    # Categories have no parents, list them directly
                     organized_data[tier['name']] = {
                         'tier': tier,
                         'items': sorted(tier_items, key=lambda x: x.get('display_order', 0))
                     }
                 elif tier['name'] == 'content_type':
-                    # Content types have parent themes - group by parent
+                    # Content types have parent categories - group by parent
                     content_by_theme = {}
                     for item in tier_items:
                         parent_slug = item.get('parent_slug') or 'unassigned'
@@ -68,7 +68,7 @@ def taxonomy():
                         content_by_theme[theme_slug]['items'].sort(key=lambda x: x.get('display_order', 0))
                     organized_data[tier['name']] = {
                         'tier': tier,
-                        'by_theme': content_by_theme
+                        'by_category': content_by_theme
                     }
                 else:
                     # Formats have no parents

@@ -1,52 +1,58 @@
 {
-  "timestamp": "2025-09-16T15:36:39.335620",
+  "timestamp": "2025-11-24T19:49:51.867800",
   "call_type": "post_create_update",
   "url": "https://clan.com/clan/blog_api/editPost",
   "data": {
     "api_user": "blog",
     "api_key": "AC%7ef2a5A!24bd*E844a83f9F$49a02",
-    "json_args": "{\"post_id\": 399, \"title\": \"The Art of Scottish Storytelling: Oral Traditions and Modern Literature\", \"url_key\": \"the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000\", \"short_content\": \"Discover the captivating tales that have shaped Scotland's unique cultural heritage\", \"status\": 2, \"categories\": [14, 15], \"list_thumbnail\": \"/blog/header_53_1758033385.jpg\", \"post_thumbnail\": \"/blog/header_53_1758033385.jpg\", \"meta_title\": \"The Art of Scottish Storytelling: Oral Traditions and Modern Literature\", \"meta_tags\": \"Scottish Heritage, Celtic Traditions, Cultural Identity\", \"meta_description\": \"Discover the captivating tales that have shaped Scotland's unique cultural heritage\"}"
+    "json_args": "{\"post_id\": 409, \"title\": \"6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage\", \"url_key\": \"6oz-matt-black-hip-flask-lion-rampant-timeless-scottish-heritage\", \"short_content\": \"The 6oz Matt Black Hip Flask Lion Rampant is a masterful blend of heritage and functionality, inspired by Scotland's iconic symbol of bravery and strength. Crafted from high-quality materials with attention to precision engineering, this hip flask features a sleek design that's both durable and stylish, while proudly showcasing the Lion Rampant emblem on its side panel. Whether you're outdoorsy, adventurous, or simply appreciate Scottish heritage, this 6oz Matt Black Hip Flask Lion Rampant is a testament to Scotland's rich history and craftsmanship, making it an excellent companion for any outdoor enthusiast or Scots heritage aficionado.\", \"status\": 2, \"categories\": [14, 15], \"list_thumbnail\": \"/blog/header_95_1764013791.jpg\", \"post_thumbnail\": \"/blog/header_95_1764013791.jpg\", \"meta_title\": \"Lion Rampant Hip Flask Scotland Heritage\", \"meta_tags\": \"Scotland, Lion Rampant, Hip Flask, Outdoor Gear, Scottish Heritage, Luxury Accessories\", \"meta_description\": \"Discover the timeless blend of heritage and functionality in this 6oz Matt Black Lion Rampant hip flask.\", \"meta_image\": \"https://clan.com/images/default-scottish-heritage.jpg\", \"meta_type\": \"article\", \"meta_site_name\": \"Clan.com Blog\"}"
   },
   "files_info": {
     "html_file": {
-      "filename": "post_53_1758033399.html",
+      "filename": "post_95_1764013791.html",
       "mime_type": "text/html",
-      "content_length": 12751
+      "content_length": 10185
     }
   },
   "json_args_raw": {
-    "post_id": 399,
-    "title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
-    "url_key": "the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000",
-    "short_content": "Discover the captivating tales that have shaped Scotland's unique cultural heritage",
+    "post_id": 409,
+    "title": "6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage",
+    "url_key": "6oz-matt-black-hip-flask-lion-rampant-timeless-scottish-heritage",
+    "short_content": "The 6oz Matt Black Hip Flask Lion Rampant is a masterful blend of heritage and functionality, inspired by Scotland's iconic symbol of bravery and strength. Crafted from high-quality materials with attention to precision engineering, this hip flask features a sleek design that's both durable and stylish, while proudly showcasing the Lion Rampant emblem on its side panel. Whether you're outdoorsy, adventurous, or simply appreciate Scottish heritage, this 6oz Matt Black Hip Flask Lion Rampant is a testament to Scotland's rich history and craftsmanship, making it an excellent companion for any outdoor enthusiast or Scots heritage aficionado.",
     "status": 2,
     "categories": [
       14,
       15
     ],
-    "list_thumbnail": "/blog/header_53_1758033385.jpg",
-    "post_thumbnail": "/blog/header_53_1758033385.jpg",
-    "meta_title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
-    "meta_tags": "Scottish Heritage, Celtic Traditions, Cultural Identity",
-    "meta_description": "Discover the captivating tales that have shaped Scotland's unique cultural heritage"
+    "list_thumbnail": "/blog/header_95_1764013791.jpg",
+    "post_thumbnail": "/blog/header_95_1764013791.jpg",
+    "meta_title": "Lion Rampant Hip Flask Scotland Heritage",
+    "meta_tags": "Scotland, Lion Rampant, Hip Flask, Outdoor Gear, Scottish Heritage, Luxury Accessories",
+    "meta_description": "Discover the timeless blend of heritage and functionality in this 6oz Matt Black Lion Rampant hip flask.",
+    "meta_image": "https://clan.com/images/default-scottish-heritage.jpg",
+    "meta_type": "article",
+    "meta_site_name": "Clan.com Blog"
   },
-  "html_content_length": 12751,
+  "html_content_length": 10183,
   "image_info": null,
   "json_args_parsed": {
-    "post_id": 399,
-    "title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
-    "url_key": "the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000",
-    "short_content": "Discover the captivating tales that have shaped Scotland's unique cultural heritage",
+    "post_id": 409,
+    "title": "6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage",
+    "url_key": "6oz-matt-black-hip-flask-lion-rampant-timeless-scottish-heritage",
+    "short_content": "The 6oz Matt Black Hip Flask Lion Rampant is a masterful blend of heritage and functionality, inspired by Scotland's iconic symbol of bravery and strength. Crafted from high-quality materials with attention to precision engineering, this hip flask features a sleek design that's both durable and stylish, while proudly showcasing the Lion Rampant emblem on its side panel. Whether you're outdoorsy, adventurous, or simply appreciate Scottish heritage, this 6oz Matt Black Hip Flask Lion Rampant is a testament to Scotland's rich history and craftsmanship, making it an excellent companion for any outdoor enthusiast or Scots heritage aficionado.",
     "status": 2,
     "categories": [
       14,
       15
     ],
-    "list_thumbnail": "/blog/header_53_1758033385.jpg",
-    "post_thumbnail": "/blog/header_53_1758033385.jpg",
-    "meta_title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
-    "meta_tags": "Scottish Heritage, Celtic Traditions, Cultural Identity",
-    "meta_description": "Discover the captivating tales that have shaped Scotland's unique cultural heritage"
+    "list_thumbnail": "/blog/header_95_1764013791.jpg",
+    "post_thumbnail": "/blog/header_95_1764013791.jpg",
+    "meta_title": "Lion Rampant Hip Flask Scotland Heritage",
+    "meta_tags": "Scotland, Lion Rampant, Hip Flask, Outdoor Gear, Scottish Heritage, Luxury Accessories",
+    "meta_description": "Discover the timeless blend of heritage and functionality in this 6oz Matt Black Lion Rampant hip flask.",
+    "meta_image": "https://clan.com/images/default-scottish-heritage.jpg",
+    "meta_type": "article",
+    "meta_site_name": "Clan.com Blog"
   },
-  "html_content_preview": "<div class=\"mp-content std fix-me\">\n    <header class=\"blog-post__header\">\n        \n        <p class=\"blog-post__subtitle\">Discover the captivating tales that have shaped Scotland's unique cultural heritage</p>\n        \n        \n        <div class=\"post-meta\">\n            <span class=\"post-meta__date\">Published on <time datetime=\"2025-07-17\">July 17, 2025</time></span>\n            <span class=\"post-meta__separator\"> | </span>\n            <span class=\"post-meta__author\">By Caitrin Stewart</span>\n        </div>\n        \n        \n    </header>\n    \n    \n    <div class=\"blog-sections\">\n    \n    <section class=\"blog-section\" id=\"section-1\">\n        <h2>Ancient Celtic Story-telling</h2>\n        <div class=\"section-text\">\n            \n                <p>In ancient Scotland, story-telling was deeply rooted in Celtic tradition. The Picts and Scotts, inhabiting Scotland from around 400 BC to AD, orally passed down tales grounded in nature, mythology, and the supernatural.</p> <p>Storytelling tec..."
+  "html_content_preview": "<div class=\"mp-content std fix-me\">\n    <header class=\"blog-post__header\" style=\"text-align: center; margin: 2.5rem 0 2rem; padding-bottom: 2rem; border-bottom: 2px solid #b80000;\">\n        <h1 style=\"font-size: 2.6rem; font-weight: 900; color: #222; margin: 0 0 1.2rem; line-height: 1.1; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Lato', Arial, sans-serif;\">6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage</h1>\n        \n        <div class=\"header-image\" style=\"margin: 20px 0; text-align: center;\">\n            <img src=\"https://static.clan.com/media/blog/header_95_1764013791.jpg\" \n                 alt=\"Header image\" \n                 style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\"\n                 onerror=\"this.style.display='none';\">\n            <p class=\"header-image-caption\" style=\"text-align: center; font-style: italic; color: #6b7280; margin-top: 1rem; margin-bottom: 0;\"><em>Generated artistic im..."
 }

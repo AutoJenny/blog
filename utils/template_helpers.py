@@ -7,6 +7,7 @@ Provides helper functions for ensuring consistent template variables across rout
 from config.database import db_manager
 from utils.taxonomy_helpers import get_post_type
 from config.template_mappings import get_template_path
+from config.post_type_substages import get_substages_for_post_type, get_substage_metadata, get_substage_label
 import logging
 
 logger = logging.getLogger(__name__)
@@ -115,3 +116,20 @@ def resolve_template_for_route(stage, substage, post_id):
     """
     post_type = get_post_type(post_id)
     return get_template_path(stage, substage, post_type)
+
+
+def get_substages_for_navbar(post_type, stage):
+    """
+    Get substages for navbar display, with metadata for rendering.
+    
+    Args:
+        post_type (str): Post type ('themed', 'profile', 'generated', 'recipe')
+        stage (str): Stage name ('calendar', 'planning', 'research', 'authoring', 'imaging', 'header')
+    
+    Returns:
+        list: List of dicts with 'key', 'label', 'route_function', 'order'
+    """
+    from config.post_type_substages import get_substages_with_metadata
+    
+    substages = get_substages_with_metadata(post_type, stage)
+    return substages

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-16T15:36:37.013565",
+  "timestamp": "2025-11-24T19:49:51.432919",
   "call_type": "image_upload",
   "url": "https://clan.com/clan/blog_api/uploadImage",
   "data": {
@@ -9,18 +9,18 @@
   },
   "files_info": {
     "image": {
-      "filename": "section_53_7_1758033396.jpg",
+      "filename": "header_95_1764013791.jpg",
       "mime_type": "image/jpeg",
-      "file_size": 4304882,
-      "file_path": "/var/folders/1j/zvhfy8wn27l2gxxg5lkljgs40000gn/T/tmpe7f3zo40.jpg"
+      "file_size": 180980,
+      "file_path": "/Users/autojenny/Documents/projects/blog/static/content/posts/95/header/optimized/header.jpg"
     }
   },
   "json_args_raw": null,
   "html_content_length": 0,
   "image_info": {
-    "original_path": "/var/folders/1j/zvhfy8wn27l2gxxg5lkljgs40000gn/T/tmpe7f3zo40.jpg",
-    "filename": "section_53_7_1758033396.jpg",
-    "file_size": 4304882,
+    "original_path": "/Users/autojenny/Documents/projects/blog/static/content/posts/95/header/optimized/header.jpg",
+    "filename": "header_95_1764013791.jpg",
+    "file_size": 180980,
     "mime_type": "image/jpeg"
   }
 }

@@ -24,6 +24,15 @@ def publishing():
 def publish_post_to_clan(post_id):
     """Publish a post to clan.com"""
     try:
+        # Sync product-match selections to cross-promotion before loading post data
+        # This ensures published posts use the matched IDs
+        import sys
+        import os
+        blog_launchpad_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'blog-launchpad')
+        sys.path.insert(0, blog_launchpad_path)
+        from publish.post_data_loader import sync_product_match_to_cross_promotion
+        sync_product_match_to_cross_promotion(post_id)
+        
         # Get post data
         post = get_post_with_development(post_id)
         if not post:
@@ -104,6 +113,7 @@ def publish_post_to_clan(post_id):
                     post['header_image']['height'] = header_data['header_image_height']
                 
             # Map cross-promotion regardless of header image
+            # Use header_data which was reloaded AFTER sync, so it contains the synced IDs
                 post['cross_promotion'] = {
                     'category_id': header_data['cross_promotion_category_id'] if header_data else None,
                     'category_title': header_data['cross_promotion_category_title'] if header_data else None,
@@ -114,12 +124,19 @@ def publish_post_to_clan(post_id):
                 'category_widget_html': header_data.get('cross_promotion_category_widget_html') if header_data else None,
                 'product_widget_html': header_data.get('cross_promotion_product_widget_html') if header_data else None
                 }
+                
+                # Log the IDs being used for debugging
+                logger.info(f"=== CROSS-PROMOTION DATA FOR PUBLISH ===")
+                logger.info(f"Post {post_id} cross-promotion: product_id={post['cross_promotion'].get('product_id')}, category_id={post['cross_promotion'].get('category_id')}")
+                logger.info(f"Product widget HTML: {post['cross_promotion'].get('product_widget_html')}")
+                logger.info(f"Category widget HTML: {post['cross_promotion'].get('category_widget_html')}")
 
             # Auto-select random category/product IDs and default positions if missing
+            # BUT: Only if product-match sync didn't already set them (don't overwrite matched IDs)
             try:
                 cp = post['cross_promotion']
                 to_persist = {}
-                # Select a random category if none set
+                # Select a random category if none set (but only if not synced from product-match)
                 if not cp.get('category_id'):
                     cursor.execute("""
                         SELECT id, name FROM clan_categories 
@@ -131,7 +148,7 @@ def publish_post_to_clan(post_id):
                         cp['category_title'] = cat['name'] or 'Related Department'
                         to_persist['cross_promotion_category_id'] = cp['category_id']
                         to_persist['cross_promotion_category_title'] = cp['category_title']
-                # Select a random product if none set
+                # Select a random product if none set (but only if not synced from product-match)
                 if not cp.get('product_id'):
                     cursor.execute("""
                         SELECT id, name FROM clan_products 
@@ -143,11 +160,28 @@ def publish_post_to_clan(post_id):
                         cp['product_title'] = prod['name'] or 'Related Products'
                         to_persist['cross_promotion_product_id'] = cp['product_id']
                         to_persist['cross_promotion_product_title'] = cp['product_title']
-                # Set default positions if missing
-                if not cp.get('category_position'):
+                # Set default positions if missing (but only if IDs weren't synced from product-match)
+                # If IDs exist but positions are NULL, that means they were synced - use section count for positions
+                if not cp.get('category_position') and cp.get('category_id'):
+                    # Get section count to determine position
+                    cursor.execute("SELECT COUNT(*) as section_count FROM post_section WHERE post_id = %s", (post_id,))
+                    section_count_result = cursor.fetchone()
+                    section_count = section_count_result.get('section_count', 0) if section_count_result else 0
+                    default_category_position = min(2, section_count) + 1 if section_count > 0 else 1
+                    cp['category_position'] = default_category_position
+                    to_persist['cross_promotion_category_position'] = cp['category_position']
+                elif not cp.get('category_position'):
                     cp['category_position'] = 2
                     to_persist['cross_promotion_category_position'] = cp['category_position']
-                if not cp.get('product_position'):
+                if not cp.get('product_position') and cp.get('product_id'):
+                    # Get section count to determine position
+                    cursor.execute("SELECT COUNT(*) as section_count FROM post_section WHERE post_id = %s", (post_id,))
+                    section_count_result = cursor.fetchone()
+                    section_count = section_count_result.get('section_count', 0) if section_count_result else 0
+                    default_product_position = min(4, section_count) + 1 if section_count > 0 else 1
+                    cp['product_position'] = default_product_position
+                    to_persist['cross_promotion_product_position'] = cp['product_position']
+                elif not cp.get('product_position'):
                     cp['product_position'] = 4
                     to_persist['cross_promotion_product_position'] = cp['product_position']
                 # Persist any newly selected IDs/titles/positions
@@ -165,6 +199,11 @@ def publish_post_to_clan(post_id):
                         WHERE id = %s
                     """, tuple(values))
                     cursor.connection.commit()
+                    # Update post dict with persisted values
+                    if 'cross_promotion_category_id' in to_persist:
+                        cp['category_id'] = to_persist['cross_promotion_category_id']
+                    if 'cross_promotion_product_id' in to_persist:
+                        cp['product_id'] = to_persist['cross_promotion_product_id']
             except Exception as e:
                 logger.warning(f"Could not auto-select random cross-promotion IDs: {e}")
 

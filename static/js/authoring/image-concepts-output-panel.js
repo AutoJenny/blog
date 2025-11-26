@@ -103,25 +103,46 @@ class ImageConceptsOutputPanel {
     window.addEventListener('sections:batch-generate', async (e) => {
       const ids = e.detail?.ids || [];
       console.log('[DEBUG] Batch generation started for sections:', ids);
-      for (let i = 0; i < ids.length; i++) {
-        const id = ids[i];
-        console.log('[DEBUG] Generating concepts for section:', id);
-        
-        // Update progress modal
-        this.updateBatchProgress(id, 'Generating...', (i + 1) / ids.length * 100);
-        
-        await this.generateImageConcepts(id); 
-        console.log('[DEBUG] Completed generation for section:', id);
-        
-        // Update progress modal
-        this.updateBatchProgress(id, 'Complete', (i + 1) / ids.length * 100);
-      }
-      console.log('[DEBUG] Batch generation completed for all sections');
       
-      // Close progress modal after a short delay
-      setTimeout(() => {
-        this.closeBatchProgress();
-      }, 1000);
+      if (ids.length === 0) {
+        console.warn('[DEBUG] No section IDs provided for batch generation');
+        return;
+      }
+      
+      // Create and show progress modal
+      this.showBatchProgress(ids);
+      
+      try {
+        for (let i = 0; i < ids.length; i++) {
+          const id = ids[i];
+          console.log('[DEBUG] Generating concepts for section:', id);
+          
+          // Update progress modal
+          this.updateBatchProgress(id, 'Generating...', (i + 1) / ids.length * 100);
+          
+          await this.generateImageConcepts(id); 
+          console.log('[DEBUG] Completed generation for section:', id);
+          
+          // Update progress modal
+          this.updateBatchProgress(id, 'Complete', (i + 1) / ids.length * 100);
+        }
+        console.log('[DEBUG] Batch generation completed for all sections');
+      } catch (error) {
+        console.error('[DEBUG] Error during batch generation:', error);
+        // Update progress modal to show error
+        const failedIds = ids.filter(id => {
+          const item = document.querySelector(`#batch-progress-modal .section-item[data-section-id="${id}"]`);
+          return item && !item.querySelector('.section-status')?.textContent.includes('Complete');
+        });
+        failedIds.forEach(id => {
+          this.updateBatchProgress(id, 'Error', 0);
+        });
+      } finally {
+        // Close progress modal after a short delay
+        setTimeout(() => {
+          this.closeBatchProgress();
+        }, 1000);
+      }
     });
 
     // Global selection handler
@@ -448,6 +469,56 @@ class ImageConceptsOutputPanel {
     if (last) last.textContent = `Saved ${new Date().toLocaleTimeString()}`;
   }
 
+  showBatchProgress(sectionIds) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('batch-progress-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'batch-progress-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #3b82f6;
+      border-radius: 8px;
+      padding: 1.5rem;
+      z-index: 10000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      min-width: 400px;
+      max-width: 600px;
+    `;
+    
+    modal.innerHTML = `
+      <h3 style="margin: 0 0 1rem 0; color: #1e40af;">Generating Image Concepts</h3>
+      <div style="margin-bottom: 1rem;">
+        <div style="background: #e5e7eb; border-radius: 4px; height: 24px; overflow: hidden; position: relative;">
+          <div id="progress-fill" style="background: #3b82f6; height: 100%; width: 0%; transition: width 0.3s;"></div>
+        </div>
+        <div style="text-align: center; margin-top: 0.5rem; color: #6b7280;">
+          <span id="progress-percent">0%</span>
+        </div>
+      </div>
+      <div id="sections-progress-list" style="max-height: 300px; overflow-y: auto;">
+        ${sectionIds.map(id => `
+          <div class="section-item" data-section-id="${id}" style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 500;">Section ${id}</span>
+              <span class="section-status" style="color: #6b7280;">Pending</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  }
+  
   updateBatchProgress(sectionId, status, percentage) {
     // Update section status in progress modal
     const sectionItem = document.querySelector(`#batch-progress-modal .section-item[data-section-id="${sectionId}"]`);
@@ -455,7 +526,19 @@ class ImageConceptsOutputPanel {
       const statusElement = sectionItem.querySelector('.section-status');
       if (statusElement) {
         statusElement.textContent = status;
-        statusElement.className = `section-status ${status.toLowerCase().replace(' ', '-')}`;
+        const statusLower = status.toLowerCase().replace(/\s+/g, '-');
+        statusElement.className = `section-status ${statusLower}`;
+        
+        // Color coding
+        if (statusLower.includes('complete')) {
+          statusElement.style.color = '#10b981';
+        } else if (statusLower.includes('error')) {
+          statusElement.style.color = '#ef4444';
+        } else if (statusLower.includes('generating')) {
+          statusElement.style.color = '#3b82f6';
+        } else {
+          statusElement.style.color = '#6b7280';
+        }
       }
     }
     

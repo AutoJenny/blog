@@ -55,8 +55,8 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
         return {'suggestions': [], 'current': None, 'metadata': {}}
     
     elif block_type == 'feature':
-        # Get multiple recent theme posts for selection
-        articles = select_feature_articles(limit=10)
+        # Get multiple recent theme posts for selection, prioritizing the week's post
+        articles = select_feature_articles(limit=10, target_week=target_week)
         suggestions = []
         for article in articles:
             suggestions.append({
@@ -68,7 +68,7 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
                 'expanded_idea': article.get('expanded_idea', ''),
                 'type': 'blog_post',
             })
-        # First article is the default/current selection
+        # First article is the default/current selection (should be the week's post if available)
         current = articles[0] if articles else None
         return {
             'suggestions': suggestions,

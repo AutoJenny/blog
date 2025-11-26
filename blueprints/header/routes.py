@@ -24,40 +24,12 @@ def register_routes(bp):
             from utils.taxonomy_helpers import get_post_type
             original_post_type = get_post_type(post_id)
 
-            # Resolve post_id from week context (required for generation, but allow page to render)
-            # BUT: For non-themed posts (recipe/profile/generated), preserve the original post_id
-            from utils.week_post_resolver import resolve_post_for_week
-            target_post_id = None
-            week_has_post = False
+            # CRITICAL: Always use post_id from URL - it's the definitive identifier
+            # Week parameters are context only, not for changing post_id
+            target_post_id = post_id  # Always use URL post_id
             
-            # Non-themed post types don't require week context
-            non_themed_types = ('recipe', 'profile', 'generated')
-            
-            if year and week:
-                if original_post_type in non_themed_types:
-                    # For non-themed posts, preserve original post_id - don't resolve to different post
-                    target_post_id = post_id
-                    week_has_post = True  # Non-themed posts don't need week scheduling
-                else:
-                    # Only resolve for themed posts
-                    resolved = resolve_post_for_week(year, week)
-                    if resolved:
-                        target_post_id = resolved
-                        week_has_post = True
-                    else:
-                        logger.warning(f"No post scheduled for year={year}, week={week}")
-                        target_post_id = post_id
-            else:
-                # No week context provided
-                target_post_id = post_id
-                if original_post_type in non_themed_types:
-                    # Non-themed posts don't require week context - they're standalone
-                    week_has_post = True
-                    logger.debug(f"Non-themed post {post_id} ({original_post_type}) - week context not required")
-                else:
-                    # Themed posts require week context for generation
-                    week_has_post = False
-                    logger.warning(f"Themed post {post_id} called without week context: year={year}, week={week}")
+            # Week context is for display/validation only
+            week_has_post = bool(year and week)  # True if week context provided
 
             # Get post_type (illustration_method is deprecated, always use LLM-creation)
             from utils.taxonomy_helpers import get_post_type
@@ -162,29 +134,19 @@ def register_routes(bp):
         year = request.args.get('year', type=int)
         week = request.args.get('week', type=int)
 
-        from utils.week_post_resolver import resolve_post_for_week
-        # Get post type for the original post_id first
+        # CRITICAL: Always use post_id from URL - it's the definitive identifier
+        # Week parameters are context only, not for changing post_id
         from utils.taxonomy_helpers import get_post_type
         original_post_type = get_post_type(post_id)
         
-        # Non-themed post types don't require week context
-        non_themed_types = ('recipe', 'profile', 'generated')
+        target_post_id = post_id  # Always use URL post_id
         
-        if original_post_type in non_themed_types:
-            # For non-themed posts, preserve original post_id - week context not required
-            target_post_id = post_id
-            logger.debug(f"Non-themed post {post_id} ({original_post_type}) - week context not required")
-        else:
-            # Themed posts require week context
+        # Week context validation (for themed posts, but don't change post_id)
+        non_themed_types = ('recipe', 'profile', 'generated')
+        if original_post_type not in non_themed_types:
             if not year or not week:
-                logger.error(f"Themed post header image route called without week context: year={year}, week={week}")
-                return "Week context (year and week) is required for themed posts.", 400
-            
-            # Only resolve for themed posts
-            target_post_id = resolve_post_for_week(year, week)
-            if not target_post_id:
-                logger.error(f"No post scheduled for year={year}, week={week}")
-                return f"No post scheduled for week {week}, {year}. Please schedule a post for this week first.", 404
+                logger.warning(f"Themed post header image route called without week context: year={year}, week={week}")
+                # Don't return error - allow page to render, just warn
         
         # Get post_type (illustration_method is deprecated, always use LLM-creation)
         from utils.taxonomy_helpers import get_post_type
@@ -252,45 +214,13 @@ def register_routes(bp):
         year = request.args.get('year', type=int)
         week = request.args.get('week', type=int)
 
-        from utils.week_post_resolver import resolve_post_for_week
-        
-        # Get post type for the original post_id first
+        # CRITICAL: Always use post_id from URL - it's the definitive identifier
+        # Week parameters are context only, not for changing post_id
         from utils.taxonomy_helpers import get_post_type
         original_post_type = get_post_type(post_id)
         
-        # Resolve post_id from week context (required for generation, but allow page to render)
-        # BUT: For non-themed posts (recipe/profile/generated), preserve the original post_id
-        target_post_id = None
-        week_has_post = False
-        
-        # Non-themed post types don't require week context
-        non_themed_types = ('recipe', 'profile', 'generated')
-        
-        if year and week:
-            if original_post_type in non_themed_types:
-                # For non-themed posts, preserve original post_id
-                target_post_id = post_id
-                week_has_post = True  # Non-themed posts don't need week scheduling
-            else:
-                # Only resolve for themed posts
-                resolved = resolve_post_for_week(year, week)
-                if resolved:
-                    target_post_id = resolved
-                    week_has_post = True
-                else:
-                    logger.warning(f"No post scheduled for year={year}, week={week}")
-                    target_post_id = post_id
-        else:
-            # No week context provided
-            target_post_id = post_id
-            if original_post_type in non_themed_types:
-                # Non-themed posts don't require week context - they're standalone
-                week_has_post = True
-                logger.debug(f"Non-themed post {post_id} ({original_post_type}) - week context not required")
-            else:
-                # Themed posts require week context for generation
-                week_has_post = False
-                logger.warning(f"Themed post {post_id} called without week context: year={year}, week={week}")
+        target_post_id = post_id  # Always use URL post_id
+        week_has_post = bool(year and week)  # True if week context provided
         
         # Use original post_type for non-themed posts, otherwise get from resolved post
         post_type = original_post_type if original_post_type in non_themed_types else get_post_type(target_post_id)
@@ -351,45 +281,13 @@ def register_routes(bp):
         year = request.args.get('year', type=int)
         week = request.args.get('week', type=int)
 
-        from utils.week_post_resolver import resolve_post_for_week
-        
-        # Get post type for the original post_id first
+        # CRITICAL: Always use post_id from URL - it's the definitive identifier
+        # Week parameters are context only, not for changing post_id
         from utils.taxonomy_helpers import get_post_type
         original_post_type = get_post_type(post_id)
         
-        # Resolve post_id from week context (required for generation, but allow page to render)
-        # BUT: For non-themed posts (recipe/profile/generated), preserve the original post_id
-        target_post_id = None
-        week_has_post = False
-        
-        # Non-themed post types don't require week context
-        non_themed_types = ('recipe', 'profile', 'generated')
-        
-        if year and week:
-            if original_post_type in non_themed_types:
-                # For non-themed posts, preserve original post_id
-                target_post_id = post_id
-                week_has_post = True  # Non-themed posts don't need week scheduling
-            else:
-                # Only resolve for themed posts
-                resolved = resolve_post_for_week(year, week)
-                if resolved:
-                    target_post_id = resolved
-                    week_has_post = True
-                else:
-                    logger.warning(f"No post scheduled for year={year}, week={week}")
-                    target_post_id = post_id
-        else:
-            # No week context provided
-            target_post_id = post_id
-            if original_post_type in non_themed_types:
-                # Non-themed posts don't require week context - they're standalone
-                week_has_post = True
-                logger.debug(f"Non-themed post {post_id} ({original_post_type}) - week context not required")
-            else:
-                # Themed posts require week context for generation
-                week_has_post = False
-                logger.warning(f"Themed post {post_id} called without week context: year={year}, week={week}")
+        target_post_id = post_id  # Always use URL post_id
+        week_has_post = bool(year and week)  # True if week context provided
         
         # Use original post_type for non-themed posts, otherwise get from resolved post
         post_type = original_post_type if original_post_type in non_themed_types else get_post_type(target_post_id)

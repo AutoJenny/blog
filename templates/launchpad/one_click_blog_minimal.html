@@ -60,6 +60,16 @@
                     <label for="author-select" style="color:#a8afc2; font-size:13px;">Author:</label>
                     <select id="author-select" style="background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:6px 10px; min-width:200px;"></select>
                 </div>
+                <div style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:#0f172a; border:1px solid #334155; border-radius:6px;">
+                    <label style="display:flex; align-items:center; gap:6px; color:#a8afc2; font-size:13px; cursor:pointer;">
+                        <input type="radio" name="run-mode" value="all" id="run-mode-all" checked style="cursor:pointer;">
+                        <span>Run All</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; color:#a8afc2; font-size:13px; cursor:pointer;">
+                        <input type="radio" name="run-mode" value="uncompleted" id="run-mode-uncompleted" style="cursor:pointer;">
+                        <span>Run Uncompleted</span>
+                    </label>
+                </div>
                 <button id="start-all" class="run-btn complete" style="padding:10px 18px; font-size:0.95rem;">
                     <i class="fas fa-play" style="margin-right:6px;"></i>
                     Start
@@ -76,7 +86,7 @@
                 </thead>
                 <tbody>
                     <!-- Calendar Stage -->
-                    <tr class="stage-row">
+                    <tr class="stage-row" data-stage="calendar">
                         <td class="stage-cell" rowspan="2">
                             <div class="stage-name">
                                 <i class="fas fa-calendar-alt"></i>
@@ -99,8 +109,8 @@
                     </tr>
 
                     <!-- Planning Stage -->
-                    <tr class="stage-row">
-                        <td class="stage-cell" rowspan="6">
+                    <tr class="stage-row" data-stage="planning">
+                        <td class="stage-cell" rowspan="8">
                             <div class="stage-name">
                                 <i class="fas fa-lightbulb"></i>
                                 Planning
@@ -165,10 +175,30 @@
                             </select>
                         </td>
                     </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="product-data-review">Product Data Review</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-product-data-review" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="product-data-review">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-content-mapping">Section Content Mapping</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-section-content-mapping" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="section-content-mapping">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
 
                     <!-- Authoring Stage -->
-                    <tr class="stage-row">
-                        <td class="stage-cell" rowspan="4">
+                    <tr class="stage-row" data-stage="authoring">
+                        <td class="stage-cell" rowspan="5">
                             <div class="stage-name">
                                 <i class="fas fa-pen-nib"></i>
                                 Authoring
@@ -213,9 +243,19 @@
                             </select>
                         </td>
                     </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="recipe-image-style-prompt">Image Style & Prompts</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-recipe-image-style-prompt" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="recipe-image-style-prompt">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
 
                     <!-- Imaging Stage -->
-                    <tr class="stage-row">
+                    <tr class="stage-row" data-stage="imaging">
                         <td class="stage-cell" rowspan="2">
                             <div class="stage-name">
                                 <i class="fas fa-magic"></i>
@@ -243,7 +283,7 @@
                     </tr>
 
                     <!-- Header Stage -->
-                    <tr class="stage-row">
+                    <tr class="stage-row" data-stage="header">
                         <td class="stage-cell" rowspan="6">
                             <div class="stage-name">
                                 <i class="fas fa-heading"></i>
@@ -439,6 +479,111 @@
 </body>
 </html>
 <script>
+// Global helper functions for visual feedback during pipeline execution
+const stepIdToButtonId = {
+    'week-ideas': 'run-week-ideas',
+    'idea-generation': 'run-idea-generation',
+    'taxonomy': 'run-taxonomy',
+    'topic-brainstorming': 'run-topic-brainstorming',
+    'section-structure-design': 'run-section-structure',
+    'section-ideas': 'run-section-ideas',
+    'section-titling': 'run-section-titling',
+    'drafting': 'run-drafting',
+    'image-concepts': 'run-image-concepts',
+    'image-prompts': 'run-image-prompts',
+    'image-captions': 'run-image-captions',
+    'image-generation': 'run-image-generation',
+    'optimise': 'run-image-optimise',
+    'header-title-summary': 'run-header-title-summary',
+    'header-image-generate': 'run-header-image-generate',
+    'header-seo-meta': 'run-header-seo-meta',
+    'final-review': 'run-final-review'
+};
+
+// Global pipeline status storage
+let currentPipelineStatus = null;
+
+// Mapping from step.id to substage key in pipelineStatus
+const stepIdToSubstageKey = {
+    'week-ideas': 'idea_generation',
+    'idea-generation': 'ideas',
+    'taxonomy': 'taxonomy',
+    'topic-brainstorming': 'topic_brainstorming',
+    'section-structure-design': 'section_structure',
+    'section-ideas': 'topic_allocation',
+    'section-titling': 'section_titling',
+    'drafting': 'author_first_drafts',
+    'image-concepts': 'image_concepts',
+    'image-prompts': 'image_prompts',
+    'image-captions': 'image_captions',
+    'image-generation': 'image_generation',
+    'optimise': 'optimise',
+    'header-title-summary': 'title_summary',
+    'header-image-generate': 'header_image',
+    'header-seo-meta': 'seo_meta',
+    'final-review': 'final_review'
+};
+
+// Helper function to check if a step is completed
+function isStepCompleted(stepId) {
+    if (!currentPipelineStatus || !currentPipelineStatus.stages) return false;
+    
+    const substageKey = stepIdToSubstageKey[stepId];
+    if (!substageKey) return false; // Unknown step, assume not completed
+    
+    // Search through all stages for this substage
+    for (const stageKey of Object.keys(currentPipelineStatus.stages)) {
+        const stage = currentPipelineStatus.stages[stageKey];
+        if (stage && stage.substages && stage.substages[substageKey]) {
+            return stage.substages[substageKey].status === 'complete';
+        }
+    }
+    return false;
+}
+
+// Helper function to update button state for visual feedback
+function updateStepButtonState(stepId, state) {
+    const buttonId = stepIdToButtonId[stepId];
+    if (!buttonId) return; // No button for this step
+    
+    const button = document.getElementById(buttonId);
+    if (!button) return; // Button doesn't exist
+    
+    const originalText = button.textContent.trim();
+    
+    switch(state) {
+        case 'running':
+            button.disabled = true;
+            button.textContent = 'Running…';
+            button.classList.remove('dead', 'complete');
+            button.classList.add('ready');
+            break;
+        case 'complete':
+            button.disabled = false;
+            button.textContent = 'Done';
+            button.classList.remove('dead', 'ready');
+            button.classList.add('complete');
+            // Reset text after a moment
+            setTimeout(() => {
+                if (button.textContent === 'Done') {
+                    button.textContent = originalText;
+                }
+            }, 2000);
+            break;
+        case 'error':
+            button.disabled = false;
+            button.textContent = 'Error';
+            button.classList.remove('ready', 'complete');
+            button.classList.add('dead');
+            setTimeout(() => {
+                if (button.textContent === 'Error') {
+                    button.textContent = originalText;
+                }
+            }, 3000);
+            break;
+    }
+}
+
 // Orchestrator overlay (moved below run handlers to avoid ReferenceError)
 (function(){
     const overlay = document.createElement('div');
@@ -482,6 +627,11 @@
 
     // Map completion events
     const events = {
+        'titling_complete': 'titling_complete',
+        'drafting_complete': 'drafting_complete',
+        'image_concepts_complete': 'image_concepts_complete',
+        'image_prompts_complete': 'image_prompts_complete',
+        'image_captions_complete': 'image_captions_complete',
         'image_generation_complete': 'image_generation_complete',
         'image_optimise_complete': 'image_optimise_complete',
         'header_title_summary_complete': 'header_title_summary_complete',
@@ -500,11 +650,11 @@
         { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
         { id:'section-structure-design', label:'Planning — Section Structure', run: runSectionStructure },
         { id:'section-ideas', label:'Planning — Section Ideas', run: runSectionIdeas },
-        { id:'section-titling', label:'Planning — Section Titling', run: runSectionTitling },
-        { id:'drafting', label:'Authoring — Drafting', run: runDrafting },
-        { id:'image-concepts', label:'Authoring — Image Concepts', run: runImageConcepts },
-        { id:'image-prompts', label:'Authoring — Image Prompts', run: runImagePrompts },
-        { id:'image-captions', label:'Authoring — Image Captions', run: runImageCaptions },
+        { id:'section-titling', label:'Planning — Section Titling', run: runSectionTitling, completeEvent: events.titling_complete },
+        { id:'drafting', label:'Authoring — Drafting', run: runDrafting, completeEvent: events.drafting_complete },
+        { id:'image-concepts', label:'Authoring — Image Concepts', run: runImageConcepts, completeEvent: events.image_concepts_complete },
+        { id:'image-prompts', label:'Authoring — Image Prompts', run: runImagePrompts, completeEvent: events.image_prompts_complete },
+        { id:'image-captions', label:'Authoring — Image Captions', run: runImageCaptions, completeEvent: events.image_captions_complete },
         { id:'image-generation', label:'Imaging — Image Generation', run: runImageGeneration, completeEvent: events.image_generation_complete },
         { id:'optimise', label:'Imaging — Optimise', run: runImageOptimise, completeEvent: events.image_optimise_complete },
         { id:'header-title-summary', label:'Header — Title & Summary', run: ()=>{ const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); }, completeEvent: events.header_title_summary_complete },
@@ -534,11 +684,39 @@
         const runAllBtn = document.getElementById('run-all');
         if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Running…'; }
         if (runAllBtn){ runAllBtn.disabled = true; runAllBtn.textContent = 'Running…'; }
-        openOverlay(); setStatus('Starting…'); appendStep('Initializing pipeline');
-        for (const step of pipeline){
+        
+        // Check run mode
+        const runModeAll = document.getElementById('run-mode-all');
+        const runUncompletedOnly = runModeAll ? !runModeAll.checked : false;
+        
+        // Filter pipeline steps based on mode
+        let stepsToRun = pipeline;
+        if (runUncompletedOnly) {
+            stepsToRun = pipeline.filter(step => !isStepCompleted(step.id));
+            const skippedCount = pipeline.length - stepsToRun.length;
+            if (skippedCount > 0) {
+                console.log(`Skipping ${skippedCount} completed step(s)`);
+            }
+        }
+        
+        if (stepsToRun.length === 0) {
+            alert('All steps are already completed!');
+            if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Start'; }
+            if (runAllBtn){ runAllBtn.disabled = false; runAllBtn.textContent = 'Run All'; }
+            return;
+        }
+        
+        openOverlay(); 
+        setStatus('Starting…'); 
+        appendStep(`Initializing pipeline (${runUncompletedOnly ? stepsToRun.length + ' uncompleted' : 'all'} steps)`);
+        for (const step of stepsToRun){
             const mode = getMode(step.id);
             appendStep(`→ ${step.label} (${mode})`);
             setStatus(step.label);
+            
+            // Update button to show it's running
+            updateStepButtonState(step.id, 'running');
+            
             if (mode === 'manual'){
                 // For manual mode, just open the destination page like the run function would, but do not proceed automatically.
                 try { step.run(); } catch(_){}
@@ -551,28 +729,149 @@
                     if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Resume'; }
                 });
                 appendStep(`✓ ${step.label} (manual)`);
+                updateStepButtonState(step.id, 'complete');
                 continue;
             }
             try{
-                // Auto: invoke runner
-                const maybeWin = step.run && step.run();
+                // For steps with completion events, set up listener BEFORE calling run()
+                let eventReceived = false;
+                let eventListener = null;
+                if (step.completeEvent) {
+                    eventListener = (ev) => {
+                        if (ev.data === step.completeEvent) {
+                            eventReceived = true;
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                        }
+                    };
+                    window.addEventListener('message', eventListener);
+                }
+                
+                // Auto: invoke runner and await it (most are async functions)
+                const result = step.run && step.run();
+                
+                // Special handling for steps that open windows (like image generation)
+                let openedWindow = null;
+                if (result && result.window && typeof result.window === 'object') {
+                    openedWindow = result.window;
+                } else if (result && result instanceof Window) {
+                    openedWindow = result;
+                }
+                
+                // If it returns a Promise, await it
+                if (result && typeof result.then === 'function') {
+                    await result;
+                }
+                
+                // If it has a completion event, wait for it
                 if (step.completeEvent){
-                    await waitForEvent(step.completeEvent, step.id === 'image-generation' ? 300000 : 180000);
-                } else {
-                    // Fallback: short delay for non-event steps
+                    const timeout = step.id === 'image-generation' ? 300000 : 180000;
+                    try {
+                        // For image generation, also poll window closure as fallback
+                        if (step.id === 'image-generation' && openedWindow) {
+                            // Race between event and window closure
+                            const eventPromise = new Promise((resolve, reject) => {
+                                if (eventReceived) {
+                                    resolve('event_received');
+                                    return;
+                                }
+                                const timer = setTimeout(() => {
+                                    window.removeEventListener('message', eventListener);
+                                    reject(new Error(`Timeout waiting for ${step.completeEvent}`));
+                                }, timeout);
+                                
+                                const checkEvent = (ev) => {
+                                    if (ev.data === step.completeEvent) {
+                                        clearTimeout(timer);
+                                        window.removeEventListener('message', checkEvent);
+                                        resolve('event_received');
+                                    }
+                                };
+                                window.addEventListener('message', checkEvent);
+                            });
+                            
+                            const windowClosedPromise = new Promise((resolve) => {
+                                const checkInterval = setInterval(() => {
+                                    if (openedWindow.closed) {
+                                        clearInterval(checkInterval);
+                                        resolve('window_closed');
+                                    }
+                                }, 1000);
+                                // Clear interval if event fires first
+                                eventPromise.then(() => clearInterval(checkInterval)).catch(() => {});
+                            });
+                            
+                            // Wait for either event or window closure
+                            const raceResult = await Promise.race([eventPromise, windowClosedPromise]);
+                            if (raceResult === 'window_closed') {
+                                appendStep(`⚠ ${step.label} - window closed (event may not have fired)`);
+                            }
+                            // Clean up listener
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                        } else {
+                            await waitForEvent(step.completeEvent, timeout);
+                            // Clean up listener
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                        }
+                    } catch (e) {
+                        // Clean up listener on error
+                        if (eventListener) {
+                            window.removeEventListener('message', eventListener);
+                        }
+                        // If timeout and we have a window, check if it's still open
+                        if (openedWindow) {
+                            if (openedWindow.closed) {
+                                // Window closed - might have completed, continue
+                                appendStep(`⚠ ${step.label} - window closed, assuming complete`);
+                            } else {
+                                // Window still open but no event - might be stuck
+                                throw new Error(`Timeout waiting for ${step.completeEvent}. Window is still open - you may need to complete it manually.`);
+                            }
+                        } else {
+                            throw e;
+                        }
+                    }
+                } else if (!result || typeof result.then !== 'function') {
+                    // Fallback: short delay for non-async, non-event steps
                     await new Promise(r=>setTimeout(r, 1500));
                 }
                 appendStep(`✓ ${step.label}`);
-            }catch(e){
-                appendStep(`✗ ${step.label} — ${e.message}`);
-                const retry = confirm(`${step.label} failed: ${e.message}. Retry?`);
-                if (retry){
-                    // One retry
-                    try{
-                        step.run && step.run();
-                        if (step.completeEvent){ await waitForEvent(step.completeEvent, 180000); }
-                        appendStep(`✓ ${step.label} (retry)`);
-                    }catch(e2){ appendStep(`✗ ${step.label} — ${e2.message}`); break; }
+                updateStepButtonState(step.id, 'complete');
+                
+                // Refresh pipeline status to update green dots
+                const postId = getSelectedPostId();
+                if (postId) {
+                    try {
+                        const statusResp = await fetch(`/launchpad/one-click-blog/api/pipeline-status/${postId}`);
+                        if (statusResp.ok) {
+                            const statusData = await statusResp.json();
+                            if (statusData.success && statusData.data) {
+                                currentPipelineStatus = statusData.data;
+                                updatePipelineStatusIndicators(statusData.data);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Failed to refresh pipeline status:', e);
+                    }
+                }
+                }catch(e){
+                    appendStep(`✗ ${step.label} — ${e.message}`);
+                    const retry = confirm(`${step.label} failed: ${e.message}. Retry?`);
+                    if (retry){
+                        // One retry
+                        try{
+                            const retryResult = step.run && step.run();
+                            if (retryResult && typeof retryResult.then === 'function') {
+                                await retryResult;
+                            }
+                            if (step.completeEvent){ await waitForEvent(step.completeEvent, 180000); }
+                            appendStep(`✓ ${step.label} (retry)`);
+                        }catch(e2){ appendStep(`✗ ${step.label} — ${e2.message}`); break; }
                 } else {
                     const skip = confirm('Skip this step and continue?');
                     if (!skip) break;
@@ -996,10 +1295,19 @@
         // Open titling page in new window
         const titlingWindow = window.open(`/planning/posts/${postId}/concept/titling?auto_run=true`, '_blank', 'width=1400,height=900');
         
+        if (!titlingWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
         // Listen for completion message from titling page
         window.addEventListener('message', function handleMessage(event) {
             if (event.data === 'titling_complete') {
-                titlingWindow.close();
+                if (titlingWindow) {
+                    try { titlingWindow.close(); } catch(_){}
+                }
                 window.removeEventListener('message', handleMessage);
                 
                 btn.textContent = 'Done';
@@ -1012,7 +1320,7 @@
         
         // Fallback: if window closes without message, assume complete
         const checkClosed = setInterval(() => {
-            if (titlingWindow.closed) {
+            if (titlingWindow && titlingWindow.closed) {
                 clearInterval(checkClosed);
                 btn.textContent = 'Done';
                 btn.classList.remove('dead','ready');
@@ -1021,6 +1329,9 @@
                 setTimeout(() => { btn.textContent = originalText; }, 1500);
             }
         }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: titlingWindow };
     }
     const runSectionTitlingBtn = document.getElementById('run-section-titling');
     if (runSectionTitlingBtn){
@@ -1051,10 +1362,19 @@
         // Open drafting page in new window
         const draftingWindow = window.open(`/posts/${postId}/sections/drafting?auto_run=true`, '_blank', 'width=1400,height=900');
         
+        if (!draftingWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
         // Listen for completion message from drafting page
         window.addEventListener('message', function handleMessage(event) {
             if (event.data === 'drafting_complete') {
-                draftingWindow.close();
+                if (draftingWindow) {
+                    try { draftingWindow.close(); } catch(_){}
+                }
                 window.removeEventListener('message', handleMessage);
                 
                 btn.textContent = 'Done';
@@ -1067,7 +1387,7 @@
         
         // Fallback: if window closes without message, assume complete
         const checkClosed = setInterval(() => {
-            if (draftingWindow.closed) {
+            if (draftingWindow && draftingWindow.closed) {
                 clearInterval(checkClosed);
                 btn.textContent = 'Done';
                 btn.classList.remove('dead','ready');
@@ -1076,6 +1396,9 @@
                 setTimeout(() => { btn.textContent = originalText; }, 1500);
             }
         }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: draftingWindow };
     }
     const runDraftingBtn = document.getElementById('run-drafting');
     if (runDraftingBtn){
@@ -1106,10 +1429,19 @@
         // Open image_concepts page in new window
         const conceptsWindow = window.open(`/authoring/posts/${postId}/sections/image_concepts?auto_run=true`, '_blank', 'width=1400,height=900');
         
+        if (!conceptsWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
         // Listen for completion message from image_concepts page
         window.addEventListener('message', function handleMessage(event) {
             if (event.data === 'image_concepts_complete') {
-                conceptsWindow.close();
+                if (conceptsWindow) {
+                    try { conceptsWindow.close(); } catch(_){}
+                }
                 window.removeEventListener('message', handleMessage);
                 
                 btn.textContent = 'Done';
@@ -1122,7 +1454,7 @@
         
         // Fallback: if window closes without message, assume complete
         const checkClosed = setInterval(() => {
-            if (conceptsWindow.closed) {
+            if (conceptsWindow && conceptsWindow.closed) {
                 clearInterval(checkClosed);
                 btn.textContent = 'Done';
                 btn.classList.remove('dead','ready');
@@ -1131,6 +1463,9 @@
                 setTimeout(() => { btn.textContent = originalText; }, 1500);
             }
         }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: conceptsWindow };
     }
     const runImageConceptsBtn = document.getElementById('run-image-concepts');
     if (runImageConceptsBtn){
@@ -1161,10 +1496,19 @@
         // Open image_prompts page in new window
         const promptsWindow = window.open(`/authoring/posts/${postId}/sections/image_prompts?auto_run=true`, '_blank', 'width=1400,height=900');
         
+        if (!promptsWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
         // Listen for completion message from image_prompts page
         window.addEventListener('message', function handleMessage(event) {
             if (event.data === 'image_prompts_complete') {
-                promptsWindow.close();
+                if (promptsWindow) {
+                    try { promptsWindow.close(); } catch(_){}
+                }
                 window.removeEventListener('message', handleMessage);
                 
                 btn.textContent = 'Done';
@@ -1177,7 +1521,7 @@
         
         // Fallback: if window closes without message, assume complete
         const checkClosed = setInterval(() => {
-            if (promptsWindow.closed) {
+            if (promptsWindow && promptsWindow.closed) {
                 clearInterval(checkClosed);
                 btn.textContent = 'Done';
                 btn.classList.remove('dead','ready');
@@ -1186,6 +1530,9 @@
                 setTimeout(() => { btn.textContent = originalText; }, 1500);
             }
         }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: promptsWindow };
     }
     const runImagePromptsBtn = document.getElementById('run-image-prompts');
     if (runImagePromptsBtn){
@@ -1216,10 +1563,19 @@
         // Open image_captions page in new window
         const captionsWindow = window.open(`/authoring/posts/${postId}/sections/image_captions?auto_run=true`, '_blank', 'width=1400,height=900');
         
+        if (!captionsWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
         // Listen for completion message from image_captions page
         window.addEventListener('message', function handleMessage(event) {
             if (event.data === 'image_captions_complete') {
-                captionsWindow.close();
+                if (captionsWindow) {
+                    try { captionsWindow.close(); } catch(_){}
+                }
                 window.removeEventListener('message', handleMessage);
                 
                 btn.textContent = 'Done';
@@ -1232,7 +1588,7 @@
         
         // Fallback: if window closes without message, assume complete
         const checkClosed = setInterval(() => {
-            if (captionsWindow.closed) {
+            if (captionsWindow && captionsWindow.closed) {
                 clearInterval(checkClosed);
                 btn.textContent = 'Done';
                 btn.classList.remove('dead','ready');
@@ -1241,6 +1597,9 @@
                 setTimeout(() => { btn.textContent = originalText; }, 1500);
             }
         }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: captionsWindow };
     }
     const runImageCaptionsBtn = document.getElementById('run-image-captions');
     if (runImageCaptionsBtn){
@@ -1392,14 +1751,31 @@
         if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
         btn.disabled = true; btn.textContent = 'Running…'; btn.classList.remove('dead','complete'); btn.classList.add('ready');
         const win = window.open(`/imaging/posts/${postId}/sections/image-generation?auto_run=generate`, '_blank', 'width=1400,height=900');
-        window.addEventListener('message', function handleMsg(ev){
-            if (ev.data === 'image_generation_complete'){
-                try { win.close(); } catch(_){}
-                window.removeEventListener('message', handleMsg);
-                btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
-            }
-        });
-        const poll = setInterval(()=>{ if (win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=originalText,1500);} }, 1000);
+        
+        // Return the window so runAll() can track it
+        if (typeof win !== 'undefined' && win) {
+            // Set up listener for button updates (when called standalone)
+            window.addEventListener('message', function handleMsg(ev){
+                if (ev.data === 'image_generation_complete'){
+                    try { win.close(); } catch(_){}
+                    window.removeEventListener('message', handleMsg);
+                    btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
+                }
+            });
+            const poll = setInterval(()=>{ 
+                if (win.closed){ 
+                    clearInterval(poll); 
+                    btn.textContent='Done'; 
+                    btn.classList.remove('dead','ready'); 
+                    btn.classList.add('complete'); 
+                    btn.disabled=false; 
+                    setTimeout(()=>btn.textContent=originalText,1500);
+                } 
+            }, 1000);
+            
+            // Return window for runAll() to track
+            return { window: win };
+        }
     }
     const runImageGenerationBtn = document.getElementById('run-image-generation');
     if (runImageGenerationBtn){ runImageGenerationBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runImageGeneration(); }); }
@@ -1627,7 +2003,7 @@
                 btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
             }
         });
-        const poll = setInterval(()=>{ if (win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=originalText,1500);} }, 1000);
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=originalText,1500);} }, 1000);
     }
     const runImageOptimiseBtn = document.getElementById('run-image-optimise');
     if (runImageOptimiseBtn){ runImageOptimiseBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runImageOptimise(); }); }
@@ -1747,11 +2123,18 @@
             const statusData = statusResp.ok ? await statusResp.json() : { success: false, data: null };
             const post = postData.post || {};
             const schedule = postData.schedule || null;
-            const postType = pipelineData.post_type || 'themed';
+            const postType = statusData.success && statusData.data?.post_type 
+                ? statusData.data.post_type 
+                : (pipelineData.post_type || 'themed');
             const title = post.title || 'Untitled';
             
             // Extract pipeline status data for sections and completion status
             const pipelineStatus = statusData.success && statusData.data ? statusData.data : null;
+            // Store globally for runAll() to access
+            currentPipelineStatus = pipelineStatus;
+            
+            // Filter and reorder substages based on post_type
+            await filterSubstagesByPostType(postType);
             
             // Update title text
             if (titleTextEl) titleTextEl.textContent = `#${postId} — ${title}`;
@@ -2028,6 +2411,136 @@
         }
     }
     
+    // Function to filter and reorder substages based on post_type
+    async function filterSubstagesByPostType(postType) {
+        try {
+            // Fetch substage config for this post_type
+            const response = await fetch(`/launchpad/one-click-blog/api/post-types/${postType}/substages`);
+            if (!response.ok) {
+                console.warn('Failed to load substage config, showing all substages');
+                return;
+            }
+            const data = await response.json();
+            
+            if (!data.substages || typeof data.substages !== 'object') {
+                console.warn('Invalid substage config format, showing all substages');
+                return;
+            }
+            
+            // Map of stage -> substage keys in order
+            const validSubstages = {};
+            Object.keys(data.substages).forEach(stage => {
+                validSubstages[stage] = data.substages[stage].map(s => s.key);
+            });
+            
+            // Mapping from config substage keys to HTML data-substage values
+            const substageKeyToDataAttr = {
+                'calendar_view': 'calendar-view',
+                'idea_generation': 'week-ideas',
+                'ideas': 'idea-generation',
+                'taxonomy': 'taxonomy',
+                'topic_brainstorming': 'topic-brainstorming',
+                'section_structure': 'section-structure-design',
+                'topic_allocation': 'section-ideas',
+                'section_titling': 'section-titling',
+                'product_data_review': 'product-data-review',
+                'section_content_mapping': 'section-content-mapping',
+                'recipe_image_style_prompt': 'recipe-image-style-prompt',
+                'drafting': 'drafting',
+                'image_concepts': 'image-concepts',
+                'image_prompts': 'image-prompts',
+                'image_captions': 'image-captions',
+                'recipe_image_style_prompt': 'recipe-image-style-prompt',
+                'image_generation': 'image-generation',
+                'optimise': 'optimise',
+                'title_summary': 'title-summary',
+                'header_image': 'header-image-generate',
+                'seo_meta': 'seo-meta',
+                'product_match': 'product-match',
+                'final_review': 'final-review'
+            };
+            
+            // Process each stage
+            Object.keys(validSubstages).forEach(stage => {
+                const stageSubstages = validSubstages[stage];
+                const stageRows = [];
+                
+                // Find all rows for this stage
+                const stageRow = document.querySelector(`tr.stage-row[data-stage="${stage}"]`);
+                if (!stageRow) return;
+                
+                // Get all substage rows for this stage
+                let currentRow = stageRow.nextElementSibling;
+                while (currentRow && !currentRow.classList.contains('stage-row')) {
+                    const substageLink = currentRow.querySelector('.substage-link');
+                    if (substageLink) {
+                        const dataSubstage = substageLink.getAttribute('data-substage');
+                        stageRows.push({ row: currentRow, dataSubstage });
+                    }
+                    currentRow = currentRow.nextElementSibling;
+                }
+                
+                // Filter and reorder rows
+                const orderedRows = [];
+                const validDataSubstages = new Set();
+                
+                // Build ordered list based on config
+                stageSubstages.forEach(substageKey => {
+                    const dataSubstage = substageKeyToDataAttr[substageKey];
+                    if (dataSubstage) {
+                        validDataSubstages.add(dataSubstage);
+                        const matchingRow = stageRows.find(r => r.dataSubstage === dataSubstage);
+                        if (matchingRow) {
+                            orderedRows.push(matchingRow.row);
+                        }
+                    }
+                });
+                
+                // Hide invalid rows and show valid ones
+                stageRows.forEach(({ row, dataSubstage }) => {
+                    if (!validDataSubstages.has(dataSubstage)) {
+                        row.style.display = 'none';
+                    } else {
+                        row.style.display = '';
+                    }
+                });
+                
+                // Reorder rows to match config order
+                if (orderedRows.length > 0) {
+                    const tbody = stageRow.closest('tbody');
+                    if (tbody) {
+                        // Remove all rows from DOM temporarily
+                        const fragment = document.createDocumentFragment();
+                        orderedRows.forEach(row => {
+                            fragment.appendChild(row);
+                        });
+                        
+                        // Insert in correct order after stage row
+                        if (stageRow.nextSibling) {
+                            tbody.insertBefore(fragment, stageRow.nextSibling);
+                        } else {
+                            tbody.appendChild(fragment);
+                        }
+                    }
+                }
+                
+                // Update rowspan for stage cell (visible rows + 1 for the stage row itself)
+                const visibleRows = orderedRows.length;
+                if (visibleRows >= 0) {
+                    const stageCell = stageRow.querySelector('.stage-cell');
+                    if (stageCell) {
+                        // rowspan = number of substage rows + 1 (the stage row itself)
+                        stageCell.setAttribute('rowspan', visibleRows + 1);
+                    }
+                }
+            });
+            
+            console.log(`Filtered substages for post_type: ${postType}`);
+        } catch (error) {
+            console.error('Error filtering substages by post_type:', error);
+        }
+    }
+    
     // Function to update pipeline status indicators (green dots) based on API data
     function updatePipelineStatusIndicators(pipelineStatus) {
         if (!pipelineStatus || !pipelineStatus.stages) return;
@@ -2195,6 +2708,11 @@
         });
 
         const events = {
+            'titling_complete': 'titling_complete',
+            'drafting_complete': 'drafting_complete',
+            'image_concepts_complete': 'image_concepts_complete',
+            'image_prompts_complete': 'image_prompts_complete',
+            'image_captions_complete': 'image_captions_complete',
             'image_generation_complete': 'image_generation_complete',
             'image_optimise_complete': 'image_optimise_complete',
             'header_title_summary_complete': 'header_title_summary_complete',
@@ -2215,11 +2733,11 @@
             { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
             { id:'section-structure-design', label:'Planning — Section Structure', run: runSectionStructure },
             { id:'section-ideas', label:'Planning — Section Ideas', run: runSectionIdeas },
-            { id:'section-titling', label:'Planning — Section Titling', run: runSectionTitling },
-            { id:'drafting', label:'Authoring — Drafting', run: runDrafting },
-            { id:'image-concepts', label:'Authoring — Image Concepts', run: runImageConcepts },
-            { id:'image-prompts', label:'Authoring — Image Prompts', run: runImagePrompts },
-            { id:'image-captions', label:'Authoring — Image Captions', run: runImageCaptions },
+            { id:'section-titling', label:'Planning — Section Titling', run: runSectionTitling, completeEvent: events.titling_complete },
+            { id:'drafting', label:'Authoring — Drafting', run: runDrafting, completeEvent: events.drafting_complete },
+            { id:'image-concepts', label:'Authoring — Image Concepts', run: runImageConcepts, completeEvent: events.image_concepts_complete },
+            { id:'image-prompts', label:'Authoring — Image Prompts', run: runImagePrompts, completeEvent: events.image_prompts_complete },
+            { id:'image-captions', label:'Authoring — Image Captions', run: runImageCaptions, completeEvent: events.image_captions_complete },
             { id:'image-generation', label:'Imaging — Image Generation', run: runImageGeneration, completeEvent: events.image_generation_complete },
             { id:'optimise', label:'Imaging — Optimise', run: runImageOptimise, completeEvent: events.image_optimise_complete },
             { id:'header-title-summary', label:'Header — Title & Summary', run: ()=>{ const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); }, completeEvent: events.header_title_summary_complete },
@@ -2249,11 +2767,39 @@
             const runAllBtn = document.getElementById('run-all');
             if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Running…'; }
             if (runAllBtn){ runAllBtn.disabled = true; runAllBtn.textContent = 'Running…'; }
-            openOverlay(); setStatus('Starting…'); appendStep('Initializing pipeline');
-            for (const step of pipeline){
+            
+            // Check run mode
+            const runModeAll = document.getElementById('run-mode-all');
+            const runUncompletedOnly = runModeAll ? !runModeAll.checked : false;
+            
+            // Filter pipeline steps based on mode
+            let stepsToRun = pipeline;
+            if (runUncompletedOnly) {
+                stepsToRun = pipeline.filter(step => !isStepCompleted(step.id));
+                const skippedCount = pipeline.length - stepsToRun.length;
+                if (skippedCount > 0) {
+                    console.log(`Skipping ${skippedCount} completed step(s)`);
+                }
+            }
+            
+            if (stepsToRun.length === 0) {
+                alert('All steps are already completed!');
+                if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Start'; }
+                if (runAllBtn){ runAllBtn.disabled = false; runAllBtn.textContent = 'Run All'; }
+                return;
+            }
+            
+            openOverlay(); 
+            setStatus('Starting…'); 
+            appendStep(`Initializing pipeline (${runUncompletedOnly ? stepsToRun.length + ' uncompleted' : 'all'} steps)`);
+            for (const step of stepsToRun){
                 const mode = getMode(step.id);
                 appendStep(`→ ${step.label} (${mode})`);
                 setStatus(step.label);
+                
+                // Update button to show it's running
+                updateStepButtonState(step.id, 'running');
+                
                 if (mode === 'manual'){
                     try { step.run(); } catch(_){ }
                     setPaused(true);
@@ -2265,25 +2811,150 @@
                         if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Resume'; }
                     });
                     appendStep(`✓ ${step.label} (manual)`);
+                    updateStepButtonState(step.id, 'complete');
                     continue;
                 }
                 try{
-                    step.run && step.run();
+                    // For steps with completion events, set up listener BEFORE calling run()
+                    let eventReceived = false;
+                    let eventListener = null;
+                    if (step.completeEvent) {
+                        eventListener = (ev) => {
+                            if (ev.data === step.completeEvent) {
+                                eventReceived = true;
+                                if (eventListener) {
+                                    window.removeEventListener('message', eventListener);
+                                }
+                            }
+                        };
+                        window.addEventListener('message', eventListener);
+                    }
+                    
+                    // Auto: invoke runner and await it (most are async functions)
+                    const result = step.run && step.run();
+                    
+                    // Special handling for steps that open windows (like image generation)
+                    let openedWindow = null;
+                    if (result && result.window && typeof result.window === 'object') {
+                        openedWindow = result.window;
+                    } else if (result && result instanceof Window) {
+                        openedWindow = result;
+                    }
+                    
+                    // If it returns a Promise, await it
+                    if (result && typeof result.then === 'function') {
+                        await result;
+                    }
+                    
+                    // If it has a completion event, wait for it
                     if (step.completeEvent){
-                        await waitForEvent(step.completeEvent, step.id === 'image-generation' ? 300000 : 180000);
-                    } else {
+                        const timeout = step.id === 'image-generation' ? 300000 : 180000;
+                        try {
+                            // For window-based steps, race between event and window closure
+                            if (openedWindow) {
+                                const eventPromise = new Promise((resolve, reject) => {
+                                    if (eventReceived) {
+                                        resolve('event_received');
+                                        return;
+                                    }
+                                    const timer = setTimeout(() => {
+                                        if (eventListener) {
+                                            window.removeEventListener('message', eventListener);
+                                        }
+                                        reject(new Error(`Timeout waiting for ${step.completeEvent}`));
+                                    }, timeout);
+                                    
+                                    const checkEvent = (ev) => {
+                                        if (ev.data === step.completeEvent) {
+                                            clearTimeout(timer);
+                                            window.removeEventListener('message', checkEvent);
+                                            resolve('event_received');
+                                        }
+                                    };
+                                    window.addEventListener('message', checkEvent);
+                                });
+                                
+                                const windowClosedPromise = new Promise((resolve) => {
+                                    const checkInterval = setInterval(() => {
+                                        if (openedWindow && openedWindow.closed) {
+                                            clearInterval(checkInterval);
+                                            resolve('window_closed');
+                                        }
+                                    }, 1000);
+                                    eventPromise.then(() => clearInterval(checkInterval)).catch(() => {});
+                                });
+                                
+                                const raceResult = await Promise.race([eventPromise, windowClosedPromise]);
+                                if (raceResult === 'window_closed') {
+                                    console.log(`Window for ${step.label} closed, assuming completion.`);
+                                }
+                            } else {
+                                await waitForEvent(step.completeEvent, timeout);
+                            }
+                            // Clean up listener
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                        } catch (e) {
+                            // Clean up listener on error
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                            // If timeout and we have a window, check if it's still open
+                            if (openedWindow) {
+                                if (openedWindow.closed) {
+                                    // Window closed - might have completed, continue
+                                    appendStep(`⚠ ${step.label} - window closed, assuming complete`);
+                                } else {
+                                    // Window still open but no event - might be stuck
+                                    throw new Error(`Timeout waiting for ${step.completeEvent}. Window is still open - you may need to complete it manually.`);
+                                }
+                            } else {
+                                throw e;
+                            }
+                        }
+                    } else if (!result || typeof result.then !== 'function') {
+                        // Fallback: short delay for non-async, non-event steps
                         await new Promise(r=>setTimeout(r, 1500));
                     }
                     appendStep(`✓ ${step.label}`);
+                    updateStepButtonState(step.id, 'complete');
+                    
+                    // Refresh pipeline status to update green dots
+                    const postId = getSelectedPostId();
+                    if (postId) {
+                        try {
+                            const statusResp = await fetch(`/launchpad/one-click-blog/api/pipeline-status/${postId}`);
+                            if (statusResp.ok) {
+                                const statusData = await statusResp.json();
+                                if (statusData.success && statusData.data) {
+                                    currentPipelineStatus = statusData.data;
+                                    updatePipelineStatusIndicators(statusData.data);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Failed to refresh pipeline status:', e);
+                        }
+                    }
                 }catch(e){
                     appendStep(`✗ ${step.label} — ${e.message}`);
+                    updateStepButtonState(step.id, 'error');
                     const retry = confirm(`${step.label} failed: ${e.message}. Retry?`);
                     if (retry){
+                        updateStepButtonState(step.id, 'running');
                         try{
-                            step.run && step.run();
+                            const retryResult = step.run && step.run();
+                            if (retryResult && typeof retryResult.then === 'function') {
+                                await retryResult;
+                            }
                             if (step.completeEvent){ await waitForEvent(step.completeEvent, 180000); }
                             appendStep(`✓ ${step.label} (retry)`);
-                        }catch(e2){ appendStep(`✗ ${step.label} — ${e2.message}`); break; }
+                            updateStepButtonState(step.id, 'complete');
+                        }catch(e2){ 
+                            appendStep(`✗ ${step.label} — ${e2.message}`); 
+                            updateStepButtonState(step.id, 'error');
+                            break; 
+                        }
                     } else {
                         const skip = confirm('Skip this step and continue?');
                         if (!skip) break;

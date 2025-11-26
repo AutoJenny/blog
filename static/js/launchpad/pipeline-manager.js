@@ -6,12 +6,14 @@
 class PipelineManager {
     constructor(postId = null) {
         this.currentPostId = postId;
-        this.stages = ['planning', 'authoring', 'imaging'];
+        this.stages = ['calendar', 'planning', 'authoring', 'imaging', 'header'];
         // Map API stage names to template IDs
         this.stageIdMap = {
+            'calendar': 'calendar',
             'planning': 'concept',
             'authoring': 'authoring', 
-            'imaging': 'imaging'
+            'imaging': 'imaging',
+            'header': 'header'
         };
         this.init();
     }
@@ -150,6 +152,20 @@ class PipelineManager {
         
         const pipelineData = data.data;
         
+        // Debug: Log completed substages
+        if (pipelineData.stages) {
+            console.log('[Pipeline Manager] Checking for completed substages...');
+            Object.entries(pipelineData.stages).forEach(([stageName, stageData]) => {
+                if (stageData.substages) {
+                    Object.entries(stageData.substages).forEach(([substageName, substageData]) => {
+                        if (substageData.status === 'complete') {
+                            console.log(`[Pipeline Manager] Found completed: ${stageName}.${substageName}`);
+                        }
+                    });
+                }
+            });
+        }
+        
         // Update overall progress
         const progressBar = document.querySelector('.overall-progress .progress-fill');
         const progressText = document.querySelector('.overall-progress .progress-text');
@@ -193,63 +209,127 @@ class PipelineManager {
         
         // Update substages if available
         if (stageData.substages && Object.keys(stageData.substages).length > 0) {
-            this.updateSubstagesDisplay(templateStageId, stageData.substages);
+            this.updateSubstagesDisplay(templateStageId, stageData.substages, stage);
         }
     }
 
     /**
      * Update substages display
      */
-    updateSubstagesDisplay(stage, substages) {
+    updateSubstagesDisplay(stage, substages, apiStageName = null) {
         console.log('[Pipeline Manager] Updating substages display for stage:', stage, 'substages:', substages);
         
         // Handle both object and array formats
         const substagesList = Array.isArray(substages) ? substages : Object.entries(substages).map(([key, data]) => ({
-            name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            name: key.replace(/_/g, '-'), // Use dashes for data attributes
             key: key,
             ...data
         }));
         
         console.log('[Pipeline Manager] Processed substages list:', substagesList);
         
+        // Map API substage names to template data-substage values
+        const substageNameMap = {
+            'ideas': 'ideas',
+            'taxonomy': 'taxonomy',
+            'topic_brainstorming': 'topic_brainstorming',
+            'section_structure': 'section_structure',
+            'topic_allocation': 'topic_allocation',
+            'section_titling': 'section_titling',
+            'author_first_drafts': 'author_first_drafts',
+            'image_concepts': 'image_concepts',
+            'image_prompts': 'image_prompts',
+            'image_captions': 'image_captions',
+            'image_generation': 'image_generation',
+            'optimise': 'optimise',
+            'title_summary': 'title_summary',
+            'header_image': 'header_image',
+            'seo_meta': 'seo_meta',
+            'product_match': 'product_match',
+            'final_review': 'final_review',
+            'calendar_view': 'view',
+            'idea_generation': 'ideas_week'
+        };
+        
         // Update existing substages with timestamps
         substagesList.forEach(substage => {
-            const selectorName = substage.key || substage.name.toLowerCase().replace(/ /g, '_');
-            console.log('[Pipeline Manager] Looking for substage:', selectorName);
+            // Try both the API key and the mapped name
+            const apiKey = substage.key;
+            const mappedName = substageNameMap[apiKey] || apiKey;
             
-            // Look for existing substage anywhere in the document
-            const existingSubstage = document.querySelector(`[data-substage="${selectorName}"]`);
+            console.log('[Pipeline Manager] Looking for substage:', apiKey, '->', mappedName, 'in stage:', stage);
+            
+            // Look for existing substage - try multiple selectors
+            // First try with stage and substage together
+            let existingSubstage = document.querySelector(`[data-stage="${stage}"][data-substage="${mappedName}"]`);
+            if (!existingSubstage) {
+                // Try just substage
+                existingSubstage = document.querySelector(`[data-substage="${mappedName}"]`);
+            }
+            if (!existingSubstage) {
+                // Try with original API key
+                existingSubstage = document.querySelector(`[data-substage="${apiKey}"]`);
+            }
+            if (!existingSubstage) {
+                // Try with dashes instead of underscores
+                const dashedName = mappedName.replace(/_/g, '-');
+                existingSubstage = document.querySelector(`[data-substage="${dashedName}"]`);
+            }
             
             if (existingSubstage) {
-                console.log('[Pipeline Manager] Found existing substage:', selectorName);
+                console.log('[Pipeline Manager] Found existing substage:', mappedName);
                 
                 // Update existing substage
                 const completedAtSpan = existingSubstage.querySelector('.completed-at');
                 
-                if (completedAtSpan && substage.completed_at) {
-                    const timeAgo = this.formatTimeAgo(substage.completed_at);
-                    completedAtSpan.textContent = `Completed ${timeAgo}`;
-                    console.log('[Pipeline Manager] Updated timestamp for', selectorName, 'to:', timeAgo);
-                } else if (completedAtSpan) {
-                    completedAtSpan.textContent = 'Loading...';
+                if (completedAtSpan) {
+                    if (substage.completed_at) {
+                        const timeAgo = this.formatTimeAgo(substage.completed_at);
+                        completedAtSpan.textContent = `Completed ${timeAgo}`;
+                        console.log('[Pipeline Manager] Updated timestamp for', mappedName, 'to:', timeAgo);
+                    } else {
+                        // Show progress if in progress
+                        if (substage.status === 'in_progress' && substage.progress !== undefined) {
+                            completedAtSpan.textContent = `${substage.progress}% complete`;
+                        } else {
+                            completedAtSpan.textContent = 'Pending';
+                        }
+                    }
                 }
                 
-                // Update status classes
+                // Update status classes - add green dot indicator for complete
                 existingSubstage.className = `substage ${substage.status} automation-enabled`;
+                if (substage.status === 'complete') {
+                    existingSubstage.classList.add('complete');
+                }
                 
-                // Update icon
+                // Update icon with green checkmark for complete
                 const icon = existingSubstage.querySelector('i');
                 if (icon) {
                     if (substage.status === 'complete') {
                         icon.className = 'fas fa-check-circle';
+                        icon.style.color = '#10b981'; // Green color
+                        console.log('[Pipeline Manager] ✅ Set green checkmark for', mappedName);
                     } else if (substage.status === 'in_progress') {
                         icon.className = 'fas fa-spinner fa-spin';
+                        icon.style.color = '#3b82f6'; // Blue color
                     } else {
                         icon.className = 'fas fa-circle';
+                        icon.style.color = '#6b7280'; // Gray color
+                    }
+                } else {
+                    console.warn('[Pipeline Manager] No icon found for substage:', mappedName);
+                }
+                
+                // Update progress if available (for multi-section substages)
+                if (substage.progress !== undefined) {
+                    const progressElement = existingSubstage.querySelector('.substage-progress');
+                    if (progressElement) {
+                        progressElement.style.width = `${substage.progress}%`;
                     }
                 }
             } else {
-                console.log('[Pipeline Manager] Substage not found:', selectorName);
+                console.log('[Pipeline Manager] Substage not found:', mappedName, '(tried:', apiKey, ')');
             }
         });
     }
@@ -389,10 +469,12 @@ class PipelineManager {
         
         // Map stage names to URL paths
         const stageUrls = {
+            'calendar': `/planning/posts/${this.currentPostId}/calendar/ideas`,
             'planning': `/planning/posts/${this.currentPostId}/concept/titling`,
             'concept': `/planning/posts/${this.currentPostId}/concept/titling`,
             'authoring': `/authoring/posts/${this.currentPostId}/sections/author-first-drafts`,
-            'imaging': `/imaging/posts/${this.currentPostId}/sections`
+            'imaging': `/imaging/posts/${this.currentPostId}/sections/image-generation`,
+            'header': `/header/posts/${this.currentPostId}/title-summary`
         };
         
         const url = stageUrls[stage];

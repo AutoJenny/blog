@@ -11,17 +11,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 def _resolve_post_and_get_week_context(post_id):
-    """Helper to resolve post and get week context from URL"""
-    from utils.week_post_resolver import resolve_post_for_week
+    """
+    Helper to get week context from URL.
     
+    CRITICAL: Always returns post_id from URL - it's the definitive identifier.
+    Week parameters are context only, not for changing post_id.
+    """
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
     
+    # Always use post_id from URL - never change it based on week
     resolved_post_id = post_id
-    if year and week:
-        resolved = resolve_post_for_week(year, week)
-        if resolved:
-            resolved_post_id = resolved
     
     return resolved_post_id, year, week
 

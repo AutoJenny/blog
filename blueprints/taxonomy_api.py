@@ -37,7 +37,7 @@ def get_tiers():
 def get_items():
     """Get taxonomy items, optionally filtered by tier"""
     try:
-        tier = request.args.get('tier')  # 'theme', 'content_type', or 'format'
+        tier = request.args.get('tier')  # 'category', 'content_type', or 'format'
         theme_id = request.args.get('theme_id', type=int)
         
         with db_manager.get_cursor() as cursor:

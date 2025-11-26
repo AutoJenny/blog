@@ -85,10 +85,19 @@ def render_post_html(post, sections, image_replacements=None):
     Returns:
         HTML string ready for preview or publication
     """
+    # Check if any section is a recipe section
+    has_recipe_sections = False
+    if sections:
+        for section in sections:
+            section_type = section.get('section_type') or ''
+            if section_type.startswith('recipe_'):
+                has_recipe_sections = True
+                break
+    
     # Use standalone Jinja2 environment - NO dependency on Flask's app.py
     # Reload template each time to ensure we have the latest version
     template = _get_template()
-    html = template.render(post=post, sections=sections)
+    html = template.render(post=post, sections=sections, has_recipe_sections=has_recipe_sections)
     
     # ONLY apply image replacements if provided (for publishing)
     if image_replacements:
@@ -152,7 +161,9 @@ def render_post_html(post, sections, image_replacements=None):
     
     # Post-process HTML to add inline styles to recipe section elements
     # This ensures styling survives even if clan.com strips the <style> block
-    html = _add_inline_styles_to_recipe_elements(html)
+    # ONLY do this if there are recipe sections
+    if has_recipe_sections:
+        html = _add_inline_styles_to_recipe_elements(html)
     
     return html
 

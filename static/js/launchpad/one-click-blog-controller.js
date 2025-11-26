@@ -50,6 +50,14 @@ class OneClickBlogController {
             }
         };
         
+        // Stub function for loadPipelineForPostType (if called from elsewhere)
+        window.loadPipelineForPostType = async (postId, postType) => {
+            console.log('[One-Click Blog Controller] loadPipelineForPostType called with:', postId, postType);
+            if (this.pipelineManager && postId) {
+                await this.pipelineManager.setPostId(postId);
+            }
+        };
+        
         // Load initial data
         console.log('[One-Click Blog Controller] Loading initial data...');
         this.loadInitialData();
@@ -103,17 +111,33 @@ class OneClickBlogController {
         console.log('[One-Click Blog Controller] Loading initial data...');
         
         try {
+            // Check for post_id in URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlPostId = urlParams.get('post_id');
+            
             // Load next up data
             await this.nextUpPanel.loadNextUp();
             
             // Load schedule data
             await this.scheduleManager.loadCurrentSchedule();
             
-            // Initialize pipeline with Next Up post ID
-            const nextUpPostId = this.nextUpPanel.currentPostId;
-            if (nextUpPostId) {
-                console.log('[One-Click Blog Controller] Setting pipeline to Next Up post:', nextUpPostId);
-                await this.pipelineManager.setPostId(nextUpPostId);
+            // Initialize pipeline with post ID (prioritize URL parameter, then Next Up)
+            let postIdToUse = null;
+            if (urlPostId) {
+                postIdToUse = parseInt(urlPostId);
+                console.log('[One-Click Blog Controller] Using post ID from URL:', postIdToUse);
+            } else {
+                postIdToUse = this.nextUpPanel.currentPostId;
+                if (postIdToUse) {
+                    console.log('[One-Click Blog Controller] Using post ID from Next Up panel:', postIdToUse);
+                }
+            }
+            
+            if (postIdToUse) {
+                console.log('[One-Click Blog Controller] Setting pipeline to post:', postIdToUse);
+                await this.pipelineManager.setPostId(postIdToUse);
+            } else {
+                console.log('[One-Click Blog Controller] No post ID available for pipeline');
             }
             
             console.log('[One-Click Blog Controller] Initial data loaded');

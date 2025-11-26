@@ -311,6 +311,10 @@ def create_app(config_name=None):
     def test_state_manager():
         return app.send_static_file('test_state_manager.html')
     
+    # Register Jinja2 template globals
+    from utils.template_helpers import get_substages_for_navbar
+    app.jinja_env.globals['get_substages_for_navbar'] = get_substages_for_navbar
+    
     return app
 
 if __name__ == '__main__':

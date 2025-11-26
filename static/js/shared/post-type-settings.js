@@ -265,6 +265,7 @@
             this.pipelineSteps = null;
             this.llmConfigs = null;
             this.panelConfigs = null;
+            this.navigationStructure = null; // Will be populated from API
             
             this.init();
         }
@@ -360,9 +361,10 @@
             // Show modal
             this.modal.style.display = 'flex';
 
-            // Build navigation and load settings
-            this.buildNavigation();
-            this.loadSettings(this.currentStage, this.currentSubstage);
+            // Build navigation and load settings (async)
+            this.buildNavigation().then(() => {
+                this.loadSettings(this.currentStage, this.currentSubstage);
+            });
         }
 
         close() {
@@ -384,20 +386,115 @@
             return 'themed'; // Default
         }
 
-        buildNavigation() {
+        async buildNavigation() {
+            const tree = document.getElementById('navigation-tree');
+            if (!tree) return;
+
+            tree.innerHTML = '<div style="padding: 1rem; color: #94a3b8;">Loading navigation...</div>';
+
+            try {
+                // Fetch substage config from API
+                const response = await fetch(`/api/post-types/${this.currentPostType}/substages`);
+                const data = await response.json();
+                
+                if (!data.success || !data.substages) {
+                    throw new Error('Failed to load substage configuration');
+                }
+
+                // Stage metadata (icons and labels)
+                const stageMetadata = {
+                    'calendar': { label: 'Calendar', icon: 'fa-calendar-alt' },
+                    'planning': { label: 'Planning', icon: 'fa-lightbulb' },
+                    'research': { label: 'Research', icon: 'fa-search' },
+                    'authoring': { label: 'Authoring', icon: 'fa-pen-nib' },
+                    'imaging': { label: 'Imaging', icon: 'fa-magic' },
+                    'header': { label: 'Header', icon: 'fa-heading' }
+                };
+
+                // Map config substage keys to data-substage format
+                const substageKeyToDataAttr = (key) => {
+                    return key.replace(/_/g, '-');
+                };
+
+                tree.innerHTML = '';
+
+                // Build navigation tree from API data
+                Object.keys(data.substages).forEach(stageKey => {
+                    const substages = data.substages[stageKey];
+                    if (!substages || substages.length === 0) return;
+
+                    const stageMeta = stageMetadata[stageKey] || { label: stageKey, icon: 'fa-circle' };
+                    const isExpanded = stageKey === this.currentStage;
+                    const isActive = stageKey === this.currentStage;
+
+                    const stageDiv = document.createElement('div');
+                    stageDiv.className = `nav-stage ${isExpanded ? 'expanded' : ''}`;
+
+                    const header = document.createElement('div');
+                    header.className = `nav-stage-header ${isActive ? 'active' : ''}`;
+                    header.innerHTML = `
+                        <i class="fas ${stageMeta.icon} nav-stage-icon"></i>
+                        <span>${stageMeta.label}</span>
+                    `;
+                    header.addEventListener('click', () => {
+                        const isCurrentlyExpanded = stageDiv.classList.contains('expanded');
+                        document.querySelectorAll('.nav-stage').forEach(s => s.classList.remove('expanded'));
+                        if (!isCurrentlyExpanded) {
+                            stageDiv.classList.add('expanded');
+                        }
+                    });
+
+                    const substagesDiv = document.createElement('div');
+                    substagesDiv.className = 'nav-substages';
+
+                    substages.forEach(substage => {
+                        const substageKey = substageKeyToDataAttr(substage.key);
+                        const substageLabel = substage.label || substage.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        const isSubstageActive = stageKey === this.currentStage && substageKey === this.currentSubstage;
+
+                        const substageDiv = document.createElement('div');
+                        substageDiv.className = `nav-substage ${isSubstageActive ? 'active' : ''}`;
+                        substageDiv.textContent = substageLabel;
+                        substageDiv.addEventListener('click', () => {
+                            this.loadSettings(stageKey, substageKey);
+                            // Update active states
+                            document.querySelectorAll('.nav-substage').forEach(s => s.classList.remove('active'));
+                            document.querySelectorAll('.nav-stage-header').forEach(s => s.classList.remove('active'));
+                            substageDiv.classList.add('active');
+                            header.classList.add('active');
+                        });
+
+                        substagesDiv.appendChild(substageDiv);
+                    });
+
+                    stageDiv.appendChild(header);
+                    stageDiv.appendChild(substagesDiv);
+                    tree.appendChild(stageDiv);
+                });
+
+                // Store navigation structure for use in other methods
+                this.navigationStructure = data.substages;
+                
+            } catch (error) {
+                console.error('Error building navigation:', error);
+                tree.innerHTML = `<div style="padding: 1rem; color: #ef4444;">Error loading navigation: ${error.message}</div>`;
+                // Fallback to hardcoded structure
+                this.buildNavigationFallback();
+            }
+        }
+
+        buildNavigationFallback() {
+            // Fallback to hardcoded structure if API fails
             const tree = document.getElementById('navigation-tree');
             if (!tree) return;
 
             tree.innerHTML = '';
 
-            // Filter navigation based on post type
             let filteredStages = { ...NAVIGATION_STRUCTURE };
             if (this.currentPostType === 'profile') {
-                // Profile posts don't have Calendar or Research
                 delete filteredStages['calendar'];
                 delete filteredStages['research'];
             } else if (this.currentPostType === 'recipe') {
-                // Recipe posts don't have Research
                 delete filteredStages['research'];
             }
 
@@ -435,7 +532,6 @@
                     substageDiv.textContent = substageLabel;
                     substageDiv.addEventListener('click', () => {
                         this.loadSettings(stageKey, substageKey);
-                        // Update active states
                         document.querySelectorAll('.nav-substage').forEach(s => s.classList.remove('active'));
                         document.querySelectorAll('.nav-stage-header').forEach(s => s.classList.remove('active'));
                         substageDiv.classList.add('active');
@@ -464,8 +560,16 @@
 
             // Update context
             if (contextValue) {
-                const stageLabel = NAVIGATION_STRUCTURE[stage]?.label || stage;
-                const substageLabel = SUBSTAGE_LABELS[substage] || substage;
+                const stageMetadata = {
+                    'calendar': 'Calendar',
+                    'planning': 'Planning',
+                    'research': 'Research',
+                    'authoring': 'Authoring',
+                    'imaging': 'Imaging',
+                    'header': 'Header'
+                };
+                const stageLabel = stageMetadata[stage] || stage;
+                const substageLabel = SUBSTAGE_LABELS[substage] || substage.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 contextValue.textContent = `${stageLabel} > ${substageLabel}`;
             }
 
@@ -634,9 +738,20 @@
                                     k => SUBSTAGE_CONFIG_MAP[k].pipelineStep === step.previous.stepId
                                 );
                                 if (prevSubstage) {
-                                    const prevStage = Object.keys(NAVIGATION_STRUCTURE).find(
-                                        s => NAVIGATION_STRUCTURE[s].substages.includes(prevSubstage)
-                                    );
+                                    // Find stage from navigation structure (API or fallback)
+                                    let prevStage = null;
+                                    if (this.navigationStructure) {
+                                        prevStage = Object.keys(this.navigationStructure).find(s => 
+                                            this.navigationStructure[s].some(sub => 
+                                                sub.key.replace(/_/g, '-') === prevSubstage
+                                            )
+                                        );
+                                    }
+                                    if (!prevStage) {
+                                        prevStage = Object.keys(NAVIGATION_STRUCTURE).find(
+                                            s => NAVIGATION_STRUCTURE[s].substages.includes(prevSubstage)
+                                        );
+                                    }
                                     if (prevStage) this.loadSettings(prevStage, prevSubstage);
                                 }
                             };
@@ -651,9 +766,20 @@
                                     k => SUBSTAGE_CONFIG_MAP[k].pipelineStep === step.next.stepId
                                 );
                                 if (nextSubstage) {
-                                    const nextStage = Object.keys(NAVIGATION_STRUCTURE).find(
-                                        s => NAVIGATION_STRUCTURE[s].substages.includes(nextSubstage)
-                                    );
+                                    // Find stage from navigation structure (API or fallback)
+                                    let nextStage = null;
+                                    if (this.navigationStructure) {
+                                        nextStage = Object.keys(this.navigationStructure).find(s => 
+                                            this.navigationStructure[s].some(sub => 
+                                                sub.key.replace(/_/g, '-') === nextSubstage
+                                            )
+                                        );
+                                    }
+                                    if (!nextStage) {
+                                        nextStage = Object.keys(NAVIGATION_STRUCTURE).find(
+                                            s => NAVIGATION_STRUCTURE[s].substages.includes(nextSubstage)
+                                        );
+                                    }
                                     if (nextStage) this.loadSettings(nextStage, nextSubstage);
                                 }
                             };

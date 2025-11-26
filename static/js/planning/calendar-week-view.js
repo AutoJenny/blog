@@ -410,6 +410,12 @@ function escapeHtml(text) {
 
 async function loadWeek(year, weekNumber) {
   document.getElementById('week-year').textContent = String(year);
+  
+  // Set the "Create Post" link to Week Themes page
+  const createPostLink = document.getElementById('week-themes-create-link');
+  if (createPostLink) {
+    createPostLink.href = `/planning/calendar/ideas/week/${weekNumber}?year=${year}&week=${weekNumber}`;
+  }
   document.getElementById('week-number').textContent = String(weekNumber);
   
   // SINGLE SOURCE OF TRUTH: Update URL using WeekContext

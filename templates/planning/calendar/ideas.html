@@ -459,13 +459,47 @@ document.addEventListener('DOMContentLoaded', function() {
             resultsDisplay.innerHTML = '<div class="loading">Generating expanded idea from selected theme...</div>';
             
             try {
-                // SINGLE SOURCE OF TRUTH: URL query parameters ONLY - NO FALLBACKS
+                // SINGLE SOURCE OF TRUTH: Try URL first, then WeekContext, then template variables
+                let year = null;
+                let week = null;
+                
+                // 1. Try URL query parameters first
                 const urlParams = new URLSearchParams(window.location.search);
-                const year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
-                const week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
+                year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
+                week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
+                
+                // 2. If not in URL, try WeekContext (which may have been set by template)
+                if ((!year || !week) && window.WeekContext) {
+                    const context = window.WeekContext.getWeekContext();
+                    if (context) {
+                        year = year || context.year;
+                        week = week || context.week;
+                    }
+                }
+                
+                // 3. If still missing, try template variables (from backend)
+                if (!year || !week) {
+                    {% if year and week_number %}
+                    year = year || {{ year }};
+                    week = week || {{ week_number }};
+                    // Update URL with template values for future use
+                    if (window.WeekContext) {
+                        window.WeekContext.setWeekContext(year, week);
+                    }
+                    {% endif %}
+                }
+                
+                // 4. Final fallback: use WeekContext default (current week)
+                if (!year || !week) {
+                    if (window.WeekContext) {
+                        const context = window.WeekContext.getWeekContextWithDefault();
+                        year = year || context.year;
+                        week = week || context.week;
+                    }
+                }
                 
                 if (!year || !week) {
-                    displayExpandedIdeaError('Missing year and week parameters in URL');
+                    displayExpandedIdeaError('Missing year and week parameters');
                     return;
                 }
                 
@@ -561,14 +595,48 @@ function escapeHtml(text) {
 
     async function loadExpandedIdea() {
         try {
-            // SINGLE SOURCE OF TRUTH: URL query parameters ONLY - NO FALLBACKS
+            // SINGLE SOURCE OF TRUTH: Try URL first, then WeekContext, then template variables
+            let year = null;
+            let week = null;
+            
+            // 1. Try URL query parameters first
             const urlParams = new URLSearchParams(window.location.search);
-            const year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
-            const week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
+            year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
+            week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
+            
+            // 2. If not in URL, try WeekContext (which may have been set by template)
+            if ((!year || !week) && window.WeekContext) {
+                const context = window.WeekContext.getWeekContext();
+                if (context) {
+                    year = year || context.year;
+                    week = week || context.week;
+                }
+            }
+            
+            // 3. If still missing, try template variables (from backend)
+            if (!year || !week) {
+                {% if year and week_number %}
+                year = year || {{ year }};
+                week = week || {{ week_number }};
+                // Update URL with template values for future use
+                if (window.WeekContext) {
+                    window.WeekContext.setWeekContext(year, week);
+                }
+                {% endif %}
+            }
+            
+            // 4. Final fallback: use WeekContext default (current week)
+            if (!year || !week) {
+                if (window.WeekContext) {
+                    const context = window.WeekContext.getWeekContextWithDefault();
+                    year = year || context.year;
+                    week = week || context.week;
+                }
+            }
         
         if (!year || !week) {
-            console.warn(`[loadExpandedIdea] Missing year/week parameters in URL - cannot load expanded idea`);
-            displayExpandedIdeaError('Missing year and week parameters in URL');
+            console.warn(`[loadExpandedIdea] Missing year/week parameters - cannot load expanded idea`);
+            displayExpandedIdeaError('Missing year and week parameters');
             return;
         }
         

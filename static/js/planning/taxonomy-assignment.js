@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadTaxonomyData() {
         try {
             // Load themes
-            const themesResponse = await fetch('/api/taxonomy/items?tier=theme');
+            const themesResponse = await fetch('/api/taxonomy/items?tier=category');
             const themesData = await themesResponse.json();
             if (themesData.success) {
                 themes = themesData.items;
