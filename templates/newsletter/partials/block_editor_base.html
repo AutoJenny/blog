@@ -49,6 +49,17 @@
             {% endif %}
           {% endif %}
         {% endif %}
+        {% if block.type == 'new_products' %}
+          {% if block.payload_json and block.payload_json.get('items') and block.payload_json.get('items')|length > 0 %}
+            <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+              <i class="fa-solid fa-box"></i> Products: 
+              <span style="color: #6ee7b7; font-weight: 600;">
+                {% for item in block.payload_json.get('items', [])[:3] %}{{ item.name or item.title }}{% if not loop.last %}, {% endif %}{% endfor %}
+                {% if block.payload_json.get('items', [])|length > 3 %} (+{{ block.payload_json.get('items', [])|length - 3 }} more){% endif %}
+              </span>
+            </div>
+          {% endif %}
+        {% endif %}
         {% if block.description %}
           <div style="color: #9ca3af; font-size: 13px; margin-top: 2px;">{{ block.description }}</div>
         {% endif %}

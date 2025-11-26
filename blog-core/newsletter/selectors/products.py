@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Tuple
 from config.database import db_manager
 
 
-def get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_launched: bool = True) -> List[Dict[str, Any]]:
+def get_product_pool(*, since_iso_timestamp: str = None, pool_size: int = 30, exclude_launched: bool = True) -> List[Dict[str, Any]]:
     """Get a pool of recent products for random selection.
     
     Returns up to pool_size products from the most recent clan_created_at dates,
@@ -17,8 +17,8 @@ def get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_l
     random selections.
     
     Args:
-        since_iso_timestamp: Minimum clan_created_at date (ISO format)
-        pool_size: Maximum number of products in the pool (default: 50)
+        since_iso_timestamp: Optional minimum clan_created_at date (ISO format). If None, gets top products regardless of date.
+        pool_size: Maximum number of products in the pool (default: 30)
         exclude_launched: If True, exclude products with newsletter_launched_at set
     
     Returns:
@@ -30,32 +30,51 @@ def get_product_pool(*, since_iso_timestamp: str, pool_size: int = 50, exclude_l
                 # Build query to get recent products, excluding launched ones
                 exclude_clause = "AND newsletter_launched_at IS NULL" if exclude_launched else ""
                 
-                # Use string concatenation to avoid f-string issues with LIKE patterns containing %
-                # Use clan_created_at (actual creation date) instead of first_seen_at (sync discovery date)
-                # Fallback to first_seen_at for products without clan_created_at (legacy products)
-                query = """
-                    SELECT id,
-                           name,
-                           sku,
-                           COALESCE(image_url, '') AS image_url,
-                           COALESCE(url, '') AS url,
-                           COALESCE(short_description, '') AS short_description,
-                           COALESCE(clan_created_at, first_seen_at) AS created_at,
-                           category_ids
-                    FROM clan_products
-                    WHERE COALESCE(clan_created_at, first_seen_at) > %s
-                      AND image_url IS NOT NULL
-                      AND TRIM(image_url) <> ''
-                      AND (image_url LIKE 'http://%%' OR image_url LIKE 'https://%%')
-                      """ + exclude_clause + """
-                    ORDER BY COALESCE(clan_created_at, first_seen_at) DESC
-                    LIMIT %s
-                """
-                
-                cur.execute(
-                    query,
-                    (since_iso_timestamp, pool_size),
-                )
+                # Use clan_created_at (actual creation date) - fallback to clan_updated_at if needed
+                # Get top N most recently created products, optionally filtered by date
+                if since_iso_timestamp:
+                    date_filter = "AND COALESCE(clan_created_at, clan_updated_at) > %s"
+                    query = """
+                        SELECT id,
+                               name,
+                               sku,
+                               COALESCE(image_url, '') AS image_url,
+                               COALESCE(url, '') AS url,
+                               COALESCE(short_description, '') AS short_description,
+                               COALESCE(clan_created_at, clan_updated_at) AS created_at,
+                               category_ids
+                        FROM clan_products
+                        WHERE clan_created_at IS NOT NULL
+                          AND image_url IS NOT NULL
+                          AND TRIM(image_url) <> ''
+                          AND (image_url LIKE 'http://%%' OR image_url LIKE 'https://%%')
+                          """ + date_filter + """
+                          """ + exclude_clause + """
+                        ORDER BY COALESCE(clan_created_at, clan_updated_at) DESC
+                        LIMIT %s
+                    """
+                    cur.execute(query, (since_iso_timestamp, pool_size))
+                else:
+                    # No date filter - just get top N most recent products
+                    query = """
+                        SELECT id,
+                               name,
+                               sku,
+                               COALESCE(image_url, '') AS image_url,
+                               COALESCE(url, '') AS url,
+                               COALESCE(short_description, '') AS short_description,
+                               COALESCE(clan_created_at, clan_updated_at) AS created_at,
+                               category_ids
+                        FROM clan_products
+                        WHERE clan_created_at IS NOT NULL
+                          AND image_url IS NOT NULL
+                          AND TRIM(image_url) <> ''
+                          AND (image_url LIKE 'http://%%' OR image_url LIKE 'https://%%')
+                          """ + exclude_clause + """
+                        ORDER BY COALESCE(clan_created_at, clan_updated_at) DESC
+                        LIMIT %s
+                    """
+                    cur.execute(query, (pool_size,))
                 rows = cur.fetchall() or []
                 products = [dict(r) for r in rows]
                 
