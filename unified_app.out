@@ -19864,3 +19864,677 @@ It's been a busy few weeks for Scotland news! If you're itching to see your nati
 2025-11-26 13:53:27,830 - __main__ - INFO - ✅ Registered preview routes
 2025-11-26 13:53:27,852 - werkzeug - WARNING -  * Debugger is active!
 2025-11-26 13:53:27,862 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 13:58:19,706 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-26 13:58:19,961 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 13:58:20,282 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 13:58:20,283 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 13:58:20,283 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 13:58:20,283 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 13:58:20,302 - config.database - INFO - Database connection established
+2025-11-26 13:58:20,304 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 13:58:20,304 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 13:58:20,305 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 13:58:20,305 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 13:58:20,348 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 13:58:20,348 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 13:58:20,348 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 13:58:20,348 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 13:58:20,349 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 13:58:20,349 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 13:58:20,349 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 13:58:20,352 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 13:58:20,353 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 13:58:20,353 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 13:58:20,353 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 13:58:20,353 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 13:58:21,156 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 13:58:21,165 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 13:58:21,174 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 13:58:21,195 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 13:58:21,206 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 13:58:31,192 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-26 13:58:31,394 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 13:58:31,721 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 13:58:31,721 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 13:58:31,722 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 13:58:31,722 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 13:58:31,739 - config.database - INFO - Database connection established
+2025-11-26 13:58:31,741 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 13:58:31,741 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 13:58:31,741 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 13:58:31,741 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 13:58:31,780 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 13:58:31,780 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 13:58:31,780 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 13:58:31,780 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 13:58:31,780 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 13:58:31,780 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 13:58:31,781 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 13:58:31,783 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 13:58:31,784 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 13:58:31,784 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 13:58:31,784 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 13:58:31,784 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 13:58:32,518 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 13:58:32,526 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 13:58:32,534 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 13:58:32,556 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 13:58:32,566 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:05:04,637 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,648 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,658 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,667 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,677 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,687 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,697 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,706 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,715 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,724 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,733 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,743 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,761 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,778 - config.database - INFO - Database connection established
+2025-11-26 14:05:04,825 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:05:04] "GET /newsletter/issue/23/preview/export HTTP/1.1" 200 -
+2025-11-26 14:12:07,006 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-26 14:12:07,301 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:12:07,659 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:12:07,659 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:12:07,659 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:12:07,659 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:12:07,679 - config.database - INFO - Database connection established
+2025-11-26 14:12:07,682 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:12:07,682 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:12:07,682 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:12:07,682 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:12:07,729 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:12:07,729 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:12:07,729 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:12:07,729 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:12:07,730 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:12:07,730 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:12:07,730 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:12:07,733 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:12:07,734 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:12:07,734 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:12:07,734 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:12:07,734 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:12:08,590 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:12:08,600 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:12:08,609 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:12:08,631 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:12:08,644 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:12:10,106 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,114 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,121 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,129 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,136 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,142 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,147 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,150 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,153 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,157 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,160 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,164 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,173 - config.database - INFO - Database connection established
+2025-11-26 14:12:10,183 - config.database - INFO - Database connection established
+2025-11-26 14:12:11,235 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:12:11] "GET /newsletter/issue/23/preview/export HTTP/1.1" 200 -
+2025-11-26 14:12:19,741 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-26 14:12:19,959 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:12:20,285 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:12:20,285 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:12:20,285 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:12:20,285 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:12:20,305 - config.database - INFO - Database connection established
+2025-11-26 14:12:20,307 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:12:20,307 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:12:20,307 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:12:20,307 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:12:20,348 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:12:20,348 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:12:20,348 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:12:20,348 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:12:20,348 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:12:20,349 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:12:20,349 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:12:20,352 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:12:20,352 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:12:20,352 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:12:20,352 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:12:20,352 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:12:21,100 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:12:21,108 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:12:21,117 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:12:21,137 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:12:21,146 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:53:54,855 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/block_suggestion_service.py', reloading
+2025-11-26 14:53:55,156 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:53:55,477 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:53:55,477 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:53:55,477 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:53:55,477 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:53:55,496 - config.database - INFO - Database connection established
+2025-11-26 14:53:55,499 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:53:55,499 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:53:55,499 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:53:55,499 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:53:55,543 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:53:55,543 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:53:55,544 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:53:55,544 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:53:55,544 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:53:55,544 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:53:55,544 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:53:55,548 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:53:55,548 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:53:55,548 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:53:55,548 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:53:55,548 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:53:56,382 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:53:56,391 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:53:56,400 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:53:56,426 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:53:56,438 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:54:26,910 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-26 14:54:27,154 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:54:27,478 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:54:27,478 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:54:27,478 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:54:27,479 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:54:27,498 - config.database - INFO - Database connection established
+2025-11-26 14:54:27,500 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:54:27,500 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:54:27,500 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:54:27,500 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:54:27,543 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:54:27,544 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:54:27,544 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:54:27,544 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:54:27,544 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:54:27,544 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:54:27,544 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:54:27,547 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:54:27,547 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:54:27,547 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:54:27,548 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:54:27,548 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:54:28,364 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:54:28,373 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:54:28,381 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:54:28,403 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:54:28,412 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:55:40,783 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-26 14:55:41,109 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:55:41,432 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:55:41,432 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:55:41,433 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:55:41,433 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:55:41,451 - config.database - INFO - Database connection established
+2025-11-26 14:55:41,455 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:55:41,455 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:55:41,455 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:55:41,455 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:55:41,500 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:55:41,500 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:55:41,500 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:55:41,500 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:55:41,500 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:55:41,501 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:55:41,501 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:55:41,504 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:55:41,504 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:55:41,504 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:55:41,504 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:55:41,504 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:55:42,338 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:55:42,348 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:55:42,357 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:55:42,380 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:55:42,391 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:55:59,654 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-26 14:55:59,875 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:56:00,168 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:56:00,168 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:56:00,169 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:56:00,169 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:56:00,186 - config.database - INFO - Database connection established
+2025-11-26 14:56:00,188 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:56:00,188 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:56:00,188 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:56:00,188 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:56:00,229 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:56:00,229 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:56:00,229 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:56:00,229 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:56:00,229 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:56:00,229 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:56:00,229 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:56:00,232 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:56:00,232 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:56:00,233 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:56:00,233 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:56:00,233 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:56:00,984 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:56:00,992 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:56:01,000 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:56:01,023 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:56:01,032 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:56:24,876 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,890 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,913 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,923 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,932 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,942 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,950 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,960 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,969 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,978 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,986 - config.database - INFO - Database connection established
+2025-11-26 14:56:24,993 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,005 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,021 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,033 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:25,042 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,052 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,067 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,077 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,093 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,106 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,192 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "GET /newsletter/issue/23 HTTP/1.1" 200 -
+2025-11-26 14:56:25,222 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,228 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,228 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,228 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,228 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,229 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,229 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,231 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,245 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,252 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,254 - blueprints.newsletter - DEBUG - Getting suggestions for block 67 (type: feature, week: 2025W48)
+2025-11-26 14:56:25,259 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,266 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,270 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,271 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,277 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,279 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:25,288 - blueprints.newsletter - DEBUG - Suggestions result: 5 suggestions found
+2025-11-26 14:56:25,288 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "GET /newsletter/issue/23/block/67/suggestions HTTP/1.1" 200 -
+2025-11-26 14:56:25,290 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,294 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,298 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,301 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,304 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,307 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,310 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,313 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,316 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,320 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,324 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,328 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,331 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:25,333 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,338 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,342 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,346 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,352 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,358 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,361 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "GET /newsletter/issue/23 HTTP/1.1" 200 -
+2025-11-26 14:56:25,376 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,378 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,379 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,380 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,380 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,381 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,381 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,381 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:25,394 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,401 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,403 - blueprints.newsletter - DEBUG - Getting suggestions for block 67 (type: feature, week: 2025W48)
+2025-11-26 14:56:25,408 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,415 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,420 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,426 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:25,431 - blueprints.newsletter - DEBUG - Suggestions result: 5 suggestions found
+2025-11-26 14:56:25,432 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:25] "GET /newsletter/issue/23/block/67/suggestions HTTP/1.1" 200 -
+2025-11-26 14:56:25,904 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,915 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,922 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,932 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:25,943 - config.database - INFO - Database connection established
+2025-11-26 14:56:25,962 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-11-26 14:56:29,407 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1304
+2025-11-26 14:56:29,416 - config.database - INFO - Database connection established
+2025-11-26 14:56:29,424 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:29] "POST /newsletter/issue/23/block/70/generate-spotlight-summary HTTP/1.1" 200 -
+2025-11-26 14:56:30,448 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,462 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,484 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,497 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,506 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,516 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,524 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,534 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,543 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,554 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,563 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,573 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,581 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,595 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,602 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:30,611 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,621 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,635 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,644 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,663 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,675 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,681 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "GET /newsletter/issue/23 HTTP/1.1" 200 -
+2025-11-26 14:56:30,711 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:30,713 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:30,714 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:30,715 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:30,716 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:30,717 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:30,718 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:30,719 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-26 14:56:30,825 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,837 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,840 - blueprints.newsletter - DEBUG - Getting suggestions for block 67 (type: feature, week: 2025W48)
+2025-11-26 14:56:30,847 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,861 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,869 - config.database - INFO - Database connection established
+2025-11-26 14:56:30,880 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:30,889 - blueprints.newsletter - DEBUG - Suggestions result: 5 suggestions found
+2025-11-26 14:56:30,890 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:30] "GET /newsletter/issue/23/block/67/suggestions HTTP/1.1" 200 -
+2025-11-26 14:56:33,551 - config.database - INFO - Database connection established
+2025-11-26 14:56:33,563 - config.database - INFO - Database connection established
+2025-11-26 14:56:33,572 - config.database - INFO - Database connection established
+2025-11-26 14:56:33,582 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:33,591 - config.database - INFO - Database connection established
+2025-11-26 14:56:33,600 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-11-26 14:56:35,562 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1307
+2025-11-26 14:56:35,573 - config.database - INFO - Database connection established
+2025-11-26 14:56:35,580 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:35] "POST /newsletter/issue/23/block/70/generate-spotlight-summary HTTP/1.1" 200 -
+2025-11-26 14:56:36,613 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,627 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,651 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,664 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,674 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,684 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,696 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,706 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,717 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,726 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,736 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,744 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,755 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,767 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,777 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:36,783 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,796 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,806 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,817 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,837 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,848 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,857 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "GET /newsletter/issue/23 HTTP/1.1" 200 -
+2025-11-26 14:56:36,881 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:36,882 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:36,889 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:36,889 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-26 14:56:36,893 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:36,893 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-26 14:56:36,894 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:36,894 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-26 14:56:36,924 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,933 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,935 - blueprints.newsletter - DEBUG - Getting suggestions for block 67 (type: feature, week: 2025W48)
+2025-11-26 14:56:36,941 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,950 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,956 - config.database - INFO - Database connection established
+2025-11-26 14:56:36,962 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 14:56:36,971 - blueprints.newsletter - DEBUG - Suggestions result: 5 suggestions found
+2025-11-26 14:56:36,972 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:36] "GET /newsletter/issue/23/block/67/suggestions HTTP/1.1" 200 -
+2025-11-26 14:56:39,434 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,448 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,457 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,467 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,475 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,486 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,494 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,506 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,517 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,531 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,541 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,544 - blueprints.newsletter - INFO - Loaded tile background (3844 chars)
+2025-11-26 14:56:39,551 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,557 - blueprints.newsletter - INFO - Populated feature block hero_image for post 97: /static/content/posts/97/header/optimized/header.jpg
+2025-11-26 14:56:39,567 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,577 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,590 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,611 - config.database - INFO - Database connection established
+2025-11-26 14:56:39,654 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:39] "GET /newsletter/issue/23/preview HTTP/1.1" 200 -
+2025-11-26 14:56:39,667 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:39] "[36mGET /static/content/posts/97/header/optimized/header.jpg HTTP/1.1[0m" 304 -
+2025-11-26 14:56:39,668 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:39] "[36mGET /static/content/posts/82/header/optimized/header.jpg HTTP/1.1[0m" 304 -
+2025-11-26 14:56:54,211 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:54] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2025-11-26 14:56:54,211 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:54] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2025-11-26 14:56:54,212 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:54] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-26 14:56:54,213 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:54] "GET /static/content/posts/97/header/optimized/header.jpg HTTP/1.1" 200 -
+2025-11-26 14:56:54,213 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:56:54] "GET /static/content/posts/82/header/optimized/header.jpg HTTP/1.1" 200 -
+2025-11-26 14:58:13,561 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/block_suggestion_service.py', reloading
+2025-11-26 14:58:13,844 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:58:14,150 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:58:14,150 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:58:14,150 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:58:14,150 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:58:14,169 - config.database - INFO - Database connection established
+2025-11-26 14:58:14,171 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:58:14,171 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:58:14,171 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:58:14,171 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:58:14,213 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:58:14,214 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:58:14,214 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:58:14,214 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:58:14,214 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:58:14,214 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:58:14,214 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:58:14,218 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:58:14,218 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:58:14,218 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:58:14,218 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:58:14,218 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:58:15,024 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:58:15,033 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:58:15,041 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:58:15,063 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:58:15,075 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:58:44,221 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blueprints/newsletter.py', reloading
+2025-11-26 14:58:44,474 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:58:44,796 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:58:44,796 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:58:44,797 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:58:44,797 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:58:44,820 - config.database - INFO - Database connection established
+2025-11-26 14:58:44,822 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:58:44,822 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:58:44,822 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:58:44,822 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:58:44,866 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:58:44,866 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:58:44,866 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:58:44,866 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:58:44,866 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:58:44,867 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:58:44,867 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:58:44,870 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:58:44,870 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:58:44,870 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:58:44,871 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:58:44,871 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:58:45,637 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:58:45,646 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:58:45,654 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:58:45,676 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:58:45,685 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:59:00,398 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/selectors/products.py', reloading
+2025-11-26 14:59:00,657 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:59:00,965 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:59:00,966 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:59:00,966 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:59:00,966 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:59:00,986 - config.database - INFO - Database connection established
+2025-11-26 14:59:00,988 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:59:00,988 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:59:00,988 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:59:00,988 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:59:01,034 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:59:01,034 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:59:01,034 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:59:01,034 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:59:01,034 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:59:01,035 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:59:01,035 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:59:01,038 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:59:01,038 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:59:01,038 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:59:01,039 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:59:01,039 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:59:01,859 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:59:01,868 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:59:01,877 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:59:01,900 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:59:01,910 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:59:13,065 - werkzeug - INFO -  * Detected change in '/Users/autojenny/Documents/projects/blog/blog-core/newsletter/services/block_suggestion_service.py', reloading
+2025-11-26 14:59:13,295 - werkzeug - INFO -  * Restarting with stat
+2025-11-26 14:59:13,588 - blueprints.imaging - INFO - ✅ Registered imaging page routes
+2025-11-26 14:59:13,589 - blueprints.imaging - INFO - ✅ Registered imaging generation API routes
+2025-11-26 14:59:13,589 - blueprints.imaging - INFO - ✅ Registered imaging optimization API routes
+2025-11-26 14:59:13,590 - blueprints.imaging - INFO - ✅ Registered imaging data API routes
+2025-11-26 14:59:13,607 - config.database - INFO - Database connection established
+2025-11-26 14:59:13,610 - modules.prompt_service - INFO - Loaded model specs for 3 models
+2025-11-26 14:59:13,610 - blueprints.imaging - INFO - ✅ Registered imaging prompts API routes
+2025-11-26 14:59:13,610 - blueprints.imaging - INFO - ✅ Registered imaging config API routes
+2025-11-26 14:59:13,610 - blueprints.imaging - INFO - ✅ Imaging blueprint initialized successfully
+2025-11-26 14:59:13,652 - blueprints.header - INFO - ✅ Registered header page routes
+2025-11-26 14:59:13,652 - blueprints.header - INFO - ✅ Registered header prompt compilation API routes
+2025-11-26 14:59:13,652 - blueprints.header - INFO - ✅ Registered header prompts API routes
+2025-11-26 14:59:13,652 - blueprints.header - INFO - ✅ Registered header UI preferences API routes
+2025-11-26 14:59:13,652 - blueprints.header - INFO - ✅ Registered header image generation API routes
+2025-11-26 14:59:13,652 - blueprints.header - INFO - ✅ Registered header SEO meta API routes
+2025-11-26 14:59:13,653 - blueprints.header - INFO - ✅ Registered header title generation API routes
+2025-11-26 14:59:13,656 - blueprints.header - INFO - ✅ Registered header summary generation API routes
+2025-11-26 14:59:13,656 - blueprints.header - INFO - ✅ Registered header title/summary data API routes
+2025-11-26 14:59:13,656 - blueprints.header - INFO - ✅ Registered header photo-harvesting API routes
+2025-11-26 14:59:13,656 - blueprints.header - INFO - ✅ Registered header test/utility API routes
+2025-11-26 14:59:13,656 - blueprints.header - INFO - ✅ Header blueprint initialized successfully
+2025-11-26 14:59:14,395 - root - WARNING - Could not import clan_client: cannot import name 'flatten_category_tree' from 'transformers' (/opt/homebrew/lib/python3.13/site-packages/transformers/__init__.py)
+2025-11-26 14:59:14,404 - __main__ - INFO - ✅ Registered publish blueprint
+2025-11-26 14:59:14,412 - __main__ - INFO - ✅ Registered preview routes
+2025-11-26 14:59:14,435 - werkzeug - WARNING -  * Debugger is active!
+2025-11-26 14:59:14,445 - werkzeug - INFO -  * Debugger PIN: 263-852-041
+2025-11-26 14:59:29,873 - config.database - INFO - Database connection established
+2025-11-26 14:59:29,888 - config.database - INFO - Database connection established
+2025-11-26 14:59:29,905 - config.database - INFO - Database connection established
+2025-11-26 14:59:29,920 - config.database - INFO - Database connection established
+2025-11-26 14:59:29,938 - config.database - INFO - Database connection established
+2025-11-26 14:59:29,955 - config.database - INFO - Database connection established
+2025-11-26 14:59:29,972 - config.database - INFO - Database connection established
+2025-11-26 14:59:29,989 - config.database - INFO - Database connection established
+2025-11-26 14:59:30,007 - config.database - INFO - Database connection established
+2025-11-26 14:59:30,023 - config.database - INFO - Database connection established
+2025-11-26 14:59:30,041 - config.database - INFO - Database connection established
+2025-11-26 14:59:30,045 - blueprints.newsletter - INFO - Loaded tile background (3844 chars)
+2025-11-26 14:59:30,060 - config.database - INFO - Database connection established
+2025-11-26 14:59:30,074 - blueprints.newsletter - INFO - Populated feature block hero_image for post 97: /static/content/posts/97/header/optimized/header.jpg
+2025-11-26 14:59:30,087 - config.database - INFO - Database connection established
+2025-11-26 14:59:30,103 - config.database - INFO - Database connection established
+2025-11-26 14:59:30,125 - config.database - INFO - Database connection established
+2025-11-26 14:59:30,155 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:59:30] "GET /newsletter/issue/23/preview HTTP/1.1" 200 -
+2025-11-26 14:59:30,172 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:59:30] "[36mGET /static/content/posts/82/header/optimized/header.jpg HTTP/1.1[0m" 304 -
+2025-11-26 14:59:30,172 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:59:30] "[36mGET /static/content/posts/97/header/optimized/header.jpg HTTP/1.1[0m" 304 -
+2025-11-26 14:59:51,087 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,104 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,117 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,128 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,139 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,150 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,160 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,167 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,176 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,186 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,194 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,197 - blueprints.newsletter - INFO - Loaded tile background (3844 chars)
+2025-11-26 14:59:51,205 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,213 - blueprints.newsletter - INFO - Populated feature block hero_image for post 97: /static/content/posts/97/header/optimized/header.jpg
+2025-11-26 14:59:51,222 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,230 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,249 - config.database - INFO - Database connection established
+2025-11-26 14:59:51,256 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:59:51] "GET /newsletter/issue/23/preview HTTP/1.1" 200 -
+2025-11-26 14:59:51,273 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:59:51] "[36mGET /static/content/posts/97/header/optimized/header.jpg HTTP/1.1[0m" 304 -
+2025-11-26 14:59:51,274 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:59:51] "[36mGET /static/content/posts/82/header/optimized/header.jpg HTTP/1.1[0m" 304 -
+2025-11-26 14:59:57,177 - config.database - INFO - Database connection established
+2025-11-26 14:59:57,188 - config.database - INFO - Database connection established
+2025-11-26 14:59:57,205 - config.database - INFO - Database connection established
+2025-11-26 14:59:57,218 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:11434
+2025-11-26 14:59:58,985 - urllib3.connectionpool - DEBUG - http://localhost:11434 "POST /api/chat HTTP/1.1" 200 1191
+2025-11-26 14:59:58,999 - config.database - INFO - Database connection established
+2025-11-26 14:59:59,005 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 14:59:59] "POST /newsletter/issue/23/block/70/generate-spotlight-summary HTTP/1.1" 200 -
+2025-11-26 15:00:00,030 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,042 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,066 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,075 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,086 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,094 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,105 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,113 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,124 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,132 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,143 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,152 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,162 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,175 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,185 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 15:00:00,192 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,202 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,215 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,225 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,241 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,247 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,306 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "GET /newsletter/issue/23 HTTP/1.1" 200 -
+2025-11-26 15:00:00,323 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "[36mGET /static/css/shared/dark-theme.css HTTP/1.1[0m" 304 -
+2025-11-26 15:00:00,325 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "[36mGET /static/css/nav.dist.css HTTP/1.1[0m" 304 -
+2025-11-26 15:00:00,326 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+2025-11-26 15:00:00,326 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "[36mGET /static/css/shared/site-header.css HTTP/1.1[0m" 304 -
+2025-11-26 15:00:00,327 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "[36mGET /static/js/shared/site-header.js HTTP/1.1[0m" 304 -
+2025-11-26 15:00:00,328 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-11-26 15:00:00,328 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "[36mGET /static/js/workflow-nav.js HTTP/1.1[0m" 304 -
+2025-11-26 15:00:00,330 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+2025-11-26 15:00:00,377 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,384 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,386 - blueprints.newsletter - DEBUG - Getting suggestions for block 67 (type: feature, week: 2025W48)
+2025-11-26 15:00:00,392 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,399 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,405 - config.database - INFO - Database connection established
+2025-11-26 15:00:00,412 - utils.week_post_resolver - DEBUG - Resolved post_id 97 for week 2025/48
+2025-11-26 15:00:00,419 - blueprints.newsletter - DEBUG - Suggestions result: 5 suggestions found
+2025-11-26 15:00:00,419 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:00] "GET /newsletter/issue/23/block/67/suggestions HTTP/1.1" 200 -
+2025-11-26 15:00:05,310 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,323 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,330 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,338 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,345 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,353 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,359 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,366 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,371 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,376 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,381 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,382 - blueprints.newsletter - INFO - Loaded tile background (3844 chars)
+2025-11-26 15:00:05,386 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,390 - blueprints.newsletter - INFO - Populated feature block hero_image for post 97: /static/content/posts/97/header/optimized/header.jpg
+2025-11-26 15:00:05,395 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,401 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,402 - blueprints.newsletter - INFO - Converted feature block hero_image from /static/content/posts/95/header/optimized/header.jpg to https://static.clan.com/media/blog/header_95_1764013791.jpg
+2025-11-26 15:00:05,407 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,421 - config.database - INFO - Database connection established
+2025-11-26 15:00:05,426 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:05] "GET /newsletter/issue/23/preview HTTP/1.1" 200 -
+2025-11-26 15:00:05,442 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:05] "[36mGET /static/content/posts/97/header/optimized/header.jpg HTTP/1.1[0m" 304 -
+2025-11-26 15:00:05,443 - werkzeug - INFO - 127.0.0.1 - - [26/Nov/2025 15:00:05] "[36mGET /static/content/posts/82/header/optimized/header.jpg HTTP/1.1[0m" 304 -
