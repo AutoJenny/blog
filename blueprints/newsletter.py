@@ -80,9 +80,54 @@ def delete_issue_route(issue_id: int):
 
 @bp.route('/newsletter/issue', methods=['POST'])
 def create_or_regenerate_issue():
-    """Create a new draft issue and populate initial blocks."""
-    result = build_weekly_issue()
-    return redirect(url_for('newsletter.view_issue', issue_id=result["issue_id"]))
+    """Create a new draft issue with theme title and empty template blocks for manual completion."""
+    from datetime import date
+    from newsletter.selectors.theme import select_default_theme
+    from newsletter.db.queries_issue import create_issue, upsert_block
+    
+    # Get current week
+    iso_year, iso_week, _ = date.today().isocalendar()
+    target_week = f"{iso_year}W{iso_week:02d}"
+    
+    # Get theme for the week
+    theme = select_default_theme(target_week=target_week)
+    theme_id = theme.get('id') if theme else None
+    
+    # Generate subject and preheader from theme
+    if theme:
+        subject = f"{theme.get('idea_title', 'This week in Scotland')} — {target_week}"
+        preheader = theme.get('seasonal_context') or theme.get('idea_description') or "A quick wander through culture & craft."
+    else:
+        subject = f"This week in Scotland — {target_week}"
+        preheader = "A quick wander through culture & craft."
+    
+    # Create issue
+    issue_id = create_issue(target_week=target_week, subject=subject, preheader=preheader, theme_id=theme_id)
+    
+    # Create empty template blocks (no auto-selection, just structure)
+    block_types = [
+        "intro",
+        "feature",
+        "snapshot",
+        "new_products",
+        "spotlight",
+        "category",
+        "evergreen",
+        "closing",
+    ]
+    
+    position = 0
+    for block_type in block_types:
+        if block_type == "closing":
+            payload = {"text": "Warmly, from Scotland"}
+        else:
+            # Empty payload - user will fill manually
+            payload = {}
+        
+        upsert_block(issue_id=issue_id, block_type=block_type, position=position, enabled=True, payload=payload)
+        position += 1
+    
+    return redirect(url_for('newsletter.view_issue', issue_id=issue_id))
 
 
 @bp.route('/newsletter/issue/<int:issue_id>')
@@ -142,7 +187,50 @@ def view_issue(issue_id: int):
         except Exception:
             pass
     
-    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme)
+    # Get themed blog post for this week
+    themed_post = None
+    if issue and issue.get('target_week'):
+        try:
+            from datetime import date
+            from utils.week_post_resolver import resolve_post_for_week
+            from config.database import db_manager
+            
+            # Parse year and week from target_week
+            target_week = issue['target_week']
+            if 'W' in target_week:
+                year_str, week_str = target_week.split('W')
+                year = int(year_str)
+                week_number = int(week_str)
+                
+                # Resolve post for this week
+                post_id = resolve_post_for_week(year, week_number)
+                if post_id:
+                    # Get post details including status
+                    with db_manager.get_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute("""
+                                SELECT id, title, status, slug
+                                FROM post
+                                WHERE id = %s
+                            """, (post_id,))
+                            post_row = cur.fetchone()
+                            if post_row:
+                                # Validate post is not deleted before using it
+                                if post_row['status'] != 'deleted':
+                                    themed_post = dict(post_row)
+                                else:
+                                    # Log warning if deleted post was resolved
+                                    import logging
+                                    logging.getLogger(__name__).warning(
+                                        f"resolve_post_for_week returned deleted post {post_id} "
+                                        f"for week {target_week}. This should not happen after fix."
+                                    )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error getting themed post: {e}")
+            pass
+    
+    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme, themed_post=themed_post)
 
 
 @bp.route('/newsletter/issue/<int:issue_id>/preview')

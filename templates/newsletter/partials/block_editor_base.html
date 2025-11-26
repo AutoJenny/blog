@@ -6,6 +6,12 @@
         <div style="color: #e6e8ef; font-weight: 700; font-size: 28px; line-height: 1.2; margin-bottom: 4px;">
           {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {% if block.type == 'snapshot' %}In the News{% elif block.type == 'new_products' %}New Products{% elif block.type == 'spotlight' %}Product of the Week{% elif block.type == 'feature' %}Feature{% elif block.type == 'intro' %}Intro{% else %}{{ block.type }}{% endif %}
         </div>
+        {% if block.type == 'feature' and themed_post %}
+          <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+            <i class="fa-solid fa-file-lines"></i> {{ themed_post.title }} 
+            <span style="color: #6ee7b7; font-weight: 600;">({{ themed_post.status }})</span>
+          </div>
+        {% endif %}
         {% if block.description %}
           <div style="color: #9ca3af; font-size: 13px; margin-top: 2px;">{{ block.description }}</div>
         {% endif %}
