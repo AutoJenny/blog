@@ -40,7 +40,7 @@
       <div style="color: #a5b4fc; font-size: 14px; font-weight: 600;">
         <i class="fa-solid fa-calendar-days"></i> Events Component
       </div>
-      <button type="button" class="component-generate-btn" data-component="events" onclick="generateEventsComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
+      <button type="button" class="component-generate-btn" data-component="events" onclick="generateIntroEventsComponent({{ b.id }}, {{ issue_id }})" style="background: #4e6bff; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">
         <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
       </button>
     </div>
@@ -151,8 +151,8 @@ function generateWeatherComponent(blockId, issueId) {
     });
 }
 
-// Events Component Module
-function generateEventsComponent(blockId, issueId) {
+// Events Component Module (Intro block - different from snapshot block)
+function generateIntroEventsComponent(blockId, issueId) {
   const outputEl = document.getElementById(`events-output-${blockId}`);
   const btn = document.querySelector(`[data-component="events"] .component-generate-btn`);
   
