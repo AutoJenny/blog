@@ -212,6 +212,28 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
             },
         }
     
+    elif block_type == 'seasonal_recipe':
+        # Seasonal Recipe block - get most recent recipe post not yet used
+        from newsletter.selectors.seasonal_recipe import select_seasonal_recipe_post
+        recipe_post = select_seasonal_recipe_post()
+        
+        suggestions = []
+        if recipe_post:
+            suggestions.append({
+                'id': recipe_post.get('id'),
+                'title': recipe_post.get('title', ''),
+                'url': recipe_post.get('url', ''),
+                'summary': recipe_post.get('summary', ''),
+                'hero_image': recipe_post.get('hero_image', ''),
+                'type': 'post',
+            })
+        
+        return {
+            'suggestions': suggestions,
+            'current': recipe_post,
+            'metadata': {},
+        }
+    
     else:
         # Unknown block type: return empty
         return {'suggestions': [], 'current': None, 'metadata': {}}
@@ -287,6 +309,13 @@ def auto_select_for_block(*, block_type: str, issue_id: int, target_week: str) -
         if current and current.get('id'):
             from newsletter.services.product_tracking import mark_post_newsletter_spotlighted
             mark_post_newsletter_spotlighted(current.get('id'))
+        return current  # Already in correct format
+    
+    elif block_type == 'seasonal_recipe':
+        # Mark recipe post as newsletter featured
+        if current and current.get('id'):
+            from newsletter.services.product_tracking import mark_post_newsletter_recipe_featured
+            mark_post_newsletter_recipe_featured(current.get('id'))
         return current  # Already in correct format
     
     elif block_type == 'category':

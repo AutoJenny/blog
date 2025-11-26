@@ -141,6 +141,38 @@ def extract_product_ids_from_payload(payload: Dict[str, Any], block_type: str) -
     return product_ids
 
 
+def mark_post_newsletter_recipe_featured(post_id: int) -> None:
+    """Mark a recipe post as featured in newsletter by setting newsletter_recipe_featured_at.
+    
+    Only sets the timestamp if it's not already set (first feature only).
+    
+    Args:
+        post_id: Post ID to mark as featured
+    """
+    if not post_id:
+        return
+    
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Update only if newsletter_recipe_featured_at is not already set
+                cur.execute(
+                    """
+                    UPDATE post
+                    SET newsletter_recipe_featured_at = NOW()
+                    WHERE id = %s
+                      AND newsletter_recipe_featured_at IS NULL
+                    """,
+                    (post_id,)
+                )
+                updated_count = cur.rowcount
+                conn.commit()
+                if updated_count > 0:
+                    logger.info(f"Marked post {post_id} as newsletter recipe featured")
+    except Exception as e:
+        logger.error(f"Error marking post as newsletter recipe featured: {e}", exc_info=True)
+
+
 def extract_post_id_from_spotlight_payload(payload: Dict[str, Any]) -> int | None:
     """Extract post ID from spotlight block payload.
     

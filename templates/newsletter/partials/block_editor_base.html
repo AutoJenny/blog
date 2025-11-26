@@ -4,7 +4,7 @@
     <summary style="cursor: pointer; padding: 20px; display: flex; align-items: center; justify-content: space-between; background: #151a2e; user-select: none; list-style: none;">
       <div style="flex: 1;">
         <div style="color: #e6e8ef; font-weight: 700; font-size: 28px; line-height: 1.2; margin-bottom: 4px;">
-          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {% if block.type == 'snapshot' %}In the News{% elif block.type == 'new_products' %}New Products{% elif block.type == 'words_of_the_week' %}Words of the Week{% elif block.type == 'spotlight' %}Product of the Week{% elif block.type == 'feature' %}Feature{% elif block.type == 'intro' %}Intro{% else %}{{ block.type }}{% endif %}
+          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {% if block.type == 'snapshot' %}In the News{% elif block.type == 'new_products' %}New Products{% elif block.type == 'words_of_the_week' %}Words of the Week{% elif block.type == 'spotlight' %}Product of the Week{% elif block.type == 'seasonal_recipe' %}Seasonal Recipe{% elif block.type == 'feature' %}Feature{% elif block.type == 'intro' %}Intro{% else %}{{ block.type }}{% endif %}
         </div>
         {% if block.type == 'feature' and themed_post %}
           <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
@@ -76,6 +76,21 @@
             {% endif %}
           {% endif %}
         {% endif %}
+        {% if block.type == 'seasonal_recipe' %}
+          {% if block.payload_json and (block.payload_json.title or block.payload_json.name) %}
+            {# Show selected recipe from block payload #}
+            <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+              <i class="fa-solid fa-utensils"></i> {{ block.payload_json.title or block.payload_json.name }} 
+              <span style="color: #6ee7b7; font-weight: 600;">(selected)</span>
+            </div>
+          {% elif seasonal_recipe_post %}
+            {# Show most recent available recipe post #}
+            <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+              <i class="fa-solid fa-utensils"></i> {{ seasonal_recipe_post.title }} 
+              <span style="color: #6ee7b7; font-weight: 600;">({{ seasonal_recipe_post.status }})</span>
+            </div>
+          {% endif %}
+        {% endif %}
         {% if block.description %}
           <div style="color: #9ca3af; font-size: 13px; margin-top: 2px;">{{ block.description }}</div>
         {% endif %}
@@ -135,6 +150,9 @@
     {% elif block.type == 'words_of_the_week' %}
       {% set b = block %}
       {% include 'newsletter/partials/block_editor_words_of_the_week.html' with context %}
+    {% elif block.type == 'seasonal_recipe' %}
+      {% set b = block %}
+      {% include 'newsletter/partials/block_editor_seasonal_recipe.html' with context %}
     {% elif block.type == 'spotlight' %}
       {% set b = block %}
       {% include 'newsletter/partials/block_editor_spotlight.html' with context %}

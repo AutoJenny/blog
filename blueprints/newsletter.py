@@ -112,7 +112,7 @@ def create_or_regenerate_issue():
         "new_products",
         "words_of_the_week",
         "spotlight",
-        "category",
+        "seasonal_recipe",
         "evergreen",
         "closing",
     ]
@@ -274,7 +274,29 @@ def view_issue(issue_id: int):
             logging.getLogger(__name__).warning(f"Error getting words of the week: {e}")
             pass
     
-    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme, themed_post=themed_post, spotlight_post=spotlight_post, words_of_the_week=words_of_the_week)
+    # Get seasonal recipe post (most recent published, not yet used)
+    seasonal_recipe_post = None
+    try:
+        from newsletter.selectors.seasonal_recipe import select_seasonal_recipe_post
+        seasonal_recipe_post = select_seasonal_recipe_post()
+        if seasonal_recipe_post:
+            # Get post status
+            with db_manager.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT status
+                        FROM post
+                        WHERE id = %s
+                    """, (seasonal_recipe_post.get('id'),))
+                    status_row = cur.fetchone()
+                    if status_row:
+                        seasonal_recipe_post['status'] = dict(status_row).get('status', 'unknown')
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Error getting seasonal recipe post: {e}")
+        pass
+    
+    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme, themed_post=themed_post, spotlight_post=spotlight_post, words_of_the_week=words_of_the_week, seasonal_recipe_post=seasonal_recipe_post)
 
 
 @bp.route('/newsletter/issue/<int:issue_id>/preview')
@@ -383,10 +405,21 @@ def preview_issue(issue_id: int):
             logging.getLogger(__name__).warning(f"Error getting words of the week for preview: {e}")
             pass
     
+    # Get seasonal recipe post for preview
+    seasonal_recipe_post = None
+    try:
+        from newsletter.selectors.seasonal_recipe import select_seasonal_recipe_post
+        seasonal_recipe_post = select_seasonal_recipe_post()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Error getting seasonal recipe post for preview: {e}")
+        pass
+    
     # Map blocks to pass each payload as "block" expected by partials
     return render_template(
         'newsletter/render.html',
         words_of_the_week=words_of_the_week,
+        seasonal_recipe_post=seasonal_recipe_post,
         subject=f"Issue {issue_id}",
         issue=issue,
         blocks=processed_blocks,
@@ -493,6 +526,17 @@ def update_block(block_id: int):
         post_id = extract_post_id_from_spotlight_payload(payload)
         if post_id:
             mark_post_newsletter_spotlighted(post_id)
+    
+    # Mark recipe post as newsletter featured if this is a seasonal_recipe block
+    if block_type == 'seasonal_recipe':
+        from newsletter.services.product_tracking import mark_post_newsletter_recipe_featured
+        post_id = payload.get('id')
+        if post_id:
+            try:
+                post_id = int(post_id)
+                mark_post_newsletter_recipe_featured(post_id)
+            except (ValueError, TypeError):
+                pass
     
     issue_id = int(request.form.get('issue_id', '0'))
     return redirect(url_for('newsletter.view_issue', issue_id=issue_id))
