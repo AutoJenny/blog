@@ -26,7 +26,7 @@ def build_weekly_issue(*, target_week: str | None = None) -> Dict:
 
     # Select theme based on week
     theme = select_default_theme(target_week=target_week)
-    theme_id = theme['id'] if theme else None
+    theme_id = theme.get('id') if theme else None
     
     # Generate subject and preheader from theme
     if theme:

@@ -99,9 +99,29 @@
             <h3 class="text-white font-semibold mb-3" style="color: #a5b4fc; font-size: 16px;">
                 <i class="fa-solid fa-palette"></i> Theme Selection
             </h3>
+            {% if current_theme %}
+                <div class="mb-3 p-3 rounded" style="background: #0f1a1f; border: 1px solid #10b981;">
+                    <div style="color: #10b981; font-weight: 700; font-size: 16px; margin-bottom: 4px;">
+                        <i class="fa-solid fa-check-circle"></i> Selected Theme
+                    </div>
+                    <div style="color: #10b981; font-weight: 700; font-size: 18px;">
+                        {{ current_theme.idea_title }}
+                    </div>
+                    {% if current_theme.seasonal_context %}
+                        <div class="mt-2 text-sm" style="color: #6ee7b7;">
+                            {{ current_theme.seasonal_context }}
+                        </div>
+                    {% endif %}
+                    {% if current_theme.idea_description %}
+                        <div class="mt-2 text-sm" style="color: #9ca3af;">
+                            {{ current_theme.idea_description }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
             {% if themes and themes|length > 0 %}
                 <form method="post" action="/newsletter/issue/{{ issue_id }}/theme" class="flex items-center gap-3">
-                    <label class="text-gray-400 text-sm">Theme:</label>
+                    <label class="text-gray-400 text-sm">Change Theme:</label>
                     <select name="theme_id" class="px-3 py-2 rounded border border-dark-border bg-[#0f172a] text-white" style="min-width:300px;">
                         <option value="">None (manual subject/preheader)</option>
                         {% for theme in themes %}
@@ -112,16 +132,10 @@
                     </select>
                     <button type="submit" class="btn-primary">Update Theme</button>
                 </form>
-                {% if current_theme %}
-                    <div class="mt-3 text-sm" style="color: #9ca3af;">
-                        <strong style="color: #e6e8ef;">Current:</strong> {{ current_theme.idea_title }}
-                        {% if current_theme.seasonal_context %}
-                            <br><strong style="color: #e6e8ef;">Context:</strong> {{ current_theme.seasonal_context }}
-                        {% endif %}
-                    </div>
-                {% endif %}
             {% else %}
-                <p class="text-gray-400 text-sm">No themes available for this week.</p>
+                {% if not current_theme %}
+                    <p class="text-gray-400 text-sm">No themes available for this week.</p>
+                {% endif %}
             {% endif %}
         </div>
 
