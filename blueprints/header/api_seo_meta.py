@@ -669,6 +669,19 @@ Return in JSON format:
                     WHERE post_id = %s
                 """, (json.dumps(overrides), target_post_id))
             
+            # Immediately sync to post table for real-time updates
+            try:
+                import sys
+                import os
+                blog_launchpad_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'blog-launchpad')
+                if blog_launchpad_path not in sys.path:
+                    sys.path.insert(0, blog_launchpad_path)
+                from publish.post_data_loader import sync_product_match_to_cross_promotion
+                sync_product_match_to_cross_promotion(target_post_id)
+            except Exception as sync_error:
+                # Log but don't fail - sync will happen on preview/publish anyway
+                logger.warning(f"Could not sync product-match to cross-promotion in real-time: {sync_error}")
+            
             return jsonify({
                 'success': True,
                 'overrides': overrides

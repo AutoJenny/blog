@@ -6,7 +6,8 @@ Flask routes for rendering imaging workflow pages
 from flask import Blueprint, render_template, request, redirect, url_for
 from config.database import db_manager
 from utils.taxonomy_helpers import get_post_type, get_illustration_method_with_post
-from utils.week_post_resolver import resolve_post_for_week
+# CRITICAL: resolve_post_for_week() should NOT be used when post_id is in URL
+# post_id in URL is the definitive identifier - week params are context only
 from config.authoring_panel_configs import get_panel_config, get_panel_config_by_post_type
 import logging
 
@@ -27,18 +28,10 @@ def register_routes(bp):
             # Check if this is a recipe post first - recipe posts should use URL post_id directly
             url_post_type = get_post_type(post_id)
             
-            # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
-            # BUT: For recipe posts, always use the URL post_id (recipes have their own scheduling)
-            target_post_id = post_id
-            if url_post_type != 'recipe' and url_year and url_week:
-                resolved_post_id = resolve_post_for_week(url_year, url_week)
-                if resolved_post_id:
-                    target_post_id = resolved_post_id
-                    logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
-                else:
-                    logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
-            elif url_post_type == 'recipe':
-                logger.info(f"Recipe post {post_id} - using URL post_id directly (not resolving via week)")
+            # CRITICAL: Always use post_id from URL - it's the definitive identifier
+            # Week parameters are context only, not for changing post_id
+            # This applies to ALL post types (themed, recipe, profile, generated)
+            target_post_id = post_id  # Always use URL post_id
             
             # Get post_type for panel configuration (illustration_method is deprecated)
             post_type = get_post_type(target_post_id)
@@ -136,15 +129,9 @@ def register_routes(bp):
             url_year = request.args.get('year', type=int)
             url_week = request.args.get('week', type=int)
             
-            # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
-            target_post_id = post_id
-            if url_year and url_week:
-                resolved_post_id = resolve_post_for_week(url_year, url_week)
-                if resolved_post_id:
-                    target_post_id = resolved_post_id
-                    logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
-                else:
-                    logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+            # CRITICAL: Always use post_id from URL - it's the definitive identifier
+            # Week parameters are context only, not for changing post_id
+            target_post_id = post_id  # Always use URL post_id
             
             # Use utility function to get illustration_method
             target_post_id, illustration_method = get_illustration_method_with_post(

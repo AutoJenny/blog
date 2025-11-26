@@ -22,6 +22,138 @@ def get_db_connection():
     )
 
 
+def sync_product_match_to_cross_promotion(post_id):
+    """
+    Sync product and category IDs from embedding_overrides to post table.
+    
+    Reads selected_product_id and selected_category_id from post_development.embedding_overrides
+    and updates post.cross_promotion_product_id and post.cross_promotion_category_id if they are NULL.
+    
+    Does not overwrite existing manual cross-promotion selections.
+    
+    Args:
+        post_id: Post ID to sync
+        
+    Returns:
+        bool: True if sync occurred, False otherwise
+    """
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+            
+            # Get embedding_overrides from post_development
+            cur.execute("""
+                SELECT embedding_overrides
+                FROM post_development
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            dev_result = cur.fetchone()
+            if not dev_result or not dev_result.get('embedding_overrides'):
+                logger.debug(f"No embedding_overrides found for post {post_id}")
+                return False
+            
+            # Parse JSON
+            import json
+            overrides = dev_result['embedding_overrides']
+            if isinstance(overrides, str):
+                try:
+                    overrides = json.loads(overrides)
+                except json.JSONDecodeError:
+                    logger.warning(f"Invalid JSON in embedding_overrides for post {post_id}")
+                    return False
+            
+            if not isinstance(overrides, dict):
+                logger.warning(f"embedding_overrides is not a dict for post {post_id}")
+                return False
+            
+            # Extract selected IDs (support both new format and legacy)
+            selected_product_id = overrides.get('selected_product_id') or (
+                overrides.get('selected_type') == 'product' and overrides.get('selected_id')
+            )
+            selected_category_id = overrides.get('selected_category_id') or (
+                overrides.get('selected_type') == 'category' and overrides.get('selected_id')
+            )
+            
+            if not selected_product_id and not selected_category_id:
+                logger.debug(f"No product or category IDs in embedding_overrides for post {post_id}")
+                return False
+            
+            # Check current values in post table (including positions)
+            cur.execute("""
+                SELECT cross_promotion_product_id, cross_promotion_category_id,
+                       cross_promotion_product_position, cross_promotion_category_position
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            
+            post_result = cur.fetchone()
+            if not post_result:
+                logger.warning(f"Post {post_id} not found")
+                return False
+            
+            # Only update if current values are NULL (don't overwrite manual selections)
+            updates = []
+            params = []
+            
+            if selected_product_id and post_result.get('cross_promotion_product_id') is None:
+                updates.append("cross_promotion_product_id = %s")
+                params.append(selected_product_id)
+                logger.info(f"Syncing product_id {selected_product_id} to post {post_id}")
+            
+            if selected_category_id and post_result.get('cross_promotion_category_id') is None:
+                updates.append("cross_promotion_category_id = %s")
+                params.append(selected_category_id)
+                logger.info(f"Syncing category_id {selected_category_id} to post {post_id}")
+            
+            # Get section count once to determine default positions
+            cur.execute("SELECT COUNT(*) as section_count FROM post_section WHERE post_id = %s", (post_id,))
+            section_count_result = cur.fetchone()
+            section_count = section_count_result.get('section_count', 0) if section_count_result else 0
+            # Default positions: category after section 2, product after section 4, or after last section if fewer sections
+            default_category_position = min(2, section_count) + 1 if section_count > 0 else 1
+            default_product_position = min(4, section_count) + 1 if section_count > 0 else 1
+            
+            # Set default positions if:
+            # 1. IDs are being synced and positions are NULL, OR
+            # 2. IDs already exist but positions are NULL (fix existing records)
+            if (selected_category_id and post_result.get('cross_promotion_category_id') is None and post_result.get('cross_promotion_category_position') is None) or \
+               (post_result.get('cross_promotion_category_id') is not None and post_result.get('cross_promotion_category_position') is None):
+                updates.append("cross_promotion_category_position = %s")
+                params.append(default_category_position)
+                logger.info(f"Setting default category_position {default_category_position} for post {post_id}")
+            
+            if (selected_product_id and post_result.get('cross_promotion_product_id') is None and post_result.get('cross_promotion_product_position') is None) or \
+               (post_result.get('cross_promotion_product_id') is not None and post_result.get('cross_promotion_product_position') is None):
+                updates.append("cross_promotion_product_position = %s")
+                params.append(default_product_position)
+                logger.info(f"Setting default product_position {default_product_position} for post {post_id}")
+            
+            if not updates:
+                logger.debug(f"Post {post_id} already has cross-promotion IDs, skipping sync")
+                return False
+            
+            # Update post table
+            params.append(post_id)
+            update_sql = f"""
+                UPDATE post
+                SET {', '.join(updates)}, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """
+            
+            cur.execute(update_sql, params)
+            conn.commit()
+            
+            logger.info(f"Successfully synced product-match IDs to cross-promotion for post {post_id}")
+            return True
+            
+    except Exception as e:
+        logger.error(f"Error syncing product-match to cross-promotion for post {post_id}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return False
+
+
 def get_post_with_development(post_id):
     """Fetch post with development data."""
     with get_db_connection() as conn:
@@ -85,6 +217,24 @@ def get_post_with_development(post_id):
         post_dict = dict(post)
         # Always use post_id for the edit link
         post_dict['id'] = post_dict['post_id']
+        
+        # Sync product-match selections to cross-promotion fields before building cross_promotion dict
+        # This ensures preview shows the matched IDs
+        sync_product_match_to_cross_promotion(post_id)
+        
+        # Reload post data to get synced values
+        cur.execute("""
+            SELECT cross_promotion_category_id, cross_promotion_category_title,
+                   cross_promotion_product_id, cross_promotion_product_title,
+                   cross_promotion_category_position, cross_promotion_product_position,
+                   cross_promotion_category_widget_html, cross_promotion_product_widget_html
+            FROM post WHERE id = %s
+        """, (post_id,))
+        updated_post = cur.fetchone()
+        if updated_post:
+            # Update post_dict with synced values
+            post_dict['cross_promotion_category_id'] = updated_post.get('cross_promotion_category_id')
+            post_dict['cross_promotion_product_id'] = updated_post.get('cross_promotion_product_id')
         
         # Add cross-promotion data structure
         post_dict['cross_promotion'] = {

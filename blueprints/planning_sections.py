@@ -123,21 +123,54 @@ CONSTRAINTS:
 - Use the provided product data to inform section content
 - Follow the standard product profile structure: Hero Block, The Object, Heritage & Origins (if available), The Maker (if available), Materials & Making, In Context, Features & Specifications, Care & Maintenance, Gallery (if images available), Explore Further, Credits & Sources
 
-OUTPUT:
-- STRICT JSON ONLY - NO MARKDOWN, NO CODE BLOCKS, NO EXPLANATORY TEXT
-- Start your response with { and end with }
-- Exactly 11 sections with clear purposes
-- Return ONLY the JSON object, nothing before or after
+CRITICAL JSON FORMAT REQUIREMENTS - READ CAREFULLY:
 
-FORMAT (return this exact structure):
+YOUR RESPONSE MUST:
+1. Start with the character { (opening brace)
+2. End with the character } (closing brace)
+3. Contain ONLY valid JSON - no other text whatsoever
+4. Have NO markdown code blocks (no ```json or ```)
+5. Have NO explanatory text before the {
+6. Have NO explanatory text after the }
+7. Have NO comments or prose anywhere
+8. Use proper JSON syntax:
+   - All strings in double quotes "
+   - No trailing commas before closing brackets/braces
+   - Proper comma separation between array elements
+   - Proper closing of all brackets and braces
+
+FORBIDDEN RESPONSES:
+❌ "Here is the JSON structure:"
+❌ "```json\n{...}\n```"
+❌ Any text before {
+❌ Any text after }
+❌ Comments like // or /* */
+❌ Trailing commas like ,] or ,}
+
+REQUIRED FORMAT (copy this exactly):
 {
   "sections": [
-    { "section_code": "S01", "title": "Section Title", "description": "Clear purpose description", "section_type": "profile_hero", "data_sources": ["source1", "source2"], "conditional": "optional conditional logic" },
-    ...
+    { "section_code": "S01", "title": "Section Title", "description": "Clear purpose description", "section_type": "profile_hero", "data_sources": ["source1"], "conditional": null },
+    { "section_code": "S02", "title": "Section Title", "description": "Clear purpose description", "section_type": "profile_object", "data_sources": ["source2"], "conditional": null }
   ]
 }
 
-CRITICAL: Your response must be valid JSON that can be parsed directly. Do not wrap it in markdown code blocks or add any explanatory text."""
+VALIDATION CHECKLIST - Before submitting, verify:
+□ Response starts with {
+□ Response ends with }
+□ No text before {
+□ No text after }
+□ No markdown code blocks
+□ All strings use double quotes
+□ No trailing commas
+□ Valid JSON syntax throughout
+□ Exactly 11 sections (S01 through S11)
+
+IF YOUR RESPONSE DOES NOT START WITH { AND END WITH }, IT WILL FAIL.
+IF YOUR RESPONSE CONTAINS ANY TEXT OTHER THAN JSON, IT WILL FAIL.
+IF YOUR RESPONSE HAS INVALID JSON SYNTAX, IT WILL FAIL.
+
+RETURN ONLY THE JSON OBJECT. NOTHING ELSE."""
                     else:
                         system_prompt = """You are a blog structure specialist. Design a 7-section blog post structure based on the provided topics and expanded idea.
 
@@ -148,17 +181,54 @@ CONSTRAINTS:
 - Use the provided topics to inform section content
 - Avoid hardcoded content - use the actual topics provided
 
-OUTPUT:
-- Strict JSON only, no prose
-- Exactly 7 sections with clear purposes
+CRITICAL JSON FORMAT REQUIREMENTS - READ CAREFULLY:
 
-FORMAT:
+YOUR RESPONSE MUST:
+1. Start with the character { (opening brace)
+2. End with the character } (closing brace)
+3. Contain ONLY valid JSON - no other text whatsoever
+4. Have NO markdown code blocks (no ```json or ```)
+5. Have NO explanatory text before the {
+6. Have NO explanatory text after the }
+7. Have NO comments or prose anywhere
+8. Use proper JSON syntax:
+   - All strings in double quotes "
+   - No trailing commas before closing brackets/braces
+   - Proper comma separation between array elements
+   - Proper closing of all brackets and braces
+
+FORBIDDEN RESPONSES:
+❌ "Here is the JSON structure:"
+❌ "```json\n{...}\n```"
+❌ Any text before {
+❌ Any text after }
+❌ Comments like // or /* */
+❌ Trailing commas like ,] or ,}
+
+REQUIRED FORMAT (copy this exactly):
 {
   "sections": [
-    { "id": 1, "title": "Section Title", "purpose": "Clear purpose description", "topics": ["topic1", "topic2"] },
-    ...
+    { "id": 1, "title": "Section Title", "purpose": "Clear purpose description", "topics": [] },
+    { "id": 2, "title": "Section Title", "purpose": "Clear purpose description", "topics": [] }
   ]
-}"""
+}
+
+VALIDATION CHECKLIST - Before submitting, verify:
+□ Response starts with {
+□ Response ends with }
+□ No text before {
+□ No text after }
+□ No markdown code blocks
+□ All strings use double quotes
+□ No trailing commas
+□ Valid JSON syntax throughout
+□ Exactly 7 sections
+
+IF YOUR RESPONSE DOES NOT START WITH { AND END WITH }, IT WILL FAIL.
+IF YOUR RESPONSE CONTAINS ANY TEXT OTHER THAN JSON, IT WILL FAIL.
+IF YOUR RESPONSE HAS INVALID JSON SYNTAX, IT WILL FAIL.
+
+RETURN ONLY THE JSON OBJECT. NOTHING ELSE."""
                 
                 if prompt_data and prompt_data['prompt_text']:
                     prompt_text = prompt_data['prompt_text']
@@ -187,15 +257,54 @@ STANDARD PRODUCT PROFILE SECTIONS (11 total):
 10. Explore Further (Required) - Commerce links
 11. Credits & Sources (Required) - Attribution
 
-VALIDATION RULES:
-- Create exactly 11 sections
-- Each section needs section_code, title, description, and section_type
-- Mark conditional sections appropriately
-- Output STRICT JSON ONLY - NO MARKDOWN CODE BLOCKS, NO EXPLANATORY TEXT
-- Start response with { and end with }
-- Return ONLY the JSON object, nothing before or after
+CRITICAL JSON FORMAT REQUIREMENTS - READ CAREFULLY:
 
-CRITICAL: Your response must be valid JSON that can be parsed directly. Do not wrap it in ```json code blocks or add any explanatory text."""
+YOUR RESPONSE MUST:
+1. Start with the character { (opening brace)
+2. End with the character } (closing brace)
+3. Contain ONLY valid JSON - no other text whatsoever
+4. Have NO markdown code blocks (no ```json or ```)
+5. Have NO explanatory text before the {
+6. Have NO explanatory text after the }
+7. Have NO comments or prose anywhere
+8. Use proper JSON syntax:
+   - All strings in double quotes "
+   - No trailing commas before closing brackets/braces
+   - Proper comma separation between array elements
+   - Proper closing of all brackets and braces
+
+FORBIDDEN RESPONSES:
+❌ "Here is the JSON structure:"
+❌ "```json\n{...}\n```"
+❌ Any text before {
+❌ Any text after }
+❌ Comments like // or /* */
+❌ Trailing commas like ,] or ,}
+
+REQUIRED FORMAT (copy this exactly):
+{
+  "sections": [
+    { "section_code": "S01", "title": "Section Title", "description": "Clear purpose description", "section_type": "profile_hero", "data_sources": ["source1"], "conditional": null },
+    { "section_code": "S02", "title": "Section Title", "description": "Clear purpose description", "section_type": "profile_object", "data_sources": ["source2"], "conditional": null }
+  ]
+}
+
+VALIDATION CHECKLIST - Before submitting, verify:
+□ Response starts with {
+□ Response ends with }
+□ No text before {
+□ No text after }
+□ No markdown code blocks
+□ All strings use double quotes
+□ No trailing commas
+□ Valid JSON syntax throughout
+□ Exactly 11 sections (S01 through S11)
+
+IF YOUR RESPONSE DOES NOT START WITH { AND END WITH }, IT WILL FAIL.
+IF YOUR RESPONSE CONTAINS ANY TEXT OTHER THAN JSON, IT WILL FAIL.
+IF YOUR RESPONSE HAS INVALID JSON SYNTAX, IT WILL FAIL.
+
+RETURN ONLY THE JSON OBJECT. NOTHING ELSE."""
                     else:
                         prompt_text = """Design a 7-section blog structure for this post. Use the provided topics and expanded idea to create logical sections.
 
@@ -209,8 +318,22 @@ TOPICS:
 VALIDATION RULES:
 - Create exactly 7 sections
 - Each section needs id, title, purpose, and topics
-- Output valid JSON only
-- No explanatory text outside JSON"""
+
+CRITICAL JSON FORMAT REQUIREMENTS:
+- Your response MUST start with [ and end with ]
+- NO markdown code blocks (no ```json or ```)
+- NO explanatory text before [ or after ]
+- NO comments or prose anywhere
+- Valid JSON syntax only (proper quotes, no trailing commas, proper brackets)
+- Return ONLY the JSON array, nothing else
+
+REQUIRED FORMAT:
+[
+  { "id": 1, "title": "Section Title", "purpose": "Purpose description", "topics": [] },
+  { "id": 2, "title": "Section Title", "purpose": "Purpose description", "topics": [] }
+]
+
+IF YOUR RESPONSE DOES NOT START WITH [ AND END WITH ], IT WILL FAIL."""
 
         except Exception as e:
             logger.error(f"Error loading Section Structure Design prompt: {e}")
@@ -326,40 +449,140 @@ CATEGORIES: {', '.join([c.get('name', '') for c in categories if c and isinstanc
                 }), 500
             
             if response and 'content' in response:
-                # Parse the JSON response
+                # Parse the JSON response - use robust parsing that handles extra content
                 try:
                     content = response['content'].strip()
-                    
-                    # Try to extract JSON from markdown code blocks first
                     import re
+                    
+                    # Step 1: Try to extract JSON from markdown code blocks (most reliable)
                     json_text = None
-                    
-                    # Try to find JSON object in code blocks
-                    json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', content)
-                    if json_match and json_match.groups():
-                        json_text = json_match.group(1)
+                    json_match = re.search(r'```(?:json)?\s*(\[[\s\S]*?\])\s*```', content, re.DOTALL)
+                    if json_match:
+                        json_text = json_match.group(1).strip()
+                        logger.info("Extracted JSON array from code block")
                     else:
-                        # Try to find JSON array in code blocks
-                        json_match = re.search(r'```(?:json)?\s*(\[[\s\S]*?\])\s*```', content)
-                        if json_match and json_match.groups():
-                            json_text = json_match.group(1)
+                        # Try JSON object in code blocks
+                        json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', content, re.DOTALL)
+                        if json_match:
+                            json_text = json_match.group(1).strip()
+                            logger.info("Extracted JSON object from code block")
                     
-                    if not json_text:
-                        # Fallback: try to find JSON object without code blocks
-                        json_match = re.search(r'(\{[\s\S]*\})', content)
-                        if json_match and json_match.groups():
-                            json_text = json_match.group(1)
-                        else:
-                            # Try to find JSON array without code blocks
-                            json_match = re.search(r'(\[[\s\S]*\])', content)
-                            if json_match and json_match.groups():
-                                json_text = json_match.group(1)
-                    
+                    # Step 2: Parse JSON - use raw_decode to handle any extra content robustly
+                    result = None
                     if json_text:
-                        result = json.loads(json_text)
+                        # Even if extracted from code block, use raw_decode to be safe
+                        try:
+                            decoder = json.JSONDecoder()
+                            result, idx = decoder.raw_decode(json_text)
+                            if idx < len(json_text.strip()):
+                                logger.info(f"Code block had extra content (ignored {len(json_text) - idx} chars)")
+                        except json.JSONDecodeError as parse_error:
+                            # Fallback: try aggressive cleaning of common JSON issues
+                            logger.warn(f"Initial parse failed: {parse_error}. Attempting aggressive cleanup...")
+                            cleaned = json_text
+                            
+                            # Fix trailing commas before closing brackets/braces (most common issue)
+                            cleaned = re.sub(r',(\s*[}\]])', r'\1', cleaned)
+                            # Fix trailing commas at end of lines before closing brackets/braces
+                            cleaned = re.sub(r',(\s*\n\s*[}\]])', r'\1', cleaned)
+                            # Fix missing commas between objects in arrays
+                            cleaned = re.sub(r'}\s*{', r'}, {', cleaned)
+                            # Fix missing commas between array elements
+                            cleaned = re.sub(r']\s*\[', r'], [', cleaned)
+                            # Remove any comments (// or /* */)
+                            cleaned = re.sub(r'//.*?$', '', cleaned, flags=re.MULTILINE)
+                            cleaned = re.sub(r'/\*.*?\*/', '', cleaned, flags=re.DOTALL)
+                            
+                            try:
+                                decoder = json.JSONDecoder()
+                                result, idx = decoder.raw_decode(cleaned)
+                                logger.info("Successfully parsed after aggressive cleanup")
+                            except json.JSONDecodeError as e2:
+                                logger.warn(f"Cleanup parse also failed: {e2}. Trying one more pass...")
+                                # One more aggressive pass - fix common issues
+                                cleaned2 = cleaned
+                                # Try to fix unclosed strings or brackets
+                                # Count brackets to see if they're balanced
+                                open_braces = cleaned2.count('{')
+                                close_braces = cleaned2.count('}')
+                                open_brackets = cleaned2.count('[')
+                                close_brackets = cleaned2.count(']')
+                                
+                                # If unbalanced, try to fix
+                                if open_braces > close_braces:
+                                    cleaned2 += '}' * (open_braces - close_braces)
+                                if open_brackets > close_brackets:
+                                    cleaned2 += ']' * (open_brackets - close_brackets)
+                                
+                                try:
+                                    decoder = json.JSONDecoder()
+                                    result, idx = decoder.raw_decode(cleaned2)
+                                    logger.info("Successfully parsed after bracket balancing")
+                                except json.JSONDecodeError:
+                                    # Last resort: try normal parse on cleaned version
+                                    result = json.loads(cleaned2)
                     else:
-                        # Last resort: try parsing the entire content
-                        result = json.loads(content)
+                        # No code blocks - find JSON in content and use raw_decode
+                        first_bracket = content.find('[')
+                        first_brace = content.find('{')
+                        
+                        start_pos = -1
+                        if first_bracket != -1 and (first_brace == -1 or first_bracket < first_brace):
+                            start_pos = first_bracket
+                        elif first_brace != -1:
+                            start_pos = first_brace
+                        
+                        if start_pos != -1:
+                            json_content = content[start_pos:]
+                            
+                            # Try to parse, with cleanup if needed
+                            try:
+                                decoder = json.JSONDecoder()
+                                result, idx = decoder.raw_decode(json_content)
+                                logger.info(f"Parsed JSON using raw_decode (start: {start_pos}, end: {start_pos + idx})")
+                                
+                                remaining = json_content[idx:].strip()
+                                if remaining:
+                                    logger.info(f"Ignored {len(remaining)} chars after JSON: {remaining[:100]}...")
+                            except json.JSONDecodeError as parse_error:
+                                # Try aggressive cleanup
+                                logger.warn(f"Parse failed: {parse_error}. Attempting cleanup...")
+                                cleaned = json_content
+                                
+                                # Fix trailing commas
+                                cleaned = re.sub(r',(\s*[}\]])', r'\1', cleaned)
+                                cleaned = re.sub(r',(\s*\n\s*[}\]])', r'\1', cleaned)
+                                # Fix missing commas
+                                cleaned = re.sub(r'}\s*{', r'}, {', cleaned)
+                                # Remove comments
+                                cleaned = re.sub(r'//.*?$', '', cleaned, flags=re.MULTILINE)
+                                cleaned = re.sub(r'/\*.*?\*/', '', cleaned, flags=re.DOTALL)
+                                
+                                try:
+                                    decoder = json.JSONDecoder()
+                                    result, idx = decoder.raw_decode(cleaned)
+                                    logger.info("Successfully parsed after cleanup")
+                                except json.JSONDecodeError as e2:
+                                    # Try bracket balancing
+                                    open_braces = cleaned.count('{')
+                                    close_braces = cleaned.count('}')
+                                    open_brackets = cleaned.count('[')
+                                    close_brackets = cleaned.count(']')
+                                    
+                                    if open_braces > close_braces:
+                                        cleaned += '}' * (open_braces - close_braces)
+                                    if open_brackets > close_brackets:
+                                        cleaned += ']' * (open_brackets - close_brackets)
+                                    
+                                    decoder = json.JSONDecoder()
+                                    result, idx = decoder.raw_decode(cleaned)
+                                    logger.info("Successfully parsed after bracket balancing")
+                        else:
+                            raise ValueError("No JSON array or object found in response")
+                    
+                    # Step 3: Process the parsed result (common path for both code block and raw_decode)
+                    if result is None:
+                        raise ValueError("Failed to parse JSON from response")
                     
                     # Handle both old format (with 'sections' key) and new format (direct array)
                     if isinstance(result, list):

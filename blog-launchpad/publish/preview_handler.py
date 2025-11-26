@@ -15,25 +15,24 @@ def preview_post(post_id):
     """
     Preview a specific post.
     Renders HTML fresh each time (no caching).
+    Shows EXACT HTML that will be published (verbatim, except image paths).
+    The preview template wrapper provides UI (title, header image, etc.) but does NOT modify the content.
     """
-    import os
-    import hashlib
-    
     # Use unified data preparation
     post, sections = prepare_post_data(post_id)
     if not post:
         return "Post not found", 404
     
     # Render HTML using unified rendering function (no image replacements for preview)
+    # This is the EXACT HTML that will be published
     html_content = render_post_html(post, sections, image_replacements=None)
     
     # NO CACHING - always generate fresh HTML
     
-    # Wrap in preview template (for CSS/styling only)
-    # The content comes from the unified renderer, ensuring preview matches published version
+    # Wrap in preview template (for UI elements: title, header image, red divider, etc.)
+    # The rendered_content is the EXACT HTML that will be published - template just wraps it
     # Try launchpad template first, then fallback to main templates
     from flask import current_app
-    from time import time
     try:
         # Try launchpad template path
         return render_template('launchpad/post_preview.html', post=post, sections=sections, rendered_content=html_content)

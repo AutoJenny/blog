@@ -43,7 +43,10 @@ class ClanPublisher:
             from datetime import datetime
             
             # Create log directory if it doesn't exist
-            log_dir = "/Users/nickfiddes/Code/projects/blog/blog-launchpad/log"
+            # Use the actual project directory instead of hardcoded path
+            import os
+            current_file_dir = os.path.dirname(os.path.abspath(__file__))
+            log_dir = os.path.join(current_file_dir, "log")
             os.makedirs(log_dir, exist_ok=True)
             
             # Create diagnostic data
@@ -873,6 +876,20 @@ class ClanPublisher:
                 # Send the request with the actual HTML file content
                 files = {'html_file': (html_filename, open(html_filepath, 'rb'), 'text/html')}
                 
+                # FINAL VERIFICATION: Check widget HTML in the HTML being sent
+                import re
+                widgets_in_sent_html = re.findall(r'\{\{widget[^}]+\}\}', html_content)
+                logger.info(f"=== FINAL VERIFICATION: HTML BEING SENT TO CLAN.COM ===")
+                logger.info(f"Found {len(widgets_in_sent_html)} widget tags in HTML being sent")
+                for i, widget in enumerate(widgets_in_sent_html, 1):
+                    logger.info(f"Widget {i} being sent: {widget}")
+                    prod_match = re.search(r'product_id="(\d+)"', widget)
+                    cat_match = re.search(r'category_id="(\d+)"', widget)
+                    if prod_match:
+                        logger.info(f"  ✅ Product ID in sent HTML: {prod_match.group(1)}")
+                    if cat_match:
+                        logger.info(f"  ✅ Category ID in sent HTML: {cat_match.group(1)}")
+                
                 # DIAGNOSTIC LOGGING: Dump exact API data being sent
                 self._dump_api_call('post_create_update', endpoint, api_data, files, html_filename, json_args, html_content)
                 
@@ -1019,8 +1036,15 @@ class ClanPublisher:
             logger.info("Step 2: Mapping cross-promotion data...")
             try:
                 cp_changed = False
-                # If missing, auto-select random IDs and default positions
-                if not (post.get('cross_promotion_category_id') or post.get('cross_promotion_product_id')):
+                # Check if cross_promotion dict exists and has IDs (from product-match sync or manual selection)
+                # Only auto-select if BOTH the dict doesn't exist AND the direct fields don't exist
+                has_cross_promotion = post.get('cross_promotion') and (
+                    post['cross_promotion'].get('category_id') or post['cross_promotion'].get('product_id')
+                )
+                has_direct_fields = post.get('cross_promotion_category_id') or post.get('cross_promotion_product_id')
+                
+                # If missing, auto-select random IDs and default positions (but only if not already set)
+                if not has_cross_promotion and not has_direct_fields:
                     from config.database import db_manager
                     with db_manager.get_cursor() as cursor:
                         # Random category
@@ -1062,8 +1086,13 @@ class ClanPublisher:
                             cursor.connection.commit()
                             logger.info("✅ Auto-selected random cross-promotion IDs and persisted to DB")
                 
-                # Build cross_promotion object
-                if post.get('cross_promotion_category_id') or post.get('cross_promotion_product_id'):
+                # Build cross_promotion object - use existing dict if present, otherwise build from direct fields
+                if post.get('cross_promotion'):
+                    # Already have cross_promotion dict (from publishing.py) - use it
+                    logger.info(f"Using existing cross_promotion dict: cat_id={post['cross_promotion'].get('category_id')}, prod_id={post['cross_promotion'].get('product_id')}")
+                    cp = post['cross_promotion']
+                elif post.get('cross_promotion_category_id') or post.get('cross_promotion_product_id'):
+                    # Build from direct fields
                     post['cross_promotion'] = {
                         'category_id': post.get('cross_promotion_category_id'),
                         'category_title': post.get('cross_promotion_category_title', ''),
@@ -1074,17 +1103,36 @@ class ClanPublisher:
                         'category_widget_html': post.get('cross_promotion_category_widget_html'),
                         'product_widget_html': post.get('cross_promotion_product_widget_html')
                     }
-                    # Auto-generate widget HTML if missing
-                    widget_changed = False
                     cp = post['cross_promotion']
+                else:
+                    logger.info("No cross-promotion data found after auto-selection attempt")
+                    cp = None
+                
+                # Auto-generate widget HTML if missing (for both existing dict and newly built dict)
+                if cp:
+                    widget_changed = False
+                    # Log current state before generating
+                    logger.info(f"Widget HTML check - category_id={cp.get('category_id')}, product_id={cp.get('product_id')}")
+                    logger.info(f"Widget HTML check - category_widget_html exists: {bool(cp.get('category_widget_html'))}, product_widget_html exists: {bool(cp.get('product_widget_html'))}")
+                    
                     if cp.get('category_id') and cp.get('category_position') and not cp.get('category_widget_html'):
                         # Remove title parameter - we don't want headings on widgets
-                        cp['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\"}}}}"
+                        generated_html = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{cp.get('category_id')}\"}}}}"
+                        cp['category_widget_html'] = generated_html
                         widget_changed = True
+                        logger.info(f"Generated category widget HTML with category_id={cp.get('category_id')}: {generated_html}")
                     if cp.get('product_id') and cp.get('product_position') and not cp.get('product_widget_html'):
                         # Remove title parameter - we don't want headings on widgets
-                        cp['product_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\"}}}}"
+                        generated_html = f"{{{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"{cp.get('product_id')}\"}}}}"
+                        cp['product_widget_html'] = generated_html
                         widget_changed = True
+                        logger.info(f"Generated product widget HTML with product_id={cp.get('product_id')}: {generated_html}")
+                    
+                    # Log final widget HTML that will be used
+                    if cp.get('category_widget_html'):
+                        logger.info(f"Final category widget HTML: {cp.get('category_widget_html')}")
+                    if cp.get('product_widget_html'):
+                        logger.info(f"Final product widget HTML: {cp.get('product_widget_html')}")
                     if widget_changed:
                         from config.database import db_manager as _db
                         with _db.get_cursor() as c2:
@@ -1101,9 +1149,7 @@ class ClanPublisher:
                             ))
                             c2.connection.commit()
                             logger.info("✅ Auto-generated widget HTML and persisted to DB")
-                    logger.info(f"✅ Mapped cross-promotion: cat_id={cp.get('category_id')}, prod_id={cp.get('product_id')}")
-                else:
-                    logger.info("No cross-promotion data found after auto-selection attempt")
+                    logger.info(f"✅ Final cross-promotion: cat_id={cp.get('category_id')}, prod_id={cp.get('product_id')}")
             except Exception as e:
                 logger.warning(f"Cross-promotion auto-selection/generation error: {e}")
             
@@ -1121,9 +1167,57 @@ class ClanPublisher:
                         'error': f'Failed to prepare post data for HTML generation'
                     }
                 
+                # CRITICAL: Preserve the cross_promotion dict we built earlier (with synced IDs)
+                # prepare_post_data reloads from DB via load_cross_promotion_data which may have different widget HTML
+                # We MUST use the dict from publishing.py which has the correct IDs
+                if post.get('cross_promotion'):
+                    logger.info(f"=== PRESERVING CROSS-PROMOTION DICT ===")
+                    logger.info(f"Original dict: cat_id={post['cross_promotion'].get('category_id')}, prod_id={post['cross_promotion'].get('product_id')}")
+                    logger.info(f"Original product widget: {post['cross_promotion'].get('product_widget_html')}")
+                    logger.info(f"Original category widget: {post['cross_promotion'].get('category_widget_html')}")
+                    
+                    # Check what unified_post has before preservation
+                    if unified_post.get('cross_promotion'):
+                        logger.info(f"unified_post cross_promotion BEFORE preservation: cat_id={unified_post['cross_promotion'].get('category_id')}, prod_id={unified_post['cross_promotion'].get('product_id')}")
+                    
+                    # Overwrite with our preserved dict (this ensures correct IDs are used)
+                    unified_post['cross_promotion'] = post['cross_promotion'].copy()  # Use copy to avoid reference issues
+                    
+                    logger.info(f"After preservation: cat_id={unified_post['cross_promotion'].get('category_id')}, prod_id={unified_post['cross_promotion'].get('product_id')}")
+                    logger.info(f"Preserved product widget: {unified_post['cross_promotion'].get('product_widget_html')}")
+                    logger.info(f"Preserved category widget: {unified_post['cross_promotion'].get('category_widget_html')}")
+                    
+                    # Verify the widget HTML contains the correct IDs
+                    import re
+                    prod_widget = unified_post['cross_promotion'].get('product_widget_html', '')
+                    cat_widget = unified_post['cross_promotion'].get('category_widget_html', '')
+                    prod_match = re.search(r'product_id="(\d+)"', prod_widget)
+                    cat_match = re.search(r'category_id="(\d+)"', cat_widget)
+                    logger.info(f"VERIFICATION - Product ID in widget HTML: {prod_match.group(1) if prod_match else 'NOT FOUND'}")
+                    logger.info(f"VERIFICATION - Category ID in widget HTML: {cat_match.group(1) if cat_match else 'NOT FOUND'}")
+                else:
+                    logger.warning(f"=== WARNING: No cross_promotion dict in post! ===")
+                    logger.warning(f"Post keys: {list(post.keys())}")
+                    if unified_post.get('cross_promotion'):
+                        logger.info(f"Using cross_promotion from unified_post: cat_id={unified_post['cross_promotion'].get('category_id')}, prod_id={unified_post['cross_promotion'].get('product_id')}")
+                
                 # Render HTML using unified rendering function (no image replacements for preview)
                 html_content = render_post_html(unified_post, unified_sections, image_replacements=None)
                 logger.info(f"✅ Generated fresh HTML content ({len(html_content)} chars)")
+                
+                # Verify widget HTML in final rendered HTML
+                import re
+                widgets_in_html = re.findall(r'\{\{widget[^}]+\}\}', html_content)
+                logger.info(f"=== WIDGET HTML IN FINAL RENDERED HTML ===")
+                logger.info(f"Found {len(widgets_in_html)} widget tags in HTML")
+                for i, widget in enumerate(widgets_in_html, 1):
+                    logger.info(f"Widget {i}: {widget}")
+                    prod_match = re.search(r'product_id="(\d+)"', widget)
+                    cat_match = re.search(r'category_id="(\d+)"', widget)
+                    if prod_match:
+                        logger.info(f"  Product ID in HTML: {prod_match.group(1)}")
+                    if cat_match:
+                        logger.info(f"  Category ID in HTML: {cat_match.group(1)}")
                 
                 if not html_content:
                     return {

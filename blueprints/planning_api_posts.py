@@ -140,11 +140,14 @@ def confirm_calendar_idea():
             post_id = None
             if not force_new:
                 # Check existing topic (same year)
+                # CRITICAL: Only reuse posts that are NOT deleted
+                # If a deleted post exists, create a new one instead
                 cursor.execute("""
                     SELECT p.id
                     FROM post p
                     LEFT JOIN post_development pd ON pd.post_id = p.id
                     WHERE (p.title = %s OR pd.idea_seed ILIKE %s)
+                      AND p.status != 'deleted'
                     ORDER BY p.updated_at DESC
                     LIMIT 1
                 """, (topic, f"%{topic}%"))

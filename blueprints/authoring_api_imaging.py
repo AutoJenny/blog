@@ -25,20 +25,12 @@ except ImportError:
 def authoring_sections_image_concepts(post_id):
     """Image concepts step - Step 53"""
     try:
-        # CRITICAL: Check for week context in URL params to determine correct post
+        # CRITICAL: Always use post_id from URL - it's the definitive identifier
+        # Week parameters are context only, not for changing post_id
         url_year = request.args.get('year', type=int)
         url_week = request.args.get('week', type=int)
         
-        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
-        target_post_id = post_id
-        if url_year and url_week:
-            from utils.week_post_resolver import resolve_post_for_week
-            resolved_post_id = resolve_post_for_week(url_year, url_week)
-            if resolved_post_id:
-                target_post_id = resolved_post_id
-                logger.info(f"Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
-            else:
-                logger.warning(f"Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+        target_post_id = post_id  # Always use URL post_id
         
         with db_manager.get_cursor() as cursor:
             # Get post details with taxonomy illustration_method using the correct post_id
@@ -101,25 +93,12 @@ def authoring_sections_image_concepts(post_id):
 def authoring_sections_image_prompts(post_id):
     """Image prompts step - Step 54"""
     try:
-        # CRITICAL: Check for week context in URL params to determine correct post
+        # CRITICAL: Always use post_id from URL - it's the definitive identifier
+        # Week parameters are context only, not for changing post_id
         url_year = request.args.get('year', type=int)
         url_week = request.args.get('week', type=int)
-        logger.info(f"[IMAGE_PROMPTS] Week context from URL: year={url_year}, week={url_week}")
         
-        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
-        target_post_id = post_id
-        if url_year and url_week:
-            from utils.week_post_resolver import resolve_post_for_week
-            resolved_post_id = resolve_post_for_week(url_year, url_week)
-            if resolved_post_id:
-                target_post_id = resolved_post_id
-                logger.info(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
-            else:
-                logger.warning(f"[IMAGE_PROMPTS] Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
-        else:
-            logger.warning(f"[IMAGE_PROMPTS] No week context provided - using URL post_id {post_id}")
-        
-        logger.info(f"[IMAGE_PROMPTS] Using target_post_id={target_post_id} for taxonomy lookup")
+        target_post_id = post_id  # Always use URL post_id
         
         with db_manager.get_cursor() as cursor:
             # Get post details with taxonomy illustration_method using the correct post_id
@@ -181,13 +160,8 @@ def authoring_sections_image_captions(post_id):
         url_year = request.args.get('year', type=int)
         url_week = request.args.get('week', type=int)
         
-        # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
-        target_post_id = post_id
-        if url_year and url_week:
-            from utils.week_post_resolver import resolve_post_for_week
-            resolved_post_id = resolve_post_for_week(url_year, url_week)
-            if resolved_post_id:
-                target_post_id = resolved_post_id
+        # CRITICAL: Always use post_id from URL - it's the definitive identifier
+        target_post_id = post_id  # Always use URL post_id
         
         with db_manager.get_cursor() as cursor:
             # Get post details
@@ -661,13 +635,8 @@ def api_generate_image_concepts(post_id, section_id):
         # SINGLE SOURCE OF TRUTH: Use approved utility for week/post resolution
         target_post_id = post_id
         if url_year and url_week:
-            from utils.week_post_resolver import resolve_post_for_week
-            resolved_post_id = resolve_post_for_week(url_year, url_week)
-            if resolved_post_id:
-                target_post_id = resolved_post_id
-                logger.info(f"[IMAGE_CONCEPTS] Week {url_year}/{url_week} resolved to post_id {target_post_id} (instead of URL post_id {post_id})")
-            else:
-                logger.warning(f"[IMAGE_CONCEPTS] Week {url_year}/{url_week} has no scheduled post - using URL post_id {post_id}")
+            # CRITICAL: Always use post_id from URL - it's the definitive identifier
+            target_post_id = post_id  # Always use URL post_id
         else:
             logger.warning(f"[IMAGE_CONCEPTS] No week context provided - using URL post_id {post_id}")
         

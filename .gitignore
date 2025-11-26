@@ -2,8 +2,6 @@ venv/
 __pycache__/
 *.pyc
 *.env
-backups/
+backups/*.tar.gz
 *.log
 *.safetensors
-*.tar.gz
-*.sql

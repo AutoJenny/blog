@@ -79,7 +79,7 @@ function loadFeatureSuggestions(blockId, issueId) {
   suggestionsDiv.innerHTML = '<div style="color: #9ca3af; padding: 12px;">Loading posts...</div>';
   selectEl.innerHTML = '<option value="">Loading...</option>';
   
-  fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`)
+  return fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -99,15 +99,21 @@ function loadFeatureSuggestions(blockId, issueId) {
       if (suggestions.length === 0) {
         selectEl.innerHTML = '<option value="">No theme posts found</option>';
       } else {
+        // Check if we have a current selection in the block payload
+        const currentBlockPostId = {{ (b.payload_json and b.payload_json.id) | tojson }};
+        const currentPostId = current && current.id ? current.id : null;
+        
         suggestions.forEach((post, index) => {
           const option = document.createElement('option');
           option.value = post.id;
           option.textContent = post.title || `Post #${post.id}`;
-          // Select current post if it matches
-          if (current.id && post.id === current.id) {
+          // Select current post if it matches block payload, or current from API, or first post
+          if (currentBlockPostId && post.id === currentBlockPostId) {
             option.selected = true;
-          } else if (index === 0 && !current.id) {
-            // Select first if no current
+          } else if (currentPostId && post.id === currentPostId && !currentBlockPostId) {
+            option.selected = true;
+          } else if (index === 0 && !currentBlockPostId && !currentPostId) {
+            // Select first if no current selection
             option.selected = true;
           }
           selectEl.appendChild(option);
@@ -190,15 +196,35 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Load suggestions on page load
+// Load suggestions on page load and auto-select current post if none selected
 (function() {
   const blockId = {{ b.id }};
   const issueId = {{ issue_id }};
+  const hasCurrentSelection = {{ 'true' if (b.payload_json and b.payload_json.id) else 'false' }};
+  
   document.addEventListener('DOMContentLoaded', function() {
     const featureEditor = document.querySelector(`.block-editor-feature[data-block-id="${blockId}"]`);
     if (featureEditor) {
       // Auto-load suggestions when editor is visible
-      loadFeatureSuggestions(blockId, issueId);
+      loadFeatureSuggestions(blockId, issueId).then(() => {
+        // If no current selection, auto-select the first (current) post
+        if (hasCurrentSelection !== true) {
+          setTimeout(() => {
+            fetch(`/newsletter/issue/${issueId}/block/${blockId}/suggestions`)
+              .then(r => r.json())
+              .then(data => {
+                const current = data.current || {};
+                if (current && current.id) {
+                  // Auto-select the current post
+                  applyFeaturePost(blockId, current.id, issueId);
+                }
+              })
+              .catch(err => {
+                console.error('Error auto-selecting current post:', err);
+              });
+          }, 1000);
+        }
+      });
     }
   });
 })();

@@ -8,7 +8,10 @@
     {% block process_content %}
     <div class="calendar-tabs">
         <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" class="tab">Year View</a>
-        <a href="{{ url_for('planning.planning_calendar_week_view', post_id=post_id) }}" class="tab active">Week View</a>
+        <a href="{{ url_for('planning.planning_calendar_week_view', post_id=post_id, year=year, week=week) }}" class="tab active">Week View</a>
+        {% if year and week %}
+        <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=week, year=year, week=week) }}" class="tab">Week Themes</a>
+        {% endif %}
     </div>
     <div class="calendar-week-view">
         <div class="week-header">
@@ -62,9 +65,15 @@
         <div class="row-section" data-filter="themes" style="margin-bottom: 1rem;">
             <div class="row-header">
                 <span>Themes</span>
-                <button class="row-add-btn" onclick="(() => { const w = parseInt(document.getElementById('week-number')?.textContent); getIdeaModal().openNew('theme', w || null); })()" title="Add New Theme">
-                    <i class="fas fa-plus"></i> Add New
-                </button>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <a href="#" id="week-themes-create-link" class="btn btn-primary" style="font-size: 0.875rem; padding: 6px 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create Post</span>
+                    </a>
+                    <button class="row-add-btn" onclick="(() => { const w = parseInt(document.getElementById('week-number')?.textContent); getIdeaModal().openNew('theme', w || null); })()" title="Add New Theme">
+                        <i class="fas fa-plus"></i> Add New
+                    </button>
+                </div>
             </div>
             <div class="week-themes" id="week-themes"></div>
         </div>

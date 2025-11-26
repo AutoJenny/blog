@@ -66,6 +66,14 @@ class QueueManager {
             add10ItemsBtn.addEventListener('click', () => this.add10Items());
         }
         
+        // Show past items checkbox
+        const showPastItemsCheckbox = document.getElementById('show-past-items');
+        if (showPastItemsCheckbox) {
+            showPastItemsCheckbox.addEventListener('change', () => {
+                this.renderQueue();
+            });
+        }
+        
         // Listen for post selection events to update button text
         document.addEventListener('postSelected', (event) => {
             console.log('Post selected event received:', event.detail);
@@ -109,7 +117,7 @@ class QueueManager {
                 console.log('Queue Manager: Filtered queue data:', this.queueData);
                 console.log('Queue Manager: Filtered count:', this.queueData.length);
                 this.renderQueue();
-                this.updateQueueCount();
+                // updateQueueCount is called inside renderQueue with filtered data
             } else {
                 console.error('Queue Manager: Error loading queue:', data.error);
                 this.showEmptyQueue();
@@ -131,6 +139,42 @@ class QueueManager {
     }
 
     /**
+     * Check if item is in the past (scheduled date before today)
+     */
+    isPastItem(item) {
+        if (!item.scheduled_timestamp && !item.scheduled_date) {
+            // If no scheduled date, use created_at
+            const itemDate = new Date(item.created_at);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return itemDate < today;
+        }
+        
+        // Use scheduled_timestamp if available, otherwise scheduled_date
+        const scheduledDate = item.scheduled_timestamp || item.scheduled_date;
+        const itemDate = new Date(scheduledDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        itemDate.setHours(0, 0, 0, 0);
+        
+        return itemDate < today;
+    }
+
+    /**
+     * Get filtered queue data based on show past items setting
+     */
+    getFilteredQueueData() {
+        const showPastItems = document.getElementById('show-past-items')?.checked || false;
+        
+        if (showPastItems) {
+            return this.queueData;
+        }
+        
+        // Filter out past items
+        return this.queueData.filter(item => !this.isPastItem(item));
+    }
+
+    /**
      * Render queue table
      */
     renderQueue() {
@@ -138,7 +182,10 @@ class QueueManager {
         const emptyQueue = document.getElementById('empty-queue');
         const queueTableBody = document.getElementById('queue-table-body');
         
-        if (this.queueData.length === 0) {
+        // Get filtered data (excluding past items by default)
+        const filteredData = this.getFilteredQueueData();
+        
+        if (filteredData.length === 0) {
             this.showEmptyQueue();
             return;
         }
@@ -147,11 +194,14 @@ class QueueManager {
         queueTableContainer.style.display = 'block';
         
         let html = '';
-        this.queueData.forEach(item => {
+        filteredData.forEach(item => {
             html += this.renderQueueItem(item);
         });
         
         queueTableBody.innerHTML = html;
+        
+        // Update queue count to reflect filtered items
+        this.updateQueueCount(filteredData);
     }
 
     /**
@@ -330,10 +380,12 @@ class QueueManager {
     /**
      * Update queue count badge
      */
-    updateQueueCount() {
+    updateQueueCount(filteredData = null) {
         const queueCount = document.getElementById('queue-count');
         if (queueCount) {
-            queueCount.textContent = this.queueData.length;
+            // Use filtered data if provided, otherwise get it from getFilteredQueueData
+            const count = filteredData ? filteredData.length : this.getFilteredQueueData().length;
+            queueCount.textContent = count;
         }
     }
 

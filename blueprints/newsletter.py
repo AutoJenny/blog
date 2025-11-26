@@ -354,13 +354,54 @@ def preview_issue(issue_id: int):
             if payload.get("events_paragraph"):
                 payload["events_paragraph"] = markdown_to_html(payload["events_paragraph"])
         
-        # If this is a feature block with a hero_image, try to convert local path to clan.com URL
-        if b["type"] == "feature" and block_data["payload_json"].get("hero_image"):
-            hero_image = block_data["payload_json"]["hero_image"]
+        # If this is a feature block, ensure hero_image is populated from post's header image
+        if b["type"] == "feature":
             post_id = block_data["payload_json"].get("id")
+            hero_image = block_data["payload_json"].get("hero_image")
             
-            # If it's a local path, try to find the clan.com URL
-            if hero_image.startswith("/static/") and post_id:
+            # If hero_image is missing, look it up from the post's header_image_id
+            if not hero_image and post_id:
+                try:
+                    from config.database import db_manager
+                    with db_manager.get_cursor() as cursor:
+                        # First try images table
+                        cursor.execute("""
+                            SELECT i.file_path
+                            FROM post p
+                            JOIN images i ON p.header_image_id = i.id
+                            WHERE p.id = %s
+                        """, (post_id,))
+                        result = cursor.fetchone()
+                        if result and result.get('file_path'):
+                            hero_image = result['file_path']
+                        else:
+                            # Fallback to image_archive table via post_images
+                            cursor.execute("""
+                                SELECT ia.path
+                                FROM post p
+                                JOIN post_images pi ON pi.post_id = p.id AND pi.image_type LIKE 'header%%'
+                                JOIN image_archive ia ON pi.image_id = ia.id
+                                WHERE p.id = %s
+                                ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
+                                             WHEN pi.image_type = 'header_watermarked' THEN 2
+                                             ELSE 3 END
+                                LIMIT 1
+                            """, (post_id,))
+                            result = cursor.fetchone()
+                            if result and result.get('path'):
+                                hero_image = result['path']
+                        
+                        if hero_image:
+                            block_data["payload_json"]["hero_image"] = hero_image
+                            import logging
+                            logging.getLogger(__name__).info(f"Populated feature block hero_image for post {post_id}: {hero_image}")
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Could not lookup hero_image for post {post_id}: {e}")
+                    pass
+            
+            # If hero_image exists and is a local path, try to convert to clan.com URL
+            if hero_image and hero_image.startswith("/static/") and post_id:
                 try:
                     from config.database import db_manager
                     with db_manager.get_cursor() as cursor:

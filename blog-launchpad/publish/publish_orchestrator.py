@@ -11,8 +11,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from clan_publisher import ClanPublisher
 from config.database import db_manager
-from .post_data_loader import load_post_data, load_sections, prepare_post_for_publication
-from .header_image_finder import get_header_image
+from .post_data_loader import prepare_post_data
 
 logger = logging.getLogger(__name__)
 
@@ -25,33 +24,20 @@ def publish_post_to_clan(post_id):
     try:
         logger.info(f"=== Starting publication for post {post_id} ===")
         
-        # Step 1: Load post data and sections
-        logger.info("Step 1: Loading post data...")
-        post = load_post_data(post_id)
+        # Step 1: Use unified data preparation (SAME as preview route)
+        logger.info("Step 1: Preparing post data (unified with preview)...")
+        post, sections = prepare_post_data(post_id)
         if not post:
             return {
                 'success': False,
                 'error': f'Post {post_id} not found or could not be loaded'
             }
         
-        logger.info("Step 2: Loading sections...")
-        sections = load_sections(post_id)
-        
-        # Step 2: Find header image (single source of truth)
-        logger.info("Step 3: Finding header image...")
-        header_image = get_header_image(post_id)
-        if header_image:
-            logger.info(f"✅ Found header image: {header_image.get('path')}")
-        else:
-            logger.warning(f"⚠️ No header image found for post {post_id}")
-        
-        # Step 3: Prepare post data (validate, enrich with header_image)
-        logger.info("Step 4: Preparing post for publication...")
-        post = prepare_post_for_publication(post, header_image)
-        if not post:
+        # Validate required fields
+        if not post.get('title'):
             return {
                 'success': False,
-                'error': f'Post {post_id} failed validation'
+                'error': f'Post {post_id} missing required field: title'
             }
         
         logger.info(f"✅ Post prepared. header_image: {post.get('header_image')}")
@@ -63,7 +49,7 @@ def publish_post_to_clan(post_id):
         publisher = ClanPublisher()
         
         # CRITICAL: Pass header_image in post dict - do NOT let ClanPublisher re-find it
-        # The header_image is already set in post dict by prepare_post_for_publication
+        # The header_image is already set in post dict by prepare_post_data
         logger.info(f"Before process_images: post['header_image'] = {post.get('header_image')}")
         uploaded_images = publisher.process_images(post, sections)
         logger.info(f"After process_images: post['header_image'] = {post.get('header_image')}")

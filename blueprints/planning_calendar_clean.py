@@ -109,7 +109,6 @@ def planning_calendar_week_view(post_id):
     We do NOT treat any post as "active" in calendar view - it's about the week.
     """
     from flask import request
-    from utils.week_post_resolver import resolve_post_for_week
     from utils.taxonomy_helpers import get_post_type
     
     # Read week context from URL (required for week view)
@@ -119,35 +118,26 @@ def planning_calendar_week_view(post_id):
     # Get post type for the original post_id first (for UI purposes only)
     original_post_type = get_post_type(post_id)
     
-    # Resolve post if week context provided
-    # BUT: For recipe/profile posts, preserve the original post_id to maintain recipe/profile association
+    # CRITICAL: Always use post_id from URL - it's the definitive identifier
+    # Week parameters are context only, not for changing post_id
+    # This applies to ALL post types (themed, recipe, profile, generated)
     resolved_post_id = post_id
-    if year and week and original_post_type not in ('recipe', 'profile'):
-        # Only resolve for themed posts - recipe/profile posts should keep their original post_id
-        resolved = resolve_post_for_week(year, week)
-        if resolved:
-            resolved_post_id = resolved
     
     # CRITICAL: Calendar week view is WEEK-CENTRIC, not post-centric
     # We do NOT pass any post-related data to the template
     # post_id is ONLY used for navigation through pipeline stages (in URLs)
     # No post_type, no post data, nothing - just week context
     
-    # Only verify post exists if we resolved to a different post (themed posts)
-    # This is just for error handling, not for displaying data
-    if year and week and original_post_type not in ('recipe', 'profile'):
-        # For themed posts, verify resolved post exists (if we resolved to a different one)
-        resolved = resolve_post_for_week(year, week)
-        if resolved and resolved != post_id:
-            with db_manager.get_cursor() as cursor:
-                cursor.execute("SELECT id FROM post WHERE id = %s", (resolved,))
-                if not cursor.fetchone():
-                    return render_template('planning/calendar/week_view.html',
-                                          post_id=post_id,  # Use original for navigation
-                                          year=year,
-                                          week=week,
-                                          blueprint_name='planning',
-                                          error='Post not found')
+    # Verify post exists (for error handling)
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("SELECT id FROM post WHERE id = %s", (post_id,))
+        if not cursor.fetchone():
+            return render_template('planning/calendar/week_view.html',
+                                  post_id=post_id,  # Use original for navigation
+                                  year=year,
+                                  week=week,
+                                  blueprint_name='planning',
+                                  error='Post not found')
     
     # Render template with NO post data - only post_id for navigation
     return render_template('planning/calendar/week_view.html',
@@ -187,13 +177,9 @@ def planning_calendar_ideas(post_id):
             year = now.year
             week_number = now.isocalendar()[1]
         
-        # Resolve post for week if needed
+        # CRITICAL: Always use post_id from URL - it's the definitive identifier
+        # Week parameters are context only, not for changing post_id
         target_post_id = post_id
-        if url_year and url_week:
-            from utils.week_post_resolver import resolve_post_for_week
-            resolved_post_id = resolve_post_for_week(url_year, url_week)
-            if resolved_post_id:
-                target_post_id = resolved_post_id
         
         # Get post data with all required fields for header
         content_type_name = None

@@ -122,65 +122,24 @@ def generate_taxonomy():
         year = data.get('year')
         week_number = data.get('week_number')
         
-        # Initialize week_theme_id to None - will be set if week has selected theme
-        week_theme_id = None
+        # Get post's taxonomy category_id (stored in theme_id column) if post_id provided
+        # This is the taxonomy classification category (NOT the calendar theme - those are completely different concepts)
+        post_taxonomy_theme_id = None
+        if post_id:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("SELECT theme_id FROM post WHERE id = %s", (post_id,))
+                post = cursor.fetchone()
+                if post and post.get('theme_id'):
+                    post_taxonomy_theme_id = post['theme_id']
+                    logger.info(f"Post {post_id} has taxonomy theme_id {post_taxonomy_theme_id} - will use this to maintain consistency")
         
         if not expanded_idea:
             return jsonify({'success': False, 'error': 'expanded_idea is required'}), 400
         
-        # Get week theme_id if year/week provided (for LLM context, but don't change post_id)
-        # Always use the requested post_id - don't redirect to a different post
-        if year and week_number:
-            with db_manager.get_cursor() as cursor:
-                # Check if new tables exist
-                cursor.execute("""
-                    SELECT EXISTS (
-                        SELECT FROM information_schema.tables 
-                        WHERE table_schema = 'public' 
-                        AND table_name = 'calendar_week_selection'
-                    ) as has_selection,
-                    EXISTS (
-                        SELECT FROM information_schema.tables 
-                        WHERE table_schema = 'public' 
-                        AND table_name = 'calendar_week_posts'
-                    ) as has_posts
-                """)
-                table_check = cursor.fetchone()
-                has_new_tables = table_check['has_selection'] and table_check['has_posts']
-                
-                if has_new_tables:
-                    # Use new V2 architecture - get selected theme for this week
-                    cursor.execute("""
-                        SELECT selected_theme_id
-                        FROM calendar_week_selection
-                        WHERE year = %s AND week_number = %s
-                    """, (year, week_number))
-                    week_selection = cursor.fetchone()
-                    
-                    if week_selection:
-                        week_theme_id = week_selection['selected_theme_id']
-                        logger.info(f"Week {year}/{week_number} has selected theme_id {week_theme_id}")
-                    else:
-                        week_theme_id = None
-                else:
-                    # Fallback to old calendar_schedule table
-                    cursor.execute("""
-                        SELECT cs.theme_id
-                        FROM calendar_schedule cs
-                        WHERE cs.year = %s 
-                          AND cs.week_number = %s
-                          AND cs.theme_id IS NOT NULL
-                        ORDER BY cs.created_at DESC
-                        LIMIT 1
-                    """, (year, week_number))
-                    
-                    week_theme = cursor.fetchone()
-                    
-                    if week_theme:
-                        week_theme_id = week_theme['theme_id']
-                        logger.info(f"Week {year}/{week_number} has theme_id {week_theme_id}")
-                    else:
-                        week_theme_id = None
+        # NOTE: We do NOT use calendar_theme selection for taxonomy generation
+        # Calendar themes (calendar_themes table) are week-based ideas (what to write about)
+        # Taxonomy categories (taxonomy_item with tier='category') are classification categories (how to classify)
+        # These are completely unrelated concepts - calendar theme selection should NOT influence taxonomy
         
         # Fetch all taxonomy items from database
         valid_content_type_ids = set()  # Initialize outside the with block so it's accessible later
@@ -190,24 +149,25 @@ def generate_taxonomy():
                 SELECT ti.id, ti.slug, ti.display_name, ti.description
                 FROM taxonomy_item ti
                 JOIN taxonomy_tier tt ON ti.tier_id = tt.id
-                WHERE tt.name = 'theme' AND ti.is_active = TRUE
+                WHERE tt.name = 'category' AND ti.is_active = TRUE
                 ORDER BY ti.display_order
             """)
             themes = cursor.fetchall()
             
-            # Get content types - filter by week_theme_id if available
-            # CRITICAL: Only include content types that have a valid parent_id (belong to a theme)
+            # Get content types - filter by post's taxonomy category_id (stored in theme_id column) if it exists
+            # CRITICAL: Only include content types that have a valid parent_id (belong to a category)
+            # NOTE: We do NOT use calendar theme selection - that's a different concept
             content_types = []
-            use_week_theme = False
+            theme_id_for_filtering = post_taxonomy_theme_id
             
-            if week_theme_id:
+            if theme_id_for_filtering:
                 # First validate that the theme actually exists
                 cursor.execute("""
                     SELECT ti.id, ti.slug, ti.display_name
                     FROM taxonomy_item ti
                     JOIN taxonomy_tier tt ON ti.tier_id = tt.id
-                    WHERE ti.id = %s AND tt.name = 'theme' AND ti.is_active = TRUE
-                """, (week_theme_id,))
+                    WHERE ti.id = %s AND tt.name = 'category' AND ti.is_active = TRUE
+                """, (theme_id_for_filtering,))
                 theme_check = cursor.fetchone()
                 
                 if theme_check:
@@ -223,19 +183,17 @@ def generate_taxonomy():
                           AND ti.parent_id IS NOT NULL
                           AND ti.parent_id = %s
                         ORDER BY ti.display_order
-                    """, (week_theme_id,))
+                    """, (theme_id_for_filtering,))
                     content_types = cursor.fetchall()
-                    logger.info(f"[Taxonomy Generation] Filtering content types to theme_id {week_theme_id}. Found {len(content_types)} content types.")
+                    logger.info(f"[Taxonomy Generation] Filtering content types to taxonomy category_id {theme_id_for_filtering} (from post's existing taxonomy). Found {len(content_types)} content types.")
                     
-                    if len(content_types) > 0:
-                        use_week_theme = True
-                    else:
-                        logger.warn(f"[Taxonomy Generation] Theme {week_theme_id} has no content types. Falling back to all content types.")
+                    if len(content_types) == 0:
+                        logger.warn(f"[Taxonomy Generation] Category {theme_id_for_filtering} has no content types. Falling back to all content types.")
                 else:
-                    logger.warn(f"[Taxonomy Generation] week_theme_id {week_theme_id} does not exist or is not a valid theme. Falling back to all content types.")
+                    logger.warn(f"[Taxonomy Generation] category_id {theme_id_for_filtering} does not exist or is not a valid category. Falling back to all content types.")
             
-            # If we don't have content types yet (no week_theme, invalid theme, or theme has no content types), get all
-            if not use_week_theme:
+            # If we don't have content types yet (no theme filter, invalid theme, or theme has no content types), get all
+            if not content_types:
                 logger.info(f"[Taxonomy Generation] Showing all content types (excluding those without parent)")
                 cursor.execute("""
                     SELECT ti.id, ti.slug, ti.display_name, ti.description, ti.parent_id,
@@ -249,8 +207,6 @@ def generate_taxonomy():
                     ORDER BY ti.display_order
                 """)
                 content_types = cursor.fetchall()
-                # Reset week_theme_id since we're showing all content types
-                week_theme_id = None
             
             logger.info(f"[Taxonomy Generation] Total content types available: {len(content_types)}")
             
@@ -283,7 +239,7 @@ def generate_taxonomy():
             system_prompt = """You are a content classification expert specializing in Scottish heritage and culture. 
 
 CRITICAL: You must select taxonomy IDs with EXTREME precision:
-- theme_id: Must be from THEMES list only
+- theme_id: Must be from CATEGORIES list only (this is the taxonomy category tier)
 - content_type_id: Must be from CONTENT TYPES list only - NEVER use a format ID here
 - format_id: Must be from FORMATS list only - NEVER use a content_type ID here
 
@@ -351,7 +307,7 @@ EXPANDED IDEA:
 You MUST return ONLY valid JSON in this EXACT format (no markdown, no code blocks, just the JSON):
 
 {{
-  "theme_id": <integer from THEMES list above>,
+  "theme_id": <integer from CATEGORIES list above>,
   "content_type_id": <integer from CONTENT TYPES list above - NOT from FORMATS, NOT an array []>,
   "format_id": <integer from FORMATS list above - NOT from CONTENT TYPES, NOT an array []>,
   "reasoning": "<ONE brief sentence>"
@@ -360,7 +316,7 @@ You MUST return ONLY valid JSON in this EXACT format (no markdown, no code block
 CRITICAL: All three ID fields (theme_id, content_type_id, format_id) MUST be integers, NOT arrays. Do NOT use [] for any field.
 
 === CRITICAL FIELD MAPPING RULES ===
-1. theme_id → MUST be from THEMES list (IDs: {sorted([t['id'] for t in themes])})
+1. theme_id → MUST be from CATEGORIES list (IDs: {sorted([t['id'] for t in themes])})
 2. content_type_id → MUST be from CONTENT TYPES list (IDs: {sorted(valid_content_type_ids)}) - NEVER use format IDs here
 3. format_id → MUST be from FORMATS list (IDs: {sorted(format_ids)}) - NEVER use content_type IDs here
 
@@ -372,11 +328,12 @@ CRITICAL: All three ID fields (theme_id, content_type_id, format_id) MUST be int
 
 Return ONLY the JSON object, no other text, no markdown code blocks, no explanations outside the JSON."""
         
-        # CRITICAL: If week_theme_id is set, add instruction to use that theme
-        if week_theme_id:
-            theme_constraint = f"\n\n=== THEME CONSTRAINT ===\nYou MUST use theme_id {week_theme_id} (already selected for this week). Only content types belonging to this theme are shown in the CONTENT TYPES list above."
+        # CRITICAL: If post already has a taxonomy category_id, add instruction to use that category
+        # This maintains consistency with existing taxonomy classification
+        if post_taxonomy_theme_id:
+            theme_constraint = f"\n\n=== CATEGORY CONSTRAINT ===\nYou MUST use theme_id {post_taxonomy_theme_id} (this post's existing taxonomy category). Only content types belonging to this category are shown in the CONTENT TYPES list above."
             formatted_prompt += theme_constraint
-            logger.info(f"Adding theme constraint to prompt: theme_id {week_theme_id}")
+            logger.info(f"Adding taxonomy category constraint to prompt: category_id {post_taxonomy_theme_id} (from post's existing taxonomy)")
         
         logger.info(f"[Taxonomy Generation] Generated structured prompt. Valid content_type_ids: {sorted(valid_content_type_ids)}, Valid format_ids: {sorted(format_ids)}")
         
@@ -717,15 +674,16 @@ Return ONLY the JSON object, no other text, no markdown code blocks, no explanat
                     'error': f'ID {content_type_id} is a format, not a content_type. The LLM incorrectly used a format ID for content_type_id. Please try generating again.'
                 }), 400
         
-        # CRITICAL: If week_theme_id is set, override LLM's theme choice
-        # This ensures we always use the week's selected theme
-        if week_theme_id:
-            if week_theme_id != theme_id:
-                logger.warn(f"[Taxonomy Generation] LLM chose theme_id {theme_id} but week requires {week_theme_id}. Overriding to week theme.")
-            theme_id = week_theme_id
-            logger.info(f"[Taxonomy Generation] Using week_theme_id {week_theme_id} (overriding LLM choice)")
+        # CRITICAL: If post already has a taxonomy category_id, override LLM's category choice to maintain consistency
+        # This ensures taxonomy matches the post's existing classification
+        # NOTE: This is taxonomy classification category, NOT calendar theme selection
+        if post_taxonomy_theme_id:
+            if post_taxonomy_theme_id != theme_id:
+                logger.warn(f"[Taxonomy Generation] LLM chose taxonomy category_id {theme_id} but post has {post_taxonomy_theme_id}. Overriding to maintain consistency.")
+            theme_id = post_taxonomy_theme_id
+            logger.info(f"[Taxonomy Generation] Using post's existing taxonomy category_id {post_taxonomy_theme_id} (overriding LLM choice to maintain consistency)")
         else:
-            logger.info(f"[Taxonomy Generation] No week_theme_id - using LLM's theme_id {theme_id}")
+            logger.info(f"[Taxonomy Generation] No existing taxonomy - using LLM's category_id {theme_id}")
         
         # CRITICAL: Validate that the LLM selected a content_type from the filtered list
         # This MUST happen before any database queries to prevent orphaned content types

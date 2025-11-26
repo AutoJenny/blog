@@ -165,6 +165,7 @@ def validate_publish_data(post_id):
                     cursor.connection.commit()
 
                 # Ensure widget HTML exists for preview/publish consistency
+                # Note: After syncing product-match IDs, widget HTML may need to be regenerated
                 widget_changed = False
                 if post['cross_promotion'].get('category_id') and post['cross_promotion'].get('category_position') and not post['cross_promotion'].get('category_widget_html'):
                     post['cross_promotion']['category_widget_html'] = f"{{{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"{post['cross_promotion'].get('category_id')}\" title=\"{post['cross_promotion'].get('category_title') or 'Related Department'}\"}}}}"

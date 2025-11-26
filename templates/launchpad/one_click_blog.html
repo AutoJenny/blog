@@ -5,6 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>One-Click Blog - Automated Blog Creation</title>
     {% from 'launchpad/includes/automation_substage.html' import automation_substage %}
+    <!-- CRITICAL: Define stub functions FIRST, before ANY other scripts -->
+    <script>
+        // This MUST execute before ANY other JavaScript - no dependencies
+        // Define immediately without waiting for anything
+        window.loadPipelineForPostType = window.loadPipelineForPostType || (async function(postId, postType) {
+            console.log('[Global Stub] loadPipelineForPostType called with:', postId, postType);
+            // Will be replaced/enhanced by actual implementation when pipeline manager loads
+            if (window.pipelineManager && postId) {
+                try {
+                    await window.pipelineManager.setPostId(parseInt(postId));
+                } catch (e) {
+                    console.warn('[Global Stub] Pipeline manager not ready yet:', e);
+                }
+            } else {
+                console.warn('[Global Stub] Pipeline manager not available, will retry...');
+                // Retry after a delay
+                setTimeout(async () => {
+                    if (window.pipelineManager && postId) {
+                        await window.pipelineManager.setPostId(parseInt(postId));
+                    }
+                }, 1000);
+            }
+        });
+        console.log('[Global Stub] ✅ loadPipelineForPostType stub function defined immediately');
+    </script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for icons -->
@@ -187,11 +212,12 @@
                     </div>
                     <div class="stage-content" id="concept-content" style="display: none;">
                         <div class="substages">
-                            {{ automation_substage('planning', 'taxonomy', 'Taxonomy', 'complete', 'Loading...') }}
-                            {{ automation_substage('planning', 'topic_brainstorming', 'Topic Brainstorming', 'complete', 'Loading...') }}
-                            {{ automation_substage('planning', 'section_structure', 'Section Structure', 'complete', 'Loading...') }}
-                            {{ automation_substage('planning', 'topic_allocation', 'Topic Allocation', 'complete', 'Loading...') }}
-                            {{ automation_substage('planning', 'section_titling', 'Section Titling', 'complete', 'Loading...') }}
+                            {{ automation_substage('planning', 'ideas', 'Ideas', 'pending', 'Loading...') }}
+                            {{ automation_substage('planning', 'taxonomy', 'Taxonomy', 'pending', 'Loading...') }}
+                            {{ automation_substage('planning', 'topic_brainstorming', 'Topic Brainstorming', 'pending', 'Loading...') }}
+                            {{ automation_substage('planning', 'section_structure', 'Section Structure', 'pending', 'Loading...') }}
+                            {{ automation_substage('planning', 'topic_allocation', 'Topic Allocation', 'pending', 'Loading...') }}
+                            {{ automation_substage('planning', 'section_titling', 'Section Titling', 'pending', 'Loading...') }}
                         </div>
                     </div>
                 </div>
@@ -277,7 +303,53 @@
                     </div>
                     <div class="stage-content" id="imaging-content" style="display: none;">
                         <div class="substages">
-                            <!-- Substages will be populated dynamically by JavaScript -->
+                            {{ automation_substage('imaging', 'image_generation', 'Image Generation', 'pending', 'Loading...') }}
+                            {{ automation_substage('imaging', 'optimise', 'Optimise', 'pending', 'Loading...') }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Header Stage -->
+                <div class="stage-accordion">
+                    <div class="stage-header" onclick="pipelineManager.toggleStage('header')">
+                        <div class="stage-info">
+                            <i class="fas fa-heading stage-icon"></i>
+                            <div class="stage-details">
+                                <h3>Header</h3>
+                                <span class="stage-status pending">Pending</span>
+                            </div>
+                        </div>
+                        <div class="stage-controls">
+                            <div class="stage-progress">
+                                <div class="progress-bar small">
+                                    <div class="progress-fill" style="width: 0%;"></div>
+                                </div>
+                                <span class="progress-text">0%</span>
+                            </div>
+                            <div class="stage-actions">
+                                <button class="mode-toggle manual active" onclick="pipelineManager.toggleMode('header', 'manual')">
+                                    <i class="fas fa-hand-paper"></i> Manual
+                                </button>
+                                <button class="mode-toggle auto" onclick="pipelineManager.toggleMode('header', 'auto')">
+                                    <i class="fas fa-robot"></i> Auto
+                                </button>
+                                <button class="action-btn review" onclick="pipelineManager.reviewStage('header')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn skip" onclick="pipelineManager.skipStage('header')">
+                                    <i class="fas fa-forward"></i>
+                                </button>
+                            </div>
+                            <i class="fas fa-chevron-down accordion-icon" id="header-chevron"></i>
+                        </div>
+                    </div>
+                    <div class="stage-content" id="header-content" style="display: none;">
+                        <div class="substages">
+                            {{ automation_substage('header', 'title_summary', 'Title & Summary', 'pending', 'Loading...') }}
+                            {{ automation_substage('header', 'header_image', 'Header Image', 'pending', 'Loading...') }}
+                            {{ automation_substage('header', 'seo_meta', 'SEO & Meta', 'pending', 'Loading...') }}
+                            {{ automation_substage('header', 'product_match', 'Product Match', 'pending', 'Loading...') }}
+                            {{ automation_substage('header', 'final_review', 'Final Review', 'pending', 'Loading...') }}
                         </div>
                     </div>
                 </div>
@@ -659,6 +731,24 @@
                 content.style.display = 'none';
                 chevron.style.transform = 'rotate(0deg)';
             }
+        }
+        
+        // Function is already defined in head, but update it here with full implementation
+        if (window.loadPipelineForPostType) {
+            const originalFunction = window.loadPipelineForPostType;
+            window.loadPipelineForPostType = async function(postId, postType) {
+                console.log('[Global] loadPipelineForPostType called with:', postId, postType);
+                if (window.pipelineManager && postId) {
+                    await window.pipelineManager.setPostId(parseInt(postId));
+                } else {
+                    // Fallback: wait for pipeline manager to be available
+                    setTimeout(async () => {
+                        if (window.pipelineManager && postId) {
+                            await window.pipelineManager.setPostId(parseInt(postId));
+                        }
+                    }, 1000);
+                }
+            };
         }
     </script>
     

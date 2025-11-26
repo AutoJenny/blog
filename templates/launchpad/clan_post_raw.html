@@ -1,3 +1,4 @@
+{% if has_recipe_sections %}
 <style>
 /* Recipe Section Styling for Clan.com */
 .recipe-section {
@@ -223,23 +224,40 @@
     text-decoration: underline;
 }
 </style>
+{% endif %}
 <div class="mp-content std fix-me">
-    <header class="blog-post__header">
-        {# Header image is handled by clan.com as featured image - don't include in HTML content #}
-        {# The exclude_header_image flag is set in clan_publisher.py to prevent duplication #}
+    <header class="blog-post__header" style="text-align: center; margin: 2.5rem 0 2rem; padding-bottom: 2rem; border-bottom: 2px solid #b80000;">
+        {# Page title - appears in both preview and published #}
+        <h1 style="font-size: 2.6rem; font-weight: 900; color: #222; margin: 0 0 1.2rem; line-height: 1.1; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Lato', Arial, sans-serif;">{{ post.title or post.idea_seed or 'Untitled Post' }}</h1>
+        
+        {# Header image - appears in both preview and published #}
+        {% if post.header_image %}
+        <div class="header-image" style="margin: 20px 0; text-align: center;">
+            <img src="{{ post.header_image.path }}" 
+                 alt="{{ post.header_image.alt_text }}" 
+                 style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                 onerror="this.style.display='none';">
+            {# Header image caption - appears right below image #}
+            {% if post.header_image.caption %}
+            <p class="header-image-caption" style="text-align: center; font-style: italic; color: #6b7280; margin-top: 1rem; margin-bottom: 0;"><em>{{ post.header_image.caption }}</em></p>
+            {% endif %}
+        </div>
+        {% endif %}
+        
         
         {% if post.subtitle %}
         <div class="blog-post__subtitle">{{ post.subtitle }}</div>
         {% endif %}
         
-        <div class="post-meta">
-            <span class="post-meta__date">Published on <time datetime="{{ post.updated_at.strftime('%Y-%m-%d') if post.updated_at else 'Unknown date' }}">{{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Unknown date' }}</time></span>
-            <span class="post-meta__separator"> | </span>
-            <span class="post-meta__author">By {{ post.author_name or 'Caitrin Stewart' }}</span>
-        </div>
-        
         {# Summary is shown in preview header page, not in uploaded HTML #}
     </header>
+    
+    {# Byline appears below the red divider line #}
+    <div class="post-meta" style="text-align: center;">
+        <span class="post-meta__date">Published on <time datetime="{{ post.updated_at.strftime('%Y-%m-%d') if post.updated_at else 'Unknown date' }}">{{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Unknown date' }}</time></span>
+        <span class="post-meta__separator"> | </span>
+        <span class="post-meta__author">By {{ post.author_name or 'Caitrin Stewart' }}</span>
+    </div>
     
     {% if sections %}
     <div class="blog-sections">

@@ -52,7 +52,7 @@
                     <i class="fa-solid fa-tags text-indigo-400"></i> Taxonomy
                 </h1>
                 <p class="text-dark-text">
-                    Hierarchical view of taxonomy tiers, themes, content types, and formats.
+                    Hierarchical view of taxonomy tiers, categories, content types, and formats.
                 </p>
             </div>
 
@@ -63,21 +63,21 @@
             {% endif %}
 
             {% if taxonomy_data %}
-                <!-- Themes Tier -->
-                {% if taxonomy_data.theme %}
+                <!-- Categories Tier -->
+                {% if taxonomy_data.category %}
                 <div class="mb-8">
                     <div class="bg-[#23273a] rounded-lg border border-dark-border p-6 mb-4">
                         <h2 class="text-xl font-semibold text-white mb-2 flex items-center gap-2">
                             <i class="fa-solid fa-palette text-indigo-400"></i>
-                            {{ taxonomy_data.theme.tier.display_name }}
+                            {{ taxonomy_data.category.tier.display_name }}
                         </h2>
-                        {% if taxonomy_data.theme.tier.description %}
-                        <p class="text-dark-text text-sm mb-4">{{ taxonomy_data.theme.tier.description }}</p>
+                        {% if taxonomy_data.category.tier.description %}
+                        <p class="text-dark-text text-sm mb-4">{{ taxonomy_data.category.tier.description }}</p>
                         {% endif %}
                     </div>
 
                     <div class="space-y-3">
-                        {% for item in taxonomy_data.theme['items'] %}
+                        {% for item in taxonomy_data.category['items'] %}
                         <div class="taxonomy-item">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
@@ -104,11 +104,11 @@
                             </div>
 
                             <!-- Content Types under this Theme -->
-                            {% if taxonomy_data.content_type and item.slug in taxonomy_data.content_type.by_theme %}
+                            {% if taxonomy_data.content_type and item.slug in taxonomy_data.content_type.by_category %}
                             <div class="mt-4 pt-4 border-t border-dark-border">
                                 <h4 class="text-sm font-semibold text-indigo-400 mb-3">Content Types:</h4>
                                 <div class="space-y-2">
-                                    {% for content_item in taxonomy_data.content_type.by_theme[item.slug]['items'] %}
+                                    {% for content_item in taxonomy_data.content_type.by_category[item.slug]['items'] %}
                                     <div class="taxonomy-item-indented">
                                         <h5 class="text-base font-semibold text-white mb-1">{{ content_item.display_name }}</h5>
                                         <p class="text-dark-text text-sm mb-2">{{ content_item.description or 'No description' }}</p>
