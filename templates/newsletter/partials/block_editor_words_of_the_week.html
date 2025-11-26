@@ -1,0 +1,65 @@
+{# Words of the Week block editor #}
+<div class="block-editor-words-of-the-week" data-block-id="{{ b.id }}" data-issue-id="{{ issue_id }}">
+  {# Current content preview #}
+  <div style="background: #0f172a; border: 1px solid #2d3246; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+    <div style="color: #a5b4fc; font-size: 12px; font-weight: 600; margin-bottom: 12px;">
+      <i class="fa-solid fa-eye"></i> Current Selection:
+    </div>
+    <div style="color: #e6e8ef; font-size: 14px; line-height: 1.6;" id="words-preview-{{ b.id }}">
+      {% if words_of_the_week %}
+        {% if words_of_the_week.get('word') %}
+          <div style="margin-bottom: 16px; padding: 12px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px;">
+            <div style="color: #10b981; font-weight: 700; font-size: 16px; margin-bottom: 8px;">
+              <i class="fa-solid fa-book"></i> Word: {{ words_of_the_week.word.title }}
+            </div>
+            {% if words_of_the_week.word.description %}
+              <div style="color: #9ca3af; font-size: 13px; line-height: 1.6;">
+                {{ words_of_the_week.word.description }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+        {% if words_of_the_week.get('phrase') %}
+          <div style="padding: 12px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px;">
+            <div style="color: #10b981; font-weight: 700; font-size: 16px; margin-bottom: 8px;">
+              <i class="fa-solid fa-quote-left"></i> Phrase: {{ words_of_the_week.phrase.title }}
+            </div>
+            {% if words_of_the_week.phrase.description %}
+              <div style="color: #9ca3af; font-size: 13px; line-height: 1.6;">
+                {{ words_of_the_week.phrase.description }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% else %}
+        <span style="color: #9ca3af;">No words or phrases found for this week.</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Info note #}
+  <div style="background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+    <div style="color: #9ca3af; font-size: 12px; line-height: 1.6;">
+      <i class="fa-solid fa-info-circle"></i> Words and phrases are automatically selected from the Calendar for this week. 
+      They include their explanations from the calendar system.
+    </div>
+  </div>
+
+  {# Manual Override (optional) #}
+  <details style="margin-top: 12px;">
+    <summary style="color: #a5b4fc; cursor: pointer; font-weight: 600; padding: 8px; background: #1b2138; border: 1px solid #2d3246; border-radius: 6px; margin-bottom: 8px;">
+      <i class="fa-solid fa-code"></i> Manual Override (optional)
+    </summary>
+    <form method="post" action="/newsletter/block/{{ b.id }}/update" style="margin-top: 12px;">
+      <input type="hidden" name="issue_id" value="{{ issue_id }}" />
+      <label style="color: #a5b4fc; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Payload JSON</label>
+      <textarea name="payload_json" rows="8" style="width: 100%; background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; line-height: 1.6;">{{ (b.payload_json | tojson(indent=2)) if b.payload_json else '{}' }}</textarea>
+      <div style="margin-top: 12px; text-align: right;">
+        <button type="submit" style="background: #4e6bff; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          <i class="fa-solid fa-save"></i> Save Override
+        </button>
+      </div>
+    </form>
+  </details>
+</div>
+

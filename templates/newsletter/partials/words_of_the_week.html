@@ -1,0 +1,41 @@
+{% if block %}
+<!-- Words of the Week Block Panel -->
+<tr>
+  <td style="padding:16px 24px 0 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f9ff; border-radius:8px; border:1px solid #bae6fd;">
+      <tr>
+        <td style="padding:20px;">
+          <h3 style="margin:0 0 16px 0; font-size:18px; font-weight:700; color:#0c4a6e; font-family:Georgia, 'Times New Roman', serif;">Words of the Week</h3>
+          
+          {% if block.word %}
+          <div style="margin-bottom: 20px; padding: 16px; background: #ffffff; border-radius: 6px; border-left: 4px solid #10b981;">
+            <div style="font-size:16px; font-weight:600; color:#0c4a6e; margin:0 0 8px 0; font-family:Arial, Helvetica, sans-serif;">
+              <i class="fa-solid fa-book" style="color: #10b981; margin-right: 8px;"></i>Word: {{ block.word.title }}
+            </div>
+            {% if block.word.description %}
+            <div style="font-size:14px; line-height:1.6; color:#1e293b; font-family:Arial, Helvetica, sans-serif;">
+              {{ block.word.description | safe }}
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+          
+          {% if block.phrase %}
+          <div style="padding: 16px; background: #ffffff; border-radius: 6px; border-left: 4px solid #10b981;">
+            <div style="font-size:16px; font-weight:600; color:#0c4a6e; margin:0 0 8px 0; font-family:Arial, Helvetica, sans-serif;">
+              <i class="fa-solid fa-quote-left" style="color: #10b981; margin-right: 8px;"></i>Phrase: {{ block.phrase.title }}
+            </div>
+            {% if block.phrase.description %}
+            <div style="font-size:14px; line-height:1.6; color:#1e293b; font-family:Arial, Helvetica, sans-serif;">
+              {{ block.phrase.description | safe }}
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+{% endif %}
+
