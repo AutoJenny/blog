@@ -135,7 +135,7 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
         }
     
     elif block_type == 'spotlight':
-        # Use profile posts instead of products
+        # Use profile posts (not themed blog posts)
         spotlight = select_spotlight_profile_post()
         suggestions = []
         if spotlight:
@@ -145,6 +145,7 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
                 'url': spotlight.get('url', ''),
                 'description': spotlight.get('summary', ''),
                 'hero_image': spotlight.get('hero_image', ''),
+                'expanded_idea': spotlight.get('expanded_idea', ''),
                 'type': 'post',
             })
         return {

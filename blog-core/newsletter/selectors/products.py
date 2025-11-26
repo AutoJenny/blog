@@ -380,9 +380,11 @@ def select_spotlight_profile_post() -> Dict[str, Any]:
                            COALESCE(p.profile_standfirst, p.summary, '') AS summary,
                            i.file_path AS hero_image,
                            p.profile_standfirst,
-                           p.profile_product_id
+                           p.profile_product_id,
+                           pd.expanded_idea
                     FROM post p
                     LEFT JOIN images i ON p.header_image_id = i.id
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
                     WHERE p.profile_product_id IS NOT NULL
                       AND p.status = 'published'
                       AND p.newsletter_spotlighted_at IS NULL
@@ -393,6 +395,23 @@ def select_spotlight_profile_post() -> Dict[str, Any]:
                 row = cur.fetchone()
                 if row:
                     post = dict(row)
+                    
+                    # If no image from images table, try image_archive
+                    if not post.get('hero_image'):
+                        cur.execute("""
+                            SELECT ia.path
+                            FROM post_images pi
+                            JOIN image_archive ia ON pi.image_id = ia.id
+                            WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
+                            ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
+                                         WHEN pi.image_type = 'header_watermarked' THEN 2
+                                         ELSE 3 END
+                            LIMIT 1
+                        """, (post['id'],))
+                        img_row = cur.fetchone()
+                        if img_row and img_row.get('path'):
+                            post['hero_image'] = img_row['path']
+                    
                     # Build URL from slug
                     if post.get('slug'):
                         post['url'] = f"/posts/{post['slug']}"

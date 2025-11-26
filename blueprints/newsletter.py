@@ -354,8 +354,8 @@ def preview_issue(issue_id: int):
             if payload.get("events_paragraph"):
                 payload["events_paragraph"] = markdown_to_html(payload["events_paragraph"])
         
-        # If this is a feature block, ensure hero_image is populated from post's header image
-        if b["type"] == "feature":
+        # If this is a feature or spotlight block, ensure hero_image is populated from post's header image
+        if b["type"] == "feature" or b["type"] == "spotlight":
             post_id = block_data["payload_json"].get("id")
             hero_image = block_data["payload_json"].get("hero_image")
             
@@ -465,6 +465,223 @@ def preview_issue(issue_id: int):
         issue=issue,
         blocks=processed_blocks,
         tile_base64_data=tile_base64_data
+    )
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/preview/export')
+def export_preview(issue_id: int):
+    """Export newsletter preview as standalone HTML file for sharing."""
+    from flask import Response, request
+    import base64
+    
+    # Get the same data as preview route
+    blocks = []
+    issue = None
+    try:
+        blocks = list_blocks_by_issue(issue_id=issue_id)
+        issue = get_issue(issue_id=issue_id)
+    except Exception:
+        blocks = []
+    
+    # Load base64 tile data for background
+    tile_base64_data = None
+    try:
+        project_root = os.path.dirname(os.path.dirname(__file__))
+        tile_path = os.path.join(project_root, 'static', 'images', 'newsletter', 'tile_base64.txt')
+        if os.path.exists(tile_path):
+            with open(tile_path, 'r') as f:
+                tile_base64_data = f.read().strip()
+        else:
+            abs_path = '/Users/autojenny/Documents/projects/blog/static/images/newsletter/tile_base64.txt'
+            if os.path.exists(abs_path):
+                with open(abs_path, 'r') as f:
+                    tile_base64_data = f.read().strip()
+    except Exception:
+        pass
+    
+    # Process blocks (same as preview route)
+    import re
+    processed_blocks = []
+    for b in blocks:
+        block_data = {"type": b["type"], "payload_json": b["payload_json"].copy() if b["payload_json"] else {}}
+        
+        if b["type"] == "snapshot":
+            payload = block_data["payload_json"]
+            def markdown_to_html(text):
+                if not text:
+                    return ""
+                return re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2" style="color:#6b4e3d; text-decoration:underline;">\1</a>', text)
+            
+            if payload.get("news_paragraph"):
+                payload["news_paragraph"] = markdown_to_html(payload["news_paragraph"])
+            if payload.get("events_paragraph"):
+                payload["events_paragraph"] = markdown_to_html(payload["events_paragraph"])
+        
+        if b["type"] == "feature":
+            post_id = block_data["payload_json"].get("id")
+            hero_image = block_data["payload_json"].get("hero_image")
+            
+            if not hero_image and post_id:
+                try:
+                    from config.database import db_manager
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT i.file_path
+                            FROM post p
+                            JOIN images i ON p.header_image_id = i.id
+                            WHERE p.id = %s
+                        """, (post_id,))
+                        result = cursor.fetchone()
+                        if result and result.get('file_path'):
+                            hero_image = result['file_path']
+                        else:
+                            cursor.execute("""
+                                SELECT ia.path
+                                FROM post p
+                                JOIN post_images pi ON pi.post_id = p.id AND pi.image_type LIKE 'header%%'
+                                JOIN image_archive ia ON pi.image_id = ia.id
+                                WHERE p.id = %s
+                                ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
+                                             WHEN pi.image_type = 'header_watermarked' THEN 2
+                                             ELSE 3 END
+                                LIMIT 1
+                            """, (post_id,))
+                            result = cursor.fetchone()
+                            if result and result.get('path'):
+                                hero_image = result['path']
+                        
+                        if hero_image:
+                            block_data["payload_json"]["hero_image"] = hero_image
+                except Exception:
+                    pass
+        
+        processed_blocks.append(block_data)
+    
+    # Get words of the week and seasonal recipe (same as preview)
+    words_of_the_week = {}
+    if issue and issue.get('target_week'):
+        try:
+            from datetime import date
+            from newsletter.selectors.words_of_the_week import get_words_of_the_week
+            target_week = issue['target_week']
+            if 'W' in target_week:
+                year_str, week_str = target_week.split('W')
+                week_number = int(week_str)
+            else:
+                week_number = int(target_week)
+            words_of_the_week = get_words_of_the_week(week_number=week_number)
+        except Exception:
+            pass
+    
+    seasonal_recipe_post = None
+    try:
+        from newsletter.selectors.seasonal_recipe import select_seasonal_recipe_post
+        seasonal_recipe_post = select_seasonal_recipe_post()
+    except Exception:
+        pass
+    
+    # Render the HTML
+    html_content = render_template(
+        'newsletter/render.html',
+        words_of_the_week=words_of_the_week,
+        seasonal_recipe_post=seasonal_recipe_post,
+        subject=f"Issue {issue_id}",
+        issue=issue,
+        blocks=processed_blocks,
+        tile_base64_data=tile_base64_data
+    )
+    
+    # Convert all image paths (local and external) to data URIs for standalone HTML
+    # This embeds images directly in the HTML so it works offline
+    import re
+    from pathlib import Path
+    import urllib.request
+    import urllib.error
+    
+    def convert_image_to_data_uri(match):
+        img_url = match.group(1)
+        
+        try:
+            img_data = None
+            mime_type = 'image/jpeg'  # default
+            
+            # Check if it's a local path
+            if img_url.startswith('/static/'):
+                local_path = img_url.lstrip('/')
+                full_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), local_path)
+                
+                if os.path.exists(full_path):
+                    with open(full_path, 'rb') as f:
+                        img_data = f.read()
+                    # Determine MIME type from extension
+                    ext = Path(full_path).suffix.lower()
+                    mime_types = {
+                        '.jpg': 'image/jpeg',
+                        '.jpeg': 'image/jpeg',
+                        '.png': 'image/png',
+                        '.gif': 'image/gif',
+                        '.webp': 'image/webp'
+                    }
+                    mime_type = mime_types.get(ext, 'image/jpeg')
+            
+            # Check if it's an external URL (http/https)
+            elif img_url.startswith('http://') or img_url.startswith('https://'):
+                try:
+                    # Download the image
+                    req = urllib.request.Request(img_url)
+                    req.add_header('User-Agent', 'Mozilla/5.0')
+                    with urllib.request.urlopen(req, timeout=10) as response:
+                        img_data = response.read()
+                    
+                    # Determine MIME type from Content-Type header or URL
+                    content_type = response.headers.get('Content-Type', '')
+                    if content_type and content_type.startswith('image/'):
+                        mime_type = content_type
+                    else:
+                        # Fallback to extension
+                        ext = Path(img_url).suffix.lower().split('?')[0]  # Remove query params
+                        mime_types = {
+                            '.jpg': 'image/jpeg',
+                            '.jpeg': 'image/jpeg',
+                            '.png': 'image/png',
+                            '.gif': 'image/gif',
+                            '.webp': 'image/webp'
+                        }
+                        mime_type = mime_types.get(ext, 'image/jpeg')
+                except (urllib.error.URLError, urllib.error.HTTPError, Exception) as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Could not download image {img_url}: {e}")
+                    # Return original if download fails
+                    return match.group(0)
+            
+            # If we have image data, convert to data URI
+            if img_data:
+                base64_data = base64.b64encode(img_data).decode('utf-8')
+                return f'src="data:{mime_type};base64,{base64_data}"'
+        
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error converting image {img_url}: {e}")
+        
+        # If conversion fails, return original
+        return match.group(0)
+    
+    # Replace all image src attributes (local and external) with data URIs
+    html_content = re.sub(r'src="((?:/static/[^"]+\.(?:jpg|jpeg|png|gif|webp)|https?://[^"]+\.(?:jpg|jpeg|png|gif|webp)(?:\?[^"]*)?))"', convert_image_to_data_uri, html_content, flags=re.IGNORECASE)
+    
+    # Generate filename
+    issue_title = issue.get('subject', f'Issue {issue_id}') if issue else f'Issue {issue_id}'
+    safe_filename = re.sub(r'[^\w\s-]', '', issue_title).strip().replace(' ', '_')
+    filename = f'newsletter_{issue_id}_{safe_filename}.html'
+    
+    # Return as download
+    return Response(
+        html_content,
+        mimetype='text/html',
+        headers={
+            'Content-Disposition': f'attachment; filename="{filename}"',
+            'Content-Type': 'text/html; charset=utf-8'
+        }
     )
 
 
@@ -1840,6 +2057,102 @@ def generate_feature_summary(issue_id: int, block_id: int):
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Error generating feature summary: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-spotlight-summary', methods=['POST'])
+def generate_spotlight_summary(issue_id: int, block_id: int):
+    """Generate chatty summary for spotlight block using profile post and LLM."""
+    try:
+        from newsletter.db.queries_issue import get_block, update_block_payload
+        from newsletter.services.feature_summary_service import generate_feature_summary as generate_summary
+        from newsletter.selectors.products import select_spotlight_profile_post
+        from config.database import db_manager
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        # Get profile post for spotlight
+        profile_post = select_spotlight_profile_post()
+        if not profile_post:
+            return jsonify({'error': 'No profile post available for spotlight'}), 404
+        
+        post_id = profile_post.get('id')
+        if not post_id:
+            return jsonify({'error': 'Profile post has no ID'}), 400
+        
+        # Get post details with header image and expanded_idea
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT p.id, p.title, p.slug, p.summary, 
+                           i.file_path AS hero_image,
+                           pd.expanded_idea, p.clan_uploaded_url, p.status
+                    FROM post p
+                    LEFT JOIN images i ON p.header_image_id = i.id
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
+                    WHERE p.id = %s
+                      AND p.status != 'deleted'
+                """, (post_id,))
+                post_row = cur.fetchone()
+                
+                if not post_row:
+                    return jsonify({'error': 'Post not found'}), 404
+                
+                post_data = dict(post_row)
+                
+                # If no image from images table, try image_archive
+                if not post_data.get('hero_image'):
+                    cur.execute("""
+                        SELECT ia.path
+                        FROM post_images pi
+                        JOIN image_archive ia ON pi.image_id = ia.id
+                        WHERE pi.post_id = %s AND pi.image_type LIKE 'header%%'
+                        ORDER BY CASE WHEN pi.image_type = 'header_optimized' THEN 1 
+                                     WHEN pi.image_type = 'header_watermarked' THEN 2
+                                     ELSE 3 END
+                        LIMIT 1
+                    """, (post_id,))
+                    img_row = cur.fetchone()
+                    if img_row and img_row.get('path'):
+                        post_data['hero_image'] = img_row['path']
+                
+                # Generate URL
+                if post_data.get('clan_uploaded_url'):
+                    post_url = post_data['clan_uploaded_url']
+                elif post_data.get('slug'):
+                    post_url = f"/posts/{post_data['slug']}"
+                else:
+                    post_url = f"/posts/{post_data['id']}"
+        
+        # Generate chatty summary using LLM
+        title = post_data.get('title', '')
+        expanded_idea = post_data.get('expanded_idea', '') or post_data.get('summary', '')
+        summary = generate_summary(title=title, expanded_idea=expanded_idea)
+        
+        # Update block payload
+        payload = block.get('payload_json', {}) or {}
+        payload['title'] = title
+        payload['summary'] = summary
+        payload['url'] = post_url
+        payload['hero_image'] = post_data.get('hero_image', '')
+        payload['id'] = post_id
+        
+        update_block_payload(block_id=block_id, payload=payload)
+        
+        return jsonify({
+            'success': True,
+            'summary': summary,
+            'title': title,
+            'url': post_url,
+            'hero_image': post_data.get('hero_image', '')
+        })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error generating spotlight summary: {e}", exc_info=True)
         return jsonify({'error': str(e), 'success': False}), 500
 
 
