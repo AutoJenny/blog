@@ -4,7 +4,7 @@
     <summary style="cursor: pointer; padding: 20px; display: flex; align-items: center; justify-content: space-between; background: #151a2e; user-select: none; list-style: none;">
       <div style="flex: 1;">
         <div style="color: #e6e8ef; font-weight: 700; font-size: 28px; line-height: 1.2; margin-bottom: 4px;">
-          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {% if block.type == 'snapshot' %}In the News{% elif block.type == 'new_products' %}New Products{% elif block.type == 'spotlight' %}Product of the Week{% elif block.type == 'feature' %}Feature{% elif block.type == 'intro' %}Intro{% else %}{{ block.type }}{% endif %}
+          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {% if block.type == 'snapshot' %}In the News{% elif block.type == 'new_products' %}New Products{% elif block.type == 'words_of_the_week' %}Words of the Week{% elif block.type == 'spotlight' %}Product of the Week{% elif block.type == 'feature' %}Feature{% elif block.type == 'intro' %}Intro{% else %}{{ block.type }}{% endif %}
         </div>
         {% if block.type == 'feature' and themed_post %}
           <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
@@ -58,6 +58,22 @@
                 {% if block.payload_json.get('items', [])|length > 3 %} (+{{ block.payload_json.get('items', [])|length - 3 }} more){% endif %}
               </span>
             </div>
+          {% endif %}
+        {% endif %}
+        {% if block.type == 'words_of_the_week' %}
+          {% if words_of_the_week %}
+            {% if words_of_the_week.get('word') %}
+              <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+                <i class="fa-solid fa-book"></i> Word: 
+                <span style="color: #6ee7b7; font-weight: 600;">{{ words_of_the_week.word.title }}</span>
+              </div>
+            {% endif %}
+            {% if words_of_the_week.get('phrase') %}
+              <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+                <i class="fa-solid fa-quote-left"></i> Phrase: 
+                <span style="color: #6ee7b7; font-weight: 600;">{{ words_of_the_week.phrase.title }}</span>
+              </div>
+            {% endif %}
           {% endif %}
         {% endif %}
         {% if block.description %}
@@ -116,6 +132,9 @@
     {% elif block.type == 'new_products' %}
       {% set b = block %}
       {% include 'newsletter/partials/block_editor_new_products.html' with context %}
+    {% elif block.type == 'words_of_the_week' %}
+      {% set b = block %}
+      {% include 'newsletter/partials/block_editor_words_of_the_week.html' with context %}
     {% elif block.type == 'spotlight' %}
       {% set b = block %}
       {% include 'newsletter/partials/block_editor_spotlight.html' with context %}

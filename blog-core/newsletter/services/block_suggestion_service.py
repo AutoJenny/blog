@@ -185,12 +185,31 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
             'metadata': {},
         }
     
-    elif block_type == 'weekly_words':
-        # Weekly Words block - placeholder for now (will need its own selector)
+    elif block_type == 'words_of_the_week':
+        # Words of the Week block - get word and phrase for the week
+        from newsletter.selectors.words_of_the_week import get_words_of_the_week
+        from datetime import date
+        
+        # Parse week from target_week (e.g., "2025W48")
+        week_number = None
+        if 'W' in target_week:
+            _, week_str = target_week.split('W')
+            week_number = int(week_str)
+        else:
+            try:
+                week_number = int(target_week)
+            except:
+                # Fallback to current week
+                _, week_number, _ = date.today().isocalendar()
+        
+        words = get_words_of_the_week(week_number=week_number) if week_number else {}
+        
         return {
             'suggestions': [],
-            'current': None,
-            'metadata': {},
+            'current': words,
+            'metadata': {
+                'week_number': week_number,
+            },
         }
     
     else:

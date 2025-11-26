@@ -47,6 +47,9 @@
                 {% include 'newsletter/partials/snapshot.html' %}
               {% elif t == 'new_products' %}
                 {% include 'newsletter/partials/new_products.html' %}
+              {% elif t == 'words_of_the_week' %}
+                {% set block = block | merge({'word': words_of_the_week.word if words_of_the_week else None, 'phrase': words_of_the_week.phrase if words_of_the_week else None}) %}
+                {% include 'newsletter/partials/words_of_the_week.html' %}
               {% elif t == 'spotlight' %}
                 {% include 'newsletter/partials/spotlight.html' %}
               {% elif t == 'category' %}

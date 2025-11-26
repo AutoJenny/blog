@@ -110,6 +110,7 @@ def create_or_regenerate_issue():
         "feature",
         "snapshot",
         "new_products",
+        "words_of_the_week",
         "spotlight",
         "category",
         "evergreen",
@@ -252,7 +253,28 @@ def view_issue(issue_id: int):
         logging.getLogger(__name__).warning(f"Error getting spotlight post: {e}")
         pass
     
-    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme, themed_post=themed_post, spotlight_post=spotlight_post)
+    # Get words of the week for current week
+    words_of_the_week = {}
+    if issue and issue.get('target_week'):
+        try:
+            from datetime import date
+            from newsletter.selectors.words_of_the_week import get_words_of_the_week
+            
+            # Parse year and week from target_week
+            target_week = issue['target_week']
+            if 'W' in target_week:
+                year_str, week_str = target_week.split('W')
+                week_number = int(week_str)
+            else:
+                week_number = int(target_week)
+            
+            words_of_the_week = get_words_of_the_week(week_number=week_number)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error getting words of the week: {e}")
+            pass
+    
+    return render_template('newsletter/issue.html', issue_id=issue_id, issue=issue, blocks=blocks, themes=themes, current_theme=current_theme, themed_post=themed_post, spotlight_post=spotlight_post, words_of_the_week=words_of_the_week)
 
 
 @bp.route('/newsletter/issue/<int:issue_id>/preview')
@@ -340,9 +362,31 @@ def preview_issue(issue_id: int):
         
         processed_blocks.append(block_data)
     
+    # Get words of the week for the issue's target week
+    words_of_the_week = {}
+    if issue and issue.get('target_week'):
+        try:
+            from datetime import date
+            from newsletter.selectors.words_of_the_week import get_words_of_the_week
+            
+            # Parse year and week from target_week
+            target_week = issue['target_week']
+            if 'W' in target_week:
+                year_str, week_str = target_week.split('W')
+                week_number = int(week_str)
+            else:
+                week_number = int(target_week)
+            
+            words_of_the_week = get_words_of_the_week(week_number=week_number)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error getting words of the week for preview: {e}")
+            pass
+    
     # Map blocks to pass each payload as "block" expected by partials
     return render_template(
         'newsletter/render.html',
+        words_of_the_week=words_of_the_week,
         subject=f"Issue {issue_id}",
         issue=issue,
         blocks=processed_blocks,
