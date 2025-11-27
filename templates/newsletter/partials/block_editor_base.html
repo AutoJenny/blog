@@ -4,7 +4,7 @@
     <summary style="cursor: pointer; padding: 20px; display: flex; align-items: center; justify-content: space-between; background: #151a2e; user-select: none; list-style: none;">
       <div style="flex: 1;">
         <div style="color: #e6e8ef; font-weight: 700; font-size: 28px; line-height: 1.2; margin-bottom: 4px;">
-          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {% if block.type == 'snapshot' %}In the News{% elif block.type == 'new_products' %}New Products{% elif block.type == 'words_of_the_week' %}Words of the Week{% elif block.type == 'spotlight' %}Product of the Week{% elif block.type == 'seasonal_recipe' %}Seasonal Recipe{% elif block.type == 'feature' %}Feature{% elif block.type == 'intro' %}Intro{% else %}{{ block.type }}{% endif %}
+          {{ (loop_index if loop_index is defined) or (block.position + 1) }}. {% if block.type == 'snapshot' %}In the News{% elif block.type == 'new_products' %}New Products{% elif block.type == 'words_of_the_week' %}Words of the Week{% elif block.type == 'spotlight' %}Product of the Week{% elif block.type == 'seasonal_recipe' %}Seasonal Recipe{% elif block.type == 'feature' %}Feature{% elif block.type == 'last_chance' %}Last Chance to Grab{% elif block.type == 'intro' %}Intro{% else %}{{ block.type }}{% endif %}
         </div>
         {% if block.type == 'feature' and themed_post %}
           <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
@@ -74,6 +74,18 @@
                 <span style="color: #6ee7b7; font-weight: 600;">{{ words_of_the_week.phrase.title }}</span>
               </div>
             {% endif %}
+          {% endif %}
+        {% endif %}
+        {% if block.type == 'last_chance' %}
+          {% if block.payload_json and block.payload_json.get('items') and block.payload_json.get('items')|length > 0 %}
+            {% set items = block.payload_json.get('items', []) %}
+            <div style="color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+              <i class="fa-solid fa-tag"></i> Clearance: 
+              <span style="color: #6ee7b7; font-weight: 600;">
+                {% for item in items[:3] %}{{ item.title }} ({{ "%.0f"|format(item.discount_percentage) }}% off){% if not loop.last %}, {% endif %}{% endfor %}
+                {% if items|length > 3 %} (+{{ items|length - 3 }} more){% endif %}
+              </span>
+            </div>
           {% endif %}
         {% endif %}
         {% if block.type == 'seasonal_recipe' %}
@@ -156,6 +168,9 @@
     {% elif block.type == 'spotlight' %}
       {% set b = block %}
       {% include 'newsletter/partials/block_editor_spotlight.html' with context %}
+    {% elif block.type == 'last_chance' %}
+      {% set b = block %}
+      {% include 'newsletter/partials/block_editor_last_chance.html' with context %}
     {% else %}
       {# Fallback: JSON editor for other block types #}
       <details style="margin-top: 12px;">
