@@ -22,7 +22,9 @@
           {% endif %}
           {% set post_url = recipe_block.url or (recipe_block.slug and ('/posts/' + recipe_block.slug)) or (recipe_block.slug) %}
           {% if post_url %}
-          <p style="margin:0; font-size:16px; font-family:Arial, Helvetica, sans-serif;"><a href="{{ post_url }}" style="color:#6b4e3d; text-decoration:underline;">View recipe</a></p>
+          <p style="margin:16px 0 0 0; font-size:16px; font-family:Arial, Helvetica, sans-serif; text-align:center;">
+            <a href="{{ post_url }}" style="display:inline-block; padding:12px 24px; background-color:#6b4e3d; color:#fef9e7; text-decoration:none; border-radius:6px; font-weight:600;">See more →</a>
+          </p>
           {% endif %}
         </td>
       </tr>

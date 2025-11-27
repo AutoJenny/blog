@@ -7,7 +7,16 @@
         <td style="padding:20px;">
           {% set title = block.title or 'Welcome' %}
           <h2 style="margin:0 0 12px 0; font-size:20px; font-weight:700; color:#3d2817; font-family:Georgia, 'Times New Roman', serif;">{{ title }}</h2>
-          <p style="margin:0; font-size:16px; line-height:1.6; color:#3d2817; font-family:Arial, Helvetica, sans-serif;">{{ block.text }}</p>
+          {% set paragraphs = block.text.split('\n\n') if block.text else [] %}
+          {% if paragraphs|length > 1 %}
+            {% for para in paragraphs %}
+              {% if para.strip() %}
+              <p style="margin:0 0 12px 0; font-size:16px; line-height:1.6; color:#3d2817; font-family:Arial, Helvetica, sans-serif;">{{ para.strip() }}</p>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <p style="margin:0; font-size:16px; line-height:1.6; color:#3d2817; font-family:Arial, Helvetica, sans-serif;">{{ block.text }}</p>
+          {% endif %}
         </td>
       </tr>
     </table>

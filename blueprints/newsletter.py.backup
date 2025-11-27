@@ -13,16 +13,16 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-c
 bp = Blueprint('newsletter', __name__)
 
 # Import and register all sub-blueprints
-from .newsletter_issues import bp as issues_bp
-from .newsletter_blocks import bp as blocks_bp
-from .newsletter_generation_intro import bp as gen_intro_bp
-from .newsletter_generation_snapshot import bp as gen_snapshot_bp
-from .newsletter_generation_other import bp as gen_other_bp
-from .newsletter_preview import bp as preview_bp
-from .newsletter_approval import bp as approval_bp
-from .newsletter_sources import bp as sources_bp
-from .newsletter_content import bp as content_bp
-from .newsletter_events import bp as events_bp
+from blueprints.newsletter_issues import bp as issues_bp
+from blueprints.newsletter_blocks import bp as blocks_bp
+from blueprints.newsletter_generation_intro import bp as gen_intro_bp
+from blueprints.newsletter_generation_snapshot import bp as gen_snapshot_bp
+from blueprints.newsletter_generation_other import bp as gen_other_bp
+from blueprints.newsletter_preview import bp as preview_bp
+from blueprints.newsletter_approval import bp as approval_bp
+from blueprints.newsletter_sources import bp as sources_bp
+from blueprints.newsletter_content import bp as content_bp
+from blueprints.newsletter_events import bp as events_bp
 
 # Register all sub-blueprints
 bp.register_blueprint(issues_bp)

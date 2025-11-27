@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import List, Dict, Any
 from config.database import db_manager
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +104,57 @@ def mark_post_newsletter_spotlighted(post_id: int) -> None:
                     logger.info(f"Marked post {post_id} as newsletter spotlighted")
     except Exception as e:
         logger.error(f"Error marking post as newsletter spotlighted: {e}", exc_info=True)
+
+
+def mark_clearance_products_promoted(products: List[Dict[str, Any]], issue_id: int, block_id: int) -> None:
+    """Mark clearance products as promoted in newsletter.
+    
+    Saves product details to newsletter_clearance_promotions table.
+    
+    Args:
+        products: List of product dicts with url, title, image_url, price_now, price_was, 
+                 discount_percentage, specifications, category_branch_id, category_leaf_id
+        issue_id: Newsletter issue ID
+        block_id: Newsletter block ID
+    """
+    if not products:
+        return
+    
+    try:
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                for product in products:
+                    cur.execute("""
+                        INSERT INTO newsletter_clearance_promotions (
+                            product_id, product_url, product_title, image_url,
+                            price_now, price_was, discount_percentage,
+                            specifications, category_branch_id, category_leaf_id,
+                            issue_id, block_id
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT DO NOTHING
+                    """, (
+                        product.get('product_id'),
+                        product.get('url', ''),
+                        product.get('title', ''),
+                        product.get('image_url', ''),
+                        product.get('price_now', 0),
+                        product.get('price_was'),
+                        product.get('discount_percentage', 0),
+                        json.dumps(product.get('specifications', {})),
+                        product.get('category_branch_id'),
+                        product.get('category_leaf_id'),
+                        issue_id,
+                        block_id
+                    ))
+                
+                conn.commit()
+                logger.info(f"Marked {len(products)} clearance products as promoted for issue {issue_id}")
+    except Exception as e:
+        # If table doesn't exist yet, log warning but don't fail
+        if 'does not exist' in str(e) or 'UndefinedTable' in str(e):
+            logger.warning(f"newsletter_clearance_promotions table does not exist yet, skipping promotion tracking")
+            return
+        logger.error(f"Error marking clearance products as promoted: {e}", exc_info=True)
 
 
 def extract_product_ids_from_payload(payload: Dict[str, Any], block_type: str) -> List[int]:

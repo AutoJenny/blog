@@ -154,6 +154,47 @@ def get_suggestions_for_block(*, block_type: str, issue_id: int, target_week: st
             'metadata': {},
         }
     
+    elif block_type == 'last_chance':
+        # Scrape clearance page and select products
+        try:
+            from newsletter.sources.clan_clearance_scraper import scrape_clearance_page
+            from newsletter.selectors.clearance import select_clearance_products
+            from newsletter.services.clearance_cache import save_clearance_data
+            
+            # Scrape clearance page
+            scraped_products = scrape_clearance_page(limit=120)
+            
+            if not scraped_products:
+                return {
+                    'suggestions': [],
+                    'current': None,
+                    'metadata': {'error': 'No products scraped from clearance page'}
+                }
+            
+            # Save to temp file
+            cache_file = save_clearance_data(scraped_products)
+            
+            # Select 5 products with different branch categories
+            selected_products = select_clearance_products(scraped_products, limit=5)
+            
+            return {
+                'suggestions': selected_products,
+                'current': {'items': selected_products} if selected_products else None,
+                'metadata': {
+                    'cache_file': cache_file,
+                    'total_scraped': len(scraped_products),
+                    'selected_count': len(selected_products)
+                }
+            }
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error getting last_chance suggestions: {e}", exc_info=True)
+            return {
+                'suggestions': [],
+                'current': None,
+                'metadata': {'error': str(e)}
+            }
+    
     elif block_type == 'category':
         category = select_category_feature()
         suggestions = []

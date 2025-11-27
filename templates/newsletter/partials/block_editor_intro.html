@@ -6,12 +6,12 @@
     <div style="color: #a5b4fc; font-size: 12px; font-weight: 600; margin-bottom: 8px;">
       <i class="fa-solid fa-eye"></i> Final Intro Paragraph:
     </div>
-    <div style="color: #e6e8ef; font-size: 14px; line-height: 1.6;" id="intro-final-{{ b.id }}">
-      {% if b.payload_json and b.payload_json.text %}
-        {{ b.payload_json.text }}
-      {% else %}
+    <div style="color: #e6e8ef; font-size: 14px; line-height: 1.6; white-space: pre-wrap;" id="intro-final-{{ b.id }}">
+      {%- if b.payload_json and b.payload_json.text -%}
+{{ b.payload_json.text|trim }}
+      {%- else -%}
         <span style="color: #9ca3af;">No content yet. Generate components below and compile.</span>
-      {% endif %}
+      {%- endif -%}
     </div>
   </div>
 
@@ -83,7 +83,7 @@
       </button>
     </div>
     <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
-      Combines all generated components into a single paragraph (order will vary for natural flow)
+      Combines all generated components into at least two paragraphs (order will vary for natural flow)
     </div>
   </div>
 
@@ -291,8 +291,11 @@ function compileIntroComponents(blockId, issueId) {
     })
     .then(data => {
       if (data.success && data.text) {
-        finalEl.textContent = data.text;
+        // Remove any leading whitespace/newlines before setting text
+        const cleanText = data.text.trimStart();
+        finalEl.textContent = cleanText;
         finalEl.style.color = '#e6e8ef';
+        finalEl.style.whiteSpace = 'pre-wrap';  // Preserve newlines
         // Reload page to show updated payload
         setTimeout(() => window.location.reload(), 500);
       } else {
