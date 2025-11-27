@@ -15,44 +15,45 @@ def api_calendar_schedule(year, week_number):
     """Get schedule for a specific year and week"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Check if new tables exist (for migration period)
+            # Check if unified calendar_week_items table exists
             cursor.execute("""
                 SELECT EXISTS (
                     SELECT FROM information_schema.tables 
                     WHERE table_schema = 'public' 
-                    AND table_name = 'calendar_week_selection'
-                ) as has_selection,
-                EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
-                    AND table_name = 'calendar_week_posts'
-                ) as has_posts
+                    AND table_name = 'calendar_week_items'
+                ) as has_week_items
             """)
-            table_check = cursor.fetchone()
-            has_new_tables = table_check['has_selection'] and table_check['has_posts']
+            has_week_items = cursor.fetchone()['has_week_items']
             
-            if has_new_tables:
-                # Use new V2 architecture tables
+            if has_week_items:
+                # Use unified calendar_week_items table
                 # Get selected theme
                 cursor.execute("""
-                    SELECT cws.selected_theme_id, cws.updated_at,
+                    SELECT cwi.item_id as selected_theme_id, cwi.updated_at,
                            ct.theme_title, ct.theme_description
-                    FROM calendar_week_selection cws
-                    LEFT JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
-                    WHERE cws.year = %s AND cws.week_number = %s
+                    FROM calendar_week_items cwi
+                    LEFT JOIN calendar_themes ct ON cwi.item_id = ct.id
+                    WHERE cwi.year = %s AND cwi.week_number = %s
+                      AND cwi.item_type = 'theme' AND cwi.is_selected = TRUE
+                      AND cwi.is_active = TRUE
+                    LIMIT 1
                 """, (year, week_number))
                 theme_selection = cursor.fetchone()
                 
-                # Get all posts for this week
+                # Get all posts (recipes and profiles) for this week
                 cursor.execute("""
-                    SELECT cwp.id, cwp.post_id, cwp.scheduled_date, cwp.created_at, cwp.updated_at,
+                    SELECT cwi.id, cwi.item_id as post_id, cwi.scheduled_date, 
+                           cwi.weekday, cwi.created_at, cwi.updated_at,
                            p.title as post_title, p.status as post_status,
-                           pd.idea_seed as post_idea_seed
-                    FROM calendar_week_posts cwp
-                    LEFT JOIN post p ON cwp.post_id = p.id
-                    LEFT JOIN post_development pd ON cwp.post_id = pd.post_id
-                    WHERE cwp.year = %s AND cwp.week_number = %s
-                    ORDER BY cwp.scheduled_date NULLS LAST, cwp.created_at DESC
+                           pd.idea_seed as post_idea_seed,
+                           cwi.item_type, cwi.metadata
+                    FROM calendar_week_items cwi
+                    LEFT JOIN post p ON cwi.item_id = p.id
+                    LEFT JOIN post_development pd ON cwi.item_id = pd.post_id
+                    WHERE cwi.year = %s AND cwi.week_number = %s
+                      AND cwi.item_type IN ('recipe', 'profile')
+                      AND cwi.is_active = TRUE
+                    ORDER BY cwi.scheduled_date NULLS LAST, cwi.created_at DESC
                 """, (year, week_number))
                 posts = cursor.fetchall()
                 
@@ -76,6 +77,8 @@ def api_calendar_schedule(year, week_number):
                         'post_status': post['post_status'],
                         'post_idea_seed': post['post_idea_seed'],
                         'scheduled_date': post['scheduled_date'].isoformat() if post['scheduled_date'] else None,
+                        'weekday': post['weekday'],
+                        'item_type': post['item_type'],
                         'created_at': post['created_at'].isoformat() if post['created_at'] else None,
                         'updated_at': post['updated_at'].isoformat() if post['updated_at'] else None
                     })
@@ -88,51 +91,124 @@ def api_calendar_schedule(year, week_number):
                     'selected_theme_id': theme_selection['selected_theme_id'] if theme_selection else None
                 })
             else:
-                # Fallback to old calendar_schedule table during migration
+                # Fallback: Check if V2 tables exist (calendar_week_selection, calendar_week_posts)
                 cursor.execute("""
                     SELECT EXISTS (
                         SELECT FROM information_schema.tables 
                         WHERE table_schema = 'public' 
-                        AND table_name = 'calendar_themes'
-                    )
+                        AND table_name = 'calendar_week_selection'
+                    ) as has_selection,
+                    EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'calendar_week_posts'
+                    ) as has_posts
                 """)
-                has_themes_table = cursor.fetchone()['exists']
+                table_check = cursor.fetchone()
+                has_new_tables = table_check['has_selection'] and table_check['has_posts']
                 
-                if has_themes_table:
+                if has_new_tables:
+                    # Use V2 architecture tables (calendar_week_selection, calendar_week_posts)
+                    # Get selected theme
                     cursor.execute("""
-                        SELECT cs.id, cs.post_id, cs.idea_id, cs.theme_id, cs.year, cs.week_number, cs.scheduled_date,
-                               cs.created_at, cs.updated_at,
-                               p.title as post_title, p.status as post_status,
-                               pd.idea_seed as post_idea_seed,
-                               ct.theme_title, ct.id as calendar_theme_id
-                        FROM calendar_schedule cs
-                        LEFT JOIN post p ON cs.post_id = p.id
-                        LEFT JOIN post_development pd ON p.id = pd.post_id
-                        LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
-                        WHERE cs.year = %s AND cs.week_number = %s
-                        ORDER BY cs.scheduled_date
+                        SELECT cws.selected_theme_id, cws.updated_at,
+                               ct.theme_title, ct.theme_description
+                        FROM calendar_week_selection cws
+                        LEFT JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                        WHERE cws.year = %s AND cws.week_number = %s
                     """, (year, week_number))
-                else:
+                    theme_selection = cursor.fetchone()
+                    
+                    # Get all posts for this week
                     cursor.execute("""
-                        SELECT cs.id, cs.post_id, cs.idea_id, cs.year, cs.week_number, cs.scheduled_date,
-                               cs.created_at, cs.updated_at,
+                        SELECT cwp.id, cwp.post_id, cwp.scheduled_date, cwp.created_at, cwp.updated_at,
                                p.title as post_title, p.status as post_status,
                                pd.idea_seed as post_idea_seed
-                        FROM calendar_schedule cs
-                        LEFT JOIN post p ON cs.post_id = p.id
-                        LEFT JOIN post_development pd ON p.id = pd.post_id
-                        WHERE cs.year = %s AND cs.week_number = %s
-                        ORDER BY cs.scheduled_date
+                        FROM calendar_week_posts cwp
+                        LEFT JOIN post p ON cwp.post_id = p.id
+                        LEFT JOIN post_development pd ON cwp.post_id = pd.post_id
+                        WHERE cwp.year = %s AND cwp.week_number = %s
+                        ORDER BY cwp.scheduled_date NULLS LAST, cwp.created_at DESC
                     """, (year, week_number))
-                
-                schedule = cursor.fetchall()
-                
-                return jsonify({
-                    'success': True,
-                    'year': year,
-                    'week_number': week_number,
-                    'schedule': schedule
-                })
+                    posts = cursor.fetchall()
+                    
+                    # Build unified schedule response
+                    schedule = []
+                    if theme_selection:
+                        schedule.append({
+                            'type': 'theme_selection',
+                            'selected_theme_id': theme_selection['selected_theme_id'],
+                            'theme_title': theme_selection['theme_title'],
+                            'theme_description': theme_selection['theme_description'],
+                            'updated_at': theme_selection['updated_at'].isoformat() if theme_selection['updated_at'] else None
+                        })
+                    
+                    for post in posts:
+                        schedule.append({
+                            'type': 'post',
+                            'id': post['id'],
+                            'post_id': post['post_id'],
+                            'post_title': post['post_title'],
+                            'post_status': post['post_status'],
+                            'post_idea_seed': post['post_idea_seed'],
+                            'scheduled_date': post['scheduled_date'].isoformat() if post['scheduled_date'] else None,
+                            'created_at': post['created_at'].isoformat() if post['created_at'] else None,
+                            'updated_at': post['updated_at'].isoformat() if post['updated_at'] else None
+                        })
+                    
+                    return jsonify({
+                        'success': True,
+                        'year': year,
+                        'week_number': week_number,
+                        'schedule': schedule,
+                        'selected_theme_id': theme_selection['selected_theme_id'] if theme_selection else None
+                    })
+                else:
+                    # Fallback to old calendar_schedule table during migration
+                    cursor.execute("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                            AND table_name = 'calendar_themes'
+                        )
+                    """)
+                    has_themes_table = cursor.fetchone()['exists']
+                    
+                    if has_themes_table:
+                        cursor.execute("""
+                            SELECT cs.id, cs.post_id, cs.idea_id, cs.theme_id, cs.year, cs.week_number, cs.scheduled_date,
+                                   cs.created_at, cs.updated_at,
+                                   p.title as post_title, p.status as post_status,
+                                   pd.idea_seed as post_idea_seed,
+                                   ct.theme_title, ct.id as calendar_theme_id
+                            FROM calendar_schedule cs
+                            LEFT JOIN post p ON cs.post_id = p.id
+                            LEFT JOIN post_development pd ON p.id = pd.post_id
+                            LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
+                            WHERE cs.year = %s AND cs.week_number = %s
+                            ORDER BY cs.scheduled_date
+                        """, (year, week_number))
+                    else:
+                        cursor.execute("""
+                            SELECT cs.id, cs.post_id, cs.idea_id, cs.year, cs.week_number, cs.scheduled_date,
+                                   cs.created_at, cs.updated_at,
+                                   p.title as post_title, p.status as post_status,
+                                   pd.idea_seed as post_idea_seed
+                            FROM calendar_schedule cs
+                            LEFT JOIN post p ON cs.post_id = p.id
+                            LEFT JOIN post_development pd ON p.id = pd.post_id
+                            WHERE cs.year = %s AND cs.week_number = %s
+                            ORDER BY cs.scheduled_date
+                        """, (year, week_number))
+                    
+                    schedule = cursor.fetchall()
+                    
+                    return jsonify({
+                        'success': True,
+                        'year': year,
+                        'week_number': week_number,
+                        'schedule': schedule
+                    })
             
     except Exception as e:
         logger.error(f"Error fetching calendar schedule: {e}")
@@ -183,7 +259,8 @@ def api_select_theme_idea():
                     if not theme:
                         return jsonify({'success': False, 'error': 'Theme not found'}), 404
                     
-                    # UPSERT into calendar_week_selection (one theme per week, enforced by PRIMARY KEY)
+                    # DUAL-WRITE: Write to both old and new tables
+                    # 1. Write to calendar_week_selection (old table)
                     cursor.execute("""
                         INSERT INTO calendar_week_selection (year, week_number, selected_theme_id, updated_at)
                         VALUES (%s, %s, %s, NOW())
@@ -193,6 +270,40 @@ def api_select_theme_idea():
                     """, (year, week_number, theme_id))
                     
                     result = cursor.fetchone()
+                    
+                    # 2. Write to calendar_week_items (new unified table)
+                    # Check if calendar_week_items table exists
+                    cursor.execute("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                            AND table_name = 'calendar_week_items'
+                        )
+                    """)
+                    has_week_items = cursor.fetchone()['exists']
+                    
+                    if has_week_items:
+                        # First, unselect any currently selected theme for this week
+                        cursor.execute("""
+                            UPDATE calendar_week_items
+                            SET is_selected = FALSE, updated_at = NOW()
+                            WHERE year = %s AND week_number = %s 
+                              AND item_type = 'theme' AND is_selected = TRUE
+                        """, (year, week_number))
+                        
+                        # Then, insert/update the selected theme
+                        cursor.execute("""
+                            INSERT INTO calendar_week_items (
+                                item_type, item_id, year, week_number, is_selected, is_active, created_at, updated_at
+                            ) VALUES (
+                                'theme', %s, %s, %s, TRUE, TRUE, NOW(), NOW()
+                            )
+                            ON CONFLICT (year, week_number, item_type, item_id)
+                            DO UPDATE SET
+                                is_selected = TRUE,
+                                updated_at = NOW()
+                        """, (theme_id, year, week_number))
+                    
                     conn.commit()
                     
                     return jsonify({

@@ -1,0 +1,232 @@
+{
+  "discovery_date": "2025-11-27T13:30:00",
+  "total_sources": 25,
+  "sources": [
+    {
+      "name": "Aberdeen Press and Journal",
+      "base_url": "https://www.pressandjournal.co.uk",
+      "rss_feeds": ["https://www.pressandjournal.co.uk/rss"],
+      "listing_pages": ["https://www.pressandjournal.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Aberdeen & Aberdeenshire",
+      "discovery_notes": "Major regional daily/weekly"
+    },
+    {
+      "name": "Dundee Courier",
+      "base_url": "https://www.thecourier.co.uk",
+      "rss_feeds": ["https://www.thecourier.co.uk/rss"],
+      "listing_pages": ["https://www.thecourier.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Dundee & Angus",
+      "discovery_notes": "Regional daily/weekly"
+    },
+    {
+      "name": "Fife Today",
+      "base_url": "https://www.fifetoday.co.uk",
+      "rss_feeds": ["https://www.fifetoday.co.uk/rss"],
+      "listing_pages": ["https://www.fifetoday.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Fife",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Oban Times",
+      "base_url": "https://www.obantimes.co.uk",
+      "rss_feeds": ["https://www.obantimes.co.uk/rss"],
+      "listing_pages": ["https://www.obantimes.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Argyll & Bute",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Orkney Today",
+      "base_url": "https://www.orkneytoday.co.uk",
+      "rss_feeds": ["https://www.orkneytoday.co.uk/rss"],
+      "listing_pages": ["https://www.orkneytoday.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Orkney",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Perthshire Advertiser",
+      "base_url": "https://www.dailyrecord.co.uk/all-about/perth",
+      "rss_feeds": [],
+      "listing_pages": ["https://www.dailyrecord.co.uk/all-about/perth"],
+      "access_mode": "html_list_only",
+      "region": "Perthshire",
+      "discovery_notes": "Part of Daily Record network"
+    },
+    {
+      "name": "Shetland Times",
+      "base_url": "https://www.shetlandtimes.co.uk",
+      "rss_feeds": ["https://www.shetlandtimes.co.uk/rss"],
+      "listing_pages": ["https://www.shetlandtimes.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Shetland",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Stornoway Gazette",
+      "base_url": "https://www.stornowaygazette.co.uk",
+      "rss_feeds": ["https://www.stornowaygazette.co.uk/rss"],
+      "listing_pages": ["https://www.stornowaygazette.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Western Isles",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Inverness Courier",
+      "base_url": "https://www.inverness-courier.co.uk",
+      "rss_feeds": ["https://www.inverness-courier.co.uk/rss"],
+      "listing_pages": ["https://www.inverness-courier.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Highland",
+      "discovery_notes": "Regional weekly"
+    },
+    {
+      "name": "Northern Times",
+      "base_url": "https://www.northern-times.co.uk",
+      "rss_feeds": ["https://www.northern-times.co.uk/rss"],
+      "listing_pages": ["https://www.northern-times.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Highland",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "John O'Groat Journal",
+      "base_url": "https://www.johnogroat-journal.co.uk",
+      "rss_feeds": ["https://www.johnogroat-journal.co.uk/rss"],
+      "listing_pages": ["https://www.johnogroat-journal.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Highland",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Ross-shire Journal",
+      "base_url": "https://www.ross-shirejournal.co.uk",
+      "rss_feeds": ["https://www.ross-shirejournal.co.uk/rss"],
+      "listing_pages": ["https://www.ross-shirejournal.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Highland",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "West Highland Free Press",
+      "base_url": "https://www.whfp.com",
+      "rss_feeds": ["https://www.whfp.com/rss"],
+      "listing_pages": ["https://www.whfp.com/news"],
+      "access_mode": "rss_only",
+      "region": "Highland",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Lochaber News",
+      "base_url": "https://www.lochaber-news.co.uk",
+      "rss_feeds": ["https://www.lochaber-news.co.uk/rss"],
+      "listing_pages": ["https://www.lochaber-news.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Highland",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Strathspey & Badenoch Herald",
+      "base_url": "https://www.strathspey-herald.co.uk",
+      "rss_feeds": ["https://www.strathspey-herald.co.uk/rss"],
+      "listing_pages": ["https://www.strathspey-herald.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Highland",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Forres Gazette",
+      "base_url": "https://www.forres-gazette.co.uk",
+      "rss_feeds": ["https://www.forres-gazette.co.uk/rss"],
+      "listing_pages": ["https://www.forres-gazette.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Moray",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Banffshire Journal",
+      "base_url": "https://www.banffshire-journal.co.uk",
+      "rss_feeds": ["https://www.banffshire-journal.co.uk/rss"],
+      "listing_pages": ["https://www.banffshire-journal.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Aberdeen & Aberdeenshire",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Buchan Observer",
+      "base_url": "https://www.buchanobserver.co.uk",
+      "rss_feeds": ["https://www.buchanobserver.co.uk/rss"],
+      "listing_pages": ["https://www.buchanobserver.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Aberdeen & Aberdeenshire",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Ellon Times",
+      "base_url": "https://www.ellontimes.co.uk",
+      "rss_feeds": ["https://www.ellontimes.co.uk/rss"],
+      "listing_pages": ["https://www.ellontimes.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Aberdeen & Aberdeenshire",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Fraserburgh Herald",
+      "base_url": "https://www.fraserburghherald.co.uk",
+      "rss_feeds": ["https://www.fraserburghherald.co.uk/rss"],
+      "listing_pages": ["https://www.fraserburghherald.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Aberdeen & Aberdeenshire",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Peterhead Herald",
+      "base_url": "https://www.peterheadherald.co.uk",
+      "rss_feeds": ["https://www.peterheadherald.co.uk/rss"],
+      "listing_pages": ["https://www.peterheadherald.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Aberdeen & Aberdeenshire",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Turriff Advertiser",
+      "base_url": "https://www.turriffadvertiser.co.uk",
+      "rss_feeds": ["https://www.turriffadvertiser.co.uk/rss"],
+      "listing_pages": ["https://www.turriffadvertiser.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Aberdeen & Aberdeenshire",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Arbroath Herald",
+      "base_url": "https://www.arbroathherald.co.uk",
+      "rss_feeds": ["https://www.arbroathherald.co.uk/rss"],
+      "listing_pages": ["https://www.arbroathherald.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Dundee & Angus",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Forfar Dispatch",
+      "base_url": "https://www.forfardispatch.co.uk",
+      "rss_feeds": ["https://www.forfardispatch.co.uk/rss"],
+      "listing_pages": ["https://www.forfardispatch.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Dundee & Angus",
+      "discovery_notes": "Local weekly"
+    },
+    {
+      "name": "Montrose Review",
+      "base_url": "https://www.montrosereview.co.uk",
+      "rss_feeds": ["https://www.montrosereview.co.uk/rss"],
+      "listing_pages": ["https://www.montrosereview.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Dundee & Angus",
+      "discovery_notes": "Local weekly"
+    }
+  ]
+}
+

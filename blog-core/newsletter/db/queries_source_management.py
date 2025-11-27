@@ -7,12 +7,13 @@ from config.database import db_manager
 
 
 def list_all_sources() -> List[Dict[str, Any]]:
-    """List all sources (enabled and disabled)."""
+    """List all sources (enabled and disabled), including region for local sources."""
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, name, base_url, type, enabled, api_key_ref, created_at, updated_at
+                SELECT id, name, base_url, type, enabled, api_key_ref, region, 
+                       preferred_sections, excluded_sections, access_mode, created_at, updated_at
                 FROM newsletter_snapshot_source
                 ORDER BY enabled DESC, name ASC
                 """
@@ -37,17 +38,30 @@ def get_source(source_id: int) -> Optional[Dict[str, Any]]:
             return dict(row) if row else None
 
 
-def create_source(*, name: str, base_url: str, type: str, enabled: bool = True, api_key_ref: str | None = None) -> int:
+def create_source(
+    *,
+    name: str,
+    base_url: str,
+    type: str,
+    enabled: bool = True,
+    api_key_ref: str | None = None,
+    region: str | None = None,
+    preferred_sections: List[str] | None = None,
+    excluded_sections: List[str] | None = None,
+    access_mode: str | None = None,
+    discovery_notes: str | None = None,
+) -> int:
     """Create a new source. Returns the new source ID."""
     with db_manager.get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO newsletter_snapshot_source (name, base_url, type, enabled, api_key_ref)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO newsletter_snapshot_source 
+                (name, base_url, type, enabled, api_key_ref, region, preferred_sections, excluded_sections, access_mode, discovery_notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
-                (name, base_url, type, enabled, api_key_ref),
+                (name, base_url, type, enabled, api_key_ref, region, preferred_sections, excluded_sections, access_mode, discovery_notes),
             )
             row = cur.fetchone()
             conn.commit()

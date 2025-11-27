@@ -9,6 +9,17 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-c
 
 # Import common dependencies
 from newsletter.db.queries_issue import get_issue
+from newsletter.db.queries_source_management import (
+    list_all_sources,
+    get_source,
+    create_source,
+    update_source,
+    delete_source,
+    get_cache_status,
+    get_item_stats
+)
+from newsletter.db.queries_sources import get_cached_items
+from newsletter.jobs.prefetch_sources import run as run_prefetch
 import logging
 
 logger = logging.getLogger(__name__)

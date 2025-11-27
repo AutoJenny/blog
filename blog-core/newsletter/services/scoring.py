@@ -203,14 +203,43 @@ def score_items(items: List[Dict[str, Any]], reference_date: datetime | None = N
     """Apply all scoring rules and return sorted list.
     
     Adds freshness_score, signal_score, combined_score to each item.
+    For quirky news items, also adds heuristic_score.
     """
     if reference_date is None:
         reference_date = datetime.now()
+    
+    # Import heuristic scoring for quirky news
+    try:
+        from newsletter.services.heuristic_scoring import calculate_heuristic_score
+        from newsletter.db.queries_sources import get_source_config
+        use_heuristic = True
+    except ImportError:
+        use_heuristic = False
     
     scored = []
     for item in items:
         item['freshness_score'] = calculate_freshness_score(item, reference_date)
         item['signal_score'] = calculate_signal_score(item)
+        
+        # Add heuristic score for quirky news items (only for local weekly newspapers)
+        if use_heuristic and item.get('category') == 'news':
+            try:
+                source_name = item.get('source_name', '')
+                source_config = get_source_config(source_name) if source_name else {}
+                # Only apply heuristic scoring to local weekly newspapers (sources with region)
+                if source_config.get('region'):
+                    heuristic_score, heuristic_flags = calculate_heuristic_score(item, source_config)
+                    item['heuristic_score'] = heuristic_score
+                    item['heuristic_flags'] = heuristic_flags
+                else:
+                    # National newspapers: no heuristic scoring (they're not for quirky news)
+                    item['heuristic_score'] = 0.0
+                    item['heuristic_flags'] = []
+            except Exception:
+                # If heuristic scoring fails, continue without it
+                item['heuristic_score'] = 0.0
+                item['heuristic_flags'] = []
+        
         item['combined_score'] = item['freshness_score'] + item['signal_score']
         scored.append(item)
     

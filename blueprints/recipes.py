@@ -465,6 +465,7 @@ def api_create_recipe_post(recipe_week_number):
                 # Schedule in calendar if year/week provided
                 if year and week_number:
                     try:
+                        # DUAL-WRITE: Write to calendar_week_posts (old table)
                         cursor.execute("""
                             INSERT INTO calendar_week_posts (
                                 year, week_number, post_id, weekday, created_at
@@ -474,6 +475,46 @@ def api_create_recipe_post(recipe_week_number):
                                 weekday = EXCLUDED.weekday,
                                 updated_at = NOW()
                         """, (year, week_number, post_id, weekday))
+                        
+                        # DUAL-WRITE: Also write to calendar_week_items (new unified table)
+                        cursor.execute("""
+                            SELECT EXISTS (
+                                SELECT FROM information_schema.tables 
+                                WHERE table_schema = 'public' 
+                                AND table_name = 'calendar_week_items'
+                            )
+                        """)
+                        has_week_items = cursor.fetchone()['exists']
+                        
+                        if has_week_items:
+                            # Get recipe definition ID for metadata
+                            cursor.execute("""
+                                SELECT recipe_id, recipe_week_number
+                                FROM post
+                                WHERE id = %s
+                            """, (post_id,))
+                            recipe_info = cursor.fetchone()
+                            
+                            metadata = {}
+                            if recipe_info:
+                                if recipe_info.get('recipe_id'):
+                                    metadata['recipe_definition_id'] = recipe_info['recipe_id']
+                                if recipe_info.get('recipe_week_number'):
+                                    metadata['recipe_week_number'] = recipe_info['recipe_week_number']
+                            
+                            cursor.execute("""
+                                INSERT INTO calendar_week_items (
+                                    item_type, item_id, year, week_number, weekday,
+                                    is_active, metadata, created_at, updated_at
+                                ) VALUES (
+                                    'recipe', %s, %s, %s, %s, TRUE, %s, NOW(), NOW()
+                                )
+                                ON CONFLICT (year, week_number, item_type, item_id)
+                                DO UPDATE SET
+                                    weekday = EXCLUDED.weekday,
+                                    metadata = EXCLUDED.metadata,
+                                    updated_at = NOW()
+                            """, (post_id, year, week_number, weekday, metadata))
                     except Exception as schedule_error:
                         logger.warning(f"Could not schedule recipe post in calendar: {schedule_error}")
                 

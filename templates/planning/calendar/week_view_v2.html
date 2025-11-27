@@ -1,0 +1,827 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar Week View v2 (Improved) - Content Calendar - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'shared/blog_pipeline_header.html' %}
+    {% block process_content %}
+    <div class="calendar-tabs">
+        <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" class="tab">Year View</a>
+        <a href="{{ url_for('planning.planning_calendar_week_view', post_id=post_id, year=year, week=week) }}" class="tab">Week View (Original)</a>
+        <a href="{{ url_for('planning.planning_calendar_week_view_v2', post_id=post_id, year=year, week=week) }}" class="tab active" style="background: #10b981; color: #fff; border-color: #10b981;">Week View v2 (Improved)</a>
+        {% if year and week %}
+        <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=week, year=year, week=week) }}" class="tab">Week Themes</a>
+        {% endif %}
+    </div>
+    <div class="calendar-week-view">
+        <div class="week-header">
+            <div class="left">
+                <h2 class="calendar-title">Calendar — Week View v2 (Improved UI)</h2>
+                <p class="calendar-subtitle">Focus on a single week: ideas, events, and scheduled items — Enhanced visual hierarchy and content type distinction</p>
+            </div>
+        </div>
+
+        <div class="week-controls">
+            <button class="nav-btn" id="prev-week"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn nav-btn-text" id="this-week-btn" title="Jump to current week">This week</button>
+            <div class="week-meta">
+                <div class="year">Year: <span id="week-year"></span></div>
+                <div class="week">Week: <span id="week-number"></span></div>
+                <div class="dates" id="week-dates"></div>
+            </div>
+            <div class="week-picker-container">
+                <button class="nav-btn nav-btn-text" id="week-picker-btn" title="Pick a week"><i class="fas fa-calendar"></i></button>
+                <div class="week-picker-popup" id="week-picker-popup" style="display: none;">
+                    <div class="week-picker-content">
+                        <div class="week-picker-header">
+                            <button class="week-picker-nav" id="picker-year-prev"><i class="fas fa-chevron-left"></i></button>
+                            <select id="picker-year" class="week-picker-select"></select>
+                            <button class="week-picker-nav" id="picker-year-next"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="week-picker-months" id="week-picker-months">
+                            <!-- Months and weeks will be generated here -->
+                        </div>
+                        <div class="week-picker-actions">
+                            <button class="week-picker-btn week-picker-cancel" id="week-picker-cancel">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="nav-btn" id="next-week"><i class="fas fa-chevron-right"></i></button>
+        </div>
+
+        <div class="week-filters week-filters-v2">
+            <span class="filter-group-label-inline">Week:</span>
+            <label class="filter-pill-v2 filter-themes active" title="Week-defining themes">
+                <input type="checkbox" id="toggle-themes" checked>
+                <i class="fas fa-star"></i>
+                <span>Themes</span>
+            </label>
+            <span class="filter-separator">|</span>
+            <span class="filter-group-label-inline">Blog:</span>
+            <label class="filter-pill-v2 filter-recipes active" title="Recipe blog posts">
+                <input type="checkbox" id="toggle-recipes" checked>
+                <i class="fas fa-utensils"></i>
+                <span>Recipes</span>
+            </label>
+            <label class="filter-pill-v2 filter-profiles active" title="Profile blog posts">
+                <input type="checkbox" id="toggle-profiles" checked>
+                <i class="fas fa-user"></i>
+                <span>Profiles</span>
+            </label>
+            <span class="filter-separator">|</span>
+            <span class="filter-group-label-inline">Support:</span>
+            <label class="filter-pill-v2 filter-annual-events active" title="Recurring annual events">
+                <input type="checkbox" id="toggle-annual-events" checked>
+                <i class="fas fa-calendar-alt"></i>
+                <span>Annual</span>
+            </label>
+            <label class="filter-pill-v2 filter-special-events active" title="One-off special events">
+                <input type="checkbox" id="toggle-special-events" checked>
+                <i class="fas fa-calendar-check"></i>
+                <span>Special</span>
+            </label>
+            <label class="filter-pill-v2 filter-ideas active" title="Content ideas">
+                <input type="checkbox" id="toggle-ideas" checked>
+                <i class="fas fa-lightbulb"></i>
+                <span>Ideas</span>
+            </label>
+            <label class="filter-pill-v2 filter-words-phrases active" title="Weekly words and phrases">
+                <input type="checkbox" id="toggle-words-phrases" checked>
+                <i class="fas fa-book"></i>
+                <span>Words</span>
+            </label>
+            <span class="filter-separator">|</span>
+            <span class="filter-group-label-inline">Ops:</span>
+            <label class="filter-pill-v2 filter-syndication active" title="Social media syndication">
+                <input type="checkbox" id="toggle-syndication" checked>
+                <i class="fas fa-share-alt"></i>
+                <span>Syndication</span>
+            </label>
+        </div>
+
+        <!-- Themes row (full-width, above day headers) -->
+        <div class="themes-section-v2" data-filter="themes" style="margin-bottom: 1.5rem;">
+            <div class="section-divider">
+                <span class="section-label">Week Definition</span>
+            </div>
+            <div class="row-header row-header-v2" data-type="theme" style="background: rgba(249, 115, 22, 0.15); border-left-color: #f97316;">
+                <span class="row-header-content">
+                    <i class="fas fa-star row-header-icon"></i>
+                    <span class="row-header-text">Themes</span>
+                </span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <a href="#" id="week-themes-create-link" class="btn btn-primary" style="font-size: 0.875rem; padding: 6px 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create Post</span>
+                    </a>
+                    <button class="row-add-btn" onclick="(() => { const w = parseInt(document.getElementById('week-number')?.textContent); getIdeaModal().openNew('theme', w || null); })()" title="Add New Theme">
+                        <i class="fas fa-plus"></i> Add New
+                    </button>
+                </div>
+            </div>
+            <div class="week-themes" id="week-themes"></div>
+        </div>
+
+        <div class="week-grid week-grid-headers">
+            <div class="day-header" data-day="1">
+                <div class="day-title">Mon</div>
+                <div class="social-focus" data-day="1"></div>
+            </div>
+            <div class="day-header" data-day="2">
+                <div class="day-title">Tue</div>
+                <div class="social-focus" data-day="2"></div>
+            </div>
+            <div class="day-header" data-day="3">
+                <div class="day-title">Wed</div>
+                <div class="social-focus" data-day="3"></div>
+            </div>
+            <div class="day-header" data-day="4">
+                <div class="day-title">Thu</div>
+                <div class="social-focus" data-day="4"></div>
+            </div>
+            <div class="day-header" data-day="5">
+                <div class="day-title">Fri</div>
+                <div class="social-focus" data-day="5"></div>
+            </div>
+            <div class="day-header" data-day="6">
+                <div class="day-title">Sat</div>
+                <div class="social-focus" data-day="6"></div>
+            </div>
+            <div class="day-header" data-day="7">
+                <div class="day-title">Sun</div>
+                <div class="social-focus" data-day="7"></div>
+            </div>
+        </div>
+
+        <!-- Horizontal rows aligned with day columns -->
+        <div class="rows-container">
+            <!-- Section: Blog Posts -->
+            <div class="content-section" data-section="blog-posts">
+                <div class="section-divider">
+                    <span class="section-label">Blog Posts</span>
+                </div>
+                
+                <!-- Recipes row: header + 7 aligned cells -->
+                <div class="row-section" data-filter="recipes">
+                    <div class="row-header row-header-v2" data-type="recipe">
+                        <span class="row-header-content">
+                            <i class="fas fa-utensils row-header-icon"></i>
+                            <span class="row-header-text">Recipes</span>
+                        </span>
+                    </div>
+                    <div class="row-grid" id="recipes-row"></div>
+                </div>
+
+                <!-- Profiles row: header + 7 aligned cells -->
+                <div class="row-section" data-filter="profiles">
+                    <div class="row-header row-header-v2" data-type="profile">
+                        <span class="row-header-content">
+                            <i class="fas fa-user row-header-icon"></i>
+                            <span class="row-header-text">Profiles</span>
+                        </span>
+                        <button class="row-add-btn" onclick="getProfileModal().openNew()" title="Add New Profile">
+                            <i class="fas fa-plus"></i> Add New
+                        </button>
+                    </div>
+                    <div class="row-grid" id="profiles-row"></div>
+                </div>
+            </div>
+
+            <!-- Section: Supporting Content -->
+            <div class="content-section" data-section="supporting">
+                <div class="section-divider">
+                    <span class="section-label">Supporting Content</span>
+                </div>
+                
+                <!-- Annual Events row: header + 7 aligned cells -->
+                <div class="row-section" data-filter="annual-events">
+                    <div class="row-header row-header-v2" data-type="annual-event">
+                        <span class="row-header-content">
+                            <i class="fas fa-calendar-alt row-header-icon"></i>
+                            <span class="row-header-text">Annual Events</span>
+                        </span>
+                        <button class="row-add-btn" onclick="getIdeaModal().openNew('event')" title="Add New Event">
+                            <i class="fas fa-plus"></i> Add New
+                        </button>
+                    </div>
+                    <div class="row-grid" id="annual-events-row"></div>
+                </div>
+
+                <!-- Special Events row: header + 7 aligned cells -->
+                <div class="row-section" data-filter="special-events">
+                    <div class="row-header row-header-v2" data-type="special-event">
+                        <span class="row-header-content">
+                            <i class="fas fa-calendar-check row-header-icon"></i>
+                            <span class="row-header-text">Special Events</span>
+                        </span>
+                    </div>
+                    <div class="row-grid" id="special-events-row"></div>
+                </div>
+
+                <!-- Ideas row: header + 7 aligned cells -->
+                <div class="row-section" data-filter="ideas">
+                    <div class="row-header row-header-v2" data-type="idea">
+                        <span class="row-header-content">
+                            <i class="fas fa-lightbulb row-header-icon"></i>
+                            <span class="row-header-text">Ideas</span>
+                        </span>
+                        <button class="row-add-btn" onclick="(() => { const w = parseInt(document.getElementById('week-number')?.textContent); getIdeaModal().openNew('idea', w || null); })()" title="Add New Idea">
+                            <i class="fas fa-plus"></i> Add New
+                        </button>
+                    </div>
+                    <div class="row-grid" id="ideas-row"></div>
+                </div>
+
+                <!-- Weekly Words & Phrases row: header + 7 aligned cells -->
+                <div class="row-section" data-filter="words-phrases">
+                    <div class="row-header row-header-v2" data-type="words-phrases">
+                        <span class="row-header-content">
+                            <i class="fas fa-book row-header-icon"></i>
+                            <span class="row-header-text">Words & Phrases</span>
+                        </span>
+                    </div>
+                    <div class="row-grid" id="words-phrases-row"></div>
+                </div>
+            </div>
+
+            <!-- Section: Operations -->
+            <div class="content-section" data-section="operations">
+                <div class="section-divider">
+                    <span class="section-label">Operations</span>
+                </div>
+                
+                <!-- Syndication row: header + 7 aligned cells -->
+                <div class="row-section" data-filter="syndication">
+                    <div class="row-header row-header-v2" data-type="syndication">
+                        <span class="row-header-content">
+                            <i class="fas fa-share-alt row-header-icon"></i>
+                            <span class="row-header-text">Syndication</span>
+                        </span>
+                    </div>
+                    <div class="row-grid" id="syndication-row"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend legend-v2">
+            <div class="legend-section">
+                <div class="legend-title">Content Types</div>
+                <div class="legend-items">
+                    <span class="legend-item legend-item-v2 theme" title="Week-defining themes">
+                        <i class="fas fa-star"></i> Theme
+                    </span>
+                    <span class="legend-item legend-item-v2 recipe" title="Recipe blog posts">
+                        <i class="fas fa-utensils"></i> Recipe
+                    </span>
+                    <span class="legend-item legend-item-v2 profile" title="Profile blog posts">
+                        <i class="fas fa-user"></i> Profile
+                    </span>
+                    <span class="legend-item legend-item-v2 idea" title="Content ideas">
+                        <i class="fas fa-lightbulb"></i> Idea
+                    </span>
+                    <span class="legend-item legend-item-v2 event annual" title="Recurring annual events">
+                        <i class="fas fa-calendar-alt"></i> Annual Event
+                    </span>
+                    <span class="legend-item legend-item-v2 event special" title="One-off special events">
+                        <i class="fas fa-calendar-check"></i> Special Event
+                    </span>
+                    <span class="legend-item legend-item-v2 words-phrases" title="Weekly words and phrases">
+                        <i class="fas fa-book"></i> Words & Phrases
+                    </span>
+                    <span class="legend-item legend-item-v2 syndication" title="Social media syndication">
+                        <i class="fas fa-share-alt"></i> Syndication
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="calendar-actions bottom-actions">
+            <a href="{{ url_for('planning.categories_manage') }}" class="btn-secondary">
+                <i class="fas fa-tags mr-2"></i>Manage Categories
+            </a>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.calendar-tabs { display:flex; justify-content:center; gap:16px; margin:12px 0 16px 0; }
+.calendar-tabs .tab { display:inline-block; padding:10px 18px; border-radius:999px; border:1px solid #334155; color:#cbd5e1; text-decoration:none; background:#0f172a; font-weight:600; }
+.calendar-tabs .tab:hover { background:#1f2937; }
+.calendar-tabs .tab.active { background:#3b82f6; border-color:#3b82f6; color:#ffffff; }
+.calendar-week-view { padding: 2rem 0; }
+.week-header { display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; text-align:center; }
+.calendar-title { font-size: 1.75rem; color: #f1f5f9; margin: 0 0 .25rem 0; }
+.calendar-subtitle { color: #94a3b8; margin: 0; font-size: 1rem; }
+.btn-secondary { display:inline-flex; align-items:center; padding:.5rem 1rem; background:rgba(255,255,255,0.1); color:#f1f5f9; text-decoration:none; border-radius:.5rem; border:1px solid rgba(255,255,255,0.2); }
+.btn-secondary:hover { background: rgba(255,255,255,0.2); }
+.week-controls { display:flex; align-items:center; justify-content:space-between; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:.75rem 1rem; margin-bottom: 1rem; }
+.week-filters { display:flex; gap:16px; align-items:center; justify-content:center; color:#cbd5e1; margin: 0 0 12px 0; }
+.week-filters .filter-pill { display:flex; gap:8px; align-items:center; padding:.35rem .6rem; border-radius:999px; border:2px solid transparent; cursor:pointer; }
+.week-filters .filter-pill input { margin-right:6px; }
+/* Enhanced v2 filter pills - compact single row with inline labels */
+.week-filters-v2 { 
+    display: flex; 
+    flex-wrap: nowrap; 
+    gap: 0.375rem; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 0 1rem 0; 
+    padding: 0.5rem; 
+    background: #1e293b; 
+    border: 1px solid #334155; 
+    border-radius: 8px; 
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch; 
+}
+.filter-group-label-inline {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 0.125rem;
+    flex-shrink: 0;
+}
+.filter-separator {
+    color: #475569;
+    font-size: 0.75rem;
+    margin: 0 0.25rem;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+.filter-pill-v2 { 
+    display: flex; 
+    gap: 0.25rem; 
+    align-items: center; 
+    padding: 0.25rem 0.5rem; 
+    border-radius: 4px; 
+    border: 1.5px solid transparent; 
+    cursor: pointer; 
+    font-size: 0.75rem; 
+    font-weight: 500; 
+    transition: all 0.2s; 
+    position: relative; 
+    white-space: nowrap; 
+    flex-shrink: 0; 
+}
+.filter-pill-v2 input { 
+    margin: 0; 
+    cursor: pointer; 
+    position: absolute; 
+    opacity: 0; 
+    width: 0; 
+    height: 0; 
+}
+.filter-pill-v2 i { 
+    font-size: 0.6875rem; 
+    opacity: 0.9; 
+}
+/* Themes: bright orange when active, darker orange when inactive */
+.filter-pill-v2.filter-themes { background:#7c2d12; border-color:#9a3412; color:#fff; }
+.filter-pill-v2.filter-themes.active { background:#f97316; border-color:#ea580c; color:#0f172a; font-weight: 600; }
+/* Ideas: purple background */
+.filter-pill-v2.filter-ideas { background:#6d28d9; border-color:#7c3aed; color:#fff; }
+.filter-pill-v2.filter-ideas.active { background:#8b5cf6; border-color:#a78bfa; color:#fff; }
+/* Annual Events: blue background */
+.filter-pill-v2.filter-annual-events { background:#1d4ed8; border-color:#2563eb; color:#fff; }
+.filter-pill-v2.filter-annual-events.active { background:#1d4ed8; border-color:#3b82f6; color:#fff; }
+/* Special Events: blue background with green accent */
+.filter-pill-v2.filter-special-events { background:#1d4ed8; border-color:#2563eb; color:#fff; }
+.filter-pill-v2.filter-special-events.active { background:#1d4ed8; border-color:#10b981; color:#fff; }
+/* Syndication: outlined blue, no fill */
+.filter-pill-v2.filter-syndication { background:transparent; border-color:#3b82f6; color:#93c5fd; }
+.filter-pill-v2.filter-syndication.active { background:rgba(59,130,246,0.08); border-color:#60a5fa; color:#bfdbfe; }
+/* Profiles: teal/cyan background */
+.filter-pill-v2.filter-profiles { background:#0d9488; border-color:#14b8a6; color:#fff; }
+.filter-pill-v2.filter-profiles.active { background:#14b8a6; border-color:#2dd4bf; color:#fff; }
+/* Words & Phrases: green/emerald background (Scottish language theme) */
+.filter-pill-v2.filter-words-phrases { background:#065f46; border-color:#047857; color:#fff; }
+.filter-pill-v2.filter-words-phrases.active { background:#10b981; border-color:#34d399; color:#fff; }
+/* Recipes: warm orange/brown background (Scottish cooking theme) */
+.filter-pill-v2.filter-recipes { background:#92400e; border-color:#b45309; color:#fff; }
+.filter-pill-v2.filter-recipes.active { background:#d97706; border-color:#f59e0b; color:#fff; }
+/* Inactive state styling */
+.filter-pill-v2:not(.active) { opacity: 0.6; }
+.filter-pill-v2:not(.active):hover { opacity: 0.8; }
+.week-themes { display:flex; flex-direction:column; gap:8px; background:#0f172a; border:1px solid #334155; border-radius:8px; padding:.75rem 1rem; margin-bottom: 1rem; width:100%; }
+.week-themes .item { padding:8px 12px; font-size:.9rem; text-align:left; border-radius:6px; border:1px solid transparent; }
+/* Unselected theme (dull browny orange, like on ideas page Available) */
+.week-themes .item.idea { background:#7c2d12 !important; color:#e2e8f0 !important; border-color:#9a3412 !important; }
+/* Selected theme (darker orange, matching ideas page selected) */
+.week-themes .item.idea.selected { background:#ea580c !important; color:#0f172a !important; border-color:#c2410c !important; }
+.nav-btn { padding:.5rem; background:transparent; border:1px solid #475569; border-radius:4px; color:#94a3b8; cursor:pointer; }
+.nav-btn:hover { background:#334155; color:#e2e8f0; }
+.nav-btn-text { padding:.5rem .75rem; font-size:.875rem; }
+#this-week-btn { background:#3b82f6 !important; border-color:#3b82f6 !important; color:#ffffff !important; font-weight:600 !important; }
+#this-week-btn:hover { background:#2563eb !important; border-color:#2563eb !important; color:#ffffff !important; }
+.week-meta { display:flex; gap:1.25rem; color:#cbd5e1; font-weight:600; }
+.week-picker-container { position:relative; }
+.week-picker-popup { position:absolute; top:calc(100% + 8px); right:0; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:1rem; z-index:1000; min-width:320px; max-width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.5); }
+.week-picker-content { display:flex; flex-direction:column; gap:.75rem; }
+.week-picker-header { display:flex; align-items:center; justify-content:center; gap:.5rem; margin-bottom:.5rem; }
+.week-picker-nav { padding:.375rem .5rem; background:transparent; border:1px solid #475569; border-radius:4px; color:#94a3b8; cursor:pointer; font-size:.75rem; }
+.week-picker-nav:hover { background:#334155; color:#e2e8f0; }
+.week-picker-select { padding:.5rem .75rem; background:#0f172a; border:1px solid #334155; border-radius:4px; color:#e2e8f0; font-size:.875rem; font-weight:600; cursor:pointer; }
+.week-picker-select:focus { outline:none; border-color:#3b82f6; }
+.week-picker-months { display:flex; flex-direction:column; gap:1rem; max-height:400px; overflow-y:auto; }
+.week-picker-month { border-bottom:1px solid #334155; padding-bottom:.75rem; }
+.week-picker-month:last-child { border-bottom:none; }
+.week-picker-month-header { color:#cbd5e1; font-weight:600; font-size:.875rem; margin-bottom:.5rem; padding:.25rem 0; }
+.week-picker-weeks { display:flex; flex-wrap:wrap; gap:.375rem; }
+.week-picker-week { padding:.375rem .625rem; background:#0f172a; border:1px solid #334155; border-radius:4px; color:#cbd5e1; font-size:.8125rem; cursor:pointer; transition:all 0.2s; }
+.week-picker-week:hover { background:#334155; border-color:#3b82f6; color:#e2e8f0; }
+.week-picker-week.selected { background:#3b82f6; border-color:#3b82f6; color:#fff; font-weight:600; }
+.week-picker-actions { display:flex; gap:.5rem; justify-content:flex-end; margin-top:.5rem; }
+.week-picker-btn { padding:.375rem .75rem; border-radius:4px; border:1px solid #475569; font-size:.875rem; cursor:pointer; }
+.week-picker-cancel { background:transparent; color:#94a3b8; }
+.week-picker-cancel:hover { background:#334155; }
+.week-grid { display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:8px; width:100%; box-sizing:border-box; }
+.week-grid-headers { margin-bottom: 0.5rem; }
+.day-header { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:0; box-sizing:border-box; min-width:0; }
+.day-header .day-title { padding:.5rem .75rem .25rem .75rem; border-bottom:none; color:#94a3b8; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
+.day-header .day-title .day-num { color:#cbd5e1; font-weight:700; }
+.day-header .social-focus { padding:0 .75rem .5rem .75rem; font-size:0.75rem; color:#60a5fa; cursor:pointer; transition:color 0.2s; }
+.day-header .social-focus:hover { color:#93c5fd; text-decoration:underline; }
+.day-header .social-focus.empty { color:#64748b; font-style:italic; }
+.rows-container { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; width:100%; box-sizing:border-box; }
+.content-section { margin-bottom: 1.5rem; }
+.content-section:last-child { margin-bottom: 0; }
+.section-divider { margin: 1rem 0 0.75rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid #334155; }
+.section-label { font-size: 0.875rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+.row-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.row-section.hidden { display: none; }
+.row-header { font-weight: 600; color: #cbd5e1; padding: 0.25rem 0; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; line-height: 1; margin-bottom: 0.5rem; }
+/* Enhanced v2 row headers */
+.row-header-v2 { 
+    font-size: 0.95rem !important; 
+    font-weight: 600; 
+    padding: 0.5rem 0.75rem !important; 
+    margin-bottom: 0.5rem; 
+    border-radius: 6px; 
+    border-left: 4px solid transparent;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+}
+.row-header-v2[data-type="recipe"] { border-left-color: #d97706; background: rgba(217, 119, 6, 0.1); }
+.row-header-v2[data-type="profile"] { border-left-color: #14b8a6; background: rgba(20, 184, 166, 0.1); }
+.row-header-v2[data-type="annual-event"] { border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+.row-header-v2[data-type="special-event"] { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.row-header-v2[data-type="idea"] { border-left-color: #8b5cf6; background: rgba(139, 92, 246, 0.1); }
+.row-header-v2[data-type="words-phrases"] { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.row-header-v2[data-type="syndication"] { border-left-color: #60a5fa; background: rgba(96, 165, 250, 0.05); }
+.row-header-v2[data-type="theme"] { border-left-color: #f97316; background: rgba(249, 115, 22, 0.15); }
+.themes-section-v2 { margin-bottom: 1.5rem; }
+.row-header-content { display: flex; align-items: center; gap: 0.5rem; }
+.row-header-icon { font-size: 0.875rem; opacity: 0.8; }
+.row-header-text { color: #e2e8f0; }
+.row-add-btn { padding: 0.25rem 0.5rem; background: #1e293b; border: 1px solid #475569; border-radius: 4px; color: #cbd5e1; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; }
+.row-add-btn:hover { background: #334155; border-color: #60a5fa; color: #e2e8f0; }
+.row-grid { display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:8px; width:100%; box-sizing:border-box; }
+.row-grid .row-cell { 
+    background:#0f172a; 
+    border:1px solid #334155; 
+    border-radius:8px; 
+    min-height: 80px; 
+    padding:.5rem; 
+    display:flex; 
+    flex-direction:column; 
+    gap:6px; 
+    box-sizing:border-box; 
+    min-width:0; 
+    position: relative; 
+}
+/* Empty state styling */
+.row-grid .row-cell:empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+}
+.row-grid .row-cell:empty::before {
+    content: "No items scheduled";
+    color: #64748b;
+    font-size: 0.75rem;
+    font-style: italic;
+    opacity: 0.5;
+}
+.row-grid .row-cell:empty::after {
+    content: '+';
+    color: #94a3b8;
+    font-size: 1.25rem;
+    font-weight: 300;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed #475569;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.6;
+}
+.row-grid .row-cell:empty:hover::after {
+    opacity: 1;
+    border-color: #60a5fa;
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.1);
+}
+/* Syndication items already have icons in JS, so we don't need ::before for them */
+.item.syndication::before { 
+    display: none; 
+}
+.day { background:#0f172a; border:1px solid #334155; border-radius:8px; min-height: 160px; display:flex; flex-direction:column; }
+.day-title { padding:.5rem .75rem; border-bottom:1px solid #334155; color:#94a3b8; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
+.day-title .day-num { color:#cbd5e1; font-weight:700; }
+.day-body { padding:.5rem; display:flex; flex-direction:column; gap:6px; }
+.day-section { background:#0b1220; border:1px solid #263044; border-radius:6px; padding:.5rem; display:flex; flex-direction:column; gap:6px; }
+.day-section + .day-section { margin-top:6px; }
+.section-label { font-size:.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+.item { 
+    padding: 6px 8px 6px 28px; 
+    border-radius: 6px; 
+    font-size: 0.8rem; 
+    color: #e2e8f0; 
+    position: relative; 
+}
+/* Content type badges using Font Awesome icons */
+.item::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.75rem;
+    opacity: 0.9;
+    width: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.item.idea { 
+    background: #7c3aed; 
+    color: #fff; 
+    cursor: pointer; 
+}
+.item.idea::before { 
+    content: '\f0eb'; /* fa-lightbulb */ 
+}
+.item.event { background: #1d4ed8; color: #fff; }
+.item.event::before { 
+    content: '\f073'; /* fa-calendar-alt */ 
+}
+/* Annual events: blue background with blue outline */
+.item.event.annual { background: #1d4ed8; border: 2px solid #3b82f6; }
+.item.event.annual::before { 
+    content: '\f073'; /* fa-calendar-alt */ 
+}
+/* Special events: blue background with green outline */
+.item.event.special { background: #1d4ed8; border: 2px solid #10b981; }
+.item.event.special::before { 
+    content: '\f274'; /* fa-calendar-check */ 
+}
+/* Profiles: teal background */
+.item.profile { 
+    background: #0d9488; 
+    color: #fff; 
+    cursor: pointer; 
+    border: 1px solid #14b8a6; 
+}
+.item.profile::before { 
+    content: '\f007'; /* fa-user */ 
+}
+.item.profile:hover { background: #14b8a6; border-color: #2dd4bf; }
+/* Words & Phrases: green/emerald background */
+.item.weekly-word { 
+    background: #065f46; 
+    color: #fff; 
+    cursor: pointer; 
+    border: 1px solid #047857; 
+}
+.item.weekly-word::before { 
+    content: '\f02d'; /* fa-book */ 
+}
+.item.weekly-word:hover { background: #10b981; border-color: #34d399; }
+.item.weekly-phrase { 
+    background: #047857; 
+    color: #fff; 
+    cursor: pointer; 
+    border: 1px solid #10b981; 
+}
+.item.weekly-phrase::before { 
+    content: '\f15c'; /* fa-file-alt */ 
+}
+.item.weekly-phrase:hover { background: #10b981; border-color: #34d399; }
+/* Recipes: warm orange/brown background */
+.item.recipe { 
+    background: #92400e; 
+    color: #fff; 
+    cursor: pointer; 
+    border: 1px solid #b45309; 
+}
+.item.recipe::before { 
+    content: '\f2e7'; /* fa-utensils */ 
+}
+.item.recipe:hover { background: #d97706; border-color: #f59e0b; }
+/* Advance notice indicators for events */
+.item.advance-notice { 
+  font-size: 0.7rem; 
+  padding: 3px 6px; 
+  margin-top: 4px;
+  border-radius: 4px;
+  line-height: 1.3;
+}
+.item.advance-notice.advance-start {
+  background: rgba(29, 78, 216, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  color: #bfdbfe;
+  font-weight: 500;
+}
+.item.advance-notice.advance-intermediate {
+  background: transparent;
+  color: #60a5fa;
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+.item.advance-notice .advance-name,
+.item.advance-notice .advance-text {
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.item.advance-notice .advance-arrow {
+  display: inline-block;
+  margin-left: 4px;
+  color: #93c5fd;
+  font-weight: bold;
+}
+.item.advance-notice:hover {
+  opacity: 1;
+  background: rgba(29, 78, 216, 0.2);
+}
+/* Syndication scheduled posts: outlined blue, no background */
+.item.scheduled.syndication { background:transparent; color:#93c5fd; border:2px solid #3b82f6; transition: all 0.2s; }
+.item.scheduled.syndication:hover { background:rgba(59, 130, 246, 0.1); border-color:#60a5fa; color:#bfdbfe; }
+.item.scheduled.syndication i { flex-shrink: 0; }
+.item.scheduled.syndication span { flex: 1; }
+.legend { margin-top: 12px; display:flex; gap:10px; color:#94a3b8; font-size:.85rem; }
+/* Enhanced v2 legend */
+.legend-v2 { 
+    margin-top: 1.5rem; 
+    padding: 1rem; 
+    background: #1e293b; 
+    border: 1px solid #334155; 
+    border-radius: 8px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0.75rem; 
+}
+.legend-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.legend-title { 
+    font-size: 0.875rem; 
+    font-weight: 700; 
+    color: #cbd5e1; 
+    text-transform: uppercase; 
+    letter-spacing: 0.05em; 
+    margin-bottom: 0.25rem; 
+}
+.legend-items { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.legend-item-v2 { 
+    padding: 0.375rem 0.75rem; 
+    border-radius: 6px; 
+    border: 1px solid transparent; 
+    font-size: 0.8125rem; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 0.375rem; 
+    cursor: help; 
+}
+.legend-item-v2.theme { background: #7c2d12; border-color: #9a3412; color: #fff; }
+.legend-item-v2.recipe { background: #92400e; border-color: #b45309; color: #fff; }
+.legend-item-v2.profile { background: #0d9488; border-color: #14b8a6; color: #fff; }
+.legend-item-v2.idea { background: #6d28d9; border-color: #7c3aed; color: #fff; }
+.legend-item-v2.event.annual { background: #1d4ed8; border-color: #3b82f6; color: #fff; }
+.legend-item-v2.event.special { background: #1d4ed8; border-color: #10b981; color: #fff; }
+.legend-item-v2.words-phrases { background: #065f46; border-color: #047857; color: #fff; }
+.legend-item-v2.syndication { background: transparent; border-color: #3b82f6; color: #93c5fd; }
+.legend-item-v2 i { font-size: 0.75rem; opacity: 0.9; }
+.calendar-actions { margin-top: 1rem; }
+.bottom-actions { display: flex; justify-content: flex-end; }
+.legend-item { padding:2px 8px; border-radius:999px; border:1px solid #334155; }
+.legend-item.idea { background:#7c3aed; color:#fff; }
+.legend-item.event { background:#1d4ed8; color:#fff; }
+.legend-item.scheduled { background:#10b981; color:#fff; }
+</style>
+
+<!-- Idea Modal Component Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/idea-modal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/profile-modal.css') }}">
+
+<script>
+window.postId = {{ post_id }};
+window.currentStage = 'calendar';
+window.currentSubstage = 'week-view';
+</script>
+<script type="module" src="/static/js/planning/calendar-week-view.js"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-renderers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-forms.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-conversions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/profile-modal-core.js') }}"></script>
+
+<script>
+// Utility function for escaping HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+
+<!-- Include the idea modal component -->
+{% include 'planning/calendar/idea_modal.html' %}
+
+<!-- Include the social focus modal component -->
+{% include 'planning/calendar/social_focus_modal.html' %}
+{% include 'planning/calendar/profile_modal.html' %}
+
+<script>
+    // Initialize idea modal and hook up click handlers after DOM loads
+    document.addEventListener('DOMContentLoaded', () => {
+        const ideaModal = getIdeaModal();
+        
+        // Make theme items clickable - use event delegation on document
+        document.addEventListener('click', (e) => {
+            const themeItem = e.target.closest('.week-themes .item.idea');
+            if (themeItem && themeItem.dataset.ideaId) {
+                const ideaId = themeItem.dataset.ideaId;
+                console.log('Opening idea modal for ID:', ideaId);
+                ideaModal.open(parseInt(ideaId));
+            }
+        });
+        
+        // Make events clickable - open in modal
+        document.addEventListener('click', (e) => {
+            const eventItem = e.target.closest('.item.event');
+            if (eventItem && eventItem.dataset.eventId) {
+                const eventId = parseInt(eventItem.dataset.eventId);
+                const event = window.currentWeekEvents?.find(ev => ev.id === eventId);
+                if (event) {
+                    console.log('Opening event modal for:', event);
+                    ideaModal.open(null, event);
+                }
+            }
+        });
+        
+        // Make ideas in the ideas-row clickable - open in modal (for ideas in the ideas-row, not themes)
+        document.addEventListener('click', (e) => {
+            const ideaItem = e.target.closest('#ideas-row .item.idea');
+            if (ideaItem) {
+                if (ideaItem.dataset.ideaId) {
+                    // Existing idea with ID - open for editing
+                    const ideaId = parseInt(ideaItem.dataset.ideaId);
+                    console.log('Opening idea modal for ID:', ideaId);
+                    ideaModal.open(ideaId);
+                } else {
+                    // Legacy idea without ID - create new with this title
+                    const title = ideaItem.textContent.trim();
+                    const weekNumber = parseInt(document.getElementById('week-number')?.textContent || '44');
+                    console.log('Opening new idea modal for legacy idea:', title, 'week:', weekNumber);
+                    ideaModal.openNew('idea', weekNumber);
+                    // Pre-fill the title if possible
+                    setTimeout(() => {
+                        const titleInput = document.getElementById('idea-title');
+                        if (titleInput) titleInput.value = title;
+                    }, 100);
+                }
+            }
+        });
+        
+        // Listen for idea-saved event to refresh calendar
+        window.addEventListener('idea-saved', () => {
+            // Reload the week view
+            const currentYear = parseInt(document.getElementById('week-year')?.textContent || new Date().getFullYear());
+            const currentWeek = parseInt(document.getElementById('week-number')?.textContent || 44);
+            if (typeof loadWeek === 'function') {
+                loadWeek(currentYear, currentWeek);
+            } else {
+                location.reload();
+            }
+        });
+    });
+</script>
+
+{% endblock %}
+
+

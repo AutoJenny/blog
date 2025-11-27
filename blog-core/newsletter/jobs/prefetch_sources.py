@@ -3,7 +3,20 @@
 from __future__ import annotations
 
 import logging
+import sys
+import os
 from typing import Dict, List, Any
+
+# Add project root to path if newsletter module not found
+try:
+    import newsletter
+except ImportError:
+    # Running as script - add path
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    sys.path.insert(0, project_root)
+    blog_core = os.path.join(project_root, 'blog-core')
+    sys.path.insert(0, blog_core)
+
 from newsletter.sources.manager import get_enabled_sources, create_adapter_from_source
 from newsletter.services.scoring import score_items
 from newsletter.services.content_analysis_service import analyze_item
@@ -116,7 +129,7 @@ def process_events(items: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 
 def process_news(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Process news-type items: fetch full content, analyze, generate synopsis."""
+    """Process news-type items: fetch full content, analyze, generate synopsis, extract images."""
     from newsletter.services.news_synopsis_service import process_news_with_synopsis
     
     news_items = [item for item in items if item.get('category') == 'news']
@@ -124,12 +137,34 @@ def process_news(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if news_items:
         logger.info(f"Processing {len(news_items)} news items with full content analysis and synopsis generation")
     
-    # Process each news item: fetch content, analyze, generate synopsis
+    # Process each news item: fetch content, analyze, generate synopsis, extract images
     processed = []
     for item in news_items:
         try:
             processed_item = process_news_with_synopsis(item, cache_results=True)
             if processed_item:
+                # Extract images if article URL is available and access mode permits
+                url = processed_item.get('url', '')
+                source_name = processed_item.get('source_name', '')
+                if url:
+                    try:
+                        from newsletter.services.image_extraction_service import extract_images_for_article
+                        from urllib.parse import urlparse
+                        
+                        # Get source domain
+                        parsed_url = urlparse(url)
+                        source_domain = parsed_url.netloc.replace('www.', '')
+                        
+                        # Check if source allows HTML access (not RSS-only)
+                        # For now, extract for all news items (can be refined later)
+                        images = extract_images_for_article(url, source_domain, timeout=10, max_images=10)
+                        if images:
+                            processed_item['available_images'] = images
+                            logger.debug(f"Extracted {len(images)} images from {url[:50]}")
+                    except Exception as img_error:
+                        logger.debug(f"Image extraction failed for {url[:50]}: {img_error}")
+                        # Don't fail the whole item if image extraction fails
+                
                 processed.append(processed_item)
                 logger.info(f"✓ Processed news: {item.get('title', 'Unknown')[:50]} (score: {processed_item.get('suitability_score', 0)})")
             else:
@@ -240,4 +275,33 @@ def run() -> dict:
             'success': False,
             'error': str(e),
         }
+
+
+# Entry point for direct execution
+if __name__ == '__main__':
+    import sys
+    import os
+    
+    # Add project root to path
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+    
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    
+    # Run job
+    result = run()
+    
+    if result.get('success'):
+        print(f"\n✓ Prefetch completed successfully")
+        print(f"  Fetched: {result.get('fetched', 0)} items")
+        print(f"  Events: {result.get('events', {}).get('imported', 0)} imported")
+        print(f"  News analyzed: {result.get('news_analyzed', 0)}")
+        print(f"  Stored: {result.get('stored', 0)} items")
+        sys.exit(0)
+    else:
+        print(f"\n✗ Prefetch failed: {result.get('error', 'Unknown error')}")
+        sys.exit(1)
 
