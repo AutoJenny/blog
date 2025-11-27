@@ -1,0 +1,119 @@
+{
+  "discovery_date": "2025-11-27T11:45:00",
+  "total_sources": 8,
+  "sources": [
+    {
+      "name": "Oban Times",
+      "base_url": "https://www.obantimes.co.uk",
+      "rss_feeds": ["https://www.obantimes.co.uk/rss"],
+      "listing_pages": ["https://www.obantimes.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Argyll & Bute",
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "discovery_notes": "Manual entry - Known Scottish weekly newspaper"
+    },
+    {
+      "name": "Stornoway Gazette",
+      "base_url": "https://www.stornowaygazette.co.uk",
+      "rss_feeds": ["https://www.stornowaygazette.co.uk/rss"],
+      "listing_pages": ["https://www.stornowaygazette.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Western Isles",
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "discovery_notes": "Manual entry - Known Scottish weekly newspaper"
+    },
+    {
+      "name": "Shetland Times",
+      "base_url": "https://www.shetlandtimes.co.uk",
+      "rss_feeds": ["https://www.shetlandtimes.co.uk/rss"],
+      "listing_pages": ["https://www.shetlandtimes.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Shetland",
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "discovery_notes": "Manual entry - Known Scottish weekly newspaper"
+    },
+    {
+      "name": "Orkney Today",
+      "base_url": "https://www.orkneytoday.co.uk",
+      "rss_feeds": ["https://www.orkneytoday.co.uk/rss"],
+      "listing_pages": ["https://www.orkneytoday.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Orkney",
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "discovery_notes": "Manual entry - Known Scottish weekly newspaper"
+    },
+    {
+      "name": "Perthshire Advertiser",
+      "base_url": "https://www.dailyrecord.co.uk/all-about/perth",
+      "rss_feeds": [],
+      "listing_pages": ["https://www.dailyrecord.co.uk/all-about/perth"],
+      "access_mode": "html_list_only",
+      "region": "Perthshire",
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "discovery_notes": "Manual entry - Part of Daily Record network"
+    },
+    {
+      "name": "Fife Today",
+      "base_url": "https://www.fifetoday.co.uk",
+      "rss_feeds": ["https://www.fifetoday.co.uk/rss"],
+      "listing_pages": ["https://www.fifetoday.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Fife",
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "discovery_notes": "Manual entry - Known Scottish weekly newspaper"
+    },
+    {
+      "name": "Dundee Courier",
+      "base_url": "https://www.thecourier.co.uk",
+      "rss_feeds": ["https://www.thecourier.co.uk/rss"],
+      "listing_pages": ["https://www.thecourier.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Dundee & Angus",
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "discovery_notes": "Manual entry - Known Scottish weekly newspaper"
+    },
+    {
+      "name": "Aberdeen Press and Journal",
+      "base_url": "https://www.pressandjournal.co.uk",
+      "rss_feeds": ["https://www.pressandjournal.co.uk/rss"],
+      "listing_pages": ["https://www.pressandjournal.co.uk/news"],
+      "access_mode": "rss_only",
+      "region": "Aberdeen & Aberdeenshire",
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "discovery_notes": "Manual entry - Known Scottish weekly newspaper"
+    }
+  ]
+}
+

@@ -38,6 +38,31 @@ def build_weekly_issue(*, target_week: str | None = None) -> Dict:
     
     issue_id = create_issue(target_week=target_week, subject=subject, preheader=preheader, theme_id=theme_id)
 
+    # Automatically select weekly highlights for Round Scotland component
+    try:
+        from newsletter.services.weekly_highlights_selection import select_weekly_highlights
+        from newsletter.config.quirky_news_config import (
+            LLM_QUIRKY_SCORE_THRESHOLD,
+            MAX_ITEMS_PER_REGION,
+            MAX_ITEMS_PER_WEEK
+        )
+        highlights_result = select_weekly_highlights(
+            issue_id=issue_id,
+            target_week=target_week,
+            quirky_score_threshold=LLM_QUIRKY_SCORE_THRESHOLD,
+            max_per_region=MAX_ITEMS_PER_REGION,
+            max_total=MAX_ITEMS_PER_WEEK
+        )
+        if highlights_result.get('success'):
+            import logging
+            logging.getLogger(__name__).info(
+                f"Selected {highlights_result.get('selected_count', 0)} weekly highlights for issue {issue_id}"
+            )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Failed to select weekly highlights: {e}", exc_info=True)
+        # Don't fail issue creation if highlights selection fails
+
     position = 0
 
     # Build all blocks using unified suggestion service

@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Story — Round Scotland{% endblock %}
+
+{% block head %}
+<style>
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        color: #a5b4fc;
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    .form-input, .form-textarea {
+        width: 100%;
+        background: #0f172a;
+        color: #e6e8ef;
+        border: 1px solid #2d3246;
+        padding: 10px 14px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    .image-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+        margin-top: 12px;
+    }
+    .image-option {
+        border: 2px solid #2d3246;
+        border-radius: 6px;
+        padding: 12px;
+        cursor: pointer;
+        background: #0f172a;
+    }
+    .image-option:hover {
+        border-color: #4e6bff;
+    }
+    .image-option.selected {
+        border-color: #10b981;
+        background: #0b3b2e;
+    }
+    .image-thumbnail {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+    .image-caption {
+        font-size: 11px;
+        color: #9ca3af;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white">
+                    <i class="fa-solid fa-pencil"></i> Edit Story
+                </h1>
+                <p class="text-gray-400 mt-1">Edit content and select image for this quirky news story.</p>
+            </div>
+            <a href="/newsletter/issue/{{ issue_id }}/round-scotland" class="btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Back to Overview
+            </a>
+        </div>
+
+        <form id="edit-form" method="post" action="/newsletter/issue/{{ issue_id }}/round-scotland/item/{{ item.id }}/update">
+            <div style="background: #151a2e; border: 1px solid #2d3246; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+                <div class="form-group">
+                    <label class="form-label">Internal Title</label>
+                    <input type="text" name="title_internal" class="form-input" value="{{ item.title_internal or item.title or '' }}" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Newsletter Summary</label>
+                    <textarea name="summary_newsletter" class="form-textarea" rows="4">{{ item.summary_newsletter or '' }}</textarea>
+                    <div style="color: #9ca3af; font-size: 11px; margin-top: 4px;">2-3 sentences for newsletter</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Social Media Summary</label>
+                    <textarea name="summary_social" class="form-textarea" rows="3">{{ item.summary_social or '' }}</textarea>
+                    <div style="color: #9ca3af; font-size: 11px; margin-top: 4px;">1-2 sentences, more playful</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location Label</label>
+                    <input type="text" name="location_label" class="form-input" value="{{ item.location_label or '' }}" placeholder="e.g., Oban, Argyll" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Source Label</label>
+                    <input type="text" name="source_label" class="form-input" value="{{ item.source_label or item.source_name or '' }}" placeholder="e.g., Spotted in the Oban Times" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Image Selection</label>
+                    <div id="image-selector-container">
+                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Loading images...
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-save"></i> Save Changes
+                    </button>
+                    <a href="/newsletter/issue/{{ issue_id }}/round-scotland" class="btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <div style="background: #151a2e; border: 1px solid #2d3246; border-radius: 8px; padding: 24px;">
+            <h3 style="color: #a5b4fc; font-size: 16px; font-weight: 600; margin-bottom: 12px;">Original Article</h3>
+            <div style="color: #e6e8ef; margin-bottom: 8px;">
+                <strong>{{ item.title }}</strong>
+            </div>
+            {% if item.llm_summary_raw %}
+            <div style="color: #9ca3af; margin-bottom: 8px;">
+                {{ item.llm_summary_raw }}
+            </div>
+            {% endif %}
+            <div style="font-size: 12px; color: #7b8dff;">
+                <a href="{{ item.url }}" target="_blank" style="color: #7b8dff; text-decoration: none;">
+                    <i class="fa-solid fa-external-link"></i> View original article
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load images on page load
+(function() {
+    const itemId = {{ item.id }};
+    const container = document.getElementById('image-selector-container');
+    
+    fetch(`/newsletter/issue/{{ issue_id }}/round-scotland/item/${itemId}/images`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const images = data.images || [];
+                const selected = data.selected;
+                
+                if (images.length === 0) {
+                    container.innerHTML = '<div style="color: #9ca3af;">No images available for this article.</div>';
+                    return;
+                }
+                
+                let html = '<div class="image-selector">';
+                
+                // Add "No image" option
+                html += `<div class="image-option ${!selected ? 'selected' : ''}" data-image-url="" onclick="selectImage('')">
+                    <div style="text-align: center; padding: 20px; color: #9ca3af;">
+                        <i class="fa-solid fa-image" style="font-size: 32px; margin-bottom: 8px;"></i>
+                        <div>No Image</div>
+                    </div>
+                </div>`;
+                
+                // Add image options
+                images.forEach(img => {
+                    const isSelected = selected && selected.url === img.url;
+                    html += `<div class="image-option ${isSelected ? 'selected' : ''}" data-image-url="${escapeHtml(img.url)}" onclick="selectImage('${escapeHtml(img.url)}')">
+                        <img src="${escapeHtml(img.url)}" class="image-thumbnail" onerror="this.style.display='none';" />
+                        <div style="font-size: 11px; color: #e6e8ef; font-weight: 600;">${escapeHtml(img.caption || 'No caption')}</div>
+                        ${img.credit ? `<div class="image-caption">${escapeHtml(img.credit)}</div>` : ''}
+                    </div>`;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = `<div style="color: #ef4444;">Error loading images: ${data.error || 'Unknown error'}</div>`;
+            }
+        })
+        .catch(err => {
+            container.innerHTML = `<div style="color: #ef4444;">Error: ${err.message}</div>`;
+        });
+    
+    window.selectImage = function(imageUrl) {
+        // Update UI
+        document.querySelectorAll('.image-option').forEach(opt => {
+            opt.classList.remove('selected');
+            if (opt.dataset.imageUrl === imageUrl) {
+                opt.classList.add('selected');
+            }
+        });
+        
+        // Save selection
+        fetch(`/newsletter/issue/{{ issue_id }}/round-scotland/item/${itemId}/select-image`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({image_url: imageUrl})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Image selection saved');
+            }
+        });
+    };
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+})();
+</script>
+{% endblock %}
+

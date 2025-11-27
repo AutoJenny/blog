@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Round Scotland — Issue {{ issue_id }}{% endblock %}
+
+{% block head %}
+<style>
+    .item-card {
+        background: #1b2138;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+    }
+    .item-title {
+        color: #e6e8ef;
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0;
+    }
+    .item-meta {
+        color: #9ca3af;
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    .btn-action {
+        background: #4e6bff;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-action:hover {
+        background: #3d5ae5;
+    }
+    .btn-danger {
+        background: #ef4444;
+    }
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white">
+                    <i class="fa-solid fa-map-location-dot"></i> Round Scotland — Issue #{{ issue_id }}
+                </h1>
+                <p class="text-gray-400 mt-1">Manage weekly quirky news highlights.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/newsletter/issue/{{ issue_id }}/round-scotland/candidates" class="btn-action" style="text-decoration: none; pointer-events: auto; z-index: 10; position: relative;">
+                    <i class="fa-solid fa-plus"></i> Browse Candidates
+                </a>
+                <a href="/newsletter/issue/{{ issue_id }}" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Issue
+                </a>
+            </div>
+        </div>
+
+        {% if highlights %}
+        <div class="mb-6 p-4 rounded" style="background: #0f172a; border: 1px solid #2d3246;">
+            <div style="color: #a5b4fc; font-weight: 600; margin-bottom: 4px;">Week</div>
+            <div style="color: #e6e8ef;">
+                {{ highlights.week_start.strftime('%d %b %Y') if highlights.week_start else '' }} — 
+                {{ highlights.week_end.strftime('%d %b %Y') if highlights.week_end else '' }}
+            </div>
+        </div>
+
+        {% if items and items|length > 0 %}
+        <div>
+            <h2 class="text-xl font-bold text-white mb-4">{{ items|length }} Story{{ 'ies' if items|length != 1 else 'y' }} Selected</h2>
+            
+            {% for item in items %}
+            <div class="item-card">
+                <div class="item-header">
+                    <div style="flex: 1;">
+                        <h3 class="item-title">{{ item.title_internal or item.title or 'Untitled' }}</h3>
+                        <div class="item-meta">
+                            <span style="color: #a5b4fc;">{{ item.source_label or item.source_name }}</span>
+                            {% if item.location_label %}
+                            <span style="margin: 0 8px;">·</span>
+                            <span>{{ item.location_label }}</span>
+                            {% endif %}
+                            <span style="margin: 0 8px;">·</span>
+                            <span>Quirky Score: {{ item.llm_quirky_score or 0 }}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="/newsletter/issue/{{ issue_id }}/round-scotland/item/{{ item.id }}/edit" class="btn-action">
+                            <i class="fa-solid fa-pencil"></i> Edit
+                        </a>
+                        <form method="post" action="/newsletter/issue/{{ issue_id }}/round-scotland/item/{{ item.id }}/remove" style="display:inline;" onsubmit="return confirm('Remove this story from highlights?');">
+                            <button type="submit" class="btn-action btn-danger">
+                                <i class="fa-solid fa-trash"></i> Remove
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                {% if item.summary_newsletter %}
+                <div style="color: #9ca3af; margin-top: 12px; line-height: 1.6;">
+                    {{ item.summary_newsletter }}
+                </div>
+                {% endif %}
+                
+                {% if item.permalink %}
+                <div style="margin-top: 12px;">
+                    <a href="{{ item.permalink }}" target="_blank" style="color: #7b8dff; text-decoration: none; font-size: 12px;">
+                        <i class="fa-solid fa-external-link"></i> View source article
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 48px; color: #9ca3af;">
+            <p style="font-size: 16px; margin-bottom: 12px;">No stories selected yet.</p>
+            <p style="font-size: 14px;">Browse candidates to add stories to this week's highlights.</p>
+            <a href="/newsletter/issue/{{ issue_id }}/round-scotland/candidates" class="btn-action" style="margin-top: 16px;">
+                <i class="fa-solid fa-plus"></i> Browse Candidates
+            </a>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div style="text-align: center; padding: 48px; color: #9ca3af;">
+            <p style="font-size: 16px; margin-bottom: 12px;">No weekly highlights created yet.</p>
+            <p style="font-size: 14px;">Highlights will be created automatically when you generate the Round Scotland component in the snapshot block.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

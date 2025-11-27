@@ -105,37 +105,80 @@ def api_calendar_recipes(year, week_number):
                     }
                 
                 # Check if there's a scheduled post for this recipe
-                # Try to query calendar_week_posts - if it doesn't exist, just skip
+                # Try calendar_week_items first (new unified table), then fall back to calendar_week_posts
                 scheduled_post = None
                 try:
-                    # Check if calendar_week_posts exists and query it
+                    # Check if calendar_week_items exists and query it
                     cursor.execute("""
-                        SELECT DISTINCT
-                            p.id,
-                            p.title,
-                            p.recipe_week_number,
-                            p.subtitle,
-                            p.slug,
-                            cwp.scheduled_date,
-                            p.created_at,
-                            p.updated_at,
-                            CASE 
-                                WHEN cwp.scheduled_date IS NOT NULL 
-                                THEN EXTRACT(DOW FROM cwp.scheduled_date) + 1
-                                ELSE NULL
-                            END as weekday
-                        FROM post p
-                        INNER JOIN calendar_week_posts cwp ON p.id = cwp.post_id
-                        WHERE p.recipe_week_number = %s
-                          AND cwp.year = %s
-                          AND cwp.week_number = %s
-                        LIMIT 1
-                    """, (week_number, year, week_number))
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                            AND table_name = 'calendar_week_items'
+                        )
+                    """)
+                    has_week_items = cursor.fetchone()['exists']
                     
-                    scheduled_post = cursor.fetchone()
+                    if has_week_items:
+                        # Query from calendar_week_items
+                        cursor.execute("""
+                            SELECT DISTINCT
+                                p.id,
+                                p.title,
+                                p.recipe_week_number,
+                                p.subtitle,
+                                p.slug,
+                                cwi.scheduled_date,
+                                cwi.weekday,
+                                p.created_at,
+                                p.updated_at
+                            FROM post p
+                            INNER JOIN calendar_week_items cwi ON p.id = cwi.item_id
+                            WHERE cwi.item_type = 'recipe'
+                              AND cwi.year = %s
+                              AND cwi.week_number = %s
+                              AND cwi.is_active = TRUE
+                            LIMIT 1
+                        """, (year, week_number))
+                        scheduled_post = cursor.fetchone()
+                    
+                    # Fallback to calendar_week_posts if no result and table exists
+                    if not scheduled_post:
+                        cursor.execute("""
+                            SELECT EXISTS (
+                                SELECT FROM information_schema.tables 
+                                WHERE table_schema = 'public' 
+                                AND table_name = 'calendar_week_posts'
+                            )
+                        """)
+                        has_week_posts = cursor.fetchone()['exists']
+                        
+                        if has_week_posts:
+                            cursor.execute("""
+                                SELECT DISTINCT
+                                    p.id,
+                                    p.title,
+                                    p.recipe_week_number,
+                                    p.subtitle,
+                                    p.slug,
+                                    cwp.scheduled_date,
+                                    p.created_at,
+                                    p.updated_at,
+                                    CASE 
+                                        WHEN cwp.scheduled_date IS NOT NULL 
+                                        THEN EXTRACT(DOW FROM cwp.scheduled_date) + 1
+                                        ELSE NULL
+                                    END as weekday
+                                FROM post p
+                                INNER JOIN calendar_week_posts cwp ON p.id = cwp.post_id
+                                WHERE p.recipe_week_number = %s
+                                  AND cwp.year = %s
+                                  AND cwp.week_number = %s
+                                LIMIT 1
+                            """, (week_number, year, week_number))
+                            scheduled_post = cursor.fetchone()
                 except Exception as table_error:
                     # Table doesn't exist or other error - that's fine, just use definition
-                    logger.debug(f"calendar_week_posts table not available or error querying: {table_error}")
+                    logger.debug(f"Error querying recipe schedule: {table_error}")
                     scheduled_post = None
                 
                 if scheduled_post:

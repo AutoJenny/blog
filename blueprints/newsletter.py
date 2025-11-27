@@ -23,6 +23,7 @@ from .newsletter_approval import bp as approval_bp
 from .newsletter_sources import bp as sources_bp
 from .newsletter_content import bp as content_bp
 from .newsletter_events import bp as events_bp
+from .newsletter_round_scotland import bp as round_scotland_bp
 
 # Register all sub-blueprints
 bp.register_blueprint(issues_bp)
@@ -35,3 +36,4 @@ bp.register_blueprint(approval_bp)
 bp.register_blueprint(sources_bp)
 bp.register_blueprint(content_bp)
 bp.register_blueprint(events_bp)
+bp.register_blueprint(round_scotland_bp)

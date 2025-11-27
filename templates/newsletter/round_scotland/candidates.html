@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Candidates — Round Scotland{% endblock %}
+
+{% block head %}
+<style>
+    .candidate-card {
+        background: #1b2138;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .candidate-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+    }
+    .candidate-title {
+        color: #e6e8ef;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+    }
+    .candidate-meta {
+        color: #9ca3af;
+        font-size: 12px;
+    }
+    .score-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .score-high {
+        background: #10b981;
+        color: #fff;
+        }
+    .score-medium {
+        background: #f59e0b;
+        color: #fff;
+    }
+    .filters {
+        background: #151a2e;
+        border: 1px solid #2d3246;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    .btn-secondary {
+        background: transparent;
+        color: #a5b4fc;
+        border: 1px solid #2d3246;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .btn-secondary:hover {
+        background: #1b2138;
+        border-color: #3b82f6;
+    }
+    .btn-primary {
+        background: #4e6bff;
+        color: #fff;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .btn-primary:hover {
+        background: #3d5ae5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white">
+                    <i class="fa-solid fa-list"></i> Candidate Pool
+                </h1>
+                <p class="text-gray-400 mt-1">Browse quirky news articles available for selection.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a href="/newsletter/sources" class="btn-secondary" style="text-decoration: none;">
+                    <i class="fa-solid fa-newspaper"></i> Manage Sources
+                </a>
+                <a href="/newsletter/issue/{{ issue_id }}/round-scotland" class="btn-secondary" style="text-decoration: none;">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Overview
+                </a>
+            </div>
+        </div>
+
+        <div class="filters">
+            <form method="get" action="/newsletter/issue/{{ issue_id }}/round-scotland/candidates" style="display: flex; gap: 16px; align-items: end; flex-wrap: wrap;">
+                <div>
+                    <label style="display: block; color: #9ca3af; font-size: 12px; margin-bottom: 4px;">Region</label>
+                    <select name="region" style="background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; padding: 8px 12px; border-radius: 6px;">
+                        <option value="">All Regions</option>
+                        {% for region in regions %}
+                        <option value="{{ region }}" {% if region == current_region %}selected{% endif %}>{{ region }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; color: #9ca3af; font-size: 12px; margin-bottom: 4px;">Min Score</label>
+                    <input type="number" name="min_score" value="{{ min_score }}" min="0" max="100" style="background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; padding: 8px 12px; border-radius: 6px; width: 80px;" />
+                </div>
+                <div>
+                    <label style="display: block; color: #9ca3af; font-size: 12px; margin-bottom: 4px;">Days Back</label>
+                    <input type="number" name="days_back" value="{{ days_back }}" min="1" max="30" style="background: #0f172a; color: #e6e8ef; border: 1px solid #2d3246; padding: 8px 12px; border-radius: 6px; width: 80px;" />
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fa-solid fa-filter"></i> Filter
+                </button>
+            </form>
+        </div>
+
+        {% if candidates and candidates|length > 0 %}
+        <div>
+            <h2 class="text-xl font-bold text-white mb-4">{{ candidates|length }} Candidate{{ 's' if candidates|length != 1 else '' }}</h2>
+            
+            {% for candidate in candidates %}
+            <div class="candidate-card">
+                <div class="candidate-header">
+                    <div style="flex: 1;">
+                        <h3 class="candidate-title">{{ candidate.title }}</h3>
+                        <div class="candidate-meta">
+                            <span style="color: #a5b4fc;">{{ candidate.source_name }}</span>
+                            {% if candidate.location %}
+                            <span style="margin: 0 8px;">·</span>
+                            <span>{{ candidate.location }}</span>
+                            {% endif %}
+                            {% if candidate.region %}
+                            <span style="margin: 0 8px;">·</span>
+                            <span>{{ candidate.region }}</span>
+                            {% endif %}
+                            {% if candidate.published_at %}
+                            <span style="margin: 0 8px;">·</span>
+                            <span>{{ candidate.published_at.strftime('%d %b %Y') if candidate.published_at else '' }}</span>
+                            {% endif %}
+                        </div>
+                        {% if candidate.llm_summary_raw %}
+                        <div style="color: #9ca3af; margin-top: 8px; line-height: 1.5;">
+                            {{ candidate.llm_summary_raw }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: end;">
+                        <span class="score-badge {% if candidate.llm_quirky_score >= 70 %}score-high{% elif candidate.llm_quirky_score >= 50 %}score-medium{% else %}score-medium{% endif %}">
+                            Score: {{ candidate.llm_quirky_score or 0 }}
+                        </span>
+                        <a href="{{ candidate.url }}" target="_blank" style="color: #7b8dff; text-decoration: none; font-size: 11px;">
+                            <i class="fa-solid fa-external-link"></i> View
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 48px; color: #9ca3af;">
+            <p style="font-size: 16px; margin-bottom: 12px;">No candidates found.</p>
+            <p style="font-size: 14px;">Try adjusting filters or wait for more articles to be classified.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

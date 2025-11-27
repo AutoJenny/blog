@@ -261,11 +261,12 @@ def compile_snapshot(issue_id: int, block_id: int):
         payload = block.get('payload_json', {}) or {}
         news_items = payload.get('news_items', [])
         events_items = payload.get('events_items', [])
+        round_scotland_items = payload.get('round_scotland_items', [])
         
-        if not news_items and not events_items:
+        if not news_items and not events_items and not round_scotland_items:
             return jsonify({
                 'success': False,
-                'error': 'No items available. Please generate news and/or events components first.',
+                'error': 'No items available. Please generate news, events, and/or Round Scotland components first.',
                 'result': None
             })
         
@@ -292,7 +293,31 @@ def compile_snapshot(issue_id: int, block_id: int):
                 'summary': item.get('summary', '')
             })
         
-        system_prompt = """You are a newsletter writer creating a chatty "In the News" section for a Scottish heritage newsletter.
+        # Build system prompt based on available components
+        has_round_scotland = len(round_scotland_items) > 0
+        
+        if has_round_scotland:
+            system_prompt = """You are a newsletter writer creating a chatty "In the News" section for a Scottish heritage newsletter.
+
+Your task is to write THREE separate paragraphs:
+1. NEWS PARAGRAPH: A chatty overview of the news stories, mentioning story titles with embedded markdown links [title](url)
+2. EVENTS PARAGRAPH: A chatty overview of the events, mentioning event titles with embedded markdown links [title](url)
+3. ROUND SCOTLAND PARAGRAPH: A light-hearted, playful overview of quirky local news stories from around Scotland
+
+IMPORTANT FORMATTING REQUIREMENTS:
+- Start your response with exactly "NEWS:" on its own line
+- Then write the news paragraph (3-5 sentences, conversational tone)
+- Then write exactly "EVENTS:" on its own line  
+- Then write the events paragraph (3-5 sentences, conversational tone)
+- Then write exactly "ROUND SCOTLAND:" on its own line
+- Then write the Round Scotland paragraph (3-5 sentences, playful and light-hearted tone)
+
+Where stories overlap or discuss the same topic, mention them together naturally.
+Write in a warm, conversational, engaging tone - like a friend sharing interesting news.
+The Round Scotland section should be more playful and charming - think "And finally..." news.
+Each paragraph should be 3-5 sentences and flow naturally. Use markdown links: [Story Title](url)"""
+        else:
+            system_prompt = """You are a newsletter writer creating a chatty "In the News" section for a Scottish heritage newsletter.
 
 Your task is to write TWO separate paragraphs:
 1. NEWS PARAGRAPH: A chatty overview of the news stories, mentioning story titles with embedded markdown links [title](url)
@@ -308,13 +333,50 @@ Where stories overlap or discuss the same topic, mention them together naturally
 Write in a warm, conversational, engaging tone - like a friend sharing interesting news.
 Each paragraph should be 3-5 sentences and flow naturally. Use markdown links: [Story Title](url)"""
         
-        user_prompt = f"""Create two chatty paragraphs for "In the News" section.
+        # Build user prompt with available components
+        prompt_parts = []
+        
+        if news_context:
+            prompt_parts.append("NEWS STORIES TO COVER:")
+            prompt_parts.append(chr(10).join([f"- {item['title']} ({item['source']}): {item['url']}" + (f" - {item['summary'][:100]}" if item.get('summary') else "") for item in news_context]))
+        
+        if events_context:
+            prompt_parts.append("\nEVENTS TO COVER:")
+            prompt_parts.append(chr(10).join([f"- {item['title']} ({item['source']})" + (f" in {item['location']}" if item.get('location') else "") + f": {item['url']}" + (f" - {item['summary'][:100]}" if item.get('summary') else "") for item in events_context]))
+        
+        if round_scotland_items:
+            prompt_parts.append("\nROUND SCOTLAND STORIES TO COVER:")
+            round_scotland_context = []
+            for item in round_scotland_items[:10]:
+                round_scotland_context.append({
+                    'title': item.get('title_internal') or item.get('title', ''),
+                    'url': item.get('url', ''),
+                    'source': item.get('source_label', ''),
+                    'location': item.get('location', ''),
+                    'summary': item.get('summary_newsletter', '')
+                })
+            prompt_parts.append(chr(10).join([f"- {item['title']} ({item['source']})" + (f" in {item['location']}" if item.get('location') else "") + f": {item['url']}" + (f" - {item['summary'][:100]}" if item.get('summary') else "") for item in round_scotland_context]))
+        
+        if has_round_scotland:
+            user_prompt = f"""Create three chatty paragraphs for "In the News" section.
 
-NEWS STORIES TO COVER:
-{chr(10).join([f"- {item['title']} ({item['source']}): {item['url']}" + (f" - {item['summary'][:100]}" if item.get('summary') else "") for item in news_context])}
+{chr(10).join(prompt_parts)}
 
-EVENTS TO COVER:
-{chr(10).join([f"- {item['title']} ({item['source']})" + (f" in {item['location']}" if item.get('location') else "") + f": {item['url']}" + (f" - {item['summary'][:100]}" if item.get('summary') else "") for item in events_context])}
+REQUIRED OUTPUT FORMAT (follow exactly):
+NEWS:
+[Write a chatty 3-5 sentence paragraph about the news stories. Mention story titles with markdown links like [Story Title](url). Write conversationally, like sharing interesting news with a friend. If stories are related, mention them together.]
+
+EVENTS:
+[Write a chatty 3-5 sentence paragraph about the events. Mention event titles with markdown links like [Event Title](url). Write conversationally about what's happening. If events are related, mention them together.]
+
+ROUND SCOTLAND:
+[Write a playful, light-hearted 3-5 sentence paragraph about the quirky local stories. This should be charming and amusing - think "And finally..." news. Mention story titles with markdown links like [Story Title](url). Make it fun and engaging.]
+
+Remember: Start with "NEWS:" on its own line, then the paragraph, then "EVENTS:" on its own line, then the events paragraph, then "ROUND SCOTLAND:" on its own line, then the Round Scotland paragraph."""
+        else:
+            user_prompt = f"""Create two chatty paragraphs for "In the News" section.
+
+{chr(10).join(prompt_parts)}
 
 REQUIRED OUTPUT FORMAT (follow exactly):
 NEWS:
@@ -347,18 +409,34 @@ Remember: Start with "NEWS:" on its own line, then the paragraph, then "EVENTS:"
             response = result.get('content', '').strip()
             logger.info(f"LLM response received: {response[:200] if response else 'None'}...")
             
-            # Parse the response to extract news and events paragraphs
+            # Parse the response to extract paragraphs
             news_paragraph = ""
             events_paragraph = ""
+            round_scotland_paragraph = ""
             
             if response:
                 response_text = response.strip()
                 logger.info(f"Processing LLM response (length: {len(response_text)})")
                 
-                # Try to split by "NEWS:" and "EVENTS:" markers (case insensitive)
+                # Try to split by markers (case insensitive)
                 response_upper = response_text.upper()
-                if "NEWS:" in response_upper and "EVENTS:" in response_upper:
-                    # Find the actual case-sensitive markers
+                has_round_scotland_marker = "ROUND SCOTLAND:" in response_upper or "ROUNDSCOTLAND:" in response_upper
+                
+                if has_round_scotland_marker and "NEWS:" in response_upper and "EVENTS:" in response_upper:
+                    # Three paragraphs: NEWS, EVENTS, ROUND SCOTLAND
+                    news_idx = response_text.upper().find("NEWS:")
+                    events_idx = response_text.upper().find("EVENTS:")
+                    round_scotland_idx = response_text.upper().find("ROUND SCOTLAND:")
+                    if round_scotland_idx == -1:
+                        round_scotland_idx = response_text.upper().find("ROUNDSCOTLAND:")
+                    
+                    if news_idx < events_idx < round_scotland_idx:
+                        news_paragraph = response_text[news_idx + 5:events_idx].strip()
+                        events_paragraph = response_text[events_idx + 7:round_scotland_idx].strip()
+                        round_scotland_paragraph = response_text[round_scotland_idx + len("ROUND SCOTLAND:"):].strip()
+                        logger.info("Parsed using NEWS:/EVENTS:/ROUND SCOTLAND: markers")
+                elif "NEWS:" in response_upper and "EVENTS:" in response_upper:
+                    # Two paragraphs: NEWS, EVENTS
                     news_idx = response_text.upper().find("NEWS:")
                     events_idx = response_text.upper().find("EVENTS:")
                     
@@ -426,13 +504,15 @@ Remember: Start with "NEWS:" on its own line, then the paragraph, then "EVENTS:"
                 # Clean up paragraphs - remove any remaining markers
                 news_paragraph = news_paragraph.replace('NEWS:', '').replace('NEWS', '').strip()
                 events_paragraph = events_paragraph.replace('EVENTS:', '').replace('EVENTS', '').strip()
+                round_scotland_paragraph = round_scotland_paragraph.replace('ROUND SCOTLAND:', '').replace('ROUNDSCOTLAND:', '').replace('ROUND SCOTLAND', '').strip()
                 
                 # Remove leading/trailing quotes or colons
                 news_paragraph = news_paragraph.lstrip(':').strip('"').strip("'").strip()
                 events_paragraph = events_paragraph.lstrip(':').strip('"').strip("'").strip()
+                round_scotland_paragraph = round_scotland_paragraph.lstrip(':').strip('"').strip("'").strip()
             
             # Log what we parsed
-            logger.info(f"Parsed news_paragraph length: {len(news_paragraph)}, events_paragraph length: {len(events_paragraph)}")
+            logger.info(f"Parsed news_paragraph length: {len(news_paragraph)}, events_paragraph length: {len(events_paragraph)}, round_scotland_paragraph length: {len(round_scotland_paragraph)}")
             
             # Validate that we got actual content
             if not news_paragraph and news_items:
@@ -449,21 +529,29 @@ Remember: Start with "NEWS:" on its own line, then the paragraph, then "EVENTS:"
                     'error': 'LLM failed to generate events paragraph. Please try again.',
                     'result': None
                 }), 500
+            if not round_scotland_paragraph and round_scotland_items:
+                logger.warning("Round Scotland paragraph is empty after LLM call, but continuing")
             
             # Save to block payload
             payload['news_paragraph'] = news_paragraph
             payload['events_paragraph'] = events_paragraph
+            if round_scotland_paragraph:
+                payload['round_scotland_paragraph'] = round_scotland_paragraph
             payload['compiled_at'] = datetime.now().isoformat()
             payload['manual_override'] = False
             
             update_block_payload(block_id=block_id, payload=payload)
             
+            result = {
+                'news_paragraph': news_paragraph,
+                'events_paragraph': events_paragraph
+            }
+            if round_scotland_paragraph:
+                result['round_scotland_paragraph'] = round_scotland_paragraph
+            
             return jsonify({
                 'success': True,
-                'result': {
-                    'news_paragraph': news_paragraph,
-                    'events_paragraph': events_paragraph
-                }
+                'result': result
             })
             
         except Exception as llm_error:
@@ -477,6 +565,90 @@ Remember: Start with "NEWS:" on its own line, then the paragraph, then "EVENTS:"
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Error compiling snapshot: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@bp.route('/newsletter/issue/<int:issue_id>/block/<int:block_id>/generate-round-scotland', methods=['GET'])
+def generate_round_scotland_component(issue_id: int, block_id: int):
+    """Generate Round Scotland component for snapshot block - returns weekly highlights items."""
+    try:
+        from newsletter.db.queries_issue import get_block, update_block_payload, get_issue
+        from newsletter.services.weekly_highlights_selection import select_weekly_highlights
+        from config.database import db_manager
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        block = get_block(block_id=block_id)
+        if not block:
+            return jsonify({'error': 'Block not found'}), 404
+        
+        issue = get_issue(issue_id=issue_id)
+        if not issue:
+            return jsonify({'error': 'Issue not found'}), 404
+        
+        target_week = issue.get('target_week', '')
+        
+        # Check if weekly_highlights exists for this issue
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id FROM weekly_highlights WHERE issue_id = %s
+                """, (issue_id,))
+                row = cur.fetchone()
+                highlights_id = row[0] if row else None
+        
+        # Create highlights if missing
+        if not highlights_id:
+            logger.info(f"Creating weekly highlights for issue {issue_id}")
+            selection_result = select_weekly_highlights(issue_id, target_week)
+            if not selection_result.get('success'):
+                return jsonify({
+                    'success': False,
+                    'error': selection_result.get('error', 'Failed to create highlights'),
+                    'items': []
+                })
+            highlights_id = selection_result.get('highlights_id')
+        
+        # Get highlight items
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT whi.id, whi.position, whi.title_internal, whi.summary_newsletter,
+                           whi.location_label, whi.source_label, whi.permalink,
+                           nsi.title, nsi.url, nsi.source_name, nsi.llm_quirky_score
+                    FROM weekly_highlights_items whi
+                    JOIN newsletter_source_item nsi ON whi.article_id = nsi.id
+                    WHERE whi.weekly_highlights_id = %s
+                    ORDER BY whi.position
+                """, (highlights_id,))
+                rows = cur.fetchall() or []
+        
+        # Format items
+        formatted_items = []
+        for row in rows:
+            formatted_items.append({
+                'id': row[0],
+                'position': row[1],
+                'title_internal': row[2] or row[7],  # Use generated or fallback to article title
+                'summary_newsletter': row[3] or '',
+                'location': row[4] or '',
+                'source_label': row[5] or row[9],  # Use generated or fallback to source_name
+                'url': row[6] or row[8],
+                'quirky_score': row[10] or 0
+            })
+        
+        # Save to block payload
+        payload = block.get('payload_json', {}) or {}
+        payload['round_scotland_items'] = formatted_items
+        update_block_payload(block_id=block_id, payload=payload)
+        
+        return jsonify({
+            'success': True,
+            'items': formatted_items
+        })
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error generating Round Scotland component: {e}", exc_info=True)
         return jsonify({'error': str(e), 'success': False}), 500
 
 

@@ -214,6 +214,68 @@ def confirm_calendar_idea():
                         weekday = EXCLUDED.weekday,
                         updated_at = NOW()
                 """, (year, week_number, post_id, default_weekday))
+                
+                # DUAL-WRITE: Also write to calendar_week_items (new unified table)
+                # Determine item_type based on post type
+                cursor.execute("""
+                    SELECT post_type, profile_type, recipe_id, recipe_week_number
+                    FROM post
+                    WHERE id = %s
+                """, (post_id,))
+                post_info = cursor.fetchone()
+                
+                if post_info:
+                    # Check if calendar_week_items table exists
+                    cursor.execute("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                            AND table_name = 'calendar_week_items'
+                        )
+                    """)
+                    has_week_items = cursor.fetchone()['exists']
+                    
+                    if has_week_items:
+                        item_type = None
+                        metadata = {}
+                        
+                        if post_info.get('post_type') == 'recipe':
+                            item_type = 'recipe'
+                            if post_info.get('recipe_id'):
+                                metadata['recipe_definition_id'] = post_info['recipe_id']
+                            if post_info.get('recipe_week_number'):
+                                metadata['recipe_week_number'] = post_info['recipe_week_number']
+                        elif post_info.get('profile_type'):
+                            item_type = 'profile'
+                            metadata['profile_type'] = post_info['profile_type']
+                            # Add profile-specific IDs if available
+                            cursor.execute("""
+                                SELECT profile_product_id, profile_category_id
+                                FROM post
+                                WHERE id = %s
+                            """, (post_id,))
+                            profile_info = cursor.fetchone()
+                            if profile_info:
+                                if profile_info.get('profile_product_id'):
+                                    metadata['profile_product_id'] = profile_info['profile_product_id']
+                                if profile_info.get('profile_category_id'):
+                                    metadata['profile_category_id'] = profile_info['profile_category_id']
+                        
+                        # Only write if we determined an item_type
+                        if item_type:
+                            cursor.execute("""
+                                INSERT INTO calendar_week_items (
+                                    item_type, item_id, year, week_number, weekday, 
+                                    is_active, metadata, created_at, updated_at
+                                ) VALUES (
+                                    %s, %s, %s, %s, %s, TRUE, %s, NOW(), NOW()
+                                )
+                                ON CONFLICT (year, week_number, item_type, item_id)
+                                DO UPDATE SET
+                                    weekday = EXCLUDED.weekday,
+                                    metadata = EXCLUDED.metadata,
+                                    updated_at = NOW()
+                            """, (item_type, post_id, year, week_number, default_weekday, metadata))
             else:
                 # Fallback to old calendar_schedule table during migration
                 cursor.execute("""

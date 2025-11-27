@@ -118,8 +118,9 @@ def store_source_items(items: List[Dict[str, Any]], update_duplicates: bool = Tr
                         INSERT INTO newsletter_source_item 
                         (source_name, title, url, published_at, event_date, end_date, date_qualifier, location, category, 
                          raw_data, signal_score, freshness_score, source_url_hash, 
-                         suitability_score, suitability_notes, is_event, calendar_event_id)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                         suitability_score, suitability_notes, is_event, calendar_event_id,
+                         heuristic_score, heuristic_flags)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
                         (
                             item.get('source_name'),
@@ -139,6 +140,8 @@ def store_source_items(items: List[Dict[str, Any]], update_duplicates: bool = Tr
                             item.get('suitability_notes'),
                             item.get('is_event', False),
                             item.get('calendar_event_id'),
+                            item.get('heuristic_score', 0.0),
+                            Json(item.get('heuristic_flags', [])),
                         ),
                     )
                     stored += 1
@@ -239,4 +242,24 @@ def update_source_cache(*, source_name: str, status: str = 'success', notes: str
                 (source_name, status, notes),
             )
             conn.commit()
+
+
+def get_source_config(source_name: str) -> Dict[str, Any]:
+    """Get source configuration including preferred/excluded sections."""
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT region, preferred_sections, excluded_sections, access_mode
+                FROM newsletter_snapshot_source
+                WHERE name = %s
+            """, (source_name,))
+            row = cur.fetchone()
+            if row:
+                return {
+                    'region': row.get('region') if isinstance(row, dict) else row[0],
+                    'preferred_sections': (row.get('preferred_sections') if isinstance(row, dict) else row[1]) or [],
+                    'excluded_sections': (row.get('excluded_sections') if isinstance(row, dict) else row[2]) or [],
+                    'access_mode': (row.get('access_mode') if isinstance(row, dict) else row[3]) or 'rss_only'
+                }
+            return {}
 

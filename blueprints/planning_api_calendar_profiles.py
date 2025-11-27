@@ -20,15 +20,18 @@ def api_calendar_profiles(year, week_number):
     """
     try:
         with db_manager.get_cursor() as cursor:
-            # Check if calendar_week_posts table exists
+            # Check if calendar_week_items table exists (new unified table)
             cursor.execute("""
-                SELECT table_name FROM information_schema.tables 
-                WHERE table_schema = 'public' AND table_name = 'calendar_week_posts'
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_items'
+                )
             """)
-            has_week_posts = cursor.fetchone() is not None
+            has_week_items = cursor.fetchone()['exists']
             
-            if has_week_posts:
-                # Query profiles scheduled for this week using calendar_week_posts
+            if has_week_items:
+                # Query profiles scheduled for this week using calendar_week_items
                 cursor.execute("""
                     SELECT DISTINCT
                         p.id,
@@ -37,38 +40,71 @@ def api_calendar_profiles(year, week_number):
                         p.profile_producer_name,
                         p.profile_standfirst,
                         p.slug,
-                        cwp.scheduled_date,
-                        cwp.weekday,
+                        cwi.scheduled_date,
+                        cwi.weekday,
                         p.created_at,
                         p.updated_at
                     FROM post p
-                    INNER JOIN calendar_week_posts cwp ON p.id = cwp.post_id
-                    WHERE p.profile_type IS NOT NULL
-                      AND cwp.year = %s
-                      AND cwp.week_number = %s
-                    ORDER BY cwp.weekday NULLS LAST, p.title
+                    INNER JOIN calendar_week_items cwi ON p.id = cwi.item_id
+                    WHERE cwi.item_type = 'profile'
+                      AND cwi.year = %s
+                      AND cwi.week_number = %s
+                      AND cwi.is_active = TRUE
+                    ORDER BY cwi.weekday NULLS LAST, p.title
                 """, (year, week_number))
             else:
-                # Fallback to calendar_schedule table
+                # Fallback: Check if calendar_week_posts table exists
                 cursor.execute("""
-                    SELECT DISTINCT
-                        p.id,
-                        p.title,
-                        p.profile_type,
-                        p.profile_producer_name,
-                        p.profile_standfirst,
-                        p.slug,
-                        cs.scheduled_date,
-                        NULL::integer as weekday,
-                        p.created_at,
-                        p.updated_at
-                    FROM post p
-                    INNER JOIN calendar_schedule cs ON p.id = cs.post_id
-                    WHERE p.profile_type IS NOT NULL
-                      AND EXTRACT(YEAR FROM cs.scheduled_date) = %s
-                      AND EXTRACT(WEEK FROM cs.scheduled_date) = %s
-                    ORDER BY cs.scheduled_date NULLS LAST, p.title
-                """, (year, week_number))
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'calendar_week_posts'
+                    )
+                """)
+                has_week_posts = cursor.fetchone()['exists']
+                
+                if has_week_posts:
+                    # Query profiles scheduled for this week using calendar_week_posts
+                    cursor.execute("""
+                        SELECT DISTINCT
+                            p.id,
+                            p.title,
+                            p.profile_type,
+                            p.profile_producer_name,
+                            p.profile_standfirst,
+                            p.slug,
+                            cwp.scheduled_date,
+                            cwp.weekday,
+                            p.created_at,
+                            p.updated_at
+                        FROM post p
+                        INNER JOIN calendar_week_posts cwp ON p.id = cwp.post_id
+                        WHERE p.profile_type IS NOT NULL
+                          AND cwp.year = %s
+                          AND cwp.week_number = %s
+                        ORDER BY cwp.weekday NULLS LAST, p.title
+                    """, (year, week_number))
+                else:
+                    # Fallback to calendar_schedule table
+                    cursor.execute("""
+                        SELECT DISTINCT
+                            p.id,
+                            p.title,
+                            p.profile_type,
+                            p.profile_producer_name,
+                            p.profile_standfirst,
+                            p.slug,
+                            cs.scheduled_date,
+                            NULL::integer as weekday,
+                            p.created_at,
+                            p.updated_at
+                        FROM post p
+                        INNER JOIN calendar_schedule cs ON p.id = cs.post_id
+                        WHERE p.profile_type IS NOT NULL
+                          AND EXTRACT(YEAR FROM cs.scheduled_date) = %s
+                          AND EXTRACT(WEEK FROM cs.scheduled_date) = %s
+                        ORDER BY cs.scheduled_date NULLS LAST, p.title
+                    """, (year, week_number))
             
             profiles = []
             rows = cursor.fetchall()

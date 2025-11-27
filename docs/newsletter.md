@@ -122,6 +122,48 @@ The prefetch job (`jobs/prefetch_sources.py`) routes items to specialized proces
    - Pre-filtered by adapter (engagement + suitability)
    - Stored directly
 
+5. **Quirky Local News** (`category='news'` with quirky classification):
+   - Heuristic pre-filtering (section/keyword-based scoring)
+   - LLM classification for quirkiness (quirky/not_quirky with 0-100 score)
+   - Image extraction from article pages (same-domain only)
+   - Weekly highlights selection with regional diversity
+   - Summarization for newsletter and social media
+
+### Round Scotland Component
+
+The snapshot block includes a third component: "Round Scotland" - a weekly collection of quirky, light-hearted local news stories from Scottish weekly newspapers.
+
+**Workflow**:
+1. **Source Discovery**: Discovers Scottish weekly newspapers from Wikipedia list
+2. **Daily Ingestion**: Articles fetched, images extracted, heuristic scoring applied
+3. **Classification**: Batch job classifies articles as quirky/not_quirky using LLM
+4. **Weekly Selection**: Automatically selects highlights when issue is created (max 8 items, max 2 per region)
+5. **Summarization**: Batch job generates newsletter and social media summaries
+6. **Editorial Review**: Editor can review/adjust via Round Scotland editor UI
+7. **Compilation**: Included in snapshot block compilation alongside news and events
+
+**Database Extensions**:
+- `newsletter_snapshot_source`: Added `region`, `preferred_sections`, `excluded_sections`, `access_mode`
+- `newsletter_source_item`: Added `heuristic_score`, `llm_class`, `llm_quirky_score`, `available_images`, `selected_for_highlights`
+- `weekly_highlights`: New table for weekly highlight sets
+- `weekly_highlights_items`: New table for selected highlight items with summaries and images
+
+**Services**:
+- `image_extraction_service.py`: Extracts images from article pages
+- `heuristic_scoring.py`: Pre-filters articles using keywords/sections
+- `quirky_classification_service.py`: LLM-based quirky classification
+- `weekly_highlights_selection.py`: Selects diverse highlights
+- `quirky_summarization_service.py`: Generates newsletter/social summaries
+- `social_export_service.py`: Exports highlights for social media
+- `monitoring_service.py`: Tracks pipeline health
+
+**UI**:
+- Round Scotland editor: `/newsletter/issue/<id>/round-scotland`
+- Integrated into snapshot block editor
+- Image selection UI for choosing from available images
+
+See [Quirky News Implementation Documentation](newsletter/quirky-news-implementation.md) for detailed technical documentation.
+
 ### Scoring Rules
 - **Freshness**: Items in -3 to +10 day window get higher scores
 - **Signal**: Source authority (BBC=10.0, Met Office=9.0, Reddit=6.0-8.0 based on engagement)
