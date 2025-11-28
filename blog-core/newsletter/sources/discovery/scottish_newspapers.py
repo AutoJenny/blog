@@ -107,93 +107,89 @@ class ScottishNewspaperDiscovery:
             logger.error("Could not find any weekly newspapers section")
             return []
         
-        # Find content after the heading - could be table, list, or paragraphs
-        region = None
-        current = local_section.find_next_sibling()
-        processed = set()  # Track processed links to avoid duplicates
+        # Find the content div that follows the heading
+        # Wikipedia structure: h2 -> div.mw-parser-output or div containing the content
+        content_container = None
         
-        while current and len(newspapers) < 200:  # Safety limit
-            # Check if we've hit the next major section
-            if current.name in ['h2', 'h3']:
-                next_text = current.get_text().lower()
-                if any(x in next_text for x in ['specialist', 'university', 'defunct', 'see also', 'references']):
+        # Strategy 1: Look for div after heading
+        current = local_section.find_next_sibling()
+        while current:
+            if current.name == 'div':
+                # Check if this div contains lists or links
+                if current.find_all(['ul', 'ol', 'table']) or current.find_all('a', href=re.compile(r'/wiki/[^:]+$')):
+                    content_container = current
                     break
-            elif current.name == 'h4':
-                # Region subheading
-                region = current.get_text().strip()
-                logger.debug(f"Found region: {region}")
-            
-            # Look for tables
-            if current.name == 'table':
-                for row in current.find_all('tr'):
-                    for cell in row.find_all(['td', 'th']):
-                        links = cell.find_all('a', href=True)
-                        for link in links:
-                            href = link.get('href', '')
-                            text = link.get_text().strip()
-                            
-                            if not text or len(text) < 3:
-                                continue
-                            if href.startswith('#') or href.startswith('/wiki/File:') or '/wiki/Category:' in href:
-                                continue
-                            if any(skip in text.lower() for skip in ['edit', 'main page', 'contents', 'citation']):
-                                continue
-                            
-                            # Check if this looks like a newspaper name
-                            if self._looks_like_newspaper(text) and text not in processed:
-                                processed.add(text)
-                                newspapers.append({
-                                    'name': text,
-                                    'region': region or 'Unknown',
-                                    'wikipedia_url': urljoin('https://en.wikipedia.org', href) if href.startswith('/') else href
-                                })
-            
-            # Look for lists
-            elif current.name in ['ul', 'ol']:
-                for li in current.find_all('li', recursive=False):
-                    links = li.find_all('a', href=True)
-                    for link in links:
-                        href = link.get('href', '')
-                        text = link.get_text().strip()
-                        
-                        if not text or len(text) < 3:
-                            continue
-                        if href.startswith('#') or href.startswith('/wiki/File:') or '/wiki/Category:' in href:
-                            continue
-                        if any(skip in text.lower() for skip in ['edit', 'main page', 'contents']):
-                            continue
-                        
-                        if self._looks_like_newspaper(text) and text not in processed:
-                            processed.add(text)
-                            newspapers.append({
-                                'name': text,
-                                'region': region or 'Unknown',
-                                'wikipedia_url': urljoin('https://en.wikipedia.org', href) if href.startswith('/') else href
-                            })
-            
-            # Look for paragraphs and divs with links
-            elif current.name in ['p', 'div']:
-                links = current.find_all('a', href=True)
-                for link in links:
-                    href = link.get('href', '')
-                    text = link.get_text().strip()
-                    
-                    if not text or len(text) < 3:
-                        continue
-                    if href.startswith('#') or href.startswith('/wiki/File:') or '/wiki/Category:' in href:
-                        continue
-                    if any(skip in text.lower() for skip in ['edit', 'main page', 'contents', 'citation']):
-                        continue
-                    
-                    if self._looks_like_newspaper(text) and text not in processed:
-                        processed.add(text)
-                        newspapers.append({
-                            'name': text,
-                            'region': region or 'Unknown',
-                            'wikipedia_url': urljoin('https://en.wikipedia.org', href) if href.startswith('/') else href
-                        })
-            
+            elif current.name in ['h2', 'h3']:
+                # Hit next section, stop
+                break
             current = current.find_next_sibling()
+        
+        # Strategy 2: If no div found, look for parent div
+        if not content_container:
+            parent = local_section.find_parent('div', class_='mw-parser-output')
+            if parent:
+                # Find all content between this heading and next h2
+                content_container = parent
+        
+        if not content_container:
+            logger.warning("Could not find content container for Local weekly newspapers section")
+            return []
+        
+        # Extract newspapers from the content container
+        region = None
+        processed = set()
+        
+        # Find all elements between this heading and next h2
+        start_found = False
+        for element in content_container.find_all(['h2', 'h3', 'h4', 'ul', 'ol', 'table', 'p', 'div']):
+            # Check if we've reached our target section
+            if element.name in ['h2', 'h3']:
+                text = element.get_text().lower()
+                if 'local weekly' in text or ('weekly' in text and 'newspaper' in text):
+                    start_found = True
+                    continue
+                elif start_found and any(x in text for x in ['specialist', 'university', 'defunct', 'see also', 'references']):
+                    # Reached end of section
+                    break
+            
+            if not start_found:
+                continue
+            
+            # Process region subheadings
+            if element.name == 'h4':
+                region = element.get_text().strip()
+                logger.debug(f"Found region: {region}")
+                continue
+            
+            # Extract links from this element
+            links = element.find_all('a', href=True)
+            for link in links:
+                href = link.get('href', '')
+                text = link.get_text().strip()
+                
+                # Filter out non-newspaper links
+                if not text or len(text) < 3:
+                    continue
+                if href.startswith('#') or href.startswith('/wiki/File:') or '/wiki/Category:' in href:
+                    continue
+                if '/wiki/Help:' in href or '/wiki/Template:' in href:
+                    continue
+                if any(skip in text.lower() for skip in ['edit', 'main page', 'contents', 'citation', '[', ']']):
+                    continue
+                
+                # Must be a Wikipedia article link
+                if not href.startswith('/wiki/') or ':' in href.split('/wiki/')[-1]:
+                    continue
+                
+                # Check if this looks like a newspaper name
+                if self._looks_like_newspaper(text) and text not in processed:
+                    processed.add(text)
+                    newspapers.append({
+                        'name': text,
+                        'region': region or 'Unknown',
+                        'wikipedia_url': urljoin('https://en.wikipedia.org', href) if href.startswith('/') else href
+                    })
+                    logger.debug(f"Found newspaper: {text} ({region or 'Unknown'})")
         
         logger.info(f"Found {len(newspapers)} newspapers in Wikipedia list")
         return newspapers

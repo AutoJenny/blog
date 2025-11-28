@@ -1,0 +1,90 @@
+{
+  "surname": "Abernethy",
+  "primary_language_region": "Unknown",
+  "metadata": {
+    "sources": [],
+    "last_updated": "2025-11-27",
+    "research_confidence": "low",
+    "notes": ""
+  },
+  "etymology": {
+    "origin_languages": [],
+    "name_type": "unknown",
+    "literal_meaning": null,
+    "root_words": [],
+    "earliest_known_forms": [],
+    "etymology_summary": "",
+    "uncertainty_flags": []
+  },
+  "early_records": {
+    "earliest_attestation": {
+      "year": 0,
+      "approximate": true,
+      "location": null,
+      "jurisdiction": null,
+      "spelling": null,
+      "record_type": null,
+      "source_hint": null,
+      "notes": ""
+    },
+    "other_attestations": [],
+    "record_confidence": "low",
+    "record_notes": ""
+  },
+  "distribution_historic": {
+    "snapshot_period": null,
+    "regions": [],
+    "summary": "",
+    "uncertainty_flags": []
+  },
+  "distribution_modern": {
+    "reference_period": null,
+    "by_country": [],
+    "notes": ""
+  },
+  "clan_association": {
+    "is_scottish_name": false,
+    "clan_sept_of": [],
+    "territorial_family": null,
+    "kindred_or_confederation": null,
+    "official_status": "unknown",
+    "sources_hint": [],
+    "association_notes": ""
+  },
+  "heraldry": {
+    "has_documented_arms": false,
+    "arms": [],
+    "mottoes": [],
+    "tartans": [],
+    "disclaimer": ""
+  },
+  "variants": {
+    "canonical_form": "",
+    "variant_spellings": [],
+    "language_forms": [],
+    "related_surnames": [],
+    "variant_notes": ""
+  },
+  "migration": {
+    "summary": "",
+    "phases": [],
+    "uncertainty_flags": []
+  },
+  "notables": {
+    "people": [],
+    "notables_notes": ""
+  },
+  "cultural_notes": {
+    "stereotypes_legends": "",
+    "literary_or_media_references": [],
+    "associated_occupations": [],
+    "social_status_history": "",
+    "cultural_summary": ""
+  },
+  "genealogy_resources": {
+    "family_societies": [],
+    "published_histories": [],
+    "record_rich_areas": [],
+    "research_tips": ""
+  }
+}

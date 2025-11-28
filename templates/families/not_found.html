@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Family Not Found - Families & Clans - BlogForge{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 4rem auto; padding: 2rem; text-align: center;">
+    <h1 style="color: #f1f5f9; font-size: 2rem; margin-bottom: 1rem;">Family Not Found</h1>
+    <p style="color: #94a3b8; margin-bottom: 2rem;">Family with ID {{ family_id }} was not found in the database.</p>
+    <a href="/families/" style="color: #8b5cf6; text-decoration: none;">← Back to Families & Clans</a>
+</div>
+{% endblock %}
+

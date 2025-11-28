@@ -146,6 +146,33 @@ def planning_calendar_week_view(post_id):
                           week=week,
                           blueprint_name='planning')
 
+def planning_calendar_scheduling(post_id):
+    """Calendar Scheduling View - Year overview of weeks with Themes, Recipes, Profiles"""
+    from flask import request
+    from datetime import datetime, date
+    
+    # Get current week to start from
+    now = datetime.now()
+    current_year = now.year
+    current_week = now.isocalendar()[1]
+    
+    # Verify post exists (for error handling)
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("SELECT id FROM post WHERE id = %s", (post_id,))
+        if not cursor.fetchone():
+            return render_template('planning/calendar/scheduling.html',
+                                  post_id=post_id,
+                                  current_year=current_year,
+                                  current_week=current_week,
+                                  blueprint_name='planning',
+                                  error='Post not found')
+    
+    return render_template('planning/calendar/scheduling.html',
+                          post_id=post_id,
+                          current_year=current_year,
+                          current_week=current_week,
+                          blueprint_name='planning')
+
 def planning_calendar_ideas(post_id):
     """Idea Generation sub-stage"""
     try:

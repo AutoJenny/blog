@@ -50,6 +50,44 @@ def get_narrative_from_db(family_id: int) -> Optional[Dict]:
 def fact_check_with_openai(narrative_html: str, family_name: str, model: str = "gpt-4.1") -> Optional[str]:
     """Send narrative to OpenAI for fact-checking and refinement."""
     import openai
+    import re
+    
+    # Pre-filter: Remove any quotations that mention other surnames
+    # This prevents cross-contamination from being sent to OpenAI
+    family_name_lower = family_name.lower()
+    family_variations = [family_name_lower, family_name_lower.replace('ie', 'y'), family_name_lower.replace('y', 'ie')]
+    
+    # Find and remove blockquotes that mention other surnames
+    def should_remove_quotation(blockquote_text: str) -> bool:
+        blockquote_lower = blockquote_text.lower()
+        # Check if it mentions the target family
+        mentions_target = any(var in blockquote_lower for var in family_variations)
+        # Check if it mentions other common Scottish surnames
+        other_surnames = ['abernethy', 'stewart', 'campbell', 'douglas', 'bruce', 'wallace', 'fraser', 'macdonald']
+        mentions_other = any(other in blockquote_lower and other not in family_variations for other in other_surnames)
+        
+        # Remove if it mentions other surnames OR doesn't mention the target
+        return mentions_other or not mentions_target
+    
+    # Remove problematic blockquotes
+    blockquote_pattern = r'<blockquote>.*?</blockquote>'
+    def remove_if_other_family(match):
+        blockquote_text = match.group(0)
+        if should_remove_quotation(blockquote_text):
+            return ''  # Remove the entire blockquote
+        return blockquote_text
+    
+    narrative_html = re.sub(blockquote_pattern, remove_if_other_family, narrative_html, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Also remove any inline quotations that mention other surnames
+    # Look for patterns like "By th' sword o' Abernethy" etc.
+    other_surname_patterns = [
+        r'[Bb]y th.*?sword.*?[Aa]bernethy.*?',
+        r'[Aa]bernethy.*?clan.*?stand',
+        r'[Ss]word.*?[Aa]bernethy'
+    ]
+    for pattern in other_surname_patterns:
+        narrative_html = re.sub(pattern, '', narrative_html, flags=re.DOTALL | re.IGNORECASE)
     
     api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
@@ -58,41 +96,39 @@ def fact_check_with_openai(narrative_html: str, family_name: str, model: str = "
     
     client = openai.OpenAI(api_key=api_key)
     
-    system_prompt = """You are a rigorous historical fact-checker and editor specialising in Scottish clan and family histories.
+    system_prompt = f"""You are a professional historical editor specialising in Scottish surnames, families, and clans.
 
-Your task is to:
-1. Fact-check the provided narrative against historical accuracy
-2. Remove or correct any false information, hallucinations, or unsupported claims
-3. Improve the writing style to be historically authoritative but accessible
-4. Remove flowery language and overly dramatic prose
-5. Remove any introductory commentary or conclusion sections - stick to factual history only
-6. Ensure UK-British English spelling throughout
-7. Maintain HTML format with <h3> headings and <blockquote> tags for quotations
-8. Target length: 500-1000 words (condense if longer, expand if shorter with verified facts only)
-9. RETAIN all quotations from the original - they are important historical sources
-10. Use accessible language - avoid technical terms like "diaspora" (use "<name>s Across the World" or similar)
+Your task is to rewrite a historical narrative to be fully accurate and authoritative, cutting out fluff and negative statements so it reads like an authoritative history.
 
-CRITICAL RULES:
-- If a fact cannot be verified or appears to be hallucinated, OMIT it entirely
-- Do NOT add new facts that aren't in the original
-- Do NOT include introductory phrases like "This article discusses..." or "In conclusion..."
-- Do NOT include summary or conclusion paragraphs at the end
+CRITICAL PRINCIPLES:
+- Focus on what IS known and documented, not what isn't
+- Write as an authoritative historian presenting established facts
+- Remove negative statements like "there is no evidence", "cannot be substantiated", "cannot be confirmed", "there is no verifiable evidence"
+- Simply omit unsubstantiated claims rather than stating they cannot be proven
+- Remove phrases like "in conclusion", "in summary", "to conclude", "ultimately", "in the end"
+- Remove introductory commentary like "This family's story begins..." or "Let us explore..."
 - Start directly with factual content about the family (e.g., etymology, origins, early records)
-- End with factual information about the family's current state or legacy, not conclusions
-- Use UK-British spelling (colour, honour, centre, theatre, organise, recognise, analyse, defence, offence, travelled, cancelled, labelled, fulfil, skilful, towards, amongst)
-- Maintain the HTML structure: <p> tags for paragraphs, <h3> for headings, <blockquote> for quotations
-- Be authoritative and direct - write like a scholarly but accessible history book
-- Focus on what happened, when, where, and why - not poetic descriptions
+- End with factual content about the family's current state or legacy, not a conclusion paragraph
+- Write in UK-British spelling throughout
+- Format as HTML with <p>, <h3>, and <blockquote> tags
+- Target 500-1000 words - be comprehensive and detailed about what IS documented
 
 QUOTATIONS - CRITICAL:
-- You MUST retain ALL quotations from the original narrative UNLESS they are found to be probably inauthentic
+- You MUST retain quotations from the original narrative ONLY if they are about {family_name} (or variations like Abercromby for Abercrombie)
+- REMOVE any quotations that mention other surnames (e.g., if writing about Abercrombie, remove quotations about Abernethy, Stewart, etc.)
 - Each quotation should appear ONLY ONCE in the narrative - do NOT duplicate quotations
-- If the same quotation appears multiple times in the original, include it only once in the most appropriate location
-- Quotations should remain in <blockquote> tags with proper formatting
-- Only remove quotations if they are clearly inauthentic, fabricated, or cannot be verified as historical
-- Quotations are valuable historical sources and should be preserved when authentic
 - Format: <p>Contextualisation text.</p><blockquote>Quoted text here</blockquote><p>Continuation.</p>
-- Before removing any quotation, verify it is likely inauthentic - when in doubt, retain it
+- CRITICAL: Zero tolerance for cross-contamination - if a quotation mentions another surname, remove it entirely
+
+STYLE - CRITICAL:
+- Write as an authoritative historian presenting established historical facts
+- Use precise, clear language that conveys what is documented and known
+- Avoid flowery language, dramatic flourishes, or romanticised descriptions
+- Do NOT include negative statements about what cannot be proven
+- Instead of "There is no evidence that X happened", write about what DID happen
+- Instead of "Claims cannot be substantiated", simply omit unsubstantiated claims
+- Present the family's history based on documented sources and established facts
+- Be comprehensive - cover etymology, early records, historical development, notable figures, modern distribution
 
 LANGUAGE - CRITICAL:
 - Avoid technical/academic terms where simpler alternatives exist
@@ -100,19 +136,15 @@ LANGUAGE - CRITICAL:
 - Replace "migration patterns" with "movements" or "where {family_name}s settled"
 - Use accessible, everyday language while maintaining historical accuracy"""
 
-    user_prompt = f"""Please fact-check and refine this historical narrative about the {family_name} family/clan.
+    user_prompt = f"""Please rewrite this historical narrative about the {family_name} family/clan fully accurately, also cutting out fluff like "in conclusion..." so it reads more like an authoritative history.
 
-CRITICAL REQUIREMENTS:
-- Remove any false information, hallucinations, or unsupported claims
-- RETAIN ALL quotations from the original UNLESS they are found to be probably inauthentic
-- Each quotation should appear ONLY ONCE - do not duplicate quotations that appear multiple times in the original
-- If a quotation appears multiple times, include it once in the most appropriate location
-- Improve the style to be authoritative but accessible, without flowery language
-- Remove any introductory commentary or conclusions - stick to factual history only
-- Use UK-British spelling throughout
-- Avoid technical terms like "diaspora" - use "{family_name}s Across the World" or similar accessible language
-- Target 500-1000 words
-- Maintain HTML format with <p>, <h3>, and <blockquote> tags
+CRITICAL: Remove any quotations that mention surnames other than {family_name} (or its variations like Abercromby for Abercrombie). If you see a quotation about Abernethy, Stewart, Campbell, or any other surname, REMOVE IT ENTIRELY - this is cross-contamination and must not appear in the narrative.
+
+Focus on what IS documented and known. Remove negative statements like "there is no evidence" or "cannot be substantiated" - simply omit unsubstantiated claims rather than stating they cannot be proven.
+
+Write in an authoritative, accessible style without flowery language. Use UK-British spelling throughout. Target 500-1000 words. Maintain HTML format with <p>, <h3>, and <blockquote> tags.
+
+Return ONLY the HTML content - do NOT include any explanatory text, justifications, or notes after the HTML.
 
 Here is the narrative:
 
@@ -131,7 +163,26 @@ Here is the narrative:
         )
         
         refined_narrative = response.choices[0].message.content.strip()
-        return refined_narrative
+        
+        # Extract only the HTML content - remove any explanatory text after </html> or </body>
+        # OpenAI sometimes adds explanations after the HTML
+        import re
+        # Try to find the HTML content
+        html_match = re.search(r'(<!DOCTYPE html>.*?</html>)', refined_narrative, re.DOTALL | re.IGNORECASE)
+        if html_match:
+            refined_narrative = html_match.group(1)
+        else:
+            # If no DOCTYPE, try to find content between <html> and </html>
+            html_match = re.search(r'(<html.*?</html>)', refined_narrative, re.DOTALL | re.IGNORECASE)
+            if html_match:
+                refined_narrative = html_match.group(1)
+            else:
+                # If no HTML tags, try to find content up to </body>
+                body_match = re.search(r'(.*?</body>)', refined_narrative, re.DOTALL | re.IGNORECASE)
+                if body_match:
+                    refined_narrative = body_match.group(1)
+        
+        return refined_narrative.strip()
         
     except Exception as e:
         print(f"Error calling OpenAI API: {e}")

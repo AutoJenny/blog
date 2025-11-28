@@ -34,12 +34,18 @@ def sources_management():
     cache_status = get_cache_status()
     item_stats = get_item_stats()
     
+    # Split sources into local (Round Scotland) and national
+    local_sources = [s for s in sources if s.get('region')]
+    national_sources = [s for s in sources if not s.get('region')]
+    
     # Get cached items for preview (recent 20)
     recent_items = get_cached_items(days_back=14, limit=20)
     
     return render_template(
         'newsletter/sources.html',
         sources=sources,
+        local_sources=local_sources,
+        national_sources=national_sources,
         cache_status=cache_status,
         item_stats=item_stats,
         recent_items=recent_items,
@@ -109,9 +115,93 @@ def toggle_source(source_id: int):
 
 @bp.route('/newsletter/sources/fetch', methods=['POST'])
 def trigger_fetch():
-    """Manually trigger source prefetch job."""
+    """Manually trigger source prefetch job for all sources."""
     result = run_prefetch()
     # Could show success/error message, but for now just redirect
+    return redirect(url_for('newsletter_sources.sources_management'))
+
+
+@bp.route('/newsletter/sources/fetch/local', methods=['POST'])
+def trigger_fetch_local():
+    """Manually trigger source prefetch job for local sources only."""
+    from newsletter.jobs.prefetch_sources import run as run_prefetch
+    from config.database import db_manager
+    
+    # Temporarily disable national sources, fetch, then re-enable
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            # Get IDs of enabled national sources to restore later
+            cur.execute("""
+                SELECT id FROM newsletter_snapshot_source
+                WHERE region IS NULL AND enabled = true
+            """)
+            national_ids = [row['id'] for row in cur.fetchall()]
+            
+            # Disable national sources temporarily
+            if national_ids:
+                cur.execute("""
+                    UPDATE newsletter_snapshot_source
+                    SET enabled = false
+                    WHERE id = ANY(%s)
+                """, (national_ids,))
+            
+            # Run prefetch (will only process enabled local sources)
+            try:
+                result = run_prefetch()
+            finally:
+                # Always re-enable national sources
+                if national_ids:
+                    cur.execute("""
+                        UPDATE newsletter_snapshot_source
+                        SET enabled = true
+                        WHERE id = ANY(%s)
+                    """, (national_ids,))
+            
+            conn.commit()
+    
+    flash('Local sources fetched successfully', 'success')
+    return redirect(url_for('newsletter_sources.sources_management'))
+
+
+@bp.route('/newsletter/sources/fetch/national', methods=['POST'])
+def trigger_fetch_national():
+    """Manually trigger source prefetch job for national sources only."""
+    from newsletter.jobs.prefetch_sources import run as run_prefetch
+    from config.database import db_manager
+    
+    # Temporarily disable local sources, fetch, then re-enable
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cur:
+            # Get IDs of enabled local sources to restore later
+            cur.execute("""
+                SELECT id FROM newsletter_snapshot_source
+                WHERE region IS NOT NULL AND enabled = true
+            """)
+            local_ids = [row['id'] for row in cur.fetchall()]
+            
+            # Disable local sources temporarily
+            if local_ids:
+                cur.execute("""
+                    UPDATE newsletter_snapshot_source
+                    SET enabled = false
+                    WHERE id = ANY(%s)
+                """, (local_ids,))
+            
+            # Run prefetch (will only process enabled national sources)
+            try:
+                result = run_prefetch()
+            finally:
+                # Always re-enable local sources
+                if local_ids:
+                    cur.execute("""
+                        UPDATE newsletter_snapshot_source
+                        SET enabled = true
+                        WHERE id = ANY(%s)
+                    """, (local_ids,))
+            
+            conn.commit()
+    
+    flash('National sources fetched successfully', 'success')
     return redirect(url_for('newsletter_sources.sources_management'))
 
 

@@ -1,0 +1,947 @@
+{
+  "current_year": 2025,
+  "current_week": 48,
+  "generated_at": "2025-11-27T18:43:05.749998",
+  "weeks": [
+    {
+      "year": 2025,
+      "week": 48,
+      "schedule": [
+        {
+          "type": "theme_selection",
+          "selected_theme_id": 8,
+          "theme_title": "St Andrew's Day - Scotland's Patron Saint",
+          "theme_description": "Celebrating Scotland's patron saint and national day",
+          "updated_at": "2025-11-25T14:40:42.607869"
+        },
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Cullen Skink",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 1,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2025,
+      "week": 49,
+      "schedule": [
+        {
+          "type": "theme_selection",
+          "selected_theme_id": 1,
+          "theme_title": "Scottish Cashmere",
+          "theme_description": "Cashmere garments from Scotland are recognised as the world's finest, with Scottish producers supplying most of the world's most prestige labels. This article looks at the history and production.",
+          "updated_at": "2025-11-04T12:16:34.307726"
+        },
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Rumbledethumps",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 2,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2025,
+      "week": 50,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Forfar Bridie",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 3,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2025,
+      "week": 51,
+      "schedule": [
+        {
+          "type": "theme_selection",
+          "selected_theme_id": 5,
+          "theme_title": "Festive Music & Ceilidhs",
+          "theme_description": "Traditional Scottish music and ceilidh dancing for the holidays",
+          "updated_at": "2025-11-24T21:58:44.850932"
+        },
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Cock-a-Leekie Soup",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 4,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2025,
+      "week": 52,
+      "schedule": [
+        {
+          "type": "theme_selection",
+          "selected_theme_id": 7,
+          "theme_title": "Winter Solstice / Yule Traditions",
+          "theme_description": "Celtic winter solstice and Yule celebrations",
+          "updated_at": "2025-11-24T22:07:29.397877"
+        },
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Haggis, Neeps & Tatties",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 5,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 1,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Scotch Broth",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 6,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 2,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Mince & Tatties",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 7,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 3,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Stovies",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 8,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 4,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Arbroath Smokies",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 9,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 5,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Scotch Pie",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 10,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 6,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Bannocks (Oat & Bere)",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 11,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 7,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Oatcakes",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 12,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 8,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Selkirk Bannock",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 13,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 9,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Soda & Potato Scones",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 14,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 10,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Shortbread (Three Regional Styles)",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 15,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 11,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Dundee Cake",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 16,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 12,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Clootie Dumpling",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 17,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 13,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Cranachan",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 18,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 14,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Rhubarb Fool",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 19,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 15,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Smoked Salmon with Whisky Cream Sauce",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 20,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 16,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Hot-Smoked Trout Salad",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 21,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 17,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Fish Pie with Leeks & Cheddar Mash",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 22,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 18,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Kedgeree (Scottish Colonial Twist)",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 23,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 19,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Venison Stew with Juniper",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 24,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 20,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Salmon en Croute (Scottish Style)",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 25,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 21,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Raspberry Cranachan Parfait",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 26,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 22,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Ecclefechan Tart",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 27,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 23,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Treacle Scones",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 28,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 24,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Clootie Dumpling (Harvest Version)",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 29,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 25,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Scottish Lamb Hotpot",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 30,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 26,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Beef & Ale Stew with Root Vegetables",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 31,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 27,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Roe Deer with Rowan Jelly",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 32,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 28,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Game Pie",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 33,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 29,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Leek & Barley Broth",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 34,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 30,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Haddock Chowder with Oats",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 35,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 31,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Black Bun",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 36,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 32,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Tablet",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 37,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 33,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Atholl Brose",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 38,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 34,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Hot Toddy",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 39,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 35,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Whisky Marmalade",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 40,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 36,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Rowan Jelly",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 41,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 37,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Elderflower Cordial",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 42,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 38,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Raspberry Jam",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 43,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 39,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Bere Bread",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 44,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 40,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Crowdie Cheese with Oatcakes",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 45,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 41,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Scottish Kedgeree with Smoked Haddock",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 46,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 42,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Fishcakes with Oat Crumb",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 47,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 43,
+      "schedule": [
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Hogmanay Sausage Rolls",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 48,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 44,
+      "schedule": [
+        {
+          "type": "theme_selection",
+          "selected_theme_id": 99,
+          "theme_title": "Halloween / Samhain Origins",
+          "theme_description": "Celtic roots of Halloween and Samhain traditions",
+          "updated_at": "2025-09-27T16:35:27.251357"
+        },
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Cranberry Cranachan (Modern Twist)",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 49,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 45,
+      "schedule": [
+        {
+          "type": "theme_selection",
+          "selected_theme_id": 104,
+          "theme_title": "Guy Fawkes Night - Scottish Connections",
+          "theme_description": "Scottish connections to Guy Fawkes Night and gunpowder plot",
+          "updated_at": "2025-09-27T15:55:32.237780"
+        },
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Whisky Truffles",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 50,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 46,
+      "schedule": [
+        {
+          "type": "theme_selection",
+          "selected_theme_id": 2,
+          "theme_title": "The Lion Rampant",
+          "theme_description": "Scotland's national symbol, the Lion Rampant: how it evolved as a cultural icon and why it still matters today.",
+          "updated_at": "2025-11-13T21:10:04.992297"
+        },
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Festive Shortbread Selection",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 51,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "week": 47,
+      "schedule": [
+        {
+          "type": "theme_selection",
+          "selected_theme_id": 4,
+          "theme_title": "Scottish football",
+          "theme_description": "A primer about Scottish domestic and international football, in celebration of Scotland qualifying this week for the World Cup.",
+          "updated_at": "2025-11-20T11:36:13.400077"
+        },
+        {
+          "type": "post",
+          "post_id": null,
+          "post_title": "Scotch Collops (New Year's Dish)",
+          "post_status": "draft",
+          "item_type": "recipe",
+          "recipe_week_number": 52,
+          "scheduled_date": null,
+          "weekday": 1,
+          "_definition": true
+        }
+      ]
+    }
+  ]
+}

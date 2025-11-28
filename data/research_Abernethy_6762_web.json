@@ -1,0 +1,255 @@
+{
+  "surname": "Abernethy",
+  "primary_language_region": "Scottish",
+  "metadata": {
+    "notes": "",
+    "sources": [],
+    "last_updated": "2025-11-27",
+    "research_confidence": "low"
+  },
+  "etymology": {
+    "name_type": "locational",
+    "root_words": [
+      {
+        "language": "Gaelic",
+        "form": "Abernethy",
+        "meaning": "the mouth of a river or estuary"
+      }
+    ],
+    "literal_meaning": null,
+    "origin_languages": [
+      "Pictish",
+      "Caledonian Welsh"
+    ],
+    "etymology_summary": "The surname Abernethy is of non-Gaelic Pictish origin, derived from the place name in Strathspey, Scotland. The word is believed to come from Gaelic elements, 'aber,' meaning the mouth of a river or estuary, and 'nethy,' derived from 'Neithich,' a name of a river.",
+    "uncertainty_flags": [],
+    "earliest_known_forms": [
+      {
+        "spelling": "Abernethy",
+        "approx_date": null,
+        "region": "Scotland",
+        "source_hint": "Wikipedia"
+      }
+    ]
+  },
+  "early_records": {
+    "record_notes": "",
+    "record_confidence": "low",
+    "other_attestations": [],
+    "earliest_attestation": {
+      "year": null,
+      "notes": "",
+      "location": null,
+      "spelling": null,
+      "approximate": true,
+      "record_type": null,
+      "source_hint": null,
+      "jurisdiction": null
+    }
+  },
+  "distribution_historic": {
+    "regions": [
+      {
+        "country": "Perth and Kinross",
+        "subregion_type": "county",
+        "subregion_name": "Perth and Kinross",
+        "relative_frequency": "very_high",
+        "evidence_hint": "Clan Abernethy History - ScotClans, GENUKI: Abernethy, Perthshire"
+      },
+      {
+        "country": "Scotland",
+        "subregion_type": "county",
+        "subregion_name": "Scotland",
+        "relative_frequency": "high",
+        "evidence_hint": "Abernethy (surname) - Wikipedia, Abernethy, Perth and Kinross - Wikipedia"
+      },
+      {
+        "country": "Germany",
+        "subregion_type": "county",
+        "subregion_name": "Germany",
+        "relative_frequency": "medium",
+        "evidence_hint": "Clan Abernethy History - Scotsprint"
+      }
+    ],
+    "summary": "Historically, the surname Abernethy clustered in Perth and Kinross, Scotland, with a significant presence also in Scotland as a whole. There is evidence of dispersal to Germany, particularly during the 17th century.",
+    "snapshot_period": null,
+    "uncertainty_flags": [
+      "Result 2: Limited data on Abernethy's early history",
+      "Result 3: Uncertain information on Abernethy's global distribution"
+    ]
+  },
+  "distribution_modern": {
+    "notes": "Abernethy is a Scottish clan surname with non-Gaelic Pictish origins, primarily found in Scotland and the United States.",
+    "by_country": [
+      {
+        "country": "Scotland",
+        "relative_frequency": "very_low",
+        "approx_rank": null,
+        "trend": "stable"
+      },
+      {
+        "country": "United States",
+        "relative_frequency": "very_low",
+        "approx_rank": null,
+        "trend": "unknown"
+      }
+    ],
+    "reference_period": null
+  },
+  "clan_association": {
+    "clan_sept_of": [
+      "Fraser",
+      "Leslie"
+    ],
+    "sources_hint": [
+      "https://www.scotclans.com/blogs/clans/a/Clan-Abernethy-History",
+      "https://tartanvault.com/family/abernethy/",
+      "https://www.cosca.scot/find-clan/abernethy"
+    ],
+    "official_status": "recognized",
+    "is_scottish_name": true,
+    "association_notes": "Abernethy is an ancient Scottish clan with roots in the country's history. The clan's name is derived from the Gaelic 'Obar Neithich', meaning 'confluence of the Nethy'. There are no known sept associations for Abernethy, but it is a recognized clan with a long history.",
+    "territorial_family": null,
+    "kindred_or_confederation": null
+  },
+  "heraldry": {
+    "arms": [
+      {
+        "armiger_name": "Clan Abernethy",
+        "jurisdiction": "Scotland",
+        "approx_date": null,
+        "blazon": "A raven Sable, beaked and membered, Gules",
+        "notes": ""
+      }
+    ],
+    "mottoes": [
+      {
+        "text": "Salus Per Christum (Salvation through Christ)",
+        "language": "Latin",
+        "translation": null,
+        "attribution": ""
+      }
+    ],
+    "tartans": [
+      {
+        "name": "Leslie",
+        "status": "clan"
+      }
+    ],
+    "disclaimer": "Heraldry and tartans belong to individuals/registered entities, not automatically to all with the surname. Do not claim a generic 'family coat of arms' for all bearers.",
+    "has_documented_arms": true,
+    "uncertainty_flags": [
+      "mottoes"
+    ],
+    "source_hint": {
+      "mottoes": [
+        "https://en.wikipedia.org/wiki/Clan_Abernethy",
+        "https://www.scotclans.com/blogs/clans/a/bernethy/clan-abernethy-crest-coats-of-arms"
+      ],
+      "tartans": [
+        "https://scotstee.com/blogs/scottish-clans/clan-abernethy-tartans-crest-and-the-story-behind"
+      ]
+    }
+  },
+  "variants": {
+    "variant_notes": "Abernathy is the most commonly found variant in the United States, while Abernethy is more common in Scotland. Some variants like Abernathie or Abernattie are actually different in origin and should not be confused with Abernethy.",
+    "canonical_form": "Abernethy",
+    "related_surnames": [
+      {
+        "name": "Fraser",
+        "relationship_type": "Cognate"
+      },
+      {
+        "name": "Leslie",
+        "relationship_type": "Sept"
+      }
+    ],
+    "variant_spellings": [
+      "Abernathy",
+      "Abernethie",
+      "Abernethi",
+      "Abirnethy",
+      "Abirnethie",
+      "Abernithy",
+      "Abernithi"
+    ],
+    "uncertainty_flags": {
+      "variant_notes": [
+        "Source discrepancy"
+      ]
+    },
+    "source_hint": [
+      "https://www.igenea.com/en/surnames/a/abernethy",
+      "https://en.wikipedia.org/wiki/Abernethy_(surname)",
+      "https://www.allnamemeaning.com/archives/1731"
+    ]
+  },
+  "migration": {
+    "phases": [
+      {
+        "period": "12th century",
+        "from_regions": [],
+        "to_regions": [],
+        "drivers": [
+          "Orm deAbernethy's son Lawrence"
+        ],
+        "evidence_hint": "Scotland's People, ScotClans"
+      },
+      {
+        "period": "18th-19th centuries",
+        "from_regions": [],
+        "to_regions": [],
+        "drivers": [
+          "Industrialization",
+          "Economic opportunities"
+        ],
+        "evidence_hint": "FamilySearch, Scotland's People"
+      }
+    ],
+    "summary": "The surname Abernethy originated in Scotland, with earliest records dating back to the 12th century. It was associated with the Strathearn Monastery of Abernethy in Perthshire and later with the lands of Ormison in East Lothian.",
+    "uncertainty_flags": []
+  },
+  "notables": {
+    "people": [
+      {
+        "short_bio": "Alexander de Abernethy (after 1271 - c. 1315) was a Scottish baron descended from lay abbots of Abernethy.",
+        "notability_type": "Politics",
+        "uncertainty_flags": null
+      },
+      {
+        "short_bio": "Hugh Abernethy, 1st Lord Abernethy- a prominent figure in the 13th century",
+        "notability_type": "Politics",
+        "uncertainty_flags": null
+      }
+    ],
+    "notables_notes": ""
+  },
+  "cultural_notes": {
+    "cultural_summary": "Abernethy has strong historical and cultural associations with early medieval history, Pictish culture, early Christianity, and the suffragettes. The village is situated in rural Strathearn, 8 miles south-east of the city of Perth, near the confluence of the River Earn and the River Tay.",
+    "uncertainty_flags": [],
+    "stereotypes_legends": "",
+    "social_status_history": "Formerly the site of a number of Roman forts and settlements, Abernethy was an important centre for early Christianity.",
+    "associated_occupations": [],
+    "literary_or_media_references": []
+  },
+  "genealogy_resources": {
+    "research_tips": "",
+    "family_societies": [
+      {
+        "url": "https://www.scotclans.com/blogs/clans/a/Clan-Abernethy-History",
+        "name": "ScotClans"
+      }
+    ],
+    "record_rich_areas": [
+      {
+        "url": "https://forebears.io/scotland/perthshire/Abernethy/Court-and-Legal-Records-Protocol-Book-of-Sir-Robert-Rollock-1534-1552",
+        "type": "Parish Registers"
+      },
+      {
+        "url": "https://www.familysearch.org/en/wiki/index.php/Abernethy,_Perthshire,_Scotland_Genealogy#Census_Records",
+        "type": "Census Records"
+      }
+    ],
+    "published_histories": []
+  }
+}
