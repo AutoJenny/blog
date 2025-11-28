@@ -1,0 +1,794 @@
+{% extends "base.html" %}
+
+{% block title %}{{ family.name }} - Families & Clans - BlogForge{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/product-data-review.css') }}">
+<style>
+    .family-detail {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .detail-header {
+        margin-bottom: 2rem;
+    }
+    
+    .detail-header h1 {
+        color: #f1f5f9;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .detail-badges {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .badge-clan {
+        background: #8b5cf6;
+        color: white;
+    }
+    
+    .badge-canonical {
+        background: #10b981;
+        color: white;
+    }
+    
+    .badge-variant {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .badge-history {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .badge-research {
+        background: #ec4899;
+        color: white;
+    }
+    
+    .badge-virtual {
+        background: #64748b;
+        color: white;
+    }
+    
+    .detail-section {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-section h2 {
+        color: #f1f5f9;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #334155;
+    }
+    
+    .detail-section h3 {
+        color: #cbd5e1;
+        font-size: 1.125rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .data-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .data-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .data-label {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .data-value {
+        color: #f1f5f9;
+        font-size: 1rem;
+    }
+    
+    .relationship-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .relationship-item {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .relationship-item a {
+        color: #8b5cf6;
+        text-decoration: none;
+    }
+    
+    .relationship-item a:hover {
+        text-decoration: underline;
+    }
+    
+    .resource-item {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .resource-type {
+        color: #8b5cf6;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+    }
+    
+    .resource-category {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .resource-value {
+        color: #f1f5f9;
+        margin-top: 0.5rem;
+        word-break: break-word;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        color: #8b5cf6;
+        text-decoration: none;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    
+    .empty-state {
+        color: #64748b;
+        font-style: italic;
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #334155;
+    }
+    
+    .tab {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        margin-bottom: -2px;
+    }
+    
+    .tab:hover {
+        color: #cbd5e1;
+    }
+    
+    .tab.active {
+        color: #8b5cf6;
+        border-bottom-color: #8b5cf6;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .research-data-section {
+        background: #0f172a;
+        border: 1px solid #475569;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .research-data-section pre {
+        color: #cbd5e1;
+        font-size: 0.875rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    .research-field {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #334155;
+    }
+    
+    .research-field:last-child {
+        border-bottom: none;
+    }
+    
+    .research-field-label {
+        color: #8b5cf6;
+        font-weight: 600;
+        font-size: 1.125rem;
+        margin-bottom: 0.75rem;
+        text-transform: capitalize;
+    }
+    
+    .research-field-value {
+        color: #cbd5e1;
+    }
+    
+    .research-field-value pre {
+        background: #0f172a;
+        padding: 1rem;
+        border-radius: 6px;
+        border: 1px solid #334155;
+        margin-top: 0.5rem;
+    }
+    
+    .research-array-item {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .research-array-item pre {
+        margin: 0;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+    
+    .narrative-content h3 {
+        color: #8b5cf6;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #334155;
+    }
+    
+    .narrative-content p {
+        margin-bottom: 1.25rem;
+    }
+    
+    .narrative-content blockquote {
+        margin: 1.5rem 2rem;
+        padding: 1rem 1.5rem;
+        border-left: 4px solid #8b5cf6;
+        background: #0f172a;
+        font-style: italic;
+        color: #cbd5e1;
+        line-height: 1.8;
+    }
+    
+    .narrative-content blockquote br {
+        display: block;
+        margin: 0.25rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="family-detail">
+    <a href="/families/" class="back-link">← Back to Families & Clans</a>
+    
+    <div class="detail-header">
+        <h1>{{ family.name }}</h1>
+        <div class="detail-badges">
+            {% if family.is_clan %}
+            <span class="badge badge-clan">Clan</span>
+            {% endif %}
+            {% if family.is_canonical %}
+            <span class="badge badge-canonical">Canonical</span>
+            {% else %}
+            <span class="badge badge-variant">Variant</span>
+            {% endif %}
+            {% if family.has_history %}
+            <span class="badge badge-history">Has History</span>
+            {% endif %}
+            {% if family.research_data %}
+            <span class="badge badge-research">Has Research Data</span>
+            {% endif %}
+            {% if family.is_virtual %}
+            <span class="badge badge-virtual">Virtual</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('database')">Database Data (CSV Import)</button>
+        {% if family.research_data %}
+        <button class="tab" onclick="switchTab('research')">Research Data (Web Research)</button>
+        {% endif %}
+    </div>
+    
+    <!-- Database Data Tab -->
+    <div id="tab-database" class="tab-content active">
+        <div class="detail-section">
+            <h2>Basic Information</h2>
+            <div class="data-grid">
+                <div class="data-item">
+                    <span class="data-label">Family ID</span>
+                    <span class="data-value">{{ family.id }}</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">Name</span>
+                    <span class="data-value">{{ family.name }}</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">Is Clan</span>
+                    <span class="data-value">{{ 'Yes' if family.is_clan else 'No' }}</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">Is Canonical</span>
+                    <span class="data-value">{{ 'Yes' if family.is_canonical else 'No' }}</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">Has History</span>
+                    <span class="data-value">{{ 'Yes' if family.has_history else 'No' }}</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">Has Research Data</span>
+                    <span class="data-value">{{ 'Yes' if family.research_data else 'No' }}</span>
+                </div>
+            </div>
+        </div>
+        
+        {% if family.aliases or family.variants or family.spelling_of or family.septs or family.sept_of %}
+        <div class="detail-section">
+            <h2>Relationships</h2>
+            
+            {% if family.aliases %}
+            <h3>Aliases</h3>
+            <div class="relationship-list">
+                {% for alias in family.aliases %}
+                <div class="relationship-item">{{ alias }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if family.variants %}
+            <h3>Spelling Variants (of this name)</h3>
+            <div class="relationship-list">
+                {% for variant in family.variants %}
+                <div class="relationship-item">
+                    <a href="/families/{{ variant.id }}">{{ variant.name }}</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if family.spelling_of %}
+            <h3>Spelling Variant Of</h3>
+            <div class="relationship-list">
+                {% for parent in family.spelling_of %}
+                <div class="relationship-item">
+                    <a href="/families/{{ parent.id }}">{{ parent.name }}</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if family.septs %}
+            <h3>Septs (sub-families of this clan)</h3>
+            <div class="relationship-list">
+                {% for sept in family.septs %}
+                <div class="relationship-item">
+                    <a href="/families/{{ sept.id }}">{{ sept.name }}</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if family.sept_of %}
+            <h3>Sept Of (clan this belongs to)</h3>
+            <div class="relationship-list">
+                {% for clan in family.sept_of %}
+                <div class="relationship-item">
+                    <a href="/families/{{ clan.id }}">{{ clan.name }}</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if family.resources %}
+        <div class="detail-section">
+            <h2>Resources</h2>
+            {% for resource in family.resources %}
+            <div class="resource-item">
+                <div class="resource-type">{{ resource.resource_type }}</div>
+                {% if resource.resource_category %}
+                <div class="resource-category">{{ resource.resource_category }}</div>
+                {% endif %}
+                {% if resource.resource_value %}
+                <div class="resource-value">{{ resource.resource_value[:200] }}{% if resource.resource_value|length > 200 %}...{% endif %}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if family.designs %}
+        <div class="detail-section">
+            <h2>Designs</h2>
+            <div class="relationship-list">
+                {% for design in family.designs %}
+                <div class="relationship-item">
+                    Design ID: {{ design.design_id }}
+                    {% if design.design_year %}({{ design.design_year }}){% endif %}
+                    {% if design.is_default %}<strong> - Default</strong>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if not family.aliases and not family.variants and not family.spelling_of and not family.septs and not family.sept_of and not family.resources and not family.designs %}
+        <div class="detail-section">
+            <div class="empty-state">No additional database information available for this family.</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Research Data Tab -->
+    {% if family.research_data %}
+    <div id="tab-research" class="tab-content">
+        {% if family.research_data.metadata and family.research_data.metadata.narrative_fact_checked %}
+        <div class="detail-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">Fact-Checked Historical Narrative</h2>
+                <a href="/families/{{ family.id }}/narrative" 
+                   style="color: #8b5cf6; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #8b5cf6; border-radius: 6px; font-size: 0.875rem; transition: all 0.2s;"
+                   onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
+                   onmouseout="this.style.background='transparent'; this.style.color='#8b5cf6';">
+                    View Shareable Page →
+                </a>
+            </div>
+            <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.875rem;">
+                This narrative has been fact-checked and refined by OpenAI. Last updated: {{ family.research_data.metadata.last_updated if family.research_data.metadata.last_updated else 'Unknown' }}
+                {% if family.research_data.metadata.narrative_fact_checked_word_count %}
+                | Word count: {{ family.research_data.metadata.narrative_fact_checked_word_count }}
+                {% endif %}
+            </p>
+            <div class="narrative-content" style="background: #0f172a; padding: 2rem; border-radius: 6px; border: 1px solid #334155; color: #cbd5e1; line-height: 1.9; font-family: 'Georgia', 'Times New Roman', serif; font-size: 1.125rem;">
+                {{ family.research_data.metadata.narrative_fact_checked | safe }}
+            </div>
+        </div>
+        {% elif family.research_data.metadata and family.research_data.metadata.narrative %}
+        <div class="detail-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">Extended Historical Narrative (Unchecked)</h2>
+                <a href="/families/{{ family.id }}/narrative" 
+                   style="color: #8b5cf6; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #8b5cf6; border-radius: 6px; font-size: 0.875rem; transition: all 0.2s;"
+                   onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
+                   onmouseout="this.style.background='transparent'; this.style.color='#8b5cf6';">
+                    View Shareable Page →
+                </a>
+            </div>
+            <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.875rem;">
+                This narrative was generated from the research data below. Last updated: {{ family.research_data.metadata.last_updated if family.research_data.metadata.last_updated else 'Unknown' }}
+                {% if family.research_data.metadata.narrative_word_count %}
+                | Word count: {{ family.research_data.metadata.narrative_word_count }}
+                {% endif %}
+            </p>
+            <div class="narrative-content" style="background: #0f172a; padding: 2rem; border-radius: 6px; border: 1px solid #334155; color: #cbd5e1; line-height: 1.9; font-family: 'Georgia', 'Times New Roman', serif; font-size: 1.125rem;">
+                {{ family.research_data.metadata.narrative | safe }}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="detail-section">
+            <h2>Research Data</h2>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem;">
+                This data was generated through web research and LLM synthesis. 
+                Last updated: {{ family.research_data.metadata.last_updated if family.research_data.metadata and family.research_data.metadata.last_updated else 'Unknown' }}
+            </p>
+            
+            {% if family.research_data.surname %}
+            <div class="research-field">
+                <div class="research-field-label">Surname</div>
+                <div class="research-field-value">{{ family.research_data.surname }}</div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.primary_language_region %}
+            <div class="research-field">
+                <div class="research-field-label">Primary Language Region</div>
+                <div class="research-field-value">{{ family.research_data.primary_language_region }}</div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.metadata %}
+            <div class="research-field">
+                <div class="research-field-label">Metadata</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.metadata | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.etymology %}
+            <div class="research-field">
+                <div class="research-field-label">Etymology</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.etymology | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.early_records %}
+            <div class="research-field">
+                <div class="research-field-label">Early Records</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.early_records | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.distribution_historic %}
+            <div class="research-field">
+                <div class="research-field-label">Historic Distribution</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.distribution_historic | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.distribution_modern %}
+            <div class="research-field">
+                <div class="research-field-label">Modern Distribution</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.distribution_modern | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.clan_association %}
+            <div class="research-field">
+                <div class="research-field-label">Clan Association</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.clan_association | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.heraldry %}
+            <div class="research-field">
+                <div class="research-field-label">Heraldry</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.heraldry | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.variants %}
+            <div class="research-field">
+                <div class="research-field-label">Variants</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.variants | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.migration %}
+            <div class="research-field">
+                <div class="research-field-label">Migration</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.migration | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.notables %}
+            <div class="research-field">
+                <div class="research-field-label">Notables</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.notables | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.cultural_notes %}
+            <div class="research-field">
+                <div class="research-field-label">Cultural Notes</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.cultural_notes | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.genealogy_resources %}
+            <div class="research-field">
+                <div class="research-field-label">Genealogy Resources</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data.genealogy_resources | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if family.research_data.story_facts %}
+            <div class="research-field">
+                <div class="research-field-label">Story Facts (Second Pass)</div>
+                <div class="research-field-value">
+                    <h3 style="color: #8b5cf6; margin-top: 1rem; margin-bottom: 0.5rem;">Time Span</h3>
+                    {% if family.research_data.story_facts.time_span %}
+                    <p style="color: #cbd5e1; margin-bottom: 0.5rem;">
+                        <strong>Earliest:</strong> {{ family.research_data.story_facts.time_span.earliest_century or 'Unknown' }}<br>
+                        <strong>Latest:</strong> {{ family.research_data.story_facts.time_span.latest_century or 'Unknown' }}
+                        {% if family.research_data.story_facts.time_span.notes %}
+                        <br><strong>Notes:</strong> {{ family.research_data.story_facts.time_span.notes }}
+                        {% endif %}
+                    </p>
+                    {% endif %}
+                    
+                    {% if family.research_data.story_facts.key_figures %}
+                    <h3 style="color: #8b5cf6; margin-top: 1.5rem; margin-bottom: 0.5rem;">Key Figures ({{ family.research_data.story_facts.key_figures|length }})</h3>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        {% for figure in family.research_data.story_facts.key_figures %}
+                        <div class="research-array-item">
+                            {% if figure is mapping %}
+                            <strong>{{ figure.name }}</strong>
+                            {% if figure.titles_or_roles %}<span style="color: #94a3b8;"> - {{ figure.titles_or_roles|join(', ') }}</span>{% endif %}
+                            {% if figure.one_line %}<p style="margin-top: 0.25rem; color: #cbd5e1;">{{ figure.one_line }}</p>{% endif %}
+                            {% else %}
+                            {{ figure }}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if family.research_data.story_facts.turning_points %}
+                    <h3 style="color: #8b5cf6; margin-top: 1.5rem; margin-bottom: 0.5rem;">Turning Points ({{ family.research_data.story_facts.turning_points|length }})</h3>
+                    {% for point in family.research_data.story_facts.turning_points %}
+                    <div class="research-array-item">
+                        <strong>{{ point.title or point.event or 'Unknown Event' }}</strong>
+                        {% if point.approx_date %}<span style="color: #94a3b8;"> ({{ point.approx_date }})</span>{% endif %}
+                        {% if point.summary %}<p style="margin-top: 0.25rem; color: #cbd5e1;">{{ point.summary }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if family.research_data.story_facts.places %}
+                    <h3 style="color: #8b5cf6; margin-top: 1.5rem; margin-bottom: 0.5rem;">Places ({{ family.research_data.story_facts.places|length }})</h3>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        {% for place in family.research_data.story_facts.places %}
+                        <div class="research-array-item">
+                            {% if place is mapping %}
+                            <strong>{{ place.name }}</strong>
+                            {% if place.location_description %}<span style="color: #94a3b8;"> - {{ place.location_description }}</span>{% endif %}
+                            {% else %}
+                            {{ place }}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if family.research_data.story_facts.legends_and_dark_episodes %}
+                    <h3 style="color: #8b5cf6; margin-top: 1.5rem; margin-bottom: 0.5rem;">Legends and Dark Episodes ({{ family.research_data.story_facts.legends_and_dark_episodes|length }})</h3>
+                    {% for episode in family.research_data.story_facts.legends_and_dark_episodes %}
+                    <div class="research-array-item">
+                        <strong>{{ episode.title or 'Untitled Episode' }}</strong>
+                        {% if episode.summary %}<p style="margin-top: 0.25rem; color: #cbd5e1;">{{ episode.summary }}</p>{% endif %}
+                        {% if episode.is_mostly_legend %}<span style="color: #f59e0b; font-size: 0.875rem;">(Legend/Tradition)</span>{% endif %}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if family.research_data.story_facts.themes %}
+                    <h3 style="color: #8b5cf6; margin-top: 1.5rem; margin-bottom: 0.5rem;">Themes ({{ family.research_data.story_facts.themes|length }})</h3>
+                    <div class="relationship-list">
+                        {% for theme in family.research_data.story_facts.themes %}
+                        <div class="relationship-item">{{ theme }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if family.research_data.story_facts.quotations %}
+                    <h3 style="color: #8b5cf6; margin-top: 1.5rem; margin-bottom: 0.5rem;">Quotations ({{ family.research_data.story_facts.quotations|length }})</h3>
+                    {% for quote in family.research_data.story_facts.quotations %}
+                    {% if quote.quoted_text %}
+                    <div class="research-array-item" style="border-left: 3px solid #8b5cf6; padding-left: 1rem;">
+                        <blockquote style="margin: 0.5rem 0; color: #cbd5e1; font-style: italic;">
+                            "{{ quote.quoted_text }}"
+                        </blockquote>
+                        {% if quote.speaker %}<p style="margin-top: 0.25rem; color: #94a3b8; font-size: 0.875rem;">— {{ quote.speaker }}{% if quote.approx_date %} ({{ quote.approx_date }}){% endif %}</p>{% endif %}
+                        {% if quote.context_summary %}<p style="margin-top: 0.25rem; color: #cbd5e1; font-size: 0.875rem;">{{ quote.context_summary }}</p>{% endif %}
+                        {% if quote.uncertainty_flags %}
+                        <p style="margin-top: 0.25rem; color: #f59e0b; font-size: 0.875rem;">
+                            ⚠ {{ quote.uncertainty_flags|join('; ') }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if family.research_data.story_facts.sources_summary %}
+                    <h3 style="color: #8b5cf6; margin-top: 1.5rem; margin-bottom: 0.5rem;">Sources Summary</h3>
+                    <pre>{{ family.research_data.story_facts.sources_summary | tojson(indent=2) }}</pre>
+                    {% endif %}
+                    
+                    <h3 style="color: #8b5cf6; margin-top: 1.5rem; margin-bottom: 0.5rem;">Complete Story Facts JSON</h3>
+                    <pre>{{ family.research_data.story_facts | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="research-field">
+                <div class="research-field-label">Raw JSON (Complete)</div>
+                <div class="research-field-value">
+                    <pre>{{ family.research_data | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <script>
+    function switchTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected tab content
+        document.getElementById('tab-' + tabName).classList.add('active');
+        
+        // Add active class to clicked tab
+        event.target.classList.add('active');
+    }
+    </script>
+</div>
+{% endblock %}
+
