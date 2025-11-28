@@ -1,0 +1,425 @@
+{
+  "discovery_date": "2025-11-27T13:43:10.155814",
+  "total_sources": 29,
+  "sources": [
+    {
+      "name": "Ellon Times & East Gordon Advertiser",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Ellon_Times_%26_East_Gordon_Advertiser",
+      "base_url": "https://ellon.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": false,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Dunoon Observer and Argyllshire Standard",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Dunoon_Observer_and_Argyllshire_Standard",
+      "base_url": null,
+      "access_mode": "blocked"
+    },
+    {
+      "name": "Oban Times",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Oban_Times",
+      "base_url": "https://oban.co.uk",
+      "rss_feeds": [
+        "https://oban.co.uk/feed",
+        "https://www.oban.co.uk/feed/",
+        "https://www.oban.co.uk/comments/feed/",
+        "https://oban.co.uk/rss"
+      ],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "rss_only",
+      "discovery_notes": "Found 4 RSS feed(s)"
+    },
+    {
+      "name": "Dumfries Courier",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Dumfries_Courier",
+      "base_url": "https://dumfries.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": false,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Galloway News",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Galloway_News",
+      "base_url": "https://galloway.com",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Kirkintilloch Herald",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Kirkintilloch_Herald",
+      "base_url": null,
+      "access_mode": "blocked"
+    },
+    {
+      "name": "East Lothian Courier",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/East_Lothian_Courier",
+      "base_url": "https://east.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": 10
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Falkirk Herald",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Falkirk_Herald",
+      "base_url": "https://falkirk.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": false,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Caithness Courier",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Caithness_Courier",
+      "base_url": "https://caithness.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": 120
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "The Inverness Courier",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/The_Inverness_Courier",
+      "base_url": null,
+      "access_mode": "blocked"
+    },
+    {
+      "name": "John O'Groat Journal",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/John_O%27Groat_Journal",
+      "base_url": "https://john.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": false,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Oban Times incorporating the Lochaber Times",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/The_Oban_Times",
+      "base_url": "https://oban.co.uk",
+      "rss_feeds": [
+        "https://oban.co.uk/feed",
+        "https://www.oban.co.uk/feed/",
+        "https://www.oban.co.uk/comments/feed/",
+        "https://oban.co.uk/rss"
+      ],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "rss_only",
+      "discovery_notes": "Found 4 RSS feed(s)"
+    },
+    {
+      "name": "Irvine Herald & Kilwinning Chronicle",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Irvine_Herald",
+      "base_url": null,
+      "access_mode": "blocked"
+    },
+    {
+      "name": "Airdrie & Coatbridge Advertiser",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Airdrie_%26_Coatbridge_Advertiser",
+      "base_url": null,
+      "access_mode": "blocked"
+    },
+    {
+      "name": "Cumbernauld News & Kilsyth Chronicle",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Cumbernauld_News_%26_Kilsyth_Chronicle",
+      "base_url": "https://cumbernauld.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Blairgowrie Advertiser",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Blairgowrie_Advertiser",
+      "base_url": null,
+      "access_mode": "blocked"
+    },
+    {
+      "name": "Perthshire Advertiser",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Perthshire_Advertiser",
+      "base_url": "https://perthshire.com",
+      "rss_feeds": [
+        "https://perthshire.com/?feed=comments-rss2",
+        "https://perthshire.com/?feed=rss2"
+      ],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": 10
+      },
+      "access_mode": "rss_only",
+      "discovery_notes": "Found 2 RSS feed(s)"
+    },
+    {
+      "name": "Strathearn Herald",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Strathearn_Herald",
+      "base_url": null,
+      "access_mode": "blocked"
+    },
+    {
+      "name": "Shetland Times",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Shetland_Times",
+      "base_url": "https://shetland.com",
+      "rss_feeds": [
+        "https://shetland.com/news/rss",
+        "https://shetland.com/feed",
+        "https://shetland.com/news/feed",
+        "https://shetland.com/rss",
+        "https://shetland.com/comments/feed/",
+        "https://shetland.com/feed/"
+      ],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "rss_only",
+      "discovery_notes": "Found 6 RSS feed(s)"
+    },
+    {
+      "name": "Ayr Advertiser incorporating Carrick Gazette & Troon Times",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Ayr_Advertiser",
+      "base_url": "https://ayr.co.uk",
+      "rss_feeds": [
+        "https://ayr.co.uk/rss",
+        "https://ayr.co.uk/feed/",
+        "https://ayr.co.uk/feed",
+        "https://ayr.co.uk/news/rss",
+        "https://ayr.co.uk/comments/feed/",
+        "https://ayr.co.uk/news/feed"
+      ],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "rss_only",
+      "discovery_notes": "Found 6 RSS feed(s)"
+    },
+    {
+      "name": "Ayrshire Post",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Ayrshire_Post",
+      "base_url": "https://ayrshire.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": 10
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "East Kilbride News",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/East_Kilbride_News",
+      "base_url": "https://east.co.uk",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": 10
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Hamilton Advertiser",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Hamilton_Advertiser",
+      "base_url": "https://hamilton.co.uk",
+      "rss_feeds": [
+        "https://hamilton.co.uk/feed",
+        "https://hamilton.co.uk/rss"
+      ],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "rss_only",
+      "discovery_notes": "Found 2 RSS feed(s)"
+    },
+    {
+      "name": "Stirling News",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Stirling_News",
+      "base_url": "https://stirling.com",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Stirling Observer",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Stirling_Observer",
+      "base_url": "https://stirling.com",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Clydebank Post",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Clydebank_Post",
+      "base_url": "https://clydebank.co.uk",
+      "rss_feeds": [
+        "https://clydebank.co.uk/index.php/comments/feed/",
+        "https://clydebank.co.uk/index.php/feed/"
+      ],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "rss_only",
+      "discovery_notes": "Found 2 RSS feed(s)"
+    },
+    {
+      "name": "Lennox Herald",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Lennox_Herald",
+      "base_url": "https://lennox.com",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "West Lothian Courier",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/West_Lothian_Courier",
+      "base_url": "https://west.com",
+      "rss_feeds": [],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": false,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "blocked",
+      "discovery_notes": "No accessible content found"
+    },
+    {
+      "name": "Stornoway Gazette",
+      "region": "Unknown",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Stornoway_Gazette",
+      "base_url": "https://stornoway.co.uk",
+      "rss_feeds": [
+        "https://stornoway.co.uk/feed",
+        "https://any-mail.org.uk/feed/",
+        "https://any-mail.org.uk/comments/feed/",
+        "https://stornoway.co.uk/rss",
+        "https://stornoway.co.uk/news/feed",
+        "https://stornoway.co.uk/news/rss"
+      ],
+      "listing_pages": [],
+      "robots": {
+        "robots_txt_exists": true,
+        "allows_crawling": true,
+        "crawl_delay": null
+      },
+      "access_mode": "rss_only",
+      "discovery_notes": "Found 6 RSS feed(s)"
+    }
+  ]
+}

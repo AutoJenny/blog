@@ -1,0 +1,554 @@
+{% extends "base.html" %}
+
+{% block title %}Families & Clans Browser - BlogForge{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared/dark-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/product-data-review.css') }}">
+<style>
+    .families-browser {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .browser-header {
+        margin-bottom: 2rem;
+    }
+    
+    .browser-header h1 {
+        color: #f1f5f9;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .browser-header p {
+        color: #94a3b8;
+    }
+    
+    .filters-section {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .filter-label {
+        color: #cbd5e1;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .filter-input,
+    .filter-select {
+        background: #0f172a;
+        border: 1px solid #475569;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        color: #f1f5f9;
+        font-size: 0.875rem;
+    }
+    
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    
+    .filter-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    
+    .btn-filter {
+        background: #8b5cf6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    
+    .btn-filter:hover {
+        background: #7c3aed;
+    }
+    
+    .btn-reset {
+        background: #475569;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    
+    .btn-reset:hover {
+        background: #64748b;
+    }
+    
+    .stats-bar {
+        display: flex;
+        gap: 2rem;
+        padding: 1rem;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .stat-label {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .stat-value {
+        color: #f1f5f9;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .families-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .families-table thead {
+        background: #0f172a;
+    }
+    
+    .families-table th {
+        padding: 1rem;
+        text-align: left;
+        color: #cbd5e1;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #334155;
+    }
+    
+    .families-table td {
+        padding: 1rem;
+        color: #f1f5f9;
+        border-bottom: 1px solid #334155;
+        font-size: 0.875rem;
+    }
+    
+    .families-table tbody tr:hover {
+        background: #334155;
+    }
+    
+    .families-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .badge-clan {
+        background: #8b5cf6;
+        color: white;
+    }
+    
+    .badge-canonical {
+        background: #10b981;
+        color: white;
+    }
+    
+    .badge-variant {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .badge-history {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .badge-research {
+        background: #ec4899;
+        color: white;
+    }
+    
+    .badge-none {
+        background: #475569;
+        color: #cbd5e1;
+    }
+    
+    .family-name {
+        font-weight: 600;
+        color: #f1f5f9;
+    }
+    
+    .family-name a {
+        color: #8b5cf6;
+        text-decoration: none;
+    }
+    
+    .family-name a:hover {
+        text-decoration: underline;
+    }
+    
+    .count-badge {
+        display: inline-block;
+        background: #475569;
+        color: #cbd5e1;
+        padding: 0.125rem 0.375rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    
+    .pagination button {
+        background: #1e293b;
+        border: 1px solid #334155;
+        color: #f1f5f9;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .pagination button:hover:not(:disabled) {
+        background: #334155;
+        border-color: #8b5cf6;
+    }
+    
+    .pagination button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .pagination .page-info {
+        color: #94a3b8;
+        padding: 0 1rem;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #94a3b8;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="families-browser">
+    <div class="browser-header">
+        <h1>Families & Clans</h1>
+        <p>Browse and filter Scottish families and clans</p>
+    </div>
+    
+    <div class="stats-bar" id="stats-bar">
+        <div class="stat-item">
+            <span class="stat-label">Total Families</span>
+            <span class="stat-value" id="stat-total">-</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Clans</span>
+            <span class="stat-value" id="stat-clans">-</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Canonical</span>
+            <span class="stat-value" id="stat-canonical">-</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">With History</span>
+            <span class="stat-value" id="stat-history">-</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">With Research</span>
+            <span class="stat-value" id="stat-research">-</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Clans (No History)</span>
+            <span class="stat-value" id="stat-clans-no-history">-</span>
+        </div>
+    </div>
+    
+    <div class="filters-section">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label class="filter-label" for="search">Search Name</label>
+                <input type="text" id="search" class="filter-input" placeholder="Enter family name...">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="is_clan">Is Clan</label>
+                <select id="is_clan" class="filter-select">
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="is_canonical">Is Canonical</label>
+                <select id="is_canonical" class="filter-select">
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="has_history">Has History</label>
+                <select id="has_history" class="filter-select">
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="has_research">Has Research Data</label>
+                <select id="has_research" class="filter-select">
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button class="btn-filter" onclick="applyFilters()">Apply Filters</button>
+            <button class="btn-reset" onclick="resetFilters()">Reset</button>
+        </div>
+    </div>
+    
+    <div id="families-container">
+        <div class="loading">Loading families...</div>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+let currentFilters = {};
+
+// Load stats on page load
+async function loadStats() {
+    try {
+        const response = await fetch('/families/api/stats');
+        const stats = await response.json();
+        
+        document.getElementById('stat-total').textContent = stats.total.toLocaleString();
+        document.getElementById('stat-clans').textContent = stats.clans.toLocaleString();
+        document.getElementById('stat-canonical').textContent = stats.canonical.toLocaleString();
+        document.getElementById('stat-history').textContent = stats.with_history.toLocaleString();
+        document.getElementById('stat-research').textContent = stats.with_research.toLocaleString();
+        document.getElementById('stat-clans-no-history').textContent = stats.clans_no_history.toLocaleString();
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+// Load families
+async function loadFamilies(page = 1) {
+    currentPage = page;
+    const container = document.getElementById('families-container');
+    container.innerHTML = '<div class="loading">Loading families...</div>';
+    
+    try {
+        const params = new URLSearchParams({
+            page: page,
+            per_page: 50,
+            ...currentFilters
+        });
+        
+        const response = await fetch(`/families/api/list?${params}`);
+        const data = await response.json();
+        
+        if (data.families.length === 0) {
+            container.innerHTML = '<div class="no-results">No families found matching your filters.</div>';
+            return;
+        }
+        
+        let html = '<table class="families-table"><thead><tr>';
+        html += '<th>Name</th>';
+        html += '<th>Type</th>';
+        html += '<th>Status</th>';
+        html += '<th>Relationships</th>';
+        html += '<th>Resources</th>';
+        html += '</tr></thead><tbody>';
+        
+        data.families.forEach(family => {
+            html += '<tr>';
+            
+            // Name
+            html += `<td class="family-name"><a href="/families/${family.id}">${escapeHtml(family.name)}</a></td>`;
+            
+            // Type badges
+            html += '<td>';
+            if (family.is_clan) {
+                html += '<span class="badge badge-clan">Clan</span> ';
+            }
+            if (family.is_canonical) {
+                html += '<span class="badge badge-canonical">Canonical</span>';
+            } else {
+                html += '<span class="badge badge-variant">Variant</span>';
+            }
+            html += '</td>';
+            
+            // Status badges
+            html += '<td>';
+            if (family.has_history) {
+                html += '<span class="badge badge-history">History</span> ';
+            }
+            if (family.has_research) {
+                html += '<span class="badge badge-research">Research</span>';
+            } else if (!family.has_history && family.is_clan) {
+                html += '<span class="badge badge-none">Priority</span>';
+            }
+            html += '</td>';
+            
+            // Relationships
+            html += '<td>';
+            const relationships = [];
+            if (family.alias_count > 0) {
+                relationships.push(`${family.alias_count} alias${family.alias_count !== 1 ? 'es' : ''}`);
+            }
+            if (family.variant_count > 0) {
+                relationships.push(`${family.variant_count} variant${family.variant_count !== 1 ? 's' : ''}`);
+            }
+            if (family.has_variants_count > 0) {
+                relationships.push(`${family.has_variants_count} has variant${family.has_variants_count !== 1 ? 's' : ''}`);
+            }
+            if (family.sept_count > 0) {
+                relationships.push(`${family.sept_count} sept${family.sept_count !== 1 ? 's' : ''}`);
+            }
+            if (family.has_septs_count > 0) {
+                relationships.push(`${family.has_septs_count} has sept${family.has_septs_count !== 1 ? 's' : ''}`);
+            }
+            html += relationships.length > 0 ? relationships.join(', ') : '<span style="color: #64748b;">None</span>';
+            html += '</td>';
+            
+            // Resources
+            html += '<td>';
+            const resources = [];
+            if (family.resource_count > 0) {
+                resources.push(`${family.resource_count} resource${family.resource_count !== 1 ? 's' : ''}`);
+            }
+            if (family.design_count > 0) {
+                resources.push(`${family.design_count} design${family.design_count !== 1 ? 's' : ''}`);
+            }
+            html += resources.length > 0 ? resources.join(', ') : '<span style="color: #64748b;">None</span>';
+            html += '</td>';
+            
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        
+        // Pagination
+        if (data.pages > 1) {
+            html += '<div class="pagination">';
+            html += `<button onclick="loadFamilies(${data.page - 1})" ${data.page === 1 ? 'disabled' : ''}>Previous</button>`;
+            html += `<span class="page-info">Page ${data.page} of ${data.pages} (${data.total} total)</span>`;
+            html += `<button onclick="loadFamilies(${data.page + 1})" ${data.page === data.pages ? 'disabled' : ''}>Next</button>`;
+            html += '</div>';
+        }
+        
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading families:', error);
+        container.innerHTML = '<div class="no-results">Error loading families. Please try again.</div>';
+    }
+}
+
+function applyFilters() {
+    currentFilters = {
+        search: document.getElementById('search').value.trim(),
+        is_clan: document.getElementById('is_clan').value,
+        is_canonical: document.getElementById('is_canonical').value,
+        has_history: document.getElementById('has_history').value,
+        has_research: document.getElementById('has_research').value
+    };
+    
+    // Remove empty filters
+    Object.keys(currentFilters).forEach(key => {
+        if (currentFilters[key] === '') {
+            delete currentFilters[key];
+        }
+    });
+    
+    loadFamilies(1);
+}
+
+function resetFilters() {
+    document.getElementById('search').value = '';
+    document.getElementById('is_clan').value = '';
+    document.getElementById('is_canonical').value = '';
+    document.getElementById('has_history').value = '';
+    document.getElementById('has_research').value = '';
+    currentFilters = {};
+    loadFamilies(1);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Allow Enter key in search
+document.getElementById('search').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        applyFilters();
+    }
+});
+
+// Load on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+    loadFamilies();
+});
+</script>
+{% endblock %}
+

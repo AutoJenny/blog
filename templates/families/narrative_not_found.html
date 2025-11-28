@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Narrative Not Found - Families & Clans - BlogForge{% endblock %}
+
+{% block content %}
+<div class="family-detail" style="max-width: 800px; margin: 2rem auto; text-align: center; padding: 3rem;">
+    <h1 style="color: #f1f5f9; margin-bottom: 1rem;">Narrative Not Available</h1>
+    <p style="color: #94a3b8; margin-bottom: 2rem;">
+        No extended historical narrative has been generated for {{ family_name }} yet.
+    </p>
+    <a href="/families/{{ family_id }}" style="color: #8b5cf6; text-decoration: none; padding: 0.75rem 1.5rem; border: 1px solid #8b5cf6; border-radius: 6px; display: inline-block;">
+        View Family Details
+    </a>
+</div>
+{% endblock %}
+

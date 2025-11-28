@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar Scheduling - Content Calendar - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'shared/blog_pipeline_header.html' %}
+    {% block process_content %}
+    <div class="calendar-tabs">
+        <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" class="tab">Year View</a>
+        <a href="{{ url_for('planning.planning_calendar_week_view', post_id=post_id, year=current_year, week=current_week) }}" class="tab">Week View</a>
+        <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=current_week, year=current_year, week=current_week) }}" class="tab">Week Themes</a>
+        <a href="{{ url_for('planning.planning_calendar_scheduling', post_id=post_id) }}" class="tab active">Scheduling</a>
+    </div>
+    
+    <div class="calendar-scheduling-view">
+        <div class="scheduling-header">
+            <h2 class="calendar-title">Calendar — Scheduling Overview</h2>
+            <p class="calendar-subtitle">Year overview: Themes, Recipes, and Profiles by week</p>
+        </div>
+
+        <div class="scheduling-table-container">
+            <table class="scheduling-table">
+                <thead>
+                    <tr>
+                        <th class="week-col">Week</th>
+                        <th class="theme-col">Themes</th>
+                        <th class="recipe-col">Recipes</th>
+                        <th class="profile-col">Profiles</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduling-tbody">
+                    <!-- Weeks will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<style>
+.calendar-scheduling-view {
+    padding: 2rem 0;
+}
+.scheduling-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.calendar-title {
+    font-size: 1.75rem;
+    color: #f1f5f9;
+    margin: 0 0 0.25rem 0;
+}
+.calendar-subtitle {
+    color: #94a3b8;
+    margin: 0;
+    font-size: 1rem;
+}
+.scheduling-table-container {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+.scheduling-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+.scheduling-table thead {
+    background: #0f172a;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.scheduling-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #cbd5e1;
+    border-bottom: 2px solid #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.scheduling-table .week-col {
+    width: 120px;
+    min-width: 120px;
+}
+.scheduling-table .theme-col,
+.scheduling-table .recipe-col,
+.scheduling-table .profile-col {
+    width: auto;
+    min-width: 200px;
+}
+.scheduling-table tbody tr {
+    border-bottom: 1px solid #334155;
+    transition: background 0.2s;
+}
+.scheduling-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+.scheduling-table tbody tr.current-week {
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 3px solid #3b82f6;
+}
+.scheduling-table td {
+    padding: 0.75rem 1rem;
+    vertical-align: top;
+    min-height: 60px;
+}
+.scheduling-table .content-cell {
+    min-width: 200px;
+}
+.scheduling-table .week-cell {
+    font-weight: 600;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+}
+.scheduling-table .week-cell .week-number {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+.scheduling-table .content-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 60px;
+    padding: 0.5rem;
+}
+.scheduling-item {
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+.scheduling-item.theme {
+    background: rgba(249, 115, 22, 0.15);
+    border-color: rgba(249, 115, 22, 0.3);
+    color: #f1f5f9;
+}
+.scheduling-item.theme:hover {
+    background: rgba(249, 115, 22, 0.25);
+    border-color: #f97316;
+}
+.scheduling-item.recipe {
+    background: rgba(217, 119, 6, 0.15) !important;
+    border: 1px solid rgba(217, 119, 6, 0.3) !important;
+    color: #f1f5f9 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.scheduling-item.recipe:hover {
+    background: rgba(217, 119, 6, 0.25) !important;
+    border-color: #d97706 !important;
+}
+.scheduling-item.profile {
+    background: rgba(20, 184, 166, 0.15);
+    border-color: rgba(20, 184, 166, 0.3);
+    color: #f1f5f9;
+}
+.scheduling-item.profile:hover {
+    background: rgba(20, 184, 166, 0.25);
+    border-color: #14b8a6;
+}
+.scheduling-item.empty {
+    color: #94a3b8 !important;
+    font-style: italic;
+    font-size: 0.8125rem !important;
+    opacity: 1 !important;
+    padding: 0.5rem 0.75rem !important;
+    text-align: center;
+    display: block !important;
+    visibility: visible !important;
+}
+</style>
+
+<script>
+window.postId = {{ post_id }};
+window.currentStage = 'calendar';
+window.currentSubstage = 'scheduling';
+window.currentYear = {{ current_year }};
+window.currentWeek = {{ current_week }};
+
+async function loadSchedulingData() {
+    const tbody = document.getElementById('scheduling-tbody');
+    if (!tbody) {
+        console.error('scheduling-tbody not found');
+        return;
+    }
+    
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td></tr>';
+    
+    try {
+        console.log('Loading all scheduling data from cache...');
+        
+        // Fetch all weeks in one request (cached)
+        const response = await fetch('/planning/api/calendar/scheduling/all', {
+            credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to load scheduling data');
+        }
+        
+        const weekData = result.data.weeks || [];
+        console.log('Loaded data for', weekData.length, 'weeks', result.cached ? '(from cache)' : '(fresh)');
+        console.log('First week sample:', JSON.stringify(weekData[0]));
+        
+        // Render table rows
+        tbody.innerHTML = '';
+        
+        if (!weekData || weekData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #ef4444;">No week data loaded</td></tr>';
+            return;
+        }
+        
+        console.log('Starting to render', weekData.length, 'rows...');
+        
+        let rowsCreated = 0;
+        weekData.forEach((weekItem, index) => {
+            try {
+                const { year, week, schedule } = weekItem;
+                const data = Array.isArray(schedule) ? schedule : [];
+                
+                const isCurrentWeek = index === 0;
+                const row = document.createElement('tr');
+                if (isCurrentWeek) {
+                    row.classList.add('current-week');
+                }
+            
+            // Week cell
+            const weekCell = document.createElement('td');
+            weekCell.className = 'week-cell';
+            try {
+                // Use ISO week calculation
+                const jan4 = new Date(Date.UTC(year, 0, 4));
+                const jan4Day = (jan4.getUTCDay() + 6) % 7; // Monday = 0
+                const weekStart = new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - jan4Day));
+                const weekEnd = new Date(weekStart);
+                weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+                
+                weekCell.innerHTML = `
+                    <div style="font-weight: 600; color: #e2e8f0;">W${week}</div>
+                    <div class="week-number">${formatDate(weekStart)} - ${formatDate(weekEnd)}</div>
+                `;
+            } catch (error) {
+                console.error(`Error creating week cell for ${year}/${week}:`, error);
+                weekCell.innerHTML = `<div style="font-weight: 600; color: #e2e8f0;">W${week}</div><div class="week-number">${year}</div>`;
+            }
+            row.appendChild(weekCell);
+            
+            // Extract items by type - Filter correctly
+            const themeItem = data.find(item => item && item.type === 'theme_selection');
+            const recipeItems = data.filter(item => item && item.type === 'post' && item.item_type === 'recipe');
+            const profileItems = data.filter(item => item && item.type === 'post' && item.item_type === 'profile');
+            
+            // CELL 1: Theme cell - ONLY themes go here
+            const cell1 = document.createElement('td');
+            cell1.className = 'content-cell theme-col';
+            cell1.innerHTML = ''; // Explicitly clear
+            // Double-check: only render if it's actually a theme_selection type
+            if (themeItem && themeItem.type === 'theme_selection' && themeItem.theme_title) {
+                const div = document.createElement('div');
+                div.className = 'scheduling-item theme';
+                div.textContent = themeItem.theme_title;
+                div.title = themeItem.theme_description || themeItem.theme_title;
+                cell1.appendChild(div);
+            } else {
+                const div = document.createElement('div');
+                div.className = 'scheduling-item empty';
+                div.textContent = 'No theme selected';
+                cell1.appendChild(div);
+            }
+            row.appendChild(cell1);
+            
+            // CELL 2: Recipe cell - ONLY recipes go here
+            const cell2 = document.createElement('td');
+            cell2.className = 'content-cell recipe-col';
+            cell2.innerHTML = ''; // Explicitly clear
+            // Double-check: only render items that are actually post type with recipe item_type
+            const validRecipes = recipeItems.filter(r => r && r.type === 'post' && r.item_type === 'recipe');
+            if (validRecipes.length > 0) {
+                validRecipes.forEach(recipe => {
+                    const div = document.createElement('div');
+                    div.className = 'scheduling-item recipe';
+                    div.textContent = recipe.post_title || `Recipe Post #${recipe.post_id}`;
+                    div.title = `Status: ${recipe.post_status || 'unknown'}`;
+                    if (recipe.post_id) {
+                        div.style.cursor = 'pointer';
+                        div.onclick = () => window.location.href = `/planning/posts/${recipe.post_id}/calendar/week-view?year=${year}&week=${week}`;
+                    }
+                    cell2.appendChild(div);
+                });
+            } else {
+                const div = document.createElement('div');
+                div.className = 'scheduling-item empty';
+                div.textContent = 'No recipes scheduled';
+                cell2.appendChild(div);
+            }
+            row.appendChild(cell2);
+            
+            // CELL 3: Profile cell - ONLY profiles go here
+            const cell3 = document.createElement('td');
+            cell3.className = 'content-cell profile-col';
+            cell3.innerHTML = ''; // Explicitly clear
+            // Double-check: only render items that are actually post type with profile item_type
+            const validProfiles = profileItems.filter(p => p && p.type === 'post' && p.item_type === 'profile');
+            if (validProfiles.length > 0) {
+                validProfiles.forEach(profile => {
+                    const div = document.createElement('div');
+                    div.className = 'scheduling-item profile';
+                    div.textContent = profile.post_title || `Profile Post #${profile.post_id}`;
+                    div.title = `Status: ${profile.post_status || 'unknown'}`;
+                    if (profile.post_id) {
+                        div.style.cursor = 'pointer';
+                        div.onclick = () => window.location.href = `/planning/posts/${profile.post_id}/calendar/week-view?year=${year}&week=${week}`;
+                    }
+                    cell3.appendChild(div);
+                });
+            } else {
+                const div = document.createElement('div');
+                div.className = 'scheduling-item empty';
+                div.textContent = 'No profiles scheduled';
+                cell3.appendChild(div);
+            }
+            row.appendChild(cell3);
+            
+            tbody.appendChild(row);
+            rowsCreated++;
+            } catch (error) {
+                console.error(`Error creating row for week ${weekItem?.year}/${weekItem?.week}:`, error);
+            }
+        });
+        
+        console.log(`Created ${rowsCreated} rows out of ${weekData.length} weeks`);
+        console.log(`tbody now has ${tbody.children.length} child elements`);
+        
+        if (tbody.children.length === 0) {
+            console.error('No rows were appended to tbody!');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #ef4444;">No rows created - check browser console for errors</td></tr>';
+        } else {
+            console.log(`✅ Successfully rendered ${tbody.children.length} rows`);
+            // Verify first row has content
+            const firstRow = tbody.children[0];
+            if (firstRow) {
+                const cells = firstRow.querySelectorAll('td');
+                console.log(`First row has ${cells.length} cells`);
+                cells.forEach((cell, idx) => {
+                    console.log(`Cell ${idx} content length:`, cell.textContent.length);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading scheduling data:', error);
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #ef4444;">Error loading scheduling data: ' + error.message + '</td></tr>';
+    }
+}
+
+function getWeekStartDate(year, weekNumber) {
+    try {
+        // ISO 8601 week calculation
+        // January 4 is always in week 1
+        const jan4 = new Date(Date.UTC(year, 0, 4));
+        const jan4Day = (jan4.getUTCDay() + 6) % 7; // Monday = 0
+        // Calculate the date of the Monday of the target week
+        const weekStart = new Date(Date.UTC(year, 0, 4 + (weekNumber - 1) * 7 - jan4Day));
+        return weekStart;
+    } catch (error) {
+        console.error('Error calculating week start date:', error, year, weekNumber);
+        return new Date(Date.UTC(year, 0, 1)); // Fallback
+    }
+}
+
+function formatDate(d) {
+    try {
+        if (!d || isNaN(d.getTime())) {
+            return 'Invalid date';
+        }
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch (error) {
+        console.error('Error formatting date:', error, d);
+        return 'Invalid date';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing scheduling view');
+    console.log('Current year:', window.currentYear, 'Current week:', window.currentWeek);
+    try {
+        loadSchedulingData();
+    } catch (error) {
+        console.error('Error in DOMContentLoaded:', error);
+        const tbody = document.getElementById('scheduling-tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #ef4444;">Error initializing: ' + error.message + '</td></tr>';
+        }
+    }
+});
+</script>
+
+{% endblock %}
+

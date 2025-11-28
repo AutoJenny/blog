@@ -230,6 +230,9 @@ def create_app(config_name=None):
     
     from blueprints.tag_browser import bp as tag_browser_bp
     app.register_blueprint(tag_browser_bp)
+    
+    from blueprints.families import bp as families_bp
+    app.register_blueprint(families_bp)
 
     # Register publish blueprint (for recipe post publishing)
     try:

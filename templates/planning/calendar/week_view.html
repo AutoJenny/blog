@@ -12,6 +12,7 @@
         {% if year and week %}
         <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=week, year=year, week=week) }}" class="tab">Week Themes</a>
         {% endif %}
+        <a href="{{ url_for('planning.planning_calendar_scheduling', post_id=post_id) }}" class="tab">Scheduling</a>
     </div>
     <div class="calendar-week-view">
         <div class="week-header">

@@ -1,0 +1,280 @@
+{
+  "surname": "Abercrombie",
+  "primary_language_region": "Scottish",
+  "metadata": {
+    "sources": [],
+    "last_updated": "2025-11-28",
+    "research_confidence": "low",
+    "notes": ""
+  },
+  "etymology": {
+    "origin_languages": [
+      "Old Scottish Gaelic"
+    ],
+    "name_type": "locational",
+    "literal_meaning": "mouth of the Cromb or Crombie (bending river)",
+    "root_words": [
+      {
+        "language": "Old Scottish Gaelic",
+        "form": "abair",
+        "meaning": "mouth"
+      },
+      {
+        "language": "Old Scottish Gaelic",
+        "form": "cromb",
+        "meaning": "Crombie (bending river)"
+      }
+    ],
+    "earliest_known_forms": [
+      {
+        "spelling": "Abercrumbin",
+        "approx_date": null,
+        "region": "Fife",
+        "source_hint": "Pictish origin"
+      },
+      {
+        "spelling": "Abercrombie",
+        "approx_date": null,
+        "region": "Scotland",
+        "source_hint": "Royal cooks of the kings of Scots"
+      }
+    ],
+    "etymology_summary": "The surname Abercrombie likely originates from a place in Fife named Abercrumbin, which is of Pictish origin. The name may refer to the mouth of the Cromb or Crombie (bending river).",
+    "uncertainty_flags": [
+      "Source variation: different spellings and dates"
+    ]
+  },
+  "early_records": {
+    "earliest_attestation": {
+      "year": 1296,
+      "approximate": false,
+      "location": "Fife",
+      "jurisdiction": "Edward I of England",
+      "spelling": "William de Abercromby",
+      "record_type": "Ragman Roll",
+      "source_hint": "Clan Abercrombie History: Secrets of Scotland's Lost Clan, TartanVibesClothing.com"
+    },
+    "other_attestations": [
+      {
+        "year": null,
+        "approximate": true,
+        "location": null,
+        "jurisdiction": null,
+        "spelling": null,
+        "record_type": null,
+        "source_hint": "Corpus of Scottish medieval parish churches: Dunblane and Dunkeld dioceses, Arts.st-andrews.ac.uk"
+      },
+      {
+        "year": 1157,
+        "approximate": false,
+        "location": "Perth",
+        "jurisdiction": null,
+        "spelling": null,
+        "record_type": null,
+        "source_hint": "Medieval source material on the internet: Public records, MedievalGenealogy.org.uk"
+      }
+    ],
+    "record_confidence": "medium",
+    "record_notes": "Early records cluster in Fife and Perth. Key spelling variants include Abercromby, Abercrummye, Abircrombie."
+  },
+  "distribution_historic": {
+    "snapshot_period": null,
+    "regions": [
+      {
+        "country": "Scottish Highlands",
+        "subregion_type": "county",
+        "subregion_name": "Scottish Highlands",
+        "relative_frequency": "very_high",
+        "evidence_hint": ""
+      },
+      {
+        "country": "Lowlands",
+        "subregion_type": "county",
+        "subregion_name": "Lowlands",
+        "relative_frequency": "high",
+        "evidence_hint": ""
+      },
+      {
+        "country": "Fife",
+        "subregion_type": "county",
+        "subregion_name": "Fife",
+        "relative_frequency": "medium",
+        "evidence_hint": ""
+      }
+    ],
+    "summary": "Historically, the surname Abercrombie clustered in Scotland's Highlands and Lowlands, with a notable presence in Fife.",
+    "uncertainty_flags": [
+      "Result 2: Uncertain about specific dates for some historical events",
+      "Result 3: No reliable sources for certain information"
+    ]
+  },
+  "distribution_modern": {
+    "reference_period": null,
+    "by_country": [],
+    "notes": "",
+    "uncertainty_flags": []
+  },
+  "clan_association": {
+    "is_scottish_name": true,
+    "clan_sept_of": [],
+    "territorial_family": null,
+    "kindred_or_confederation": null,
+    "official_status": "formally recognised",
+    "sources_hint": [
+      "https://en.wikipedia.org/wiki/Clan_Abercromby",
+      "https://www.tartanvibesclothing.com/blogs/history/clan-abercrombie-history",
+      "https://www.scotclans.com/blogs/clans/a/clan-abercrombie-history"
+    ],
+    "association_notes": "Abercrombie is a Scottish clan with lands in the Scottish Highlands and Lowlands. The clan was first attested to in 1296 with William de Abercromby, who was given charter of Abercrombie, Fife."
+  },
+  "heraldry": {
+    "has_documented_arms": false,
+    "arms": [
+      {
+        "armiger_name": "Unknown",
+        "jurisdiction": "Scotland",
+        "approx_date": null,
+        "blazon": "A falcon rising belled",
+        "notes": ""
+      }
+    ],
+    "mottoes": [],
+    "tartans": [
+      {
+        "name": "Clan Abercrombie Tartan",
+        "status": "registered"
+      },
+      {
+        "name": "Abercrombie Tartan",
+        "status": "unofficial"
+      }
+    ],
+    "disclaimer": "Heraldry and tartans belong to individuals/registered entities, not automatically to all with the surname."
+  },
+  "variants": {
+    "canonical_form": "Abercrombie",
+    "variant_spellings": [
+      "Abercromby",
+      "Abercramby",
+      "Abircromby",
+      "Abircrumby",
+      "Abercrombie",
+      "Abricromby"
+    ],
+    "language_forms": [],
+    "related_surnames": [
+      {
+        "relationship_type": "Cognate",
+        "name": "MacDonald"
+      }
+    ],
+    "variant_notes": "Variants and alternative spellings of the surname Abercrombie could include Abercromby, Abercramby, Abircromby, Abircrumby, Abercrombie, and Abricromby among others. It's common for surnames to have different variants due to the influence of local dialects and accents."
+  },
+  "migration": {
+    "summary": "The surname Abercrombie originated in Scotland, with its earliest known forms dating back to 1296. The clan was first attested to in Fife, and later moved to the Scottish Highlands and Lowlands. During the 17th century, the lineage of the family passed to the house of Abercromby of Birkenbog in Banffshire. The history of the Abercrombies is intimately connected to religious discord, particularly with the imposition of an Episcopal church in Scotland by Charles I.",
+    "phases": [
+      {
+        "period": "",
+        "from_regions": [],
+        "to_regions": [],
+        "drivers": [
+          "clearances",
+          "famine"
+        ],
+        "evidence_hint": ""
+      },
+      {
+        "period": "",
+        "from_regions": [],
+        "to_regions": [],
+        "drivers": [
+          "industrialisation"
+        ],
+        "evidence_hint": ""
+      }
+    ],
+    "uncertainty_flags": [
+      "Source 1: Lack of specific information on the exact timing of the clan's move from Fife to the Scottish Highlands and Lowlands."
+    ]
+  },
+  "notables": {
+    "people": [],
+    "notables_notes": ""
+  },
+  "cultural_notes": {
+    "stereotypes_legends": "",
+    "literary_or_media_references": [
+      {
+        "title": "Lascelles Abercrombie - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Lascelles_Abercrombie"
+      },
+      {
+        "title": "Abercrombie, David - Brown - Major Reference Works - Wiley Online Library",
+        "url": "https://novelcoronavirus.onlinelibrary.wiley.com/doi/full/10.1002/9781405198431.wbeal0001"
+      },
+      {
+        "title": "Lascelles Abercrombie | The Poetry Foundation",
+        "url": "https://www.poetryfoundation.org/poets/lascelles-abercrombie"
+      }
+    ],
+    "associated_occupations": [
+      "priest",
+      "poet",
+      "literary critic"
+    ],
+    "social_status_history": "",
+    "cultural_summary": "No notable cultural associations known."
+  },
+  "genealogy_resources": {
+    "family_societies": [
+      {
+        "url": "https://www.scotclans.com/clans/abercrombie",
+        "name": "ScotClans Clan Abercrombie"
+      },
+      {
+        "url": "https://www.tartanvibesclothing.com/blogs/history/clan-abercrombie-history",
+        "name": "Tartan Vibes Clan Abercrombie History"
+      }
+    ],
+    "published_histories": [
+      {
+        "title": "Abercrombie History, Family Crest & Coats of Arms",
+        "url": "https://www.houseofnames.com/abercrombie-family-crest",
+        "source_hint": "House of Names"
+      },
+      {
+        "title": "Clan Abercromby - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Clan_Abercromby",
+        "source_hint": "Wikipedia"
+      }
+    ],
+    "record_rich_areas": [
+      {
+        "region": "Fife",
+        "source_hint": "1296 charter of Abercrombie, Fife"
+      },
+      {
+        "region": "Banffshire",
+        "source_hint": "Early seventeenth century lineage to the house of Abercromby of Birkenbog in Banffshire"
+      }
+    ],
+    "research_tips": [
+      "Use the FamilySearch Catalog to access a wide range of genealogy resources, including birth certificates and maps.",
+      "Consult multiple sources to verify information and identify potential conflicts or uncertainties."
+    ]
+  },
+  "story_facts": {
+    "time_span": {
+      "earliest_century": "unknown",
+      "latest_century": "unknown",
+      "notes": ""
+    },
+    "key_figures": [],
+    "turning_points": [],
+    "places": [],
+    "legends_and_dark_episodes": [],
+    "themes": [],
+    "sources_summary": [],
+    "quotations": []
+  }
+}
