@@ -367,6 +367,31 @@
         </div>
     </div>
     
+    {# Condensed legacy summary from generated legacy histories (history_legacy_generated) #}
+    {% if family.resources %}
+    {% set ns = namespace(has_generated_legacy=false) %}
+    {% for resource in family.resources %}
+        {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy_generated' %}
+            {% set ns.has_generated_legacy = true %}
+        {% endif %}
+    {% endfor %}
+    {% if ns.has_generated_legacy %}
+    <div class="detail-section" style="margin-bottom: 1.5rem;">
+        <h2>Condensed Legacy Summary</h2>
+        <p style="color: #94a3b8; margin-bottom: 0.75rem; font-size: 0.875rem;">
+            Short factual summary generated from the fact-checked narrative. No commentary or introduction; roughly 400 characters.
+        </p>
+        {% for resource in family.resources %}
+            {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy_generated' %}
+            <div class="legacy-summary" style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 1rem 1.25rem; color: #e5e7eb; font-size: 0.95rem; line-height: 1.6;">
+                {{ resource.resource_value | safe }}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+
     <div class="tabs">
         <button class="tab active" onclick="switchTab('database', true)">Database Data (CSV Import)</button>
         {% if family.research_data %}

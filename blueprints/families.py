@@ -10,6 +10,11 @@ import json
 
 logger = logging.getLogger(__name__)
 
+# In-memory store for filtered ID sets for navigation between families.
+# Maps a short key to {'ids': [int], 'created_at': datetime}
+FILTERED_ID_SETS = {}
+FILTERED_ID_SETS_MAX_AGE_SECONDS = 3600  # 1 hour
+
 bp = Blueprint('families', __name__, url_prefix='/families')
 
 
@@ -81,10 +86,44 @@ def family_detail(family_id):
                 
                 family_dict = dict(family)
                 
-                # Get filtered family IDs from query params (if coming from filtered view)
-                # Otherwise, get previous/next by ID order
+                # Get filtered family IDs from server-side filter key (if present)
+                # Otherwise, fall back to previous behaviour.
+                filter_key = request.args.get('filter_key')
                 filtered_ids_param = request.args.get('filtered_ids')
-                if filtered_ids_param:
+                if filter_key:
+                    from datetime import datetime, timedelta
+                    # Clean up expired keys
+                    now = datetime.utcnow()
+                    expired_keys = [
+                        k for k, v in FILTERED_ID_SETS.items()
+                        if (now - v.get('created_at', now)) > timedelta(seconds=FILTERED_ID_SETS_MAX_AGE_SECONDS)
+                    ]
+                    for k in expired_keys:
+                        FILTERED_ID_SETS.pop(k, None)
+                    
+                    id_set = FILTERED_ID_SETS.get(filter_key)
+                    filtered_ids = id_set.get('ids', []) if id_set else []
+                    if filtered_ids and family_id in filtered_ids:
+                        current_index = filtered_ids.index(family_id)
+                        if current_index > 0:
+                            prev_id = filtered_ids[current_index - 1]
+                            cur.execute("SELECT id, name FROM families WHERE id = %s", (prev_id,))
+                            prev_family = cur.fetchone()
+                            family_dict['prev_family'] = dict(prev_family) if prev_family else None
+                        else:
+                            family_dict['prev_family'] = None
+                        
+                        if current_index < len(filtered_ids) - 1:
+                            next_id = filtered_ids[current_index + 1]
+                            cur.execute("SELECT id, name FROM families WHERE id = %s", (next_id,))
+                            next_family = cur.fetchone()
+                            family_dict['next_family'] = dict(next_family) if next_family else None
+                        else:
+                            family_dict['next_family'] = None
+                    else:
+                        family_dict['prev_family'] = None
+                        family_dict['next_family'] = None
+                elif filtered_ids_param:
                     try:
                         filtered_ids = [int(id) for id in filtered_ids_param.split(',')]
                         current_index = filtered_ids.index(family_id) if family_id in filtered_ids else -1
@@ -313,6 +352,13 @@ def api_list():
                                     1
                                   ) > 50
                         ) as legacy_history_count,
+                        CASE WHEN EXISTS (
+                            SELECT 1 
+                            FROM family_resources fr2
+                            WHERE fr2.family_id = f.id
+                              AND fr2.resource_type = 'text'
+                              AND fr2.resource_category = 'history_legacy_generated'
+                        ) THEN true ELSE false END as has_legacy_generated,
                         (SELECT COUNT(*) FROM family_aliases WHERE family_id = f.id) as alias_count,
                         (SELECT COUNT(*) FROM family_spellings WHERE family_id = f.id) as variant_count,
                         (SELECT COUNT(*) FROM family_spellings WHERE spelling_of_id = f.id) as has_variants_count,
@@ -336,6 +382,15 @@ def api_list():
                         COUNT(*) FILTER (WHERE f.research_data IS NOT NULL AND jsonb_typeof(f.research_data) = 'object' AND (f.research_data::text != '{{}}'::text)) as with_json,
                         COUNT(*) FILTER (WHERE f.research_data IS NOT NULL AND f.research_data ? 'metadata' AND f.research_data->'metadata' ? 'narrative') as with_compiled,
                         COUNT(*) FILTER (WHERE f.research_data IS NOT NULL AND f.research_data ? 'metadata' AND f.research_data->'metadata' ? 'narrative_fact_checked') as with_openai,
+                        COUNT(*) FILTER (
+                            WHERE EXISTS (
+                                SELECT 1 
+                                FROM family_resources frg
+                                WHERE frg.family_id = f.id
+                                  AND frg.resource_type = 'text'
+                                  AND frg.resource_category = 'history_legacy_generated'
+                            )
+                        ) as with_legacy_generated,
                         COUNT(*) FILTER (WHERE f.has_history = TRUE AND f.research_data IS NOT NULL AND f.research_data ? 'metadata' AND f.research_data->'metadata' ? 'narrative_fact_checked') as with_both,
                         COUNT(*) FILTER (WHERE f.spelling_of IS NULL AND f.has_history = FALSE AND (f.research_data IS NULL OR NOT (f.research_data ? 'metadata' AND f.research_data->'metadata' ? 'narrative_fact_checked'))) as canonical_no_content
                     FROM families f
@@ -348,7 +403,7 @@ def api_list():
                 params.extend([per_page, offset])
                 cur.execute(query, params)
                 families = [dict(row) for row in cur.fetchall()]
-                
+
                 return jsonify({
                     'families': families,
                     'total': total,
@@ -360,6 +415,45 @@ def api_list():
     
     except Exception as e:
         logger.error(f"Error listing families: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/store_filter_ids', methods=['POST'])
+def api_store_filter_ids():
+    """Store filtered family IDs server-side and return a short key."""
+    try:
+        data = request.get_json(silent=True) or {}
+        ids = data.get('ids') or []
+        # Normalise to list of ints
+        try:
+            ids = [int(i) for i in ids]
+        except (TypeError, ValueError):
+            ids = []
+        
+        if not ids:
+            return jsonify({'error': 'No ids provided'}), 400
+        
+        from uuid import uuid4
+        from datetime import datetime, timedelta
+
+        # Prune expired keys
+        now = datetime.utcnow()
+        expired_keys = [
+            k for k, v in FILTERED_ID_SETS.items()
+            if (now - v.get('created_at', now)) > timedelta(seconds=FILTERED_ID_SETS_MAX_AGE_SECONDS)
+        ]
+        for k in expired_keys:
+            FILTERED_ID_SETS.pop(k, None)
+        
+        key = uuid4().hex[:12]
+        FILTERED_ID_SETS[key] = {
+            'ids': ids,
+            'created_at': now,
+        }
+        
+        return jsonify({'key': key})
+    except Exception as e:
+        logger.error(f"Error storing filter ids: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -611,6 +705,15 @@ def api_stats():
                         COUNT(*) FILTER (WHERE f.research_data IS NOT NULL AND jsonb_typeof(f.research_data) = 'object' AND (f.research_data::text != '{{}}'::text)) as with_json,
                         COUNT(*) FILTER (WHERE f.research_data IS NOT NULL AND f.research_data ? 'metadata' AND f.research_data->'metadata' ? 'narrative') as with_compiled,
                         COUNT(*) FILTER (WHERE f.research_data IS NOT NULL AND f.research_data ? 'metadata' AND f.research_data->'metadata' ? 'narrative_fact_checked') as with_openai,
+                        COUNT(*) FILTER (
+                            WHERE EXISTS (
+                                SELECT 1 
+                                FROM family_resources frg
+                                WHERE frg.family_id = f.id
+                                  AND frg.resource_type = 'text'
+                                  AND frg.resource_category = 'history_legacy_generated'
+                            )
+                        ) as with_legacy_generated,
                         COUNT(*) FILTER (WHERE f.has_history = TRUE AND f.research_data IS NOT NULL AND f.research_data ? 'metadata' AND f.research_data->'metadata' ? 'narrative_fact_checked') as with_both,
                         COUNT(*) FILTER (WHERE f.spelling_of IS NULL AND f.has_history = FALSE AND (f.research_data IS NULL OR NOT (f.research_data ? 'metadata' AND f.research_data->'metadata' ? 'narrative_fact_checked'))) as canonical_no_content
                     FROM families f

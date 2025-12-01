@@ -307,7 +307,6 @@ def import_family(cursor, family_data: Dict, skip_existing: bool = False) -> Opt
                 cursor.execute("""
                     INSERT INTO family_resources (family_id, resource_type, resource_category, resource_value, resource_metadata)
                     VALUES (%s, %s, %s, %s, %s::jsonb)
-                    ON CONFLICT ON CONSTRAINT uniq_family_resources_history DO NOTHING
                 """, (
                     family_id,
                     resource['type'],
