@@ -46,3 +46,5 @@ def select_seasonal_recipe_post() -> Dict[str, Any]:
         logging.getLogger(__name__).error(f"Error selecting seasonal recipe post: {e}", exc_info=True)
         return {}
 
+
+

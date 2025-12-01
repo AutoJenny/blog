@@ -7,3 +7,5 @@ CREATE INDEX IF NOT EXISTS idx_post_newsletter_spotlighted_at ON post(newsletter
 
 COMMENT ON COLUMN post.newsletter_spotlighted_at IS 'Timestamp when this profile post was featured in a newsletter spotlight block. NULL means not yet used.';
 
+
+
