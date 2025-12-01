@@ -1,66 +1,50 @@
 # Abercrombie: A Historical Narrative
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abercrombie Family Narrative</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-        }
-        p {
-            margin-bottom: 10px;
-        }
-        h3 {
-            margin-top: 20px;
-        }
-        blockquote {
-            margin-bottom: 20px;
-            padding-left: 30px;
-            border-left: 1px solid #ccc;
-        }
-    </style>
+	<title>The Abernethy Family History</title>
 </head>
 <body>
 
-<p>Abercrombie, a name with Scottish roots, has a rich and complex history spanning centuries. The earliest recorded mention of the Abercrombie family dates back to the 13th century, in the county of Angus. Traditionally attributed to King David II, the verse reads: "By th' sword o' Abernethy, our clan doth stand<br>Through battle and strife, till freedom's land"</p>
+	<p>A verse traditionally attributed to King David II reads:</p>
 
-<h3>A bloody birth</h3>
-<p>The Abercrombie family's early history is marked by violence and conflict. The clan was known for its prowess in battle, with the Abercrombies playing a significant role in several key events of the 14th century.</p>
+	<blockquote>By th' sword o' Abernethy, our clan doth stand<br>
+     Through battle and strife, till freedom's land</blockquote>
 
-<p>One such event was the Battle of Bannockburn, fought in 1314 between the English army led by King Edward II and the Scottish forces under Robert the Bruce. The Abercrombies were instrumental in the Scottish victory, with their leader, Sir William Abercrombie, playing a key role in the battle.</p>
+	<p>While its accuracy is disputed, it remains a testament to the clan's enduring spirit.</p>
 
-<p>However, not all Abercrombie family members were as fortunate. In 1388, a brother of Sir William, also named William, was killed in a skirmish with English forces near Stirling Castle.</p>
+	<h3>A bloody birth</h3>
 
-<h3>A dynasty is born</h3>
-<p>The 15th century saw the rise of the Abercrombie family to prominence. With the death of King James I in 1437, the throne passed to his son, James II, who was succeeded by a young and ambitious king, James III.</p>
+	<p>The Abernethy family originated in Scotland during the 13th century. The name "Abernethy" is derived from the Gaelic "Abhrainne Thuath," meaning "the head of the river." This refers to the River Abernethy, which flows through the heart of Perthshire.</p>
 
-<p>During this period, the Abercrombies continued to play a significant role in Scottish politics, with several members serving as advisors to the royal court. One such member was Sir Thomas Abercrombie, who served as the King's chief advisor on matters of state.</p>
+	<p>The earliest recorded mention of the Abernethy family dates back to 1250, when a certain "John de Abernethy" was listed as a tenant in the Baronial Rolls of Scotland. Over the centuries, the family would play a significant role in Scottish history, earning both praise and infamy.</p>
 
-<p>The Abercrombies also became known for their military prowess during this time period. In 1455, a group of Abercrombies led by Sir Robert Abercrombie defeated an English force at the Battle of Dalry.</p>
+	<p>In 1297, during the First War of Scottish Independence, the Abernethys were among those who supported the Scottish crown against English invaders. However, this loyalty would ultimately prove futile, as the war ended with Scotland signing the Treaty of Edinburgh-Northampton in 1328.</p>
 
-<h3>Rebellion and ruin</h3>
-<p>In the late 15th century, the Abercrombie family's fortunes began to decline. In 1488, a group of rebel lords, including William Douglas and the Earl of Angus, rose up against King James III, whom they accused of tyranny.</p>
+	<h3>A dynasty is born</h3>
 
-<p>The Abercrombies were among those who supported the rebels, with several members serving as leaders in the uprising. However, the rebellion was ultimately unsuccessful, and many Abercrombie family members were killed or forced to flee.</p>
+	<p>As the 14th century dawned, the Abernethy family began to solidify its position within Scottish society. William Abernethy, a grandson of John de Abernethy, became a prominent landowner and politician in his own right.</p>
 
-<h3>Legacy and diaspora</h3>
-<p>Despite their decline in power, the Abercrombie family continued to play a significant role in Scottish society. In the 17th century, several Abercrombies emigrated to the Americas, where they established new families and communities.</p>
+	<p>William's son, Andrew Abernethy, would go on to become a key figure in the Battle of Bannockburn in 1314. Although the Scots ultimately emerged victorious, the battle marked a turning point in Scottish history, as it solidified English claims to Scotland and paved the way for future conflicts.</p>
 
-<p>One such Abercrombie was John Abercrombie, who settled in Virginia in the early 18th century. He went on to become a prominent landowner and politician in the region.</p>
+	<p>Throughout the 15th century, the Abernethys continued to play a significant role in Scottish politics and warfare. However, their influence began to wane by the 16th century, as the clan's fortunes declined and its numbers dwindled.</p>
 
-<p>The Abercrombies also left their mark on Scottish history through their involvement in the Jacobite risings of the 17th and 18th centuries. Several members of the family served as loyalists to the Hanoverian cause, while others supported the Jacobite rebels.</p>
+	<h3>Rebellion and ruin</h3>
 
-<p>Today, the Abercrombie name can still be found in Scotland and around the world. Despite their complex and often troubled history, the Abercrombies remain a proud and enduring part of Scottish heritage.</p>
+	<p>In 1570, a group of Abernethy rebels, led by James Abernethy, attempted to overthrow Queen Mary I of Scotland. This rebellion, though ultimately unsuccessful, marked a low point in the clan's history.</p>
 
-<blockquote>
-By th' sword o' Abernethy, our clan doth stand<br>
-Through battle and strife, till freedom's land
-</blockquote>
-<p>While its accuracy is disputed, it remains a testament to the clan's enduring spirit.</p>
+	<p>The Abernethys' fortunes continued to decline throughout the 17th and 18th centuries. Many members of the clan lost their lands and titles as the Scottish nobility was reformed under the Acts of Union in 1707.</p>
+
+	<p>By the 19th century, the Abernethy family had all but disappeared from the historical record. However, a small number of descendants continued to maintain the family's legacy through oral tradition and family history research.</p>
+
+	<h3>Legacy and diaspora</h3>
+
+	<p>Today, the Abernethy name can be found in many parts of the world, including Scotland, England, Canada, Australia, and the United States. While the clan itself is no longer a dominant force in Scottish society, its legacy lives on through the countless individuals who bear the Abernethy surname.</p>
+
+	<p>Many Abernethys continue to maintain their Scottish heritage by supporting Scottish cultural organizations, participating in Highland games, and tracing their family histories back to the 13th century.</p>
+
+	<p>The Abernethy story serves as a testament to the enduring power of clan loyalty and tradition. Despite centuries of turmoil and upheaval, the name "Abernethy" remains a symbol of Scottish heritage and resilience.</p>
 
 </body>
 </html>

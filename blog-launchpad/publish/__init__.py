@@ -12,3 +12,4 @@ def register_blueprint(app):
     """Register the publish blueprint with the Flask app."""
     app.register_blueprint(publish_bp)
 
+

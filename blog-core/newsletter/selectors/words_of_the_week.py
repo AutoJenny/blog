@@ -114,3 +114,5 @@ def get_words_of_the_week(*, week_number: int) -> Dict[str, Any]:
         logging.getLogger(__name__).error(f"Error getting words of the week: {e}", exc_info=True)
         return {}
 
+
+

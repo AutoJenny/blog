@@ -139,3 +139,5 @@ print(cur.fetchone())
 - `blueprints/newsletter_round_scotland.py` - Added region filter to candidates query
 - `scripts/rescore_local_articles.py` - New script to re-score existing articles
 
+
+

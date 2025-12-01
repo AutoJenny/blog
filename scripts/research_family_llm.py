@@ -122,7 +122,7 @@ def format_family_context_for_llm(context: Dict) -> str:
         f"Family Name: {family['name']}",
         f"Family ID: {family['id']}",
         f"Is Clan: {family['is_clan']}",
-        f"Is Canonical: {family.get('is_canonical', True)}",
+        f"Is Canonical: {family.get('spelling_of') is None}",
         f"Has History: {family.get('has_history', False)}",
     ]
     

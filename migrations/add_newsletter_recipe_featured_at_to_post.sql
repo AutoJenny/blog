@@ -7,3 +7,5 @@ CREATE INDEX IF NOT EXISTS idx_post_newsletter_recipe_featured_at ON post(newsle
 
 COMMENT ON COLUMN post.newsletter_recipe_featured_at IS 'Timestamp when this recipe post was featured in a newsletter seasonal recipe block. NULL means not yet used.';
 
+
+

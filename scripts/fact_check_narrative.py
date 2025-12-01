@@ -47,7 +47,7 @@ def get_narrative_from_db(family_id: int) -> Optional[Dict]:
                 'research_data': research_data
             }
 
-def fact_check_with_openai(narrative_html: str, family_name: str, model: str = "gpt-4.1") -> Optional[str]:
+def fact_check_with_openai(narrative_html: str, family_name: str, model: str = "gpt-4.1", custom_instructions: str = None) -> Optional[str]:
     """Send narrative to OpenAI for fact-checking and refinement."""
     import openai
     import re
@@ -120,6 +120,15 @@ QUOTATIONS - CRITICAL:
 - Format: <p>Contextualisation text.</p><blockquote>Quoted text here</blockquote><p>Continuation.</p>
 - CRITICAL: Zero tolerance for cross-contamination - if a quotation mentions another surname, remove it entirely
 
+BLOCKQUOTE USAGE - ABSOLUTELY CRITICAL:
+- <blockquote> tags MUST ONLY be used for actual quotations (verbatim text from historical sources, poems, verses, speeches, etc.)
+- DO NOT use <blockquote> for regular narrative sentences, even if they are descriptive or important
+- DO NOT use <blockquote> for emphasis or to highlight important information
+- DO NOT use <blockquote> for any text that is your own writing or paraphrasing
+- ONLY use <blockquote> when you are reproducing exact, verbatim quoted material from a source
+- All regular narrative text must be in <p> tags, never in <blockquote> tags
+- If you are unsure whether something is a quotation, use <p> tags, not <blockquote>
+
 STYLE - CRITICAL:
 - Write as an authoritative historian presenting established historical facts
 - Use precise, clear language that conveys what is documented and known
@@ -136,13 +145,25 @@ LANGUAGE - CRITICAL:
 - Replace "migration patterns" with "movements" or "where {family_name}s settled"
 - Use accessible, everyday language while maintaining historical accuracy"""
 
-    user_prompt = f"""Please rewrite this historical narrative about the {family_name} family/clan fully accurately, also cutting out fluff like "in conclusion..." so it reads more like an authoritative history.
+    # Add custom instructions if provided
+    custom_section = ""
+    if custom_instructions:
+        custom_section = f"\n\nADDITIONAL FEEDBACK/INSTRUCTIONS:\n{custom_instructions}\n\nPlease address these specific points in your rewrite.\n"
+    
+    user_prompt = f"""Please rewrite this historical narrative about the {family_name} family/clan fully accurately, also cutting out fluff like "in conclusion..." so it reads more like an authoritative history.{custom_section}
 
 CRITICAL: Remove any quotations that mention surnames other than {family_name} (or its variations like Abercromby for Abercrombie). If you see a quotation about Abernethy, Stewart, Campbell, or any other surname, REMOVE IT ENTIRELY - this is cross-contamination and must not appear in the narrative.
 
 Focus on what IS documented and known. Remove negative statements like "there is no evidence" or "cannot be substantiated" - simply omit unsubstantiated claims rather than stating they cannot be proven.
 
-Write in an authoritative, accessible style without flowery language. Use UK-British spelling throughout. Target 500-1000 words. Maintain HTML format with <p>, <h3>, and <blockquote> tags.
+Write in an authoritative, accessible style without flowery language. Use UK-British spelling throughout. Target 500-1000 words. Maintain HTML format with <p> and <h3> tags.
+
+CRITICAL - BLOCKQUOTE USAGE:
+- Use <blockquote> tags ONLY for actual verbatim quotations (historical quotes, poems, verses, speeches, etc.)
+- DO NOT use <blockquote> for regular narrative sentences, descriptions, or your own writing
+- DO NOT use <blockquote> for emphasis or to highlight information
+- All regular narrative text must be in <p> tags
+- If uncertain whether something is a quotation, use <p> tags, not <blockquote>
 
 Return ONLY the HTML content - do NOT include any explanatory text, justifications, or notes after the HTML.
 
@@ -236,6 +257,7 @@ def main():
     parser.add_argument('--update-db', action='store_true', help='Update database with fact-checked version')
     parser.add_argument('--save-original', action='store_true', help='Save original narrative to file')
     parser.add_argument('--model', type=str, default='gpt-4.1', help='OpenAI model to use (default: gpt-4.1)')
+    parser.add_argument('--custom-instructions', type=str, help='Custom instructions/feedback to include in the prompt')
     
     args = parser.parse_args()
     
@@ -275,7 +297,12 @@ def main():
     print(f"Original narrative: {len(original_narrative.split())} words")
     
     # Send to OpenAI
-    refined_narrative = fact_check_with_openai(original_narrative, data['family_name'], model=args.model)
+    refined_narrative = fact_check_with_openai(
+        original_narrative, 
+        data['family_name'], 
+        model=args.model,
+        custom_instructions=args.custom_instructions
+    )
     
     if not refined_narrative:
         print("Failed to get refined narrative from OpenAI")

@@ -524,7 +524,11 @@ def post_process_research_data(data: Dict) -> Dict:
 def perform_web_search(query: str, max_results: int = 5) -> List[Dict]:
     """Perform web search and return results.
     
-    Uses Google Custom Search API if configured, otherwise falls back to DuckDuckGo HTML scraping.
+    Tries multiple search engines in order:
+    1. Google Custom Search API (if configured)
+    2. Bing Web Search API (if configured)
+    3. SerpAPI (if configured)
+    4. DuckDuckGo HTML scraping (fallback)
     """
     import requests
     import os
@@ -545,7 +549,7 @@ def perform_web_search(query: str, max_results: int = 5) -> List[Dict]:
                 'q': query,
                 'num': min(max_results, 10)
             }
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params=params, timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 for item in data.get('items', [])[:max_results]:
@@ -555,9 +559,58 @@ def perform_web_search(query: str, max_results: int = 5) -> List[Dict]:
                         'snippet': item.get('snippet', ''),
                         'rank': len(results) + 1
                     })
-                return results
+                if results:
+                    return results
         except Exception as e:
-            print(f"    Google Search API failed: {e}, trying DuckDuckGo...")
+            print(f"    Google Search API failed: {e}")
+    
+    # Try Bing Web Search API
+    bing_key = os.getenv('BING_SEARCH_API_KEY', '')
+    if bing_key:
+        try:
+            url = "https://api.bing.microsoft.com/v7.0/search"
+            headers = {'Ocp-Apim-Subscription-Key': bing_key}
+            params = {'q': query, 'count': min(max_results, 10)}
+            response = requests.get(url, headers=headers, params=params, timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                for item in data.get('webPages', {}).get('value', [])[:max_results]:
+                    results.append({
+                        'title': item.get('name', ''),
+                        'url': item.get('url', ''),
+                        'snippet': item.get('snippet', ''),
+                        'rank': len(results) + 1
+                    })
+                if results:
+                    return results
+        except Exception as e:
+            print(f"    Bing Search API failed: {e}")
+    
+    # Try SerpAPI
+    serpapi_key = os.getenv('SERPAPI_KEY', '')
+    if serpapi_key:
+        try:
+            url = "https://serpapi.com/search"
+            params = {
+                'api_key': serpapi_key,
+                'q': query,
+                'engine': 'google',
+                'num': min(max_results, 10)
+            }
+            response = requests.get(url, params=params, timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                for item in data.get('organic_results', [])[:max_results]:
+                    results.append({
+                        'title': item.get('title', ''),
+                        'url': item.get('link', ''),
+                        'snippet': item.get('snippet', ''),
+                        'rank': len(results) + 1
+                    })
+                if results:
+                    return results
+        except Exception as e:
+            print(f"    SerpAPI failed: {e}")
     
     # Fallback to DuckDuckGo HTML scraping
     try:
@@ -580,7 +633,8 @@ def perform_web_search(query: str, max_results: int = 5) -> List[Dict]:
                         'snippet': snippet_elem.get_text(strip=True) if snippet_elem else '',
                         'rank': len(results) + 1
                     })
-            return results
+            if results:
+                return results
     except Exception as e:
         print(f"    DuckDuckGo search failed: {e}")
     
@@ -648,7 +702,7 @@ def research_section(section_key: str, section_config: Dict, surname: str,
 
 ## Family Context from Database:
 - Is Clan: {family_context['family'].get('is_clan', False)}
-- Is Canonical: {family_context['family'].get('is_canonical', True)}
+- Is Canonical: {family_context['family'].get('spelling_of') is None}
 - Aliases: {', '.join(family_context.get('aliases', [])) or 'None'}
 - Variants: {', '.join(family_context.get('variants', [])) or 'None'}
 - Septs: {', '.join(family_context.get('septs', [])) or 'None'}

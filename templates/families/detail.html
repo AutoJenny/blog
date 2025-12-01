@@ -315,7 +315,37 @@
     <a href="/families/" class="back-link">← Back to Families & Clans</a>
     
     <div class="detail-header">
-        <h1>{{ family.name }}</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h1 style="margin: 0;">{{ family.name }}</h1>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                {% if family.prev_family %}
+                <a href="/families/{{ family.prev_family.id }}{% if family.current_filters and family.current_filters.filtered_ids %}?filtered_ids={{ family.current_filters.filtered_ids }}{% endif %}" 
+                   style="color: #8b5cf6; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #8b5cf6; border-radius: 6px; font-size: 0.875rem; transition: all 0.2s;"
+                   onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
+                   onmouseout="this.style.background='transparent'; this.style.color='#8b5cf6';"
+                   title="{{ family.prev_family.name }}">
+                    ← Previous
+                </a>
+                {% else %}
+                <span style="padding: 0.5rem 1rem; border: 1px solid #475569; border-radius: 6px; font-size: 0.875rem; color: #64748b; cursor: not-allowed;">
+                    ← Previous
+                </span>
+                {% endif %}
+                {% if family.next_family %}
+                <a href="/families/{{ family.next_family.id }}{% if family.current_filters and family.current_filters.filtered_ids %}?filtered_ids={{ family.current_filters.filtered_ids }}{% endif %}" 
+                   style="color: #8b5cf6; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #8b5cf6; border-radius: 6px; font-size: 0.875rem; transition: all 0.2s;"
+                   onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
+                   onmouseout="this.style.background='transparent'; this.style.color='#8b5cf6';"
+                   title="{{ family.next_family.name }}">
+                    Next →
+                </a>
+                {% else %}
+                <span style="padding: 0.5rem 1rem; border: 1px solid #475569; border-radius: 6px; font-size: 0.875rem; color: #64748b; cursor: not-allowed;">
+                    Next →
+                </span>
+                {% endif %}
+            </div>
+        </div>
         <div class="detail-badges">
             {% if family.is_clan %}
             <span class="badge badge-clan">Clan</span>
@@ -338,9 +368,9 @@
     </div>
     
     <div class="tabs">
-        <button class="tab active" onclick="switchTab('database')">Database Data (CSV Import)</button>
+        <button class="tab active" onclick="switchTab('database', true)">Database Data (CSV Import)</button>
         {% if family.research_data %}
-        <button class="tab" onclick="switchTab('research')">Research Data (Web Research)</button>
+        <button class="tab" onclick="switchTab('research', true)">Research Data (Web Research)</button>
         {% endif %}
     </div>
     
@@ -445,9 +475,42 @@
                 <div class="resource-category">{{ resource.resource_category }}</div>
                 {% endif %}
                 {% if resource.resource_value %}
-                <div class="resource-value">{{ resource.resource_value[:200] }}{% if resource.resource_value|length > 200 %}...{% endif %}</div>
+                <div class="resource-value" style="white-space: pre-wrap; word-wrap: break-word;">
+                    {{ resource.resource_value | safe }}
+                </div>
                 {% endif %}
             </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Legacy histories (history_legacy text resources) #}
+        {% set has_legacy = false %}
+        {% for resource in family.resources or [] %}
+            {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy' %}
+                {% set has_legacy = true %}
+            {% endif %}
+        {% endfor %}
+
+        {% if has_legacy %}
+        <div class="detail-section">
+            <h2>Legacy Histories</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.875rem;">
+                Legacy clan/family history texts imported from the original system (<code>history_legacy</code> resources).
+            </p>
+            {% for resource in family.resources %}
+                {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy' %}
+                <div class="legacy-history-item" style="margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #cbd5e1;">
+                    {% if resource.resource_metadata and resource.resource_metadata.title %}
+                    <h3 style="margin-top: 0; margin-bottom: 0.75rem; font-size: 1.125rem; color: #e5e7eb;">
+                        {{ resource.resource_metadata.title }}
+                    </h3>
+                    {% endif %}
+                    <div class="legacy-history-content" style="font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word;">
+                        {{ resource.resource_value | safe }}
+                    </div>
+                </div>
+                {% endif %}
             {% endfor %}
         </div>
         {% endif %}
@@ -480,7 +543,17 @@
         {% if family.research_data.metadata and family.research_data.metadata.narrative_fact_checked %}
         <div class="detail-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 style="margin: 0;">Fact-Checked Historical Narrative</h2>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <h2 style="margin: 0;">Fact-Checked Historical Narrative</h2>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+                        <input type="checkbox" 
+                               id="research-approved-checkbox"
+                               {% if family.research_approved %}checked{% endif %}
+                               onchange="updateApprovalStatus(this.checked)"
+                               style="width: 18px; height: 18px; cursor: pointer;">
+                        <span style="color: #cbd5e1; font-size: 0.875rem; font-weight: 500;">Approved</span>
+                    </label>
+                </div>
                 <a href="/families/{{ family.id }}/narrative" 
                    style="color: #8b5cf6; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #8b5cf6; border-radius: 6px; font-size: 0.875rem; transition: all 0.2s;"
                    onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
@@ -496,6 +569,35 @@
             </p>
             <div class="narrative-content" style="background: #0f172a; padding: 2rem; border-radius: 6px; border: 1px solid #334155; color: #cbd5e1; line-height: 1.9; font-family: 'Georgia', 'Times New Roman', serif; font-size: 1.125rem;">
                 {{ family.research_data.metadata.narrative_fact_checked | safe }}
+            </div>
+            
+            <!-- Feedback Form -->
+            <div style="margin-top: 2rem; padding: 1.5rem; background: #1e293b; border: 1px solid #334155; border-radius: 6px;">
+                <h3 style="color: #f1f5f9; margin-bottom: 1rem; font-size: 1.125rem;">Provide Feedback</h3>
+                <p style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 1rem;">
+                    Found an issue? Enter feedback below. The system will analyze it and either regenerate the research or refine the narrative.
+                </p>
+                <form id="feedback-form" onsubmit="submitFeedback(event)">
+                    <textarea 
+                        id="feedback-text" 
+                        name="feedback" 
+                        rows="4" 
+                        placeholder="e.g., 'Missing information about the 15th century', 'Tone is too flowery', 'Incorrect dates for key events'..."
+                        required
+                        style="width: 100%; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #cbd5e1; font-family: inherit; font-size: 0.875rem; resize: vertical; margin-bottom: 1rem;"
+                    ></textarea>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <button 
+                            type="submit" 
+                            style="padding: 0.75rem 1.5rem; background: #8b5cf6; color: white; border: none; border-radius: 6px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 0.2s;"
+                            onmouseover="this.style.background='#7c3aed';"
+                            onmouseout="this.style.background='#8b5cf6';"
+                        >
+                            Submit Feedback
+                        </button>
+                        <span id="feedback-status" style="color: #94a3b8; font-size: 0.875rem;"></span>
+                    </div>
+                </form>
             </div>
         </div>
         {% elif family.research_data.metadata and family.research_data.metadata.narrative %}
@@ -771,7 +873,21 @@
     {% endif %}
     
     <script>
-    function switchTab(tabName) {
+    // Persist tab selection in localStorage
+    const TAB_STORAGE_KEY = 'family_detail_active_tab';
+    
+    // Load saved tab on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedTab = localStorage.getItem(TAB_STORAGE_KEY);
+        if (savedTab) {
+            const tabButton = document.querySelector(`.tab[onclick*="'${savedTab}'"]`);
+            if (tabButton) {
+                switchTab(savedTab, false);
+            }
+        }
+    });
+    
+    function switchTab(tabName, saveToStorage = true) {
         // Hide all tab contents
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
@@ -786,7 +902,157 @@
         document.getElementById('tab-' + tabName).classList.add('active');
         
         // Add active class to clicked tab
-        event.target.classList.add('active');
+        const tabButton = document.querySelector(`.tab[onclick*="'${tabName}'"]`);
+        if (tabButton) {
+            tabButton.classList.add('active');
+        }
+        
+        // Save to localStorage
+        if (saveToStorage) {
+            localStorage.setItem(TAB_STORAGE_KEY, tabName);
+        }
+    }
+    
+    function displayFeedbackReport(report, isError = false) {
+        // Remove existing report if any
+        const existingReport = document.getElementById('feedback-report');
+        if (existingReport) {
+            existingReport.remove();
+        }
+        
+        // Create report container
+        const reportDiv = document.createElement('div');
+        reportDiv.id = 'feedback-report';
+        reportDiv.style.cssText = 'margin-top: 1.5rem; padding: 1.5rem; background: #1e293b; border: 1px solid #334155; border-radius: 6px;';
+        
+        let html = '<h3 style="color: #f1f5f9; margin-bottom: 1rem; font-size: 1.125rem;">Processing Report</h3>';
+        
+        if (report.action_taken) {
+            const actionLabel = report.action_taken === 'regenerate' ? 'Full Regeneration' : 'Narrative Refinement';
+            const actionColor = report.action_taken === 'regenerate' ? '#f59e0b' : '#8b5cf6';
+            html += `<div style="margin-bottom: 1rem;"><strong style="color: ${actionColor};">Action Taken:</strong> <span style="color: #cbd5e1;">${actionLabel}</span></div>`;
+        }
+        
+        if (report.severity) {
+            html += `<div style="margin-bottom: 1rem;"><strong style="color: #8b5cf6;">Severity:</strong> <span style="color: #cbd5e1; text-transform: capitalize;">${report.severity}</span></div>`;
+        }
+        
+        if (report.reasoning) {
+            html += `<div style="margin-bottom: 1rem;"><strong style="color: #8b5cf6;">Reasoning:</strong> <span style="color: #cbd5e1;">${report.reasoning}</span></div>`;
+        }
+        
+        if (report.steps_completed && report.steps_completed.length > 0) {
+            html += '<div style="margin-bottom: 1rem;"><strong style="color: #10b981;">Steps Completed:</strong><ul style="margin: 0.5rem 0 0 1.5rem; color: #cbd5e1;">';
+            report.steps_completed.forEach(step => {
+                html += `<li>${step}</li>`;
+            });
+            html += '</ul></div>';
+        }
+        
+        if (report.steps_failed && report.steps_failed.length > 0) {
+            html += '<div style="margin-bottom: 1rem;"><strong style="color: #ef4444;">Steps Failed:</strong><ul style="margin: 0.5rem 0 0 1.5rem; color: #cbd5e1;">';
+            report.steps_failed.forEach(step => {
+                html += `<li>${step}</li>`;
+            });
+            html += '</ul></div>';
+        }
+        
+        if (report.summary) {
+            html += `<div style="margin-top: 1rem; padding: 1rem; background: #0f172a; border-left: 3px solid ${isError ? '#ef4444' : '#10b981'}; border-radius: 4px;"><strong style="color: ${isError ? '#ef4444' : '#10b981'};">Summary:</strong> <span style="color: #cbd5e1;">${report.summary}</span></div>`;
+        }
+        
+        reportDiv.innerHTML = html;
+        
+        // Insert after feedback form
+        const feedbackForm = document.getElementById('feedback-form');
+        feedbackForm.parentNode.insertBefore(reportDiv, feedbackForm.nextSibling);
+    }
+    
+    function updateApprovalStatus(approved) {
+        fetch(`/families/api/{{ family.id }}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ approved: approved })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Optional: show a brief confirmation
+                const checkbox = document.getElementById('research-approved-checkbox');
+                if (approved) {
+                    checkbox.style.accentColor = '#10b981';
+                } else {
+                    checkbox.style.accentColor = '';
+                }
+            } else {
+                // Revert checkbox on error
+                document.getElementById('research-approved-checkbox').checked = !approved;
+                alert('Error updating approval status: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            // Revert checkbox on error
+            document.getElementById('research-approved-checkbox').checked = !approved;
+            alert('Error updating approval status: ' + error.message);
+        });
+    }
+    
+    function submitFeedback(event) {
+        event.preventDefault();
+        const feedbackText = document.getElementById('feedback-text').value;
+        const statusEl = document.getElementById('feedback-status');
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        
+        if (!feedbackText.trim()) {
+            statusEl.textContent = 'Please enter feedback';
+            statusEl.style.color = '#ef4444';
+            return;
+        }
+        
+        statusEl.textContent = 'Processing feedback...';
+        statusEl.style.color = '#fbbf24';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+        
+        fetch(`/families/api/{{ family.id }}/feedback`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ feedback: feedbackText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                statusEl.textContent = '✓ Feedback processed successfully!';
+                statusEl.style.color = '#10b981';
+                
+                // Display report if available
+                if (data.report) {
+                    displayFeedbackReport(data.report);
+                }
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000); // Give time to read the report
+            } else {
+                statusEl.textContent = '✗ Error: ' + (data.error || 'Unknown error');
+                statusEl.style.color = '#ef4444';
+                if (data.report) {
+                    displayFeedbackReport(data.report, true);
+                }
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+            }
+        })
+        .catch(error => {
+            statusEl.textContent = '✗ Error: ' + error.message;
+            statusEl.style.color = '#ef4444';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Feedback';
+        });
     }
     </script>
 </div>

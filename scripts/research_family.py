@@ -212,7 +212,7 @@ def print_family_context(context: Dict):
     print(f"Family: {family['name']} (ID: {family['id']})")
     print(f"{'='*60}")
     print(f"  Is Clan: {family['is_clan']}")
-    print(f"  Is Canonical: {family['is_canonical']}")
+    print(f"  Is Canonical: {family.get('spelling_of') is None}")
     print(f"  Has History: {family['has_history']}")
     
     if context['aliases']:
