@@ -172,18 +172,18 @@
     }
     
     .families-table th {
-        padding: 1rem;
+        padding: 0.5rem;
         text-align: left;
         color: #cbd5e1;
         font-weight: 600;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         border-bottom: 1px solid #334155;
     }
     
     .families-table td {
-        padding: 1rem;
+        padding: 0.5rem;
         color: #f1f5f9;
         border-bottom: 1px solid #334155;
         font-size: 0.875rem;
@@ -353,6 +353,10 @@
                 <span class="stat-value" id="stat-openai">-</span>
             </div>
             <div class="stat-item">
+                <span class="stat-label">With Gen</span>
+                <span class="stat-value" id="stat-gen">-</span>
+            </div>
+            <div class="stat-item">
                 <span class="stat-label">Canonical (No Content)</span>
                 <span class="stat-value" id="stat-canonical-no-content">-</span>
             </div>
@@ -387,6 +391,10 @@
             <div class="stat-item">
                 <span class="stat-label">With OpenAI</span>
                 <span class="stat-value" id="stat-filtered-openai">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">With Gen</span>
+                <span class="stat-value" id="stat-filtered-gen">-</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Canonical (No Content)</span>
@@ -569,6 +577,7 @@ async function loadStats() {
         document.getElementById('stat-json').textContent = (stats.with_json || 0).toLocaleString();
         document.getElementById('stat-compiled').textContent = (stats.with_compiled || 0).toLocaleString();
         document.getElementById('stat-openai').textContent = (stats.with_openai || 0).toLocaleString();
+        document.getElementById('stat-gen').textContent = (stats.with_legacy_generated || 0).toLocaleString();
         document.getElementById('stat-canonical-no-content').textContent = (stats.canonical_no_content || 0).toLocaleString();
         
         // Load filtered stats will be updated when families are loaded
@@ -599,6 +608,7 @@ function updateFilteredStats(filteredStats) {
         document.getElementById('stat-filtered-json').textContent = (filteredStats.with_json || 0).toLocaleString();
         document.getElementById('stat-filtered-compiled').textContent = (filteredStats.with_compiled || 0).toLocaleString();
         document.getElementById('stat-filtered-openai').textContent = (filteredStats.with_openai || 0).toLocaleString();
+        document.getElementById('stat-filtered-gen').textContent = (filteredStats.with_legacy_generated || 0).toLocaleString();
         document.getElementById('stat-filtered-canonical-no-content').textContent = (filteredStats.canonical_no_content || 0).toLocaleString();
     }
 }
@@ -649,6 +659,7 @@ async function loadFamilies(page = 1) {
         html += '<th>JSON</th>';
         html += '<th>Compiled</th>';
         html += '<th>OpenAI</th>';
+        html += '<th>Gen</th>';
         html += '<th>Relationships</th>';
         html += '<th>Resources</th>';
         html += '</tr></thead><tbody>';
@@ -732,6 +743,15 @@ async function loadFamilies(page = 1) {
             // OpenAI (fact-checked)
             html += '<td>';
             if (family.has_openai) {
+                html += '<span class="badge badge-research">✓</span>';
+            } else {
+                html += '<span class="badge badge-none">✗</span>';
+            }
+            html += '</td>';
+
+            // Generated legacy summary (history_legacy_generated)
+            html += '<td>';
+            if (family.has_legacy_generated) {
                 html += '<span class="badge badge-research">✓</span>';
             } else {
                 html += '<span class="badge badge-none">✗</span>';
