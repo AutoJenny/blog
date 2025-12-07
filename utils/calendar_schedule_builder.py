@@ -22,6 +22,7 @@ CATEGORIES = [
     "profile_surname",
     "weekly_word",
     "weekly_phrase",
+    "weekly_insult",
 ]
 
 
@@ -65,7 +66,7 @@ def _load_base_list_items(category: str) -> List[Dict[str, Any]]:
         # For profile types, we need to JOIN with post table to get title
         title_col = None  # Will be handled via JOIN
         desc_col = None
-    elif original_category in ("weekly_word", "weekly_phrase"):
+    elif original_category in ("weekly_word", "weekly_phrase", "weekly_insult"):
         title_col = "idea_title"
         desc_col = "idea_description"
     else:

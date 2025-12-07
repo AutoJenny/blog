@@ -21,6 +21,7 @@ CATEGORIES = [
     "profile_surname",
     "weekly_word",
     "weekly_phrase",
+    "weekly_insult",
 ]
 
 
@@ -120,6 +121,19 @@ def build_schedule_item(category: str, entry: dict) -> dict:
     if cat == "weekly_phrase":
         result = {
             "type": "weekly_phrase",
+            "item_id": item_id,
+            "title": title,
+            "position": position,
+        }
+        # Include description if available
+        description = entry.get("description")
+        if description:
+            result["description"] = description
+        return result
+    
+    if cat == "weekly_insult":
+        result = {
+            "type": "weekly_insult",
             "item_id": item_id,
             "title": title,
             "position": position,

@@ -27,6 +27,7 @@ CATEGORIES: List[str] = [
     "profile_surname",
     "weekly_word",
     "weekly_phrase",
+    "weekly_insult",
 ]
 
 # Display window defaults
@@ -47,6 +48,7 @@ CATEGORY_DISPLAY_NAMES = {
     "profile_surname": "Surname Profile",
     "weekly_word": "Weekly Word",
     "weekly_phrase": "Weekly Phrase",
+    "weekly_insult": "Weekly Insult",
 }
 
 # Category to table mapping (for reference, actual mapping in calendar_resolver)
@@ -57,6 +59,7 @@ CATEGORY_TABLES = {
     "profile_surname": "calendar_profile_sequence",
     "weekly_word": "calendar_ideas",
     "weekly_phrase": "calendar_ideas",
+    "weekly_insult": "calendar_ideas",
 }
 
 # Cycle configuration

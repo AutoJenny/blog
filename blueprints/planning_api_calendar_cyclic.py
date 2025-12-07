@@ -28,6 +28,7 @@ SUPPORTED_CATEGORIES = [
     "profile_surname",
     "weekly_word",
     "weekly_phrase",
+    "weekly_insult",
 ]
 
 
@@ -70,8 +71,8 @@ def _normalize_category(category: str) -> tuple[str, str | None]:
         profile_type = category.replace("profile_", "")
         return ("profile", profile_type)
     
-    # Weekly word/phrase use the category as classification
-    if category in ("weekly_word", "weekly_phrase"):
+    # Weekly word/phrase/insult use the category as classification
+    if category in ("weekly_word", "weekly_phrase", "weekly_insult"):
         return (category, category)
     
     # Theme and recipe have no classification
@@ -167,7 +168,7 @@ def api_list_reorder():
 
     Request JSON:
     {
-        "category": "theme" | "recipe" | "profile_product" | "profile_surname" | "weekly_word" | "weekly_phrase",
+        "category": "theme" | "recipe" | "profile_product" | "profile_surname" | "weekly_word" | "weekly_phrase" | "weekly_insult",
         "item_id": <int>,
         "new_position": <int>,
         "classification": <optional string>  # only needed for ambiguous categories
@@ -399,7 +400,7 @@ def api_list_add():
             "theme_title": "...",           # for theme
             "recipe_title": "...",          # for recipe
             "post_id": <int>,               # for profile_product/profile_surname
-            "idea_title": "..."             # for weekly_word/weekly_phrase
+            "idea_title": "..."             # for weekly_word/weekly_phrase/weekly_insult
         }
     }
 
@@ -456,7 +457,7 @@ def api_list_add():
         elif original_category in ("profile_product", "profile_surname"):
             required_fields = ["post_id"]
             insert_fields = ["post_id"]
-        elif original_category in ("weekly_word", "weekly_phrase"):
+        elif original_category in ("weekly_word", "weekly_phrase", "weekly_insult"):
             required_fields = ["idea_title"]
             insert_fields = ["idea_title"]
 
@@ -795,7 +796,7 @@ def api_item_update():
             # Profiles are linked via post_id, so we might update post metadata
             # For now, we don't update profiles here - they're managed via posts
             return json_error("Profile items should be updated via post management", status=400)
-        elif original_category in ("weekly_word", "weekly_phrase"):
+        elif original_category in ("weekly_word", "weekly_phrase", "weekly_insult"):
             if "idea_title" in data:
                 updatable_fields["idea_title"] = data["idea_title"]
             if "idea_description" in data:
