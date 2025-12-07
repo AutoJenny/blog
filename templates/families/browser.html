@@ -357,6 +357,10 @@
                 <span class="stat-value" id="stat-gen">-</span>
             </div>
             <div class="stat-item">
+                <span class="stat-label">With SRT</span>
+                <span class="stat-value" id="stat-srt">-</span>
+            </div>
+            <div class="stat-item">
                 <span class="stat-label">Canonical (No Content)</span>
                 <span class="stat-value" id="stat-canonical-no-content">-</span>
             </div>
@@ -395,6 +399,10 @@
             <div class="stat-item">
                 <span class="stat-label">With Gen</span>
                 <span class="stat-value" id="stat-filtered-gen">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">With SRT</span>
+                <span class="stat-value" id="stat-filtered-srt">-</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Canonical (No Content)</span>
@@ -439,6 +447,22 @@
                     <option value="">All</option>
                     <option value="true">Yes</option>
                     <option value="false">No</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="is_virtual">Is Virtual</label>
+                <select id="is_virtual" class="filter-select">
+                    <option value="">All</option>
+                    <option value="true">Only virtual</option>
+                    <option value="false">Only non-virtual</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="name_has_of">Name contains " of "</label>
+                <select id="name_has_of" class="filter-select">
+                    <option value="">All</option>
+                    <option value="include">Only names with " of "</option>
+                    <option value="exclude">Exclude names with " of "</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -505,6 +529,15 @@ function loadFiltersFromStorage() {
             }
             if (currentFilters.has_research) {
                 document.getElementById('has_research').value = currentFilters.has_research;
+            }
+            if (currentFilters.has_srt) {
+                document.getElementById('has_srt').value = currentFilters.has_srt;
+            }
+            if (currentFilters.is_virtual) {
+                document.getElementById('is_virtual').value = currentFilters.is_virtual;
+            }
+            if (currentFilters.name_has_of) {
+                document.getElementById('name_has_of').value = currentFilters.name_has_of;
             }
             if (currentFilters.popularity_min) {
                 document.getElementById('popularity_min').value = currentFilters.popularity_min;
@@ -578,6 +611,7 @@ async function loadStats() {
         document.getElementById('stat-compiled').textContent = (stats.with_compiled || 0).toLocaleString();
         document.getElementById('stat-openai').textContent = (stats.with_openai || 0).toLocaleString();
         document.getElementById('stat-gen').textContent = (stats.with_legacy_generated || 0).toLocaleString();
+        document.getElementById('stat-srt').textContent = (stats.with_srt || 0).toLocaleString();
         document.getElementById('stat-canonical-no-content').textContent = (stats.canonical_no_content || 0).toLocaleString();
         
         // Load filtered stats will be updated when families are loaded
@@ -609,6 +643,7 @@ function updateFilteredStats(filteredStats) {
         document.getElementById('stat-filtered-compiled').textContent = (filteredStats.with_compiled || 0).toLocaleString();
         document.getElementById('stat-filtered-openai').textContent = (filteredStats.with_openai || 0).toLocaleString();
         document.getElementById('stat-filtered-gen').textContent = (filteredStats.with_legacy_generated || 0).toLocaleString();
+        document.getElementById('stat-filtered-srt').textContent = (filteredStats.with_srt || 0).toLocaleString();
         document.getElementById('stat-filtered-canonical-no-content').textContent = (filteredStats.canonical_no_content || 0).toLocaleString();
     }
 }
@@ -660,6 +695,7 @@ async function loadFamilies(page = 1) {
         html += '<th>Compiled</th>';
         html += '<th>OpenAI</th>';
         html += '<th>Gen</th>';
+        html += '<th>SRT</th>';
         html += '<th>Relationships</th>';
         html += '<th>Resources</th>';
         html += '</tr></thead><tbody>';
@@ -758,6 +794,15 @@ async function loadFamilies(page = 1) {
             }
             html += '</td>';
             
+            // SRT (Scottish Register of Tartans)
+            html += '<td>';
+            if (family.has_srt) {
+                html += '<span class="badge badge-research">✓</span>';
+            } else {
+                html += '<span class="badge badge-none">✗</span>';
+            }
+            html += '</td>';
+            
             // Relationships
             html += '<td>';
             const relationships = [];
@@ -819,6 +864,9 @@ function applyFilters() {
         is_canonical: document.getElementById('is_canonical').value,
         has_history: document.getElementById('has_history').value,
         has_research: document.getElementById('has_research').value,
+        has_srt: document.getElementById('has_srt').value,
+        is_virtual: document.getElementById('is_virtual').value,
+        name_has_of: document.getElementById('name_has_of').value,
         popularity_min: document.getElementById('popularity_min').value.trim(),
         popularity_max: document.getElementById('popularity_max').value.trim(),
         sort_by: document.getElementById('sort_by').value,
@@ -844,6 +892,8 @@ function resetFilters() {
     document.getElementById('is_canonical').value = '';
     document.getElementById('has_history').value = '';
     document.getElementById('has_research').value = '';
+     document.getElementById('is_virtual').value = '';
+     document.getElementById('name_has_of').value = '';
     document.getElementById('popularity_min').value = '';
     document.getElementById('popularity_max').value = '';
     document.getElementById('sort_by').value = 'name';

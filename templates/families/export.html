@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ family.name }} - Export</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: white;
+            padding: 2rem;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+        
+        .print-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #8b5cf6;
+        }
+        
+        .print-header h1 {
+            font-size: 2.5rem;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+        
+        .print-header .subtitle {
+            font-size: 1rem;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .section {
+            margin-bottom: 2.5rem;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+            color: #8b5cf6;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: bold;
+        }
+        
+        .subsection {
+            margin-bottom: 2rem;
+            page-break-inside: avoid;
+        }
+        
+        .subsection-title {
+            font-size: 1.25rem;
+            color: #333;
+            margin-bottom: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .image-group {
+            margin-bottom: 2rem;
+            page-break-inside: avoid;
+        }
+        
+        .image-group-title {
+            font-size: 1.125rem;
+            color: #8b5cf6;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .image-group-description {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 1rem;
+            font-style: italic;
+            line-height: 1.5;
+        }
+        
+        .image-container {
+            text-align: center;
+            margin: 1rem 0;
+            page-break-inside: avoid;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #333;
+            text-align: justify;
+            margin-bottom: 1.5rem;
+        }
+        
+        .text-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .text-content h3 {
+            font-size: 1.125rem;
+            color: #8b5cf6;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .text-content blockquote {
+            border-left: 4px solid #8b5cf6;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .legacy-summary {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-left: 4px solid #8b5cf6;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        
+        .metadata {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .metadata-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .no-content {
+            color: #999;
+            font-style: italic;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .section {
+                page-break-inside: avoid;
+            }
+            
+            .image-group {
+                page-break-inside: avoid;
+            }
+            
+            .print-actions {
+                display: none;
+            }
+        }
+        
+        @media screen {
+            .print-actions {
+                position: fixed;
+                top: 1rem;
+                right: 1rem;
+                z-index: 1000;
+            }
+            
+            .print-button {
+                background: #8b5cf6;
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 6px;
+                font-size: 1rem;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            }
+            
+            .print-button:hover {
+                background: #7c3aed;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-actions">
+        <button class="print-button" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+    
+    <div class="print-header">
+        <h1>{{ family.name }}</h1>
+        <div class="subtitle">Family & Clan Heritage</div>
+    </div>
+    
+    {% if family.generated_legacy %}
+    <div class="section">
+        <div class="subsection">
+            <div class="subsection-title">Historical Summary</div>
+            <div class="legacy-summary">
+                {{ family.generated_legacy.resource_value }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if family.image_groups %}
+    <div class="section">
+        <div class="section-title">Heraldic Images</div>
+        {% for group_data in family.image_groups %}
+            {% set resource = group_data.resource %}
+            {% set image_url = get_clan_com_image_url(family.name, resource.resource_category or '', resource.resource_value) %}
+            {% set style_title = group_data.title %}
+            
+            {% set style_description = '' %}
+            {% if style_title == 'Bookplate' %}
+                {% set style_description = 'A decorative framed layout traditionally used for bookplates, ex-libris labels, and formal stationery. This style features ornate borders and elegant presentation suitable for personal libraries and official documents.' %}
+            {% elif style_title == 'British (Fleet)' %}
+                {% set style_description = 'A British-style clean rendering with crisp lines and formal presentation. This style reflects traditional British heraldic conventions with clear, unadorned execution suitable for official and ceremonial use.' %}
+            {% elif style_title == 'Crest (Scottish)' %}
+                {% set style_description = 'A crest-only design featuring the clan-style belt and buckle, a distinctive Scottish heraldic element. This minimalist approach focuses on the crest itself, often displayed on a traditional Scottish belt and buckle mount.' %}
+            {% elif style_title == 'Crest (English)' %}
+                {% set style_description = 'An English heraldic crest rendering, typically displayed on a torse (wreath) or coronet. This style follows English heraldic traditions with formal presentation of the crest element alone.' %}
+            {% elif style_title == 'Crest (Irish)' %}
+                {% set style_description = 'An Irish or Gaelic crest design, often incorporating Celtic motifs and traditional Irish heraldic elements. This style reflects the distinctive heraldic traditions of Ireland and Gaelic culture.' %}
+            {% elif style_title == 'Families (Of Britain Pro Scottish)' %}
+                {% set style_description = 'A detailed full Scottish-style coat of arms with complete heraldic achievement. This comprehensive rendering includes shield, crest, supporters (if applicable), and motto, representing the full armorial bearings in the Scottish heraldic tradition.' %}
+            {% elif style_title == 'Fighting (Irish)' %}
+                {% set style_description = 'A martial Irish-style rendering with bold, dynamic presentation. This style emphasizes strength and warrior heritage, often featuring more aggressive or battle-ready depictions of heraldic elements.' %}
+            {% elif style_title == 'Scottish (Gentry)' %}
+                {% set style_description = 'An elegant full Scottish gentry-style coat of arms. This refined rendering represents the armorial bearings of Scottish landed families and gentry, with sophisticated presentation suitable for formal and ceremonial contexts.' %}
+            {% elif style_title == 'Badge' %}
+                {% set style_description = 'A clan or family badge, a simplified heraldic device used for identification and affiliation. Badges are often worn or displayed as symbols of clan membership and heritage, distinct from the full coat of arms.' %}
+            {% elif style_title == 'Book Cover' %}
+                {% set style_description = 'A heraldic design formatted for book covers and publication use. This style is optimized for print and digital media, with clear presentation suitable for book jackets, stationery, and promotional materials.' %}
+            {% elif style_title == 'Hero Badge' %}
+                {% set style_description = 'A prominent badge design featuring tartan integration, combining heraldic elements with traditional Scottish tartan patterns. This style creates a distinctive visual identity that merges clan heraldry with textile heritage.' %}
+            {% endif %}
+            
+            <div class="image-group">
+                <div class="image-group-title">{{ style_title }}</div>
+                {% if style_description %}
+                <div class="image-group-description">{{ style_description }}</div>
+                {% endif %}
+                <div class="image-container">
+                    <img src="{{ image_url }}" alt="{{ style_title }} - {{ family.name }}" />
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if family.legacy_histories %}
+    <div class="section">
+        <div class="section-title">Legacy Histories</div>
+        {% for legacy in family.legacy_histories %}
+            <div class="subsection">
+                <div class="text-content">
+                    {{ legacy.resource_value|safe }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if family.narrative_fact_checked %}
+    <div class="section">
+        <div class="section-title">Fact-Checked Historical Narrative</div>
+        <div class="text-content">
+            {{ family.narrative_fact_checked|safe }}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if family.text_resources %}
+    <div class="section">
+        <div class="section-title">Additional Text Resources</div>
+        {% for text_resource in family.text_resources %}
+            {% if text_resource.resource_category not in ['history_legacy', 'history_legacy_generated'] %}
+            <div class="subsection">
+                <div class="subsection-title">{{ text_resource.resource_category.replace('_', ' ').title() }}</div>
+                <div class="text-content">
+                    {{ text_resource.resource_value|safe }}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="metadata">
+        <div class="metadata-item"><strong>Family ID:</strong> {{ family.id }}</div>
+        {% if family.is_clan %}
+        <div class="metadata-item"><strong>Type:</strong> Clan</div>
+        {% endif %}
+        {% if family.popularity_rating %}
+        <div class="metadata-item"><strong>Popularity Rating:</strong> {{ family.popularity_rating }}/100</div>
+        {% endif %}
+        {% if family.research_approved %}
+        <div class="metadata-item"><strong>Research Status:</strong> Approved</div>
+        {% endif %}
+        <div class="metadata-item"><strong>Source:</strong> clan.com Family Database</div>
+        <div class="metadata-item"><strong>Generated:</strong> <span id="generated-date"></span></div>
+    </div>
+    
+    <script>
+        // Simple date formatting
+        function formatDate() {
+            const now = new Date();
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            return months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+        }
+        
+        // Replace placeholder with actual date
+        const dateElements = document.querySelectorAll('.metadata-item');
+        dateElements.forEach(el => {
+            if (el.textContent.includes('Generated:')) {
+                el.innerHTML = '<strong>Generated:</strong> ' + formatDate();
+            }
+        });
+    </script>
+</body>
+</html>
+

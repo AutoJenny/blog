@@ -100,6 +100,11 @@ def create_week_item(item_type: str, item_id: int, year: int, week_number: int,
     
     metadata_json = metadata or {}
     
+    # Convert dict to JSON string for JSONB column
+    import json
+    if isinstance(metadata_json, dict):
+        metadata_json = json.dumps(metadata_json)
+    
     try:
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
@@ -109,7 +114,7 @@ def create_week_item(item_type: str, item_id: int, year: int, week_number: int,
                         is_selected, priority, position, metadata, notes, is_active,
                         created_at, updated_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW()
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, NOW(), NOW()
                     )
                     ON CONFLICT (year, week_number, item_type, item_id)
                     DO UPDATE SET
