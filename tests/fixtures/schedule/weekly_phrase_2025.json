@@ -1,0 +1,18 @@
+{
+  "category": "weekly_phrase",
+  "year": 2025,
+  "generated_at": "2025-01-01T00:00:00Z",
+  "weeks": {
+    "1": {
+      "id": 601,
+      "position": 1,
+      "title": "Phrase 1"
+    },
+    "2": {
+      "id": 602,
+      "position": 2,
+      "title": "Phrase 2"
+    }
+  }
+}
+

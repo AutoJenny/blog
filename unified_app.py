@@ -129,6 +129,21 @@ def create_app(config_name=None):
     from blueprints.planning import bp as planning_bp
     app.register_blueprint(planning_bp)
     
+    # Register cyclic calendar API
+    from blueprints.planning_api_calendar_cyclic import bp as planning_api_calendar_cyclic_bp
+    app.register_blueprint(planning_api_calendar_cyclic_bp)
+    
+    # Register scheduling cache blueprint
+    from blueprints.planning_api_calendar_scheduling_cache import bp as planning_api_calendar_scheduling_cache_bp
+    app.register_blueprint(planning_api_calendar_scheduling_cache_bp)
+    
+    # Register override/reassignment blueprint
+    from blueprints.planning_api_calendar_overrides import bp as planning_api_calendar_overrides_bp
+    app.register_blueprint(planning_api_calendar_overrides_bp)
+    
+    # OLD REASSIGN BLUEPRINT REMOVED - Uses incompatible calendar_week_items table
+    # Use planning_api_calendar_overrides instead (uses calendar_week_overrides table)
+    
     # Register taxonomy API blueprints
     from blueprints.taxonomy_api import bp as taxonomy_api_bp
     app.register_blueprint(taxonomy_api_bp)

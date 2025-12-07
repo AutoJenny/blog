@@ -1,0 +1,366 @@
+[
+  {
+    "week": 1,
+    "item_id": 9,
+    "position": 1,
+    "title": "Winter Glens",
+    "description": "Exploring frozen Highland glens in the depth of winter."
+  },
+  {
+    "week": 2,
+    "item_id": 10,
+    "position": 2,
+    "title": "Cailleach’s Winter",
+    "description": "A look at the winter goddess Cailleach and her seasonal influence."
+  },
+  {
+    "week": 3,
+    "item_id": 11,
+    "position": 3,
+    "title": "Aurora Nights",
+    "description": "Where and when to see Scotland’s northern lights."
+  },
+  {
+    "week": 4,
+    "item_id": 12,
+    "position": 4,
+    "title": "Lion Rampant",
+    "description": "The history and symbolism of Scotland’s royal lion."
+  },
+  {
+    "week": 5,
+    "item_id": 13,
+    "position": 5,
+    "title": "Burns Night",
+    "description": "How Scots celebrate Robert Burns worldwide."
+  },
+  {
+    "week": 6,
+    "item_id": 14,
+    "position": 6,
+    "title": "Dark Skies",
+    "description": "Scotland’s best regions for stargazing in winter."
+  },
+  {
+    "week": 7,
+    "item_id": 15,
+    "position": 7,
+    "title": "Saltire",
+    "description": "The origins and significance of Scotland’s national flag."
+  },
+  {
+    "week": 8,
+    "item_id": 16,
+    "position": 8,
+    "title": "Up Helly Aa",
+    "description": "Inside Shetland’s dramatic Viking fire festival."
+  },
+  {
+    "week": 9,
+    "item_id": 17,
+    "position": 9,
+    "title": "Second Sight",
+    "description": "Highland folklore on prophecy and intuition."
+  },
+  {
+    "week": 10,
+    "item_id": 18,
+    "position": 10,
+    "title": "Unicorn",
+    "description": "Why the unicorn became Scotland’s national beast."
+  },
+  {
+    "week": 11,
+    "item_id": 19,
+    "position": 11,
+    "title": "Winter Sun",
+    "description": "How low winter light transforms Scottish landscapes."
+  },
+  {
+    "week": 12,
+    "item_id": 20,
+    "position": 12,
+    "title": "Great Seal of Scotland",
+    "description": "What the Great Seal represents in Scotland’s state identity."
+  },
+  {
+    "week": 13,
+    "item_id": 21,
+    "position": 13,
+    "title": "Spring Thaw",
+    "description": "Rivers and wildlife awakening as winter fades."
+  },
+  {
+    "week": 14,
+    "item_id": 22,
+    "position": 14,
+    "title": "Heather Luck",
+    "description": "Why white heather is considered a charm of good fortune."
+  },
+  {
+    "week": 15,
+    "item_id": 23,
+    "position": 15,
+    "title": "Arbroath Declaration",
+    "description": "How a 1320 letter shaped Scottish identity."
+  },
+  {
+    "week": 16,
+    "item_id": 24,
+    "position": 16,
+    "title": "Triquetra",
+    "description": "The meaning of the three-corner Celtic knot."
+  },
+  {
+    "week": 17,
+    "item_id": 25,
+    "position": 17,
+    "title": "Mist Corridors",
+    "description": "Early spring fog and the mood it creates."
+  },
+  {
+    "week": 18,
+    "item_id": 26,
+    "position": 18,
+    "title": "Celtic Knotwork",
+    "description": "The symbolism of endless Celtic interlace patterns."
+  },
+  {
+    "week": 19,
+    "item_id": 27,
+    "position": 19,
+    "title": "Fairy Hill",
+    "description": "Hills and mounds linked to the fairy realm."
+  },
+  {
+    "week": 20,
+    "item_id": 28,
+    "position": 20,
+    "title": "Wildflower Paths",
+    "description": "Where to find Scotland’s best spring wildflower routes."
+  },
+  {
+    "week": 21,
+    "item_id": 29,
+    "position": 21,
+    "title": "Luckenbooch Brooch",
+    "description": "Scotland’s traditional love token and its symbolism."
+  },
+  {
+    "week": 22,
+    "item_id": 30,
+    "position": 22,
+    "title": "Beltane Fires",
+    "description": "The ancient May Day fire festival and its revival."
+  },
+  {
+    "week": 23,
+    "item_id": 31,
+    "position": 23,
+    "title": "Rowan Tree",
+    "description": "Why the rowan tree is seen as a protector in folklore."
+  },
+  {
+    "week": 24,
+    "item_id": 32,
+    "position": 24,
+    "title": "Mountain Snowmelt",
+    "description": "How spring thaw reshapes Highland rivers and glens."
+  },
+  {
+    "week": 25,
+    "item_id": 33,
+    "position": 25,
+    "title": "Mermaid Warnings",
+    "description": "Sea-spirits in coastal lore and their cautionary tales."
+  },
+  {
+    "week": 26,
+    "item_id": 34,
+    "position": 26,
+    "title": "Iona Cross",
+    "description": "The spiritual heritage of early Celtic Christianity."
+  },
+  {
+    "week": 27,
+    "item_id": 35,
+    "position": 27,
+    "title": "Salmon",
+    "description": "A symbol of wisdom and natural abundance."
+  },
+  {
+    "week": 28,
+    "item_id": 36,
+    "position": 28,
+    "title": "Food Trails",
+    "description": "Exploring Scotland through its regional food routes."
+  },
+  {
+    "week": 29,
+    "item_id": 37,
+    "position": 29,
+    "title": "Tartan Day",
+    "description": "A global celebration of Scottish heritage."
+  },
+  {
+    "week": 30,
+    "item_id": 38,
+    "position": 30,
+    "title": "River Voices",
+    "description": "How rivers shaped trade, travel, and settlement."
+  },
+  {
+    "week": 31,
+    "item_id": 39,
+    "position": 31,
+    "title": "St Mungo’s Symbols",
+    "description": "The bird, tree, bell, and fish tied to Glasgow’s patron saint."
+  },
+  {
+    "week": 32,
+    "item_id": 40,
+    "position": 32,
+    "title": "Mountain Light",
+    "description": "The dramatic seasonal light of the Highlands."
+  },
+  {
+    "week": 33,
+    "item_id": 41,
+    "position": 33,
+    "title": "Green Man",
+    "description": "A symbol of life and renewal in Scottish tradition."
+  },
+  {
+    "week": 34,
+    "item_id": 42,
+    "position": 34,
+    "title": "Selkie",
+    "description": "Tales of seal-folk who transform and cross worlds."
+  },
+  {
+    "week": 35,
+    "item_id": 43,
+    "position": 35,
+    "title": "Scots Pine",
+    "description": "A living relic of the ancient Caledonian Forest."
+  },
+  {
+    "week": 36,
+    "item_id": 44,
+    "position": 36,
+    "title": "Summer Isles",
+    "description": "A voyage through Scotland’s warm‑season island landscapes."
+  },
+  {
+    "week": 37,
+    "item_id": 45,
+    "position": 37,
+    "title": "Pictish Crescent & V-Rod",
+    "description": "Decoding one of Pictland’s most striking carved symbols."
+  },
+  {
+    "week": 38,
+    "item_id": 46,
+    "position": 38,
+    "title": "Zoomorphic Knotwork",
+    "description": "Celtic animals formed from interlaced linework."
+  },
+  {
+    "week": 39,
+    "item_id": 47,
+    "position": 39,
+    "title": "Highland Games",
+    "description": "Strength, sport, and tradition in summer gatherings."
+  },
+  {
+    "week": 40,
+    "item_id": 59,
+    "position": 40,
+    "title": "Autumn Gold",
+    "description": "Forests and hillsides at their golden peak."
+  },
+  {
+    "week": 41,
+    "item_id": 57,
+    "position": 41,
+    "title": "Harvest Fayre",
+    "description": "Seasonal celebrations of food and rural life."
+  },
+  {
+    "week": 42,
+    "item_id": 48,
+    "position": 42,
+    "title": "Sea Cliffs",
+    "description": "Exploring Scotland’s dramatic coastal geology."
+  },
+  {
+    "week": 43,
+    "item_id": 49,
+    "position": 43,
+    "title": "Golden Eagle",
+    "description": "A Highland icon of power and wildness."
+  },
+  {
+    "week": 44,
+    "item_id": 50,
+    "position": 44,
+    "title": "Heather Bloom",
+    "description": "Scotland’s moors turning purple in late summer."
+  },
+  {
+    "week": 45,
+    "item_id": 51,
+    "position": 45,
+    "title": "Heather",
+    "description": "A national symbol of resilience and identity."
+  },
+  {
+    "week": 46,
+    "item_id": 52,
+    "position": 46,
+    "title": "Stag Guardian",
+    "description": "The White Stag as a messenger of fate."
+  },
+  {
+    "week": 47,
+    "item_id": 53,
+    "position": 47,
+    "title": "Devolution Vote",
+    "description": "How recent votes reshaped Scottish governance."
+  },
+  {
+    "week": 48,
+    "item_id": 54,
+    "position": 48,
+    "title": "Pictish Mirror & Comb",
+    "description": "A symbol possibly linked to status, femininity, or identity."
+  },
+  {
+    "week": 49,
+    "item_id": 55,
+    "position": 49,
+    "title": "Pictish Beast",
+    "description": "Mystery of the dolphin‑dragon creature on carved stones."
+  },
+  {
+    "week": 50,
+    "item_id": 56,
+    "position": 50,
+    "title": "Salmon migration narrative",
+    "description": "Following Scotland’s great salmon runs."
+  },
+  {
+    "week": 51,
+    "item_id": 58,
+    "position": 51,
+    "title": "Triskelion",
+    "description": "The triple spiral and its spiritual interpretations."
+  },
+  {
+    "week": 52,
+    "item_id": 60,
+    "position": 52,
+    "title": "Tattie Bogle",
+    "description": "Scottish scarecrow lore and harvest traditions."
+  }
+]

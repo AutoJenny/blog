@@ -1,0 +1,23 @@
+{
+  "category": "theme",
+  "year": 2025,
+  "generated_at": "2025-01-01T00:00:00Z",
+  "weeks": {
+    "1": {
+      "id": 101,
+      "position": 1,
+      "title": "Theme 1"
+    },
+    "2": {
+      "id": 102,
+      "position": 2,
+      "title": "Theme 2"
+    },
+    "3": {
+      "id": 103,
+      "position": 3,
+      "title": "Theme 3"
+    }
+  }
+}
+

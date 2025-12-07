@@ -1,206 +1,602 @@
 {% extends "base.html" %}
 
-{% block title %}Calendar Scheduling - Content Calendar - Planning - BlogForge{% endblock %}
+{% block title %}Calendar Scheduling - Planning - BlogForge{% endblock %}
 
 {% block content %}
-<div class="container">
-    {% include 'shared/blog_pipeline_header.html' %}
-    {% block process_content %}
-    <div class="calendar-tabs">
-        <a href="{{ url_for('planning.planning_calendar_view', post_id=post_id) }}" class="tab">Year View</a>
-        <a href="{{ url_for('planning.planning_calendar_week_view', post_id=post_id, year=current_year, week=current_week) }}" class="tab">Week View</a>
-        <a href="{{ url_for('planning.planning_calendar_ideas_week', week_number=current_week, year=current_year, week=current_week) }}" class="tab">Week Themes</a>
-        <a href="{{ url_for('planning.planning_calendar_scheduling', post_id=post_id) }}" class="tab active">Scheduling</a>
+<div class="container" style="padding: 2rem 0;">
+    <div class="scheduling-page-header" style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; color: #f1f5f9; margin: 0 0 0.5rem 0;">Calendar Scheduling</h1>
+        <p style="color: #94a3b8; margin: 0; font-size: 0.9375rem;">52-week overview: Themes, Recipes, Profiles, Words & Phrases</p>
     </div>
-    
-    <div class="calendar-scheduling-view">
-        <div class="scheduling-header">
-            <h2 class="calendar-title">Calendar — Scheduling Overview</h2>
-            <p class="calendar-subtitle">Year overview: Themes, Recipes, and Profiles by week</p>
-        </div>
 
-        <div class="scheduling-table-container">
-            <table class="scheduling-table">
-                <thead>
-                    <tr>
-                        <th class="week-col">Week</th>
-                        <th class="theme-col">Themes</th>
-                        <th class="recipe-col">Recipes</th>
-                        <th class="profile-col">Profiles</th>
-                    </tr>
-                </thead>
-                <tbody id="scheduling-tbody">
-                    <!-- Weeks will be loaded here -->
-                </tbody>
-            </table>
+    <!-- Navigation Controls -->
+    <div class="scheduling-navigation" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div class="nav-buttons" style="display: flex; gap: 0.5rem;">
+            <button id="nav-year-back" class="nav-button" title="Previous Year (-52 weeks)">
+                &lt;&lt; Year
+            </button>
+            <button id="nav-month-back" class="nav-button" title="Previous Month (~4 weeks)">
+                &lt; Month
+            </button>
+            <button id="nav-month-forward" class="nav-button" title="Next Month (~4 weeks)">
+                Month &gt;
+            </button>
+            <button id="nav-year-forward" class="nav-button" title="Next Year (+52 weeks)">
+                Year &gt;&gt;
+            </button>
+        </div>
+        <div id="range-label" class="range-label" style="color: #94a3b8; font-size: 0.875rem; margin-left: auto;">
+            Loading...
         </div>
     </div>
-    {% endblock %}
+
+    <div class="scheduling-view-container">
+        <table class="scheduling-table" id="scheduling-table">
+            <thead>
+                <tr>
+                    <th class="week-header">Week</th>
+                    <th class="category-header">Theme</th>
+                    <th class="category-header">Recipe</th>
+                    <th class="category-header">Product Profile</th>
+                    <th class="category-header">Surname Profile</th>
+                    <th class="category-header">Word</th>
+                    <th class="category-header">Phrase</th>
+                </tr>
+            </thead>
+            <tbody id="scheduling-tbody">
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
+<!-- Item Edit Modal -->
+<div id="item-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">Edit Item</h2>
+            <button class="modal-close" onclick="closeItemModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="modal-item-info" style="margin-bottom: 1rem; padding: 0.75rem; background: #1e293b; border-radius: 6px;">
+                <div><strong>Category:</strong> <span id="modal-category"></span></div>
+                <div><strong>Current Position:</strong> <span id="modal-position"></span></div>
+            </div>
+            
+            <!-- Edit/Rename Section -->
+            <div class="modal-section">
+                <h3>Edit Content</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label for="modal-title-input">Title:</label>
+                    <input type="text" id="modal-title-input" class="modal-input" />
+                </div>
+                
+                <!-- Standard description field (for themes, recipes) -->
+                <div id="modal-description-container" style="margin-bottom: 1rem;">
+                    <label for="modal-description-input">Description (optional):</label>
+                    <textarea id="modal-description-input" class="modal-input" rows="3"></textarea>
+                </div>
+                
+                <!-- Word/Phrase specific fields -->
+                <div id="modal-word-phrase-fields" style="display: none;">
+                    <div style="margin-bottom: 1rem;">
+                        <label for="modal-translation-input">Translation:</label>
+                        <input type="text" id="modal-translation-input" class="modal-input" />
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label for="modal-usage1-input">Usage 1:</label>
+                        <textarea id="modal-usage1-input" class="modal-input" rows="2"></textarea>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label for="modal-usage2-input">Usage 2:</label>
+                        <textarea id="modal-usage2-input" class="modal-input" rows="2"></textarea>
+                    </div>
+                    <div id="modal-notes-container" style="margin-bottom: 1rem; display: none;">
+                        <label for="modal-notes-input">Notes:</label>
+                        <textarea id="modal-notes-input" class="modal-input" rows="2"></textarea>
+                    </div>
+                </div>
+                
+                <button onclick="saveItemEdit()" class="modal-button primary">Save Changes</button>
+            </div>
+            
+            <!-- Move Section -->
+            <div class="modal-section">
+                <h3>Move to Week</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label for="modal-target-year">Year:</label>
+                    <input type="number" id="modal-target-year" class="modal-input" min="2020" max="2100" onchange="updateWeekDropdown()" />
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label for="modal-target-week">Week:</label>
+                    <select id="modal-target-week" class="modal-input">
+                        <option value="">Select a week...</option>
+                    </select>
+                    <small style="color: #94a3b8; display: block; margin-top: 0.25rem;">The item will be moved to appear in this week</small>
+                </div>
+                <button onclick="moveItem()" class="modal-button">Move to Week</button>
+            </div>
+            
+            <!-- Delete Section -->
+            <div class="modal-section" style="border-top: 1px solid #334155; padding-top: 1rem;">
+                <h3 style="color: #ef4444;">Danger Zone</h3>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">This will remove the item from the rotation entirely. This action cannot be undone.</p>
+                <button onclick="deleteItem()" class="modal-button danger">Delete from Rotation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <style>
-.calendar-scheduling-view {
-    padding: 2rem 0;
-}
-.scheduling-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-.calendar-title {
-    font-size: 1.75rem;
-    color: #f1f5f9;
-    margin: 0 0 0.25rem 0;
-}
-.calendar-subtitle {
-    color: #94a3b8;
-    margin: 0;
-    font-size: 1rem;
-}
-.scheduling-table-container {
+.scheduling-view-container {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
     overflow-x: auto;
 }
+
 .scheduling-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 600px;
+    min-width: 1000px;
 }
+
 .scheduling-table thead {
     background: #0f172a;
     position: sticky;
     top: 0;
     z-index: 10;
 }
+
 .scheduling-table th {
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1rem;
     text-align: left;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: #cbd5e1;
     border-bottom: 2px solid #334155;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    white-space: nowrap;
 }
-.scheduling-table .week-col {
-    width: 120px;
-    min-width: 120px;
+
+.scheduling-table .week-header {
+    width: 140px;
+    min-width: 140px;
 }
-.scheduling-table .theme-col,
-.scheduling-table .recipe-col,
-.scheduling-table .profile-col {
-    width: auto;
-    min-width: 200px;
+
+.scheduling-table .category-header {
+    width: 180px;
+    min-width: 180px;
 }
+
 .scheduling-table tbody tr {
     border-bottom: 1px solid #334155;
     transition: background 0.2s;
 }
+
 .scheduling-table tbody tr:hover {
     background: rgba(59, 130, 246, 0.05);
 }
+
 .scheduling-table tbody tr.current-week {
     background: rgba(59, 130, 246, 0.1);
     border-left: 3px solid #3b82f6;
 }
+
 .scheduling-table td {
     padding: 0.75rem 1rem;
     vertical-align: top;
-    min-height: 60px;
 }
-.scheduling-table .content-cell {
-    min-width: 200px;
-}
+
 .scheduling-table .week-cell {
     font-weight: 600;
     color: #e2e8f0;
     font-size: 0.875rem;
 }
+
 .scheduling-table .week-cell .week-number {
     color: #cbd5e1;
     font-size: 0.75rem;
     margin-top: 0.25rem;
+    font-weight: 400;
 }
+
 .scheduling-table .content-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    min-height: 60px;
-    padding: 0.5rem;
+    min-height: 50px;
 }
+
 .scheduling-item {
     padding: 0.5rem 0.75rem;
     border-radius: 6px;
     font-size: 0.8125rem;
-    cursor: pointer;
+    margin-bottom: 0.5rem;
     transition: all 0.2s;
     border: 1px solid transparent;
+    word-wrap: break-word;
 }
+
+.scheduling-item:last-child {
+    margin-bottom: 0;
+}
+
 .scheduling-item.theme {
     background: rgba(249, 115, 22, 0.15);
     border-color: rgba(249, 115, 22, 0.3);
     color: #f1f5f9;
 }
+
 .scheduling-item.theme:hover {
     background: rgba(249, 115, 22, 0.25);
     border-color: #f97316;
 }
+
 .scheduling-item.recipe {
-    background: rgba(217, 119, 6, 0.15) !important;
-    border: 1px solid rgba(217, 119, 6, 0.3) !important;
-    color: #f1f5f9 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    background: rgba(217, 119, 6, 0.15);
+    border-color: rgba(217, 119, 6, 0.3);
+    color: #f1f5f9;
 }
+
 .scheduling-item.recipe:hover {
-    background: rgba(217, 119, 6, 0.25) !important;
-    border-color: #d97706 !important;
+    background: rgba(217, 119, 6, 0.25);
+    border-color: #d97706;
 }
-.scheduling-item.profile {
+
+.scheduling-item.profile-product {
     background: rgba(20, 184, 166, 0.15);
     border-color: rgba(20, 184, 166, 0.3);
     color: #f1f5f9;
 }
-.scheduling-item.profile:hover {
+
+.scheduling-item.profile-product:hover {
     background: rgba(20, 184, 166, 0.25);
     border-color: #14b8a6;
 }
+
+.scheduling-item.profile-surname {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #f1f5f9;
+}
+
+.scheduling-item.profile-surname:hover {
+    background: rgba(34, 197, 94, 0.25);
+    border-color: #22c55e;
+}
+
+.scheduling-item.word {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #f1f5f9;
+}
+
+.scheduling-item.word:hover {
+    background: rgba(139, 92, 246, 0.25);
+    border-color: #8b5cf6;
+}
+
+.scheduling-item.phrase {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: rgba(168, 85, 247, 0.3);
+    color: #f1f5f9;
+}
+
+.scheduling-item.phrase:hover {
+    background: rgba(168, 85, 247, 0.25);
+    border-color: #a855f7;
+}
+
 .scheduling-item.empty {
-    color: #94a3b8 !important;
+    color: #64748b;
     font-style: italic;
-    font-size: 0.8125rem !important;
-    opacity: 1 !important;
-    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem;
     text-align: center;
-    display: block !important;
-    visibility: visible !important;
+    padding: 0.5rem;
+    opacity: 0.6;
+}
+
+.scheduling-item.definition {
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.scheduling-item {
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.scheduling-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.scheduling-item.empty {
+    cursor: default;
+}
+
+.scheduling-navigation {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.nav-button {
+    background: #334155;
+    border: 1px solid #475569;
+    color: #e2e8f0;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.nav-button:hover:not(:disabled) {
+    background: #475569;
+    border-color: #64748b;
+    color: #f1f5f9;
+}
+
+.nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.range-label {
+    font-family: 'Monaco', 'Menlo', monospace;
+    letter-spacing: 0.025em;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1.25rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-section {
+    margin-bottom: 2rem;
+}
+
+.modal-section h3 {
+    color: #f1f5f9;
+    font-size: 1rem;
+    margin: 0 0 1rem 0;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    box-sizing: border-box;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: #64748b;
+}
+
+.modal-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    background: #334155;
+    color: #e2e8f0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.modal-button:hover {
+    background: #475569;
+    border-color: #64748b;
+}
+
+.modal-button.primary {
+    background: #3b82f6;
+    border-color: #2563eb;
+    color: white;
+}
+
+.modal-button.primary:hover {
+    background: #2563eb;
+}
+
+.modal-button.danger {
+    background: #dc2626;
+    border-color: #b91c1c;
+    color: white;
+}
+
+.modal-button.danger:hover {
+    background: #b91c1c;
+}
+
+label {
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* Drag & Drop Styles */
+.scheduling-item.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.content-cell.drag-over {
+    background: rgba(59, 130, 246, 0.1);
+    border: 2px dashed #3b82f6;
+}
+
+.scheduling-item {
+    cursor: grab;
+}
+
+.scheduling-item:active {
+    cursor: grabbing;
 }
 </style>
 
 <script>
-window.postId = {{ post_id }};
-window.currentStage = 'calendar';
-window.currentSubstage = 'scheduling';
-window.currentYear = {{ current_year }};
-window.currentWeek = {{ current_week }};
+// Map category CSS classes to API category names
+const categoryMap = {
+    'theme': 'theme',
+    'recipe': 'recipe',
+    'profile-product': 'profile_product',
+    'profile-surname': 'profile_surname',
+    'word': 'weekly_word',
+    'phrase': 'weekly_phrase'
+};
 
-async function loadSchedulingData() {
-    const tbody = document.getElementById('scheduling-tbody');
-    if (!tbody) {
-        console.error('scheduling-tbody not found');
-        return;
+// State management
+let viewStartYear = null;
+let viewStartWeek = null;
+const DEFAULT_RANGE_WEEKS = 52;
+
+/**
+ * Shift weeks forward or backward and return new (year, week)
+ */
+function shiftWeeks(year, week, deltaWeeks) {
+    // Convert ISO year/week to a date
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const jan4Day = (jan4.getUTCDay() + 6) % 7; // Monday = 0
+    const weekStart = new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - jan4Day));
+    
+    // Add delta weeks
+    weekStart.setUTCDate(weekStart.getUTCDate() + (deltaWeeks * 7));
+    
+    // Convert back to ISO year/week
+    const newYear = weekStart.getUTCFullYear();
+    const newJan4 = new Date(Date.UTC(newYear, 0, 4));
+    const newJan4Day = (newJan4.getUTCDay() + 6) % 7;
+    const daysSinceJan4 = Math.floor((weekStart.getTime() - newJan4.getTime()) / (1000 * 60 * 60 * 24));
+    const newWeek = Math.floor(daysSinceJan4 / 7) + 1;
+    
+    return { year: newYear, week: newWeek };
+}
+
+/**
+ * Format range label from API response
+ */
+function formatRangeLabel(rangeStartYear, rangeStartWeek, rangeWeeks) {
+    if (!rangeStartYear || !rangeStartWeek) {
+        return 'Loading...';
     }
     
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td></tr>';
+    const endDate = shiftWeeks(rangeStartYear, rangeStartWeek, rangeWeeks - 1);
+    return `Showing weeks W${rangeStartWeek}–W${endDate.week} (${rangeStartYear}–${endDate.year})`;
+}
+
+/**
+ * Load scheduling data for a specific range
+ */
+async function loadSchedulingRange(startYear, startWeek, weeks) {
+    const tbody = document.getElementById('scheduling-tbody');
+    const rangeLabel = document.getElementById('range-label');
+    const navButtons = document.querySelectorAll('.nav-button');
+    
+    if (!tbody) return;
+    
+    // Show loading state
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td></tr>';
+    rangeLabel.textContent = 'Loading...';
+    navButtons.forEach(btn => btn.disabled = true);
     
     try {
-        console.log('Loading all scheduling data from cache...');
+        // Build URL with optional parameters
+        let url = '/planning/api/calendar/scheduling/all';
+        const params = new URLSearchParams();
         
-        // Fetch all weeks in one request (cached)
-        const response = await fetch('/planning/api/calendar/scheduling/all', {
-            credentials: 'same-origin'
+        if (startYear !== null && startWeek !== null) {
+            params.append('start_year', startYear);
+            params.append('start_week', startWeek);
+        }
+        if (weeks !== null) {
+            params.append('weeks', weeks);
+        }
+        
+        // Add cache-busting
+        params.append('_t', new Date().getTime());
+        
+        if (params.toString()) {
+            url += '?' + params.toString();
+        }
+        
+        const response = await fetch(url, {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            }
         });
         
         if (!response.ok) {
@@ -213,39 +609,45 @@ async function loadSchedulingData() {
             throw new Error(result.error || 'Failed to load scheduling data');
         }
         
-        const weekData = result.data.weeks || [];
-        console.log('Loaded data for', weekData.length, 'weeks', result.cached ? '(from cache)' : '(fresh)');
-        console.log('First week sample:', JSON.stringify(weekData[0]));
+        // Update state from response
+        viewStartYear = result.data.range_start_year;
+        viewStartWeek = result.data.range_start_week;
         
-        // Render table rows
+        // Update range label
+        rangeLabel.textContent = formatRangeLabel(
+            result.data.range_start_year,
+            result.data.range_start_week,
+            result.data.range_weeks
+        );
+        
+        const weekData = result.data.weeks || [];
+        const currentYear = result.data.current_year;
+        const currentWeek = result.data.current_week;
+        
         tbody.innerHTML = '';
         
-        if (!weekData || weekData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #ef4444;">No week data loaded</td></tr>';
+        if (weekData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: #94a3b8;">No scheduling data for this range.</td></tr>';
+            navButtons.forEach(btn => btn.disabled = false);
             return;
         }
         
-        console.log('Starting to render', weekData.length, 'rows...');
-        
-        let rowsCreated = 0;
-        weekData.forEach((weekItem, index) => {
-            try {
-                const { year, week, schedule } = weekItem;
-                const data = Array.isArray(schedule) ? schedule : [];
-                
-                const isCurrentWeek = index === 0;
-                const row = document.createElement('tr');
-                if (isCurrentWeek) {
-                    row.classList.add('current-week');
-                }
+        weekData.forEach((weekItem) => {
+            const { year, week, schedule } = weekItem;
+            const data = Array.isArray(schedule) ? schedule : [];
+            
+            const isCurrentWeek = year === currentYear && week === currentWeek;
+            const row = document.createElement('tr');
+            if (isCurrentWeek) {
+                row.classList.add('current-week');
+            }
             
             // Week cell
             const weekCell = document.createElement('td');
             weekCell.className = 'week-cell';
             try {
-                // Use ISO week calculation
                 const jan4 = new Date(Date.UTC(year, 0, 4));
-                const jan4Day = (jan4.getUTCDay() + 6) % 7; // Monday = 0
+                const jan4Day = (jan4.getUTCDay() + 6) % 7;
                 const weekStart = new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - jan4Day));
                 const weekEnd = new Date(weekStart);
                 weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
@@ -255,132 +657,187 @@ async function loadSchedulingData() {
                     <div class="week-number">${formatDate(weekStart)} - ${formatDate(weekEnd)}</div>
                 `;
             } catch (error) {
-                console.error(`Error creating week cell for ${year}/${week}:`, error);
                 weekCell.innerHTML = `<div style="font-weight: 600; color: #e2e8f0;">W${week}</div><div class="week-number">${year}</div>`;
             }
             row.appendChild(weekCell);
             
-            // Extract items by type - Filter correctly
+            // Extract items by category from schedule array
             const themeItem = data.find(item => item && item.type === 'theme_selection');
-            const recipeItems = data.filter(item => item && item.type === 'post' && item.item_type === 'recipe');
-            const profileItems = data.filter(item => item && item.type === 'post' && item.item_type === 'profile');
+            const recipeItems = data.filter(item => item && (
+                item.type === 'recipe' || 
+                (item.type === 'post' && item.item_type === 'recipe')
+            ));
+            const profileProductItems = data.filter(item => item && 
+                item.type === 'post' && 
+                item.item_type === 'profile' && 
+                item.profile_type === 'product'
+            );
+            const profileSurnameItems = data.filter(item => item && 
+                item.type === 'post' && 
+                item.item_type === 'profile' && 
+                item.profile_type === 'surname'
+            );
+            const wordItems = data.filter(item => item && item.type === 'weekly_word');
+            const phraseItems = data.filter(item => item && item.type === 'weekly_phrase');
             
-            // CELL 1: Theme cell - ONLY themes go here
-            const cell1 = document.createElement('td');
-            cell1.className = 'content-cell theme-col';
-            cell1.innerHTML = ''; // Explicitly clear
-            // Double-check: only render if it's actually a theme_selection type
-            if (themeItem && themeItem.type === 'theme_selection' && themeItem.theme_title) {
-                const div = document.createElement('div');
-                div.className = 'scheduling-item theme';
-                div.textContent = themeItem.theme_title;
-                div.title = themeItem.theme_description || themeItem.theme_title;
-                cell1.appendChild(div);
-            } else {
-                const div = document.createElement('div');
-                div.className = 'scheduling-item empty';
-                div.textContent = 'No theme selected';
-                cell1.appendChild(div);
-            }
-            row.appendChild(cell1);
+            // Theme column
+            const themeCell = createCategoryCell(themeItem ? [themeItem] : [], 'theme', year, week);
+            row.appendChild(themeCell);
             
-            // CELL 2: Recipe cell - ONLY recipes go here
-            const cell2 = document.createElement('td');
-            cell2.className = 'content-cell recipe-col';
-            cell2.innerHTML = ''; // Explicitly clear
-            // Double-check: only render items that are actually post type with recipe item_type
-            const validRecipes = recipeItems.filter(r => r && r.type === 'post' && r.item_type === 'recipe');
-            if (validRecipes.length > 0) {
-                validRecipes.forEach(recipe => {
-                    const div = document.createElement('div');
-                    div.className = 'scheduling-item recipe';
-                    div.textContent = recipe.post_title || `Recipe Post #${recipe.post_id}`;
-                    div.title = `Status: ${recipe.post_status || 'unknown'}`;
-                    if (recipe.post_id) {
-                        div.style.cursor = 'pointer';
-                        div.onclick = () => window.location.href = `/planning/posts/${recipe.post_id}/calendar/week-view?year=${year}&week=${week}`;
-                    }
-                    cell2.appendChild(div);
-                });
-            } else {
-                const div = document.createElement('div');
-                div.className = 'scheduling-item empty';
-                div.textContent = 'No recipes scheduled';
-                cell2.appendChild(div);
-            }
-            row.appendChild(cell2);
+            // Recipe column
+            const recipeCell = createCategoryCell(recipeItems, 'recipe', year, week);
+            row.appendChild(recipeCell);
             
-            // CELL 3: Profile cell - ONLY profiles go here
-            const cell3 = document.createElement('td');
-            cell3.className = 'content-cell profile-col';
-            cell3.innerHTML = ''; // Explicitly clear
-            // Double-check: only render items that are actually post type with profile item_type
-            const validProfiles = profileItems.filter(p => p && p.type === 'post' && p.item_type === 'profile');
-            if (validProfiles.length > 0) {
-                validProfiles.forEach(profile => {
-                    const div = document.createElement('div');
-                    div.className = 'scheduling-item profile';
-                    div.textContent = profile.post_title || `Profile Post #${profile.post_id}`;
-                    div.title = `Status: ${profile.post_status || 'unknown'}`;
-                    if (profile.post_id) {
-                        div.style.cursor = 'pointer';
-                        div.onclick = () => window.location.href = `/planning/posts/${profile.post_id}/calendar/week-view?year=${year}&week=${week}`;
-                    }
-                    cell3.appendChild(div);
-                });
-            } else {
-                const div = document.createElement('div');
-                div.className = 'scheduling-item empty';
-                div.textContent = 'No profiles scheduled';
-                cell3.appendChild(div);
-            }
-            row.appendChild(cell3);
+            // Product Profile column
+            const productProfileCell = createCategoryCell(profileProductItems, 'profile-product', year, week);
+            row.appendChild(productProfileCell);
+            
+            // Surname Profile column
+            const surnameProfileCell = createCategoryCell(profileSurnameItems, 'profile-surname', year, week);
+            row.appendChild(surnameProfileCell);
+            
+            // Word column
+            const wordCell = createCategoryCell(wordItems, 'word', year, week);
+            row.appendChild(wordCell);
+            
+            // Phrase column
+            const phraseCell = createCategoryCell(phraseItems, 'phrase', year, week);
+            row.appendChild(phraseCell);
             
             tbody.appendChild(row);
-            rowsCreated++;
-            } catch (error) {
-                console.error(`Error creating row for week ${weekItem?.year}/${weekItem?.week}:`, error);
-            }
         });
         
-        console.log(`Created ${rowsCreated} rows out of ${weekData.length} weeks`);
-        console.log(`tbody now has ${tbody.children.length} child elements`);
+        // Re-enable navigation buttons
+        navButtons.forEach(btn => btn.disabled = false);
         
-        if (tbody.children.length === 0) {
-            console.error('No rows were appended to tbody!');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #ef4444;">No rows created - check browser console for errors</td></tr>';
-        } else {
-            console.log(`✅ Successfully rendered ${tbody.children.length} rows`);
-            // Verify first row has content
-            const firstRow = tbody.children[0];
-            if (firstRow) {
-                const cells = firstRow.querySelectorAll('td');
-                console.log(`First row has ${cells.length} cells`);
-                cells.forEach((cell, idx) => {
-                    console.log(`Cell ${idx} content length:`, cell.textContent.length);
-                });
-            }
-        }
     } catch (error) {
         console.error('Error loading scheduling data:', error);
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #ef4444;">Error loading scheduling data: ' + error.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: #ef4444;">Error loading scheduling data: ' + error.message + '</td></tr>';
+        rangeLabel.textContent = 'Error loading data';
+        navButtons.forEach(btn => btn.disabled = false);
     }
 }
 
-function getWeekStartDate(year, weekNumber) {
-    try {
-        // ISO 8601 week calculation
-        // January 4 is always in week 1
-        const jan4 = new Date(Date.UTC(year, 0, 4));
-        const jan4Day = (jan4.getUTCDay() + 6) % 7; // Monday = 0
-        // Calculate the date of the Monday of the target week
-        const weekStart = new Date(Date.UTC(year, 0, 4 + (weekNumber - 1) * 7 - jan4Day));
-        return weekStart;
-    } catch (error) {
-        console.error('Error calculating week start date:', error, year, weekNumber);
-        return new Date(Date.UTC(year, 0, 1)); // Fallback
-    }
+/**
+ * Legacy function name for backward compatibility
+ */
+async function loadSchedulingData() {
+    // Load with defaults (backend will choose current week + 52 weeks)
+    await loadSchedulingRange(null, null, null);
 }
+
+function createCategoryCell(items, categoryClass, year, week) {
+    const cell = document.createElement('td');
+    cell.className = 'content-cell';
+    cell.dataset.category = categoryClass;
+    cell.dataset.year = year;
+    cell.dataset.week = week;
+    
+    if (items.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'scheduling-item empty';
+        emptyDiv.textContent = '—';
+        cell.appendChild(emptyDiv);
+        return cell;
+    }
+    
+    items.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = `scheduling-item ${categoryClass}`;
+        // Extract item ID based on category
+        let itemId = null;
+        if (categoryClass === 'theme') {
+            itemId = item.selected_theme_id || item.theme_id || item.id;
+        } else if (categoryClass === 'recipe') {
+            itemId = item.recipe_id || item.id;
+        } else if (categoryClass === 'profile-product' || categoryClass === 'profile-surname') {
+            itemId = item.post_id || item.id;
+        } else if (categoryClass === 'word' || categoryClass === 'phrase') {
+            itemId = item.item_id || item.id;
+        }
+        
+        if (!itemId) {
+            console.warn('No item ID found for item:', item, 'category:', categoryClass);
+        }
+        
+        div.dataset.itemId = itemId || '';
+        div.dataset.category = categoryClass;
+        div.dataset.year = year;
+        div.dataset.week = week;
+        div.dataset.position = item.position || '';
+        div.dataset.itemData = JSON.stringify(item);
+        
+        // Make draggable
+        div.draggable = true;
+        div.addEventListener('dragstart', handleDragStart);
+        div.addEventListener('dragend', handleDragEnd);
+        
+        // Make clickable for modal
+        div.style.cursor = 'pointer';
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openItemModal(item, categoryClass, itemId, item.position);
+        });
+        
+        let title = '';
+        let tooltip = '';
+        let clickable = false;
+        
+        if (categoryClass === 'theme') {
+            title = item.theme_title || 'Theme';
+            tooltip = item.theme_description || title;
+        } else if (categoryClass === 'recipe') {
+            if (item.type === 'post' && item.post_title) {
+                title = item.post_title;
+                tooltip = `Status: ${item.post_status || 'unknown'}`;
+                clickable = !!item.post_id;
+            } else if (item.type === 'recipe' && item.recipe_title) {
+                title = item.recipe_title;
+                tooltip = item.recipe_description || title;
+                if (item._definition) {
+                    div.classList.add('definition');
+                }
+            } else {
+                title = item.recipe_title || item.post_title || 'Recipe';
+            }
+        } else if (categoryClass === 'profile-product' || categoryClass === 'profile-surname') {
+            title = item.post_title || `Profile #${item.post_id}`;
+            tooltip = `Status: ${item.post_status || 'unknown'}`;
+            clickable = !!item.post_id;
+        } else if (categoryClass === 'word') {
+            title = item.title || item.idea_title || 'Word';
+            tooltip = item.description || title;
+        } else if (categoryClass === 'phrase') {
+            title = item.title || item.idea_title || 'Phrase';
+            tooltip = item.description || title;
+        }
+        
+        div.textContent = title;
+        if (tooltip) {
+            div.title = tooltip;
+        }
+        
+        
+        // Double-click navigates to post for profiles
+        if (clickable && item.post_id) {
+            div.ondblclick = (e) => {
+                e.stopPropagation();
+                window.location.href = `/planning/posts/${item.post_id}/calendar/week-view?year=${year}&week=${week}`;
+            };
+        }
+        
+        cell.appendChild(div);
+    });
+    
+    // Make cell a drop target for same category
+    cell.addEventListener('dragover', handleDragOver);
+    cell.addEventListener('drop', handleDrop);
+    cell.addEventListener('dragenter', handleDragEnter);
+    cell.addEventListener('dragleave', handleDragLeave);
+    
+    return cell;
+}
+
 
 function formatDate(d) {
     try {
@@ -389,25 +846,530 @@ function formatDate(d) {
         }
         return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     } catch (error) {
-        console.error('Error formatting date:', error, d);
         return 'Invalid date';
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing scheduling view');
-    console.log('Current year:', window.currentYear, 'Current week:', window.currentWeek);
+// Drag & Drop State
+let draggedElement = null;
+let draggedItemData = null;
+
+function handleDragStart(e) {
+    draggedElement = e.target;
+    draggedItemData = JSON.parse(e.target.dataset.itemData || '{}');
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target.outerHTML);
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    // Remove drag-over class from all cells
+    document.querySelectorAll('.content-cell').forEach(cell => {
+        cell.classList.remove('drag-over');
+    });
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    
+    // Only allow drop if same category
+    const cellCategory = e.currentTarget.dataset.category;
+    const draggedCategory = draggedElement?.dataset.category;
+    
+    if (cellCategory === draggedCategory) {
+        e.dataTransfer.dropEffect = 'move';
+    } else {
+        e.dataTransfer.dropEffect = 'none';
+    }
+    
+    return false;
+}
+
+function handleDragEnter(e) {
+    const cellCategory = e.currentTarget.dataset.category;
+    const draggedCategory = draggedElement?.dataset.category;
+    
+    if (cellCategory === draggedCategory) {
+        e.currentTarget.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    
+    const cellCategory = e.currentTarget.dataset.category;
+    const draggedCategory = draggedElement?.dataset.category;
+    
+    // Only allow drop if same category
+    if (cellCategory !== draggedCategory) {
+        return false;
+    }
+    
+    // Get target week and calculate new position
+    const targetWeek = parseInt(e.currentTarget.dataset.week);
+    const targetYear = parseInt(e.currentTarget.dataset.year);
+    const itemId = parseInt(draggedElement.dataset.itemId);
+    
+    // For now, we'll need to get the list to calculate position
+    // We'll use the API to get the current list and find the position
+    moveItemToWeek(cellCategory, itemId, targetYear, targetWeek);
+    
+    return false;
+}
+
+// Modal State
+let currentModalItem = null;
+let currentModalCategory = null;
+let currentModalItemId = null;
+
+function getISOWeekDateRange(year, week) {
+    // Calculate the date of the Monday of the given ISO week
+    // Use the same logic as the main table display (lines 626-630)
     try {
-        loadSchedulingData();
+        const jan4 = new Date(Date.UTC(year, 0, 4));
+        const jan4Day = (jan4.getUTCDay() + 6) % 7;
+        const weekStart = new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - jan4Day));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+        
+        // formatDate will handle the UTC to local conversion automatically
+        return {
+            start: weekStart,
+            end: weekEnd,
+            startFormatted: formatDate(weekStart),
+            endFormatted: formatDate(weekEnd)
+        };
     } catch (error) {
-        console.error('Error in DOMContentLoaded:', error);
-        const tbody = document.getElementById('scheduling-tbody');
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #ef4444;">Error initializing: ' + error.message + '</td></tr>';
+        // Fallback
+        return {
+            start: new Date(year, 0, 1),
+            end: new Date(year, 0, 7),
+            startFormatted: 'Invalid',
+            endFormatted: 'Invalid'
+        };
+    }
+}
+
+function updateWeekDropdown() {
+    const year = parseInt(document.getElementById('modal-target-year').value);
+    const weekSelect = document.getElementById('modal-target-week');
+    
+    if (!year || year < 2020 || year > 2100) {
+        weekSelect.innerHTML = '<option value="">Select a year first</option>';
+        return;
+    }
+    
+    // Clear existing options
+    weekSelect.innerHTML = '<option value="">Select a week...</option>';
+    
+    // Populate all 52 weeks
+    for (let week = 1; week <= 52; week++) {
+        const weekInfo = getISOWeekDateRange(year, week);
+        const option = document.createElement('option');
+        option.value = week;
+        option.textContent = `W${week} ${weekInfo.startFormatted} - ${weekInfo.endFormatted}`;
+        weekSelect.appendChild(option);
+    }
+    
+    // If there's a previously selected week, try to restore it
+    const savedWeek = weekSelect.dataset.savedWeek;
+    if (savedWeek) {
+        weekSelect.value = savedWeek;
+        delete weekSelect.dataset.savedWeek;
+    }
+}
+
+function parseDescription(description) {
+    // Parse description in format "Translation: ... | Usage: ... | Usage: ... | Notes: ..."
+    const parts = {
+        translation: '',
+        usage1: '',
+        usage2: '',
+        notes: ''
+    };
+    
+    if (!description) return parts;
+    
+    const sections = description.split(' | ');
+    for (const section of sections) {
+        if (section.startsWith('Translation: ')) {
+            parts.translation = section.replace('Translation: ', '');
+        } else if (section.startsWith('Usage: ')) {
+            if (!parts.usage1) {
+                parts.usage1 = section.replace('Usage: ', '');
+            } else {
+                parts.usage2 = section.replace('Usage: ', '');
+            }
+        } else if (section.startsWith('Notes: ')) {
+            parts.notes = section.replace('Notes: ', '');
+        } else if (section.startsWith('Provenance: ')) {
+            // For phrases, "Provenance" maps to "Notes"
+            parts.notes = section.replace('Provenance: ', '');
+        }
+    }
+    
+    return parts;
+}
+
+function openItemModal(item, categoryClass, itemId, position) {
+    currentModalItem = item;
+    currentModalCategory = categoryClass;
+    currentModalItemId = itemId;
+    
+    const modal = document.getElementById('item-modal');
+    const apiCategory = categoryMap[categoryClass] || categoryClass;
+    
+    document.getElementById('modal-title').textContent = `Edit ${categoryClass.charAt(0).toUpperCase() + categoryClass.slice(1)}`;
+    document.getElementById('modal-category').textContent = categoryClass;
+    document.getElementById('modal-position').textContent = position || 'Unknown';
+    
+    // Show/hide appropriate fields
+    const descContainer = document.getElementById('modal-description-container');
+    const wordPhraseFields = document.getElementById('modal-word-phrase-fields');
+    const notesContainer = document.getElementById('modal-notes-container');
+    
+    // Set title/description based on category
+    let titleField = '';
+    let descField = '';
+    if (categoryClass === 'theme') {
+        titleField = item.theme_title || '';
+        descField = item.theme_description || '';
+        descContainer.style.display = 'block';
+        wordPhraseFields.style.display = 'none';
+    } else if (categoryClass === 'recipe') {
+        titleField = item.recipe_title || item.post_title || '';
+        descField = item.recipe_description || '';
+        descContainer.style.display = 'block';
+        wordPhraseFields.style.display = 'none';
+    } else if (categoryClass === 'word' || categoryClass === 'phrase') {
+        titleField = item.title || item.idea_title || '';
+        descField = item.description || item.idea_description || '';
+        
+        // Hide standard description, show word/phrase fields
+        descContainer.style.display = 'none';
+        wordPhraseFields.style.display = 'block';
+        
+        // Parse description into separate fields
+        const parsed = parseDescription(descField);
+        document.getElementById('modal-translation-input').value = parsed.translation || '';
+        document.getElementById('modal-usage1-input').value = parsed.usage1 || '';
+        document.getElementById('modal-usage2-input').value = parsed.usage2 || '';
+        
+        // Show notes field for phrases (they have "Provenance" which maps to notes)
+        if (categoryClass === 'phrase' && parsed.notes) {
+            notesContainer.style.display = 'block';
+            document.getElementById('modal-notes-input').value = parsed.notes || '';
+        } else {
+            notesContainer.style.display = 'none';
+        }
+    } else {
+        descContainer.style.display = 'block';
+        wordPhraseFields.style.display = 'none';
+    }
+    
+    document.getElementById('modal-title-input').value = titleField;
+    document.getElementById('modal-description-input').value = descField;
+    
+    // Set default year/week to current view or current week
+    const defaultYear = viewStartYear || (new Date().getFullYear());
+    const defaultWeek = viewStartWeek || (() => {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 1);
+        const days = Math.floor((now - start) / (24 * 60 * 60 * 1000));
+        return Math.ceil((days + start.getDay() + 1) / 7);
+    })();
+    
+    document.getElementById('modal-target-year').value = defaultYear;
+    const weekSelect = document.getElementById('modal-target-week');
+    weekSelect.dataset.savedWeek = defaultWeek; // Save for after dropdown is populated
+    updateWeekDropdown(); // Populate week dropdown (will restore saved week)
+    
+    modal.style.display = 'flex';
+}
+
+function closeItemModal() {
+    document.getElementById('item-modal').style.display = 'none';
+    currentModalItem = null;
+    currentModalCategory = null;
+    currentModalItemId = null;
+}
+
+// Click outside modal to close
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('item-modal');
+    if (e.target === modal) {
+        closeItemModal();
+    }
+});
+
+// Close modal on ESC key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        const modal = document.getElementById('item-modal');
+        if (modal && modal.style.display === 'flex') {
+            closeItemModal();
         }
     }
 });
+
+async function saveItemEdit() {
+    if (!currentModalItemId || !currentModalCategory) return;
+    
+    const apiCategory = categoryMap[currentModalCategory] || currentModalCategory;
+    const title = document.getElementById('modal-title-input').value.trim();
+    
+    if (!title) {
+        alert('Title is required');
+        return;
+    }
+    
+    const payload = {
+        category: apiCategory,
+        item_id: currentModalItemId
+    };
+    
+    // Add category-specific fields
+    if (currentModalCategory === 'theme') {
+        const description = document.getElementById('modal-description-input').value.trim();
+        payload.theme_title = title;
+        if (description) payload.theme_description = description;
+    } else if (currentModalCategory === 'recipe') {
+        const description = document.getElementById('modal-description-input').value.trim();
+        payload.recipe_title = title;
+        if (description) payload.recipe_description = description;
+    } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase') {
+        payload.idea_title = title;
+        
+        // Build description from separate fields for words/phrases
+        const translation = document.getElementById('modal-translation-input').value.trim();
+        const usage1 = document.getElementById('modal-usage1-input').value.trim();
+        const usage2 = document.getElementById('modal-usage2-input').value.trim();
+        const notes = document.getElementById('modal-notes-input').value.trim();
+        
+        const descriptionParts = [];
+        if (translation) descriptionParts.push(`Translation: ${translation}`);
+        if (usage1) descriptionParts.push(`Usage: ${usage1}`);
+        if (usage2) descriptionParts.push(`Usage: ${usage2}`);
+        if (notes) {
+            // For phrases, use "Provenance" instead of "Notes" if it's a phrase
+            if (currentModalCategory === 'phrase') {
+                descriptionParts.push(`Provenance: ${notes}`);
+            } else {
+                descriptionParts.push(`Notes: ${notes}`);
+            }
+        }
+        
+        if (descriptionParts.length > 0) {
+            payload.idea_description = descriptionParts.join(' | ');
+        }
+    }
+    
+    try {
+        const response = await fetch('/planning/api/calendar/item/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'ok') {
+            closeItemModal();
+            // Reload data
+            if (viewStartYear !== null && viewStartWeek !== null) {
+                loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+            } else {
+                loadSchedulingRange(null, null, null);
+            }
+        } else {
+            alert('Error: ' + (result.message || 'Failed to update item'));
+        }
+    } catch (error) {
+        console.error('Error updating item:', error);
+        alert('Error updating item: ' + error.message);
+    }
+}
+
+async function moveItem() {
+    if (!currentModalItemId || !currentModalCategory) return;
+    
+    const targetYear = parseInt(document.getElementById('modal-target-year').value);
+    const targetWeek = parseInt(document.getElementById('modal-target-week').value);
+    
+    if (!targetYear || targetYear < 2020 || targetYear > 2100) {
+        alert('Please enter a valid year (2020-2100)');
+        return;
+    }
+    
+    if (!targetWeek || targetWeek < 1 || targetWeek > 52) {
+        alert('Please enter a valid week (1-52)');
+        return;
+    }
+    
+    // Use the existing moveItemToWeek function which calculates position from week/year
+    await moveItemToWeek(currentModalCategory, currentModalItemId, targetYear, targetWeek);
+    closeItemModal();
+}
+
+async function moveItemToWeek(categoryClass, itemId, targetYear, targetWeek) {
+    // Calculate the correct sequence position for the target week using cyclic formula
+    const apiCategory = categoryMap[categoryClass] || categoryClass;
+    
+    try {
+        // Fetch list metadata (includes cycle_start_week and list_length)
+        const listResponse = await fetch(`/planning/api/calendar/list/get?category=${apiCategory}`, {
+            credentials: 'same-origin'
+        });
+        const listData = await listResponse.json();
+        
+        if (listData.status !== 'ok' || !listData.items) {
+            alert('Could not load list data');
+            return;
+        }
+        
+        // Verify item exists in list
+        const currentItem = listData.items.find(item => item.id === itemId);
+        if (!currentItem) {
+            alert('Item not found in list');
+            return;
+        }
+        
+        // Get metadata for calculation
+        const meta = listData.meta || {};
+        const listLength = meta.list_length || listData.items.length;
+        const cycleStartWeek = meta.cycle_start_week || 1;
+        
+        // Edge case: empty list
+        if (listLength === 0) {
+            alert('Cannot reorder; list is empty.');
+            return;
+        }
+        
+        // Calculate target position using the standard cyclic formula
+        // Formula: ((targetWeek - cycleStartWeek) % listLength + listLength) % listLength + 1
+        // The double modulo ensures positive result even if (targetWeek - cycleStartWeek) is negative
+        const targetPosition = ((targetWeek - cycleStartWeek) % listLength + listLength) % listLength + 1;
+        
+        // Safety check: ensure position is in valid range
+        if (targetPosition < 1 || targetPosition > listLength) {
+            alert(`Calculated position ${targetPosition} is out of range (1-${listLength})`);
+            return;
+        }
+        
+        // Call reorder API with computed target position
+        const response = await fetch('/planning/api/calendar/list/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                category: apiCategory,
+                item_id: itemId,
+                new_position: targetPosition
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'ok') {
+            // Reload data to show updated schedule
+            if (viewStartYear !== null && viewStartWeek !== null) {
+                loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+            } else {
+                loadSchedulingRange(null, null, null);
+            }
+        } else {
+            alert('Error: ' + (result.message || 'Failed to move item'));
+        }
+    } catch (error) {
+        console.error('Error moving item:', error);
+        alert('Error moving item: ' + error.message);
+    }
+}
+
+async function deleteItem() {
+    if (!currentModalItemId || !currentModalCategory) return;
+    
+    if (!confirm('Are you sure you want to delete this item from the rotation? This cannot be undone.')) {
+        return;
+    }
+    
+    const apiCategory = categoryMap[currentModalCategory] || currentModalCategory;
+    
+    try {
+        const response = await fetch('/planning/api/calendar/list/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                category: apiCategory,
+                item_id: currentModalItemId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'ok') {
+            closeItemModal();
+            // Reload data
+            if (viewStartYear !== null && viewStartWeek !== null) {
+                loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+            } else {
+                loadSchedulingRange(null, null, null);
+            }
+        } else {
+            alert('Error: ' + (result.message || 'Failed to delete item'));
+        }
+    } catch (error) {
+        console.error('Error deleting item:', error);
+        alert('Error deleting item: ' + error.message);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial load with defaults (backend chooses current week + 52 weeks)
+    loadSchedulingRange(null, null, null);
+    
+    // Navigation event handlers
+    document.getElementById('nav-year-back').addEventListener('click', () => {
+        if (viewStartYear !== null && viewStartWeek !== null) {
+            const newRange = shiftWeeks(viewStartYear, viewStartWeek, -52);
+            loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
+        }
+    });
+    
+    document.getElementById('nav-month-back').addEventListener('click', () => {
+        if (viewStartYear !== null && viewStartWeek !== null) {
+            const newRange = shiftWeeks(viewStartYear, viewStartWeek, -4);
+            loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
+        }
+    });
+    
+    document.getElementById('nav-month-forward').addEventListener('click', () => {
+        if (viewStartYear !== null && viewStartWeek !== null) {
+            const newRange = shiftWeeks(viewStartYear, viewStartWeek, 4);
+            loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
+        }
+    });
+    
+    document.getElementById('nav-year-forward').addEventListener('click', () => {
+        if (viewStartYear !== null && viewStartWeek !== null) {
+            const newRange = shiftWeeks(viewStartYear, viewStartWeek, 52);
+            loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
+        }
+    });
+});
 </script>
-
 {% endblock %}
-

@@ -1,0 +1,18 @@
+{
+  "category": "recipe",
+  "year": 2025,
+  "generated_at": "2025-01-01T00:00:00Z",
+  "weeks": {
+    "1": {
+      "id": 201,
+      "position": 1,
+      "title": "Recipe 1"
+    },
+    "2": {
+      "id": 202,
+      "position": 2,
+      "title": "Recipe 2"
+    }
+  }
+}
+

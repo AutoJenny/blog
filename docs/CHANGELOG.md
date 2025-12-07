@@ -1,5 +1,60 @@
 # Changelog
 
+## 2025-12-07 - Calendar Scheduling: JSON-Backed System with Enhanced Modals
+
+### Added
+- **JSON-Backed Calendar Scheduling System**: Complete refactor to use pre-computed JSON files for fast display
+  - New JSON schedule files in `data/calendar/schedule/` with directory-per-category layout
+  - JSON builder (`utils/calendar_schedule_builder.py`) generates 52-week schedules using cyclic logic
+  - JSON loader (`utils/calendar_json_loader.py`) reads schedules with graceful error handling
+  - Display API (`blueprints/planning_api_calendar_scheduling_cache.py`) serves range-based week arrays
+- **List Management APIs**: Base cyclic list operations (`blueprints/planning_api_calendar_cyclic.py`)
+  - `POST /planning/api/calendar/list/reorder` - Reorder items with two-phase update strategy
+  - `POST /planning/api/calendar/list/add` - Add new items
+  - `POST /planning/api/calendar/list/delete` - Delete items with position shifting
+  - `POST /planning/api/calendar/item/update` - Update item content
+  - `GET /planning/api/calendar/list/get` - Get current list with metadata
+- **Override Management**: Week-specific overrides (`blueprints/planning_api_calendar_overrides.py`)
+  - `POST /planning/api/calendar/override/set` - Set week override
+  - `POST /planning/api/calendar/override/remove` - Remove override
+  - `POST /planning/api/calendar/override/rebuild-year` - Force rebuild
+- **Sequence Manager UI**: New template (`templates/planning/calendar/sequence_manager.html`) for managing base lists
+- **Enhanced Modals**: Updated scheduling modal with separate fields for words/phrases
+  - Translation, Usage 1, Usage 2, and Notes fields for weekly words/phrases
+  - ESC key support to close modals
+  - Week selector shows date ranges (W49 1 Dec - 7 Dec) instead of position numbers
+- **Data Import**: Imported full datasets from CSV files
+  - 104 themes with descriptions from `data/themes_w_descriptions.csv`
+  - 98 weekly words from `data/scottish_word_of_the_week.csv`
+  - 104 weekly phrases from `data/scots_phrase_of_the_week.csv`
+
+### Changed
+- **Scheduling Display**: Range-based JSON backend replaces database-heavy queries
+  - Navigation controls (<< Year, < Month, Month >, Year >>) for time navigation
+  - Range awareness label showing current week range
+  - Drag & drop reordering with proper cyclic position calculation
+- **Modal Interface**: Enhanced editing experience
+  - Separate input fields for translation, usage examples, and notes
+  - Week/year selector with dropdown showing date ranges
+  - Improved field visibility based on category type
+- **Database Operations**: Two-phase update strategy prevents unique constraint violations
+  - Items moved to temporary negative positions before final placement
+  - Atomic transactions ensure data consistency
+
+### Technical Details
+- Created `config/calendar_settings.py` for centralized configuration
+- Implemented cyclic formula: `position = ((week - cycle_start_week) % list_length) + 1`
+- JSON files include descriptions for themes, words, and phrases
+- Comprehensive documentation in `docs/CALENDAR_SCHEDULING_*.md` files
+- Test suite with fixtures and validation tests
+
+### Files Modified
+- `templates/planning/calendar/scheduling.html` - Enhanced modal and drag & drop
+- `blueprints/planning_api_calendar_scheduling_cache.py` - JSON-backed display API
+- `blueprints/planning_api_calendar_cyclic.py` - List management with two-phase updates
+- `utils/calendar_schedule_builder.py` - JSON generation with descriptions
+- `utils/calendar_json_loader.py` - Robust JSON loading with format detection
+
 ## 2025-01-XX - Navbar UI Refactoring & Post Type Header
 
 ### Changed
