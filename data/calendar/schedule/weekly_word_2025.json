@@ -1,0 +1,267 @@
+{
+  "category": "weekly_word",
+  "year": 2025,
+  "generated_at": "2025-12-03T11:16:13.908781+00:00",
+  "weeks": {
+    "1": {
+      "id": 799,
+      "position": 1,
+      "title": "Weekly Word: neep"
+    },
+    "2": {
+      "id": 992,
+      "position": 2,
+      "title": "Weekly Word: stane"
+    },
+    "3": {
+      "id": 801,
+      "position": 3,
+      "title": "Weekly Word: farl"
+    },
+    "4": {
+      "id": 994,
+      "position": 4,
+      "title": "Weekly Word: teuchter"
+    },
+    "5": {
+      "id": 803,
+      "position": 5,
+      "title": "Weekly Word: wirry‑cow"
+    },
+    "6": {
+      "id": 996,
+      "position": 6,
+      "title": "Weekly Word: bairn"
+    },
+    "7": {
+      "id": 805,
+      "position": 7,
+      "title": "Weekly Word: brae"
+    },
+    "8": {
+      "id": 998,
+      "position": 8,
+      "title": "Weekly Word: mingin"
+    },
+    "9": {
+      "id": 807,
+      "position": 9,
+      "title": "Weekly Word: smirr"
+    },
+    "10": {
+      "id": 1000,
+      "position": 10,
+      "title": "Weekly Word: wean"
+    },
+    "11": {
+      "id": 809,
+      "position": 11,
+      "title": "Weekly Word: neep"
+    },
+    "12": {
+      "id": 1002,
+      "position": 12,
+      "title": "Weekly Word: stane"
+    },
+    "13": {
+      "id": 1003,
+      "position": 13,
+      "title": "Weekly Word: farl"
+    },
+    "14": {
+      "id": 1005,
+      "position": 14,
+      "title": "Weekly Word: teuchter"
+    },
+    "15": {
+      "id": 1007,
+      "position": 15,
+      "title": "Weekly Word: wirry‑cow"
+    },
+    "16": {
+      "id": 1009,
+      "position": 16,
+      "title": "Weekly Word: bairn"
+    },
+    "17": {
+      "id": 1011,
+      "position": 17,
+      "title": "Weekly Word: brae"
+    },
+    "18": {
+      "id": 1013,
+      "position": 18,
+      "title": "Weekly Word: mingin"
+    },
+    "19": {
+      "id": 1015,
+      "position": 19,
+      "title": "Weekly Word: smirr"
+    },
+    "20": {
+      "id": 1017,
+      "position": 20,
+      "title": "Weekly Word: wean"
+    },
+    "21": {
+      "id": 1019,
+      "position": 21,
+      "title": "Weekly Word: neep"
+    },
+    "22": {
+      "id": 1021,
+      "position": 22,
+      "title": "Weekly Word: stane"
+    },
+    "23": {
+      "id": 1023,
+      "position": 23,
+      "title": "Weekly Word: farl"
+    },
+    "24": {
+      "id": 1025,
+      "position": 24,
+      "title": "Weekly Word: teuchter"
+    },
+    "25": {
+      "id": 1027,
+      "position": 25,
+      "title": "Weekly Word: wirry‑cow"
+    },
+    "26": {
+      "id": 1029,
+      "position": 26,
+      "title": "Weekly Word: bairn"
+    },
+    "27": {
+      "id": 1031,
+      "position": 27,
+      "title": "Weekly Word: brae"
+    },
+    "28": {
+      "id": 1033,
+      "position": 28,
+      "title": "Weekly Word: mingin"
+    },
+    "29": {
+      "id": 1035,
+      "position": 29,
+      "title": "Weekly Word: smirr"
+    },
+    "30": {
+      "id": 1037,
+      "position": 30,
+      "title": "Weekly Word: wean"
+    },
+    "31": {
+      "id": 1039,
+      "position": 31,
+      "title": "Weekly Word: neep"
+    },
+    "32": {
+      "id": 1041,
+      "position": 32,
+      "title": "Weekly Word: stane"
+    },
+    "33": {
+      "id": 1043,
+      "position": 33,
+      "title": "Weekly Word: farl"
+    },
+    "34": {
+      "id": 1045,
+      "position": 34,
+      "title": "Weekly Word: teuchter"
+    },
+    "35": {
+      "id": 1047,
+      "position": 35,
+      "title": "Weekly Word: wirry‑cow"
+    },
+    "36": {
+      "id": 1049,
+      "position": 36,
+      "title": "Weekly Word: bairn"
+    },
+    "37": {
+      "id": 1051,
+      "position": 37,
+      "title": "Weekly Word: brae"
+    },
+    "38": {
+      "id": 1053,
+      "position": 38,
+      "title": "Weekly Word: mingin"
+    },
+    "39": {
+      "id": 1055,
+      "position": 39,
+      "title": "Weekly Word: smirr"
+    },
+    "40": {
+      "id": 1057,
+      "position": 40,
+      "title": "Weekly Word: wean"
+    },
+    "41": {
+      "id": 1059,
+      "position": 41,
+      "title": "Weekly Word: neep"
+    },
+    "42": {
+      "id": 1061,
+      "position": 42,
+      "title": "Weekly Word: stane"
+    },
+    "43": {
+      "id": 1063,
+      "position": 43,
+      "title": "Weekly Word: farl"
+    },
+    "44": {
+      "id": 1065,
+      "position": 44,
+      "title": "Weekly Word: teuchter"
+    },
+    "45": {
+      "id": 791,
+      "position": 45,
+      "title": "Weekly Word: wirry‑cow"
+    },
+    "46": {
+      "id": 1068,
+      "position": 46,
+      "title": "Weekly Word: bairn"
+    },
+    "47": {
+      "id": 793,
+      "position": 47,
+      "title": "Weekly Word: brae"
+    },
+    "48": {
+      "id": 1070,
+      "position": 48,
+      "title": "Weekly Word: bairn"
+    },
+    "49": {
+      "id": 795,
+      "position": 49,
+      "title": "Weekly Word: brae"
+    },
+    "50": {
+      "id": 1072,
+      "position": 50,
+      "title": "Weekly Word: mingin"
+    },
+    "51": {
+      "id": 797,
+      "position": 51,
+      "title": "Weekly Word: smirr"
+    },
+    "52": {
+      "id": 1074,
+      "position": 52,
+      "title": "Weekly Word: wean"
+    }
+  }
+}

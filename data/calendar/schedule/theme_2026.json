@@ -1,0 +1,267 @@
+{
+  "category": "theme",
+  "year": 2026,
+  "generated_at": "2025-12-03T11:16:14.719152+00:00",
+  "weeks": {
+    "1": {
+      "id": 5,
+      "position": 1,
+      "title": "Festive Music & Ceilidhs"
+    },
+    "2": {
+      "id": 103,
+      "position": 2,
+      "title": "All Saints' / Samhain Continuation"
+    },
+    "3": {
+      "id": 104,
+      "position": 3,
+      "title": "Guy Fawkes Night - Scottish Connections"
+    },
+    "4": {
+      "id": 132,
+      "position": 4,
+      "title": "Autumn Landscapes Today"
+    },
+    "5": {
+      "id": 99,
+      "position": 5,
+      "title": "Halloween / Samhain Origins"
+    },
+    "6": {
+      "id": 1,
+      "position": 6,
+      "title": "Scottish Cashmere"
+    },
+    "7": {
+      "id": 131,
+      "position": 7,
+      "title": "Thanksgiving"
+    },
+    "8": {
+      "id": 2,
+      "position": 8,
+      "title": "The Lion Rampant"
+    },
+    "9": {
+      "id": 8,
+      "position": 9,
+      "title": "St Andrew's Day - Scotland's Patron Saint"
+    },
+    "10": {
+      "id": 7,
+      "position": 10,
+      "title": "Winter Solstice / Yule Traditions"
+    },
+    "11": {
+      "id": 4,
+      "position": 11,
+      "title": "Scottish football"
+    },
+    "12": {
+      "id": 5,
+      "position": 1,
+      "title": "Festive Music & Ceilidhs"
+    },
+    "13": {
+      "id": 103,
+      "position": 2,
+      "title": "All Saints' / Samhain Continuation"
+    },
+    "14": {
+      "id": 104,
+      "position": 3,
+      "title": "Guy Fawkes Night - Scottish Connections"
+    },
+    "15": {
+      "id": 132,
+      "position": 4,
+      "title": "Autumn Landscapes Today"
+    },
+    "16": {
+      "id": 99,
+      "position": 5,
+      "title": "Halloween / Samhain Origins"
+    },
+    "17": {
+      "id": 1,
+      "position": 6,
+      "title": "Scottish Cashmere"
+    },
+    "18": {
+      "id": 131,
+      "position": 7,
+      "title": "Thanksgiving"
+    },
+    "19": {
+      "id": 2,
+      "position": 8,
+      "title": "The Lion Rampant"
+    },
+    "20": {
+      "id": 8,
+      "position": 9,
+      "title": "St Andrew's Day - Scotland's Patron Saint"
+    },
+    "21": {
+      "id": 7,
+      "position": 10,
+      "title": "Winter Solstice / Yule Traditions"
+    },
+    "22": {
+      "id": 4,
+      "position": 11,
+      "title": "Scottish football"
+    },
+    "23": {
+      "id": 5,
+      "position": 1,
+      "title": "Festive Music & Ceilidhs"
+    },
+    "24": {
+      "id": 103,
+      "position": 2,
+      "title": "All Saints' / Samhain Continuation"
+    },
+    "25": {
+      "id": 104,
+      "position": 3,
+      "title": "Guy Fawkes Night - Scottish Connections"
+    },
+    "26": {
+      "id": 132,
+      "position": 4,
+      "title": "Autumn Landscapes Today"
+    },
+    "27": {
+      "id": 99,
+      "position": 5,
+      "title": "Halloween / Samhain Origins"
+    },
+    "28": {
+      "id": 1,
+      "position": 6,
+      "title": "Scottish Cashmere"
+    },
+    "29": {
+      "id": 131,
+      "position": 7,
+      "title": "Thanksgiving"
+    },
+    "30": {
+      "id": 2,
+      "position": 8,
+      "title": "The Lion Rampant"
+    },
+    "31": {
+      "id": 8,
+      "position": 9,
+      "title": "St Andrew's Day - Scotland's Patron Saint"
+    },
+    "32": {
+      "id": 7,
+      "position": 10,
+      "title": "Winter Solstice / Yule Traditions"
+    },
+    "33": {
+      "id": 4,
+      "position": 11,
+      "title": "Scottish football"
+    },
+    "34": {
+      "id": 5,
+      "position": 1,
+      "title": "Festive Music & Ceilidhs"
+    },
+    "35": {
+      "id": 103,
+      "position": 2,
+      "title": "All Saints' / Samhain Continuation"
+    },
+    "36": {
+      "id": 104,
+      "position": 3,
+      "title": "Guy Fawkes Night - Scottish Connections"
+    },
+    "37": {
+      "id": 132,
+      "position": 4,
+      "title": "Autumn Landscapes Today"
+    },
+    "38": {
+      "id": 99,
+      "position": 5,
+      "title": "Halloween / Samhain Origins"
+    },
+    "39": {
+      "id": 1,
+      "position": 6,
+      "title": "Scottish Cashmere"
+    },
+    "40": {
+      "id": 131,
+      "position": 7,
+      "title": "Thanksgiving"
+    },
+    "41": {
+      "id": 2,
+      "position": 8,
+      "title": "The Lion Rampant"
+    },
+    "42": {
+      "id": 8,
+      "position": 9,
+      "title": "St Andrew's Day - Scotland's Patron Saint"
+    },
+    "43": {
+      "id": 7,
+      "position": 10,
+      "title": "Winter Solstice / Yule Traditions"
+    },
+    "44": {
+      "id": 4,
+      "position": 11,
+      "title": "Scottish football"
+    },
+    "45": {
+      "id": 5,
+      "position": 1,
+      "title": "Festive Music & Ceilidhs"
+    },
+    "46": {
+      "id": 103,
+      "position": 2,
+      "title": "All Saints' / Samhain Continuation"
+    },
+    "47": {
+      "id": 104,
+      "position": 3,
+      "title": "Guy Fawkes Night - Scottish Connections"
+    },
+    "48": {
+      "id": 132,
+      "position": 4,
+      "title": "Autumn Landscapes Today"
+    },
+    "49": {
+      "id": 99,
+      "position": 5,
+      "title": "Halloween / Samhain Origins"
+    },
+    "50": {
+      "id": 1,
+      "position": 6,
+      "title": "Scottish Cashmere"
+    },
+    "51": {
+      "id": 131,
+      "position": 7,
+      "title": "Thanksgiving"
+    },
+    "52": {
+      "id": 2,
+      "position": 8,
+      "title": "The Lion Rampant"
+    }
+  }
+}

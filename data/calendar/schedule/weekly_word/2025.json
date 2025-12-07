@@ -1,0 +1,366 @@
+[
+  {
+    "week": 1,
+    "item_id": 1088,
+    "position": 1,
+    "title": "Weekly Word: braw",
+    "description": "Translation: fine; excellent | Usage: That's a braw jacket ye've got. | Usage: The weather's been braw the day."
+  },
+  {
+    "week": 2,
+    "item_id": 1089,
+    "position": 2,
+    "title": "Weekly Word: gloamin",
+    "description": "Translation: twilight | Usage: They walked hame in the gloamin. | Usage: The hills look bonnie in the gloamin."
+  },
+  {
+    "week": 3,
+    "item_id": 1090,
+    "position": 3,
+    "title": "Weekly Word: dreich",
+    "description": "Translation: bleak; drizzly | Usage: It's a dreich mornin again. | Usage: The match was cancelled in the dreich weather."
+  },
+  {
+    "week": 4,
+    "item_id": 1091,
+    "position": 4,
+    "title": "Weekly Word: scunner",
+    "description": "Translation: disgust; annoyance | Usage: That film gied me a scunner. | Usage: I've a scunner for that place noo."
+  },
+  {
+    "week": 5,
+    "item_id": 1092,
+    "position": 5,
+    "title": "Weekly Word: wee",
+    "description": "Translation: small | Usage: Haud on a wee minute. | Usage: She's just a wee lassie."
+  },
+  {
+    "week": 6,
+    "item_id": 1093,
+    "position": 6,
+    "title": "Weekly Word: muckle",
+    "description": "Translation: large | Usage: That's a muckle stane. | Usage: He’s got muckle energy."
+  },
+  {
+    "week": 7,
+    "item_id": 1094,
+    "position": 7,
+    "title": "Weekly Word: bairn",
+    "description": "Translation: child | Usage: She's awa tae pick up the bairn. | Usage: The bairns are playin in the street."
+  },
+  {
+    "week": 8,
+    "item_id": 1095,
+    "position": 8,
+    "title": "Weekly Word: ken",
+    "description": "Translation: know | Usage: I dinna ken where he went. | Usage: Ken ye this song?"
+  },
+  {
+    "week": 9,
+    "item_id": 1096,
+    "position": 9,
+    "title": "Weekly Word: aye",
+    "description": "Translation: yes | Usage: Aye, I'll dae it. | Usage: Aye, that's the one."
+  },
+  {
+    "week": 10,
+    "item_id": 1097,
+    "position": 10,
+    "title": "Weekly Word: wheesht",
+    "description": "Translation: be quiet | Usage: Wheesht now, the show's startin. | Usage: Gie it a wheesht for a meenit."
+  },
+  {
+    "week": 11,
+    "item_id": 1098,
+    "position": 11,
+    "title": "Weekly Word: blether",
+    "description": "Translation: chat; ramble | Usage: We had a guid blether last night. | Usage: Stop bletherin and get on."
+  },
+  {
+    "week": 12,
+    "item_id": 1099,
+    "position": 12,
+    "title": "Weekly Word: couthie",
+    "description": "Translation: warm; friendly | Usage: They’re a couthie couple. | Usage: It’s a couthie wee place."
+  },
+  {
+    "week": 13,
+    "item_id": 1100,
+    "position": 13,
+    "title": "Weekly Word: gallus",
+    "description": "Translation: bold; cheeky | Usage: He's a gallus lad. | Usage: That gallus attitude'll get ye in trouble."
+  },
+  {
+    "week": 14,
+    "item_id": 1101,
+    "position": 14,
+    "title": "Weekly Word: hackit",
+    "description": "Translation: ugly | Usage: That’s a hackit hat. | Usage: He made a hackit face at me."
+  },
+  {
+    "week": 15,
+    "item_id": 1102,
+    "position": 15,
+    "title": "Weekly Word: clarty",
+    "description": "Translation: muddy | Usage: Don't come in wi thae clarty boots. | Usage: The field was clarty efter the rain."
+  },
+  {
+    "week": 16,
+    "item_id": 1103,
+    "position": 16,
+    "title": "Weekly Word: hoachin",
+    "description": "Translation: teeming; crowded | Usage: The place was hoachin wi folk. | Usage: The market's hoachin every Saturday."
+  },
+  {
+    "week": 17,
+    "item_id": 1104,
+    "position": 17,
+    "title": "Weekly Word: stooshie",
+    "description": "Translation: commotion | Usage: There was a stooshie at the pub. | Usage: What’s the stooshie aboot this time?"
+  },
+  {
+    "week": 18,
+    "item_id": 1105,
+    "position": 18,
+    "title": "Weekly Word: girn",
+    "description": "Translation: complain; whine | Usage: Stop girnin and help. | Usage: He's aye girnin aboot his work."
+  },
+  {
+    "week": 19,
+    "item_id": 1106,
+    "position": 19,
+    "title": "Weekly Word: greet",
+    "description": "Translation: cry | Usage: The wean's greetin again. | Usage: I nearly gret at the news."
+  },
+  {
+    "week": 20,
+    "item_id": 1107,
+    "position": 20,
+    "title": "Weekly Word: laldy",
+    "description": "Translation: energy; vigour | Usage: Gie it laldy on the dance floor. | Usage: They sang wi real laldy."
+  },
+  {
+    "week": 21,
+    "item_id": 1108,
+    "position": 21,
+    "title": "Weekly Word: lochan",
+    "description": "Translation: small lake | Usage: We camped by a quiet lochan. | Usage: The lochan froze ower in winter."
+  },
+  {
+    "week": 22,
+    "item_id": 1109,
+    "position": 22,
+    "title": "Weekly Word: burn",
+    "description": "Translation: stream | Usage: They crossed the burn by the stane bridge. | Usage: There's trout in that burn."
+  },
+  {
+    "week": 23,
+    "item_id": 1110,
+    "position": 23,
+    "title": "Weekly Word: clang",
+    "description": "Translation: meadow | Usage: They walked through the clang at dawn. | Usage: The cattle grazed in the lower clang."
+  },
+  {
+    "week": 24,
+    "item_id": 1111,
+    "position": 24,
+    "title": "Weekly Word: guddle",
+    "description": "Translation: muddle; mess | Usage: The drawer's a right guddle. | Usage: We guddled aboot in the shed for tools."
+  },
+  {
+    "week": 25,
+    "item_id": 1112,
+    "position": 25,
+    "title": "Weekly Word: brawlie",
+    "description": "Translation: nicely; well | Usage: He’s daein brawlie at school. | Usage: The cake turned out brawlie."
+  },
+  {
+    "week": 26,
+    "item_id": 1113,
+    "position": 26,
+    "title": "Weekly Word: fankle",
+    "description": "Translation: tangle | Usage: My shoelaces are in a fankle. | Usage: Don't fankle the wires."
+  },
+  {
+    "week": 27,
+    "item_id": 1114,
+    "position": 27,
+    "title": "Weekly Word: sneck",
+    "description": "Translation: door latch | Usage: Lift the sneck tae open it. | Usage: The sneck's stuck again."
+  },
+  {
+    "week": 28,
+    "item_id": 1115,
+    "position": 28,
+    "title": "Weekly Word: swith",
+    "description": "Translation: quickly | Usage: Swith, get yer coat! | Usage: Swith awa or we’ll be late."
+  },
+  {
+    "week": 29,
+    "item_id": 1116,
+    "position": 29,
+    "title": "Weekly Word: thole",
+    "description": "Translation: endure | Usage: I canna thole this heat. | Usage: Ye'll just hae tae thole it."
+  },
+  {
+    "week": 30,
+    "item_id": 1117,
+    "position": 30,
+    "title": "Weekly Word: swither",
+    "description": "Translation: hesitate | Usage: Don't swither—just choose. | Usage: She swithered ower the decision."
+  },
+  {
+    "week": 31,
+    "item_id": 1118,
+    "position": 31,
+    "title": "Weekly Word: scaldie",
+    "description": "Translation: seagull | Usage: A scaldie stole my chips. | Usage: Watch the scaldies at the harbour."
+  },
+  {
+    "week": 32,
+    "item_id": 1119,
+    "position": 32,
+    "title": "Weekly Word: canny",
+    "description": "Translation: careful; shrewd | Usage: Be canny wi yer money. | Usage: He's a canny worker."
+  },
+  {
+    "week": 33,
+    "item_id": 1120,
+    "position": 33,
+    "title": "Weekly Word: crabbit",
+    "description": "Translation: bad-tempered | Usage: He's aye crabbit in the mornin. | Usage: A crabbit look crossed her face."
+  },
+  {
+    "week": 34,
+    "item_id": 1121,
+    "position": 34,
+    "title": "Weekly Word: fash",
+    "description": "Translation: bother; trouble | Usage: Dinna fash yersel. | Usage: Sorry to fash ye wi this."
+  },
+  {
+    "week": 35,
+    "item_id": 1122,
+    "position": 35,
+    "title": "Weekly Word: kirk",
+    "description": "Translation: church | Usage: They gaed tae the kirk on Sunday. | Usage: The auld kirk bell rang oot."
+  },
+  {
+    "week": 36,
+    "item_id": 1123,
+    "position": 36,
+    "title": "Weekly Word: haver",
+    "description": "Translation: talk nonsense | Usage: Stop haverin and tell the truth. | Usage: He's aye haverin aboot somethin daft."
+  },
+  {
+    "week": 37,
+    "item_id": 1124,
+    "position": 37,
+    "title": "Weekly Word: lum",
+    "description": "Translation: chimney | Usage: Smoke's pourin frae the lum. | Usage: Clean the lum afore winter."
+  },
+  {
+    "week": 38,
+    "item_id": 1125,
+    "position": 38,
+    "title": "Weekly Word: mauchter",
+    "description": "Translation: strength; stamina | Usage: It took some mauchter to lift that. | Usage: She’s lost a bit o mauchter lately."
+  },
+  {
+    "week": 39,
+    "item_id": 1126,
+    "position": 39,
+    "title": "Weekly Word: owerby",
+    "description": "Translation: upstairs | Usage: He’s owerby in his room. | Usage: The cat's sleepin owerby."
+  },
+  {
+    "week": 40,
+    "item_id": 1127,
+    "position": 40,
+    "title": "Weekly Word: peely-wally",
+    "description": "Translation: pale; sickly | Usage: You're lookin awfy peely-wally. | Usage: She felt peely-wally efter the flu."
+  },
+  {
+    "week": 41,
+    "item_id": 1128,
+    "position": 41,
+    "title": "Weekly Word: speir",
+    "description": "Translation: ask; inquire | Usage: Speir at the desk for help. | Usage: I speired what time they'd arrive."
+  },
+  {
+    "week": 42,
+    "item_id": 1129,
+    "position": 42,
+    "title": "Weekly Word: skelp",
+    "description": "Translation: slap; smack | Usage: He fell and skelped his knee. | Usage: The rain skelped off the windows."
+  },
+  {
+    "week": 43,
+    "item_id": 1130,
+    "position": 43,
+    "title": "Weekly Word: shoogle",
+    "description": "Translation: shake; wobble | Usage: This table's fair shoogly. | Usage: Give it a wee shoogle."
+  },
+  {
+    "week": 44,
+    "item_id": 1131,
+    "position": 44,
+    "title": "Weekly Word: boak",
+    "description": "Translation: nausea; retch | Usage: That smell gied me the boak. | Usage: I nearly boaked at it."
+  },
+  {
+    "week": 45,
+    "item_id": 1132,
+    "position": 45,
+    "title": "Weekly Word: clipe",
+    "description": "Translation: tell-tale; snitch | Usage: Don't be a clipe. | Usage: He cli ped on his pal at school."
+  },
+  {
+    "week": 46,
+    "item_id": 1133,
+    "position": 46,
+    "title": "Weekly Word: craw",
+    "description": "Translation: boast | Usage: He's aye crawin aboot his car. | Usage: Stop yer crawin."
+  },
+  {
+    "week": 47,
+    "item_id": 1134,
+    "position": 47,
+    "title": "Weekly Word: trauchle",
+    "description": "Translation: exhaust; struggle | Usage: I was trauchled efter the shift. | Usage: That hike fair trauchled us."
+  },
+  {
+    "week": 48,
+    "item_id": 1135,
+    "position": 48,
+    "title": "Weekly Word: stoat",
+    "description": "Translation: stagger; bounce | Usage: He stoated hame fae the pub. | Usage: The ba stoated aff the waw."
+  },
+  {
+    "week": 49,
+    "item_id": 1136,
+    "position": 49,
+    "title": "Weekly Word: haar",
+    "description": "Translation: sea fog | Usage: The haar rolled in quick. | Usage: Ye can hardly see in this haar."
+  },
+  {
+    "week": 50,
+    "item_id": 1137,
+    "position": 50,
+    "title": "Weekly Word: oxter",
+    "description": "Translation: armpit | Usage: He held the bag in his oxter. | Usage: Tickled under the oxters."
+  },
+  {
+    "week": 51,
+    "item_id": 1138,
+    "position": 51,
+    "title": "Weekly Word: heid",
+    "description": "Translation: head | Usage: Use yer heid. | Usage: He’s a smart heid on him."
+  },
+  {
+    "week": 52,
+    "item_id": 1139,
+    "position": 52,
+    "title": "Weekly Word: cloot",
+    "description": "Translation: cloth; rag | Usage: Gie that a wipe wi a cloot. | Usage: The cloot's aw torn."
+  }
+]

@@ -1,0 +1,366 @@
+[
+  {
+    "week": 1,
+    "item_id": 799,
+    "position": 1,
+    "title": "Weekly Word: neep",
+    "description": "Meaning: turnip\n\nExample: Mash the neeps gently before you serve.\n\nNotes: Traditional Scottish vegetable word; used in ‘haggis, neeps & tatties’."
+  },
+  {
+    "week": 2,
+    "item_id": 992,
+    "position": 2,
+    "title": "Weekly Word: stane",
+    "description": "Meaning: stone\n\nExample: Throw the stane across the loch and watch the ripples.\n\nNotes: Scots word for ‘stone’; shows how Scots uses its own terms even when English has cognates."
+  },
+  {
+    "week": 3,
+    "item_id": 1072,
+    "position": 3,
+    "title": "Weekly Word: mingin",
+    "description": "Meaning: foul smell / disgusting\n\nExample: That’s a mingin bit of cheese — nae thanks.\n\nNotes: Modern colloquial Scots word; gives strong character."
+  },
+  {
+    "week": 4,
+    "item_id": 1074,
+    "position": 4,
+    "title": "Weekly Word: wean",
+    "description": "Meaning: child\n\nExample: The weans are all playing up in the yard.\n\nNotes: Used particularly in West Central Scotland; variant of 'bairn'."
+  },
+  {
+    "week": 5,
+    "item_id": 801,
+    "position": 5,
+    "title": "Weekly Word: farl",
+    "description": "Meaning: quarter piece of bread / flatbread\n\nExample: Cut the oatcake into a farl and share it with tea.\n\nNotes: Traditional Scottish baking term; the quarter of a round cake or oatcake."
+  },
+  {
+    "week": 6,
+    "item_id": 994,
+    "position": 6,
+    "title": "Weekly Word: teuchter",
+    "description": "Meaning: rural Highlander (slang)\n\nExample: He arrived in the city like a proper teuchter, gawky but full of stories.\n\nNotes: Lowland Scots term, with cultural/historical resonance; best used with caution."
+  },
+  {
+    "week": 7,
+    "item_id": 803,
+    "position": 7,
+    "title": "Weekly Word: wirry‑cow",
+    "description": "Meaning: bugbear, ghost\n\nExample: As a bairn she’d say there was a wirry‑cow in the attic at night.\n\nNotes: Scots compound word, vivid and folkloric in flavour."
+  },
+  {
+    "week": 8,
+    "item_id": 996,
+    "position": 8,
+    "title": "Weekly Word: bairn",
+    "description": "Meaning: child\n\nExample: Keep the bairn inside till the rain stops.\n\nNotes: Common in eastern & northern Scotland; part of Scots vocabulary widely used."
+  },
+  {
+    "week": 9,
+    "item_id": 805,
+    "position": 9,
+    "title": "Weekly Word: brae",
+    "description": "Meaning: hill or slope\n\nExample: They climbed the steep brae to get a view over the loch.\n\nNotes: Used in place‑names (The Braes o Balquhidder, Drumbrae) and in Scots dialect."
+  },
+  {
+    "week": 10,
+    "item_id": 998,
+    "position": 10,
+    "title": "Weekly Word: mingin",
+    "description": "Meaning: foul smell / disgusting\n\nExample: That’s a mingin bit of cheese — nae thanks.\n\nNotes: Modern colloquial Scots word; gives strong character."
+  },
+  {
+    "week": 11,
+    "item_id": 807,
+    "position": 11,
+    "title": "Weekly Word: smirr",
+    "description": "Meaning: fine rain / drizzle\n\nExample: We set oot in the early smirr and still made good time.\n\nNotes: Weather‑word typical of Scots usage; evokes atmosphere."
+  },
+  {
+    "week": 12,
+    "item_id": 1000,
+    "position": 12,
+    "title": "Weekly Word: wean",
+    "description": "Meaning: child\n\nExample: The weans are all playing up in the yard.\n\nNotes: Used particularly in West Central Scotland; variant of 'bairn'."
+  },
+  {
+    "week": 13,
+    "item_id": 809,
+    "position": 13,
+    "title": "Weekly Word: neep",
+    "description": "Meaning: turnip\n\nExample: Mash the neeps gently before you serve.\n\nNotes: Traditional Scottish vegetable word; used in ‘haggis, neeps & tatties’."
+  },
+  {
+    "week": 14,
+    "item_id": 1002,
+    "position": 14,
+    "title": "Weekly Word: stane",
+    "description": "Meaning: stone\n\nExample: Throw the stane across the loch and watch the ripples.\n\nNotes: Scots word for ‘stone’; shows how Scots uses its own terms even when English has cognates."
+  },
+  {
+    "week": 15,
+    "item_id": 1003,
+    "position": 15,
+    "title": "Weekly Word: farl",
+    "description": "Meaning: quarter piece of bread / flatbread\n\nExample: Cut the oatcake into a farl and share it with tea.\n\nNotes: Traditional Scottish baking term; the quarter of a round cake or oatcake."
+  },
+  {
+    "week": 16,
+    "item_id": 1005,
+    "position": 16,
+    "title": "Weekly Word: teuchter",
+    "description": "Meaning: rural Highlander (slang)\n\nExample: He arrived in the city like a proper teuchter, gawky but full of stories.\n\nNotes: Lowland Scots term, with cultural/historical resonance; best used with caution."
+  },
+  {
+    "week": 17,
+    "item_id": 1007,
+    "position": 17,
+    "title": "Weekly Word: wirry‑cow",
+    "description": "Meaning: bugbear, ghost\n\nExample: As a bairn she’d say there was a wirry‑cow in the attic at night.\n\nNotes: Scots compound word, vivid and folkloric in flavour."
+  },
+  {
+    "week": 18,
+    "item_id": 1009,
+    "position": 18,
+    "title": "Weekly Word: bairn",
+    "description": "Meaning: child\n\nExample: Keep the bairn inside till the rain stops.\n\nNotes: Common in eastern & northern Scotland; part of Scots vocabulary widely used."
+  },
+  {
+    "week": 19,
+    "item_id": 1011,
+    "position": 19,
+    "title": "Weekly Word: brae",
+    "description": "Meaning: hill or slope\n\nExample: They climbed the steep brae to get a view over the loch.\n\nNotes: Used in place‑names (The Braes o Balquhidder, Drumbrae) and in Scots dialect."
+  },
+  {
+    "week": 20,
+    "item_id": 1013,
+    "position": 20,
+    "title": "Weekly Word: mingin",
+    "description": "Meaning: foul smell / disgusting\n\nExample: That’s a mingin bit of cheese — nae thanks.\n\nNotes: Modern colloquial Scots word; gives strong character."
+  },
+  {
+    "week": 21,
+    "item_id": 1015,
+    "position": 21,
+    "title": "Weekly Word: smirr",
+    "description": "Meaning: fine rain / drizzle\n\nExample: We set oot in the early smirr and still made good time.\n\nNotes: Weather‑word typical of Scots usage; evokes atmosphere."
+  },
+  {
+    "week": 22,
+    "item_id": 1017,
+    "position": 22,
+    "title": "Weekly Word: wean",
+    "description": "Meaning: child\n\nExample: The weans are all playing up in the yard.\n\nNotes: Used particularly in West Central Scotland; variant of 'bairn'."
+  },
+  {
+    "week": 23,
+    "item_id": 1019,
+    "position": 23,
+    "title": "Weekly Word: neep",
+    "description": "Meaning: turnip\n\nExample: Mash the neeps gently before you serve.\n\nNotes: Traditional Scottish vegetable word; used in ‘haggis, neeps & tatties’."
+  },
+  {
+    "week": 24,
+    "item_id": 1021,
+    "position": 24,
+    "title": "Weekly Word: stane",
+    "description": "Meaning: stone\n\nExample: Throw the stane across the loch and watch the ripples.\n\nNotes: Scots word for ‘stone’; shows how Scots uses its own terms even when English has cognates."
+  },
+  {
+    "week": 25,
+    "item_id": 1023,
+    "position": 25,
+    "title": "Weekly Word: farl",
+    "description": "Meaning: quarter piece of bread / flatbread\n\nExample: Cut the oatcake into a farl and share it with tea.\n\nNotes: Traditional Scottish baking term; the quarter of a round cake or oatcake."
+  },
+  {
+    "week": 26,
+    "item_id": 1025,
+    "position": 26,
+    "title": "Weekly Word: teuchter",
+    "description": "Meaning: rural Highlander (slang)\n\nExample: He arrived in the city like a proper teuchter, gawky but full of stories.\n\nNotes: Lowland Scots term, with cultural/historical resonance; best used with caution."
+  },
+  {
+    "week": 27,
+    "item_id": 1027,
+    "position": 27,
+    "title": "Weekly Word: wirry‑cow",
+    "description": "Meaning: bugbear, ghost\n\nExample: As a bairn she’d say there was a wirry‑cow in the attic at night.\n\nNotes: Scots compound word, vivid and folkloric in flavour."
+  },
+  {
+    "week": 28,
+    "item_id": 1029,
+    "position": 28,
+    "title": "Weekly Word: bairn",
+    "description": "Meaning: child\n\nExample: Keep the bairn inside till the rain stops.\n\nNotes: Common in eastern & northern Scotland; part of Scots vocabulary widely used."
+  },
+  {
+    "week": 29,
+    "item_id": 1031,
+    "position": 29,
+    "title": "Weekly Word: brae",
+    "description": "Meaning: hill or slope\n\nExample: They climbed the steep brae to get a view over the loch.\n\nNotes: Used in place‑names (The Braes o Balquhidder, Drumbrae) and in Scots dialect."
+  },
+  {
+    "week": 30,
+    "item_id": 1033,
+    "position": 30,
+    "title": "Weekly Word: mingin",
+    "description": "Meaning: foul smell / disgusting\n\nExample: That’s a mingin bit of cheese — nae thanks.\n\nNotes: Modern colloquial Scots word; gives strong character."
+  },
+  {
+    "week": 31,
+    "item_id": 1035,
+    "position": 31,
+    "title": "Weekly Word: smirr",
+    "description": "Meaning: fine rain / drizzle\n\nExample: We set oot in the early smirr and still made good time.\n\nNotes: Weather‑word typical of Scots usage; evokes atmosphere."
+  },
+  {
+    "week": 32,
+    "item_id": 1037,
+    "position": 32,
+    "title": "Weekly Word: wean",
+    "description": "Meaning: child\n\nExample: The weans are all playing up in the yard.\n\nNotes: Used particularly in West Central Scotland; variant of 'bairn'."
+  },
+  {
+    "week": 33,
+    "item_id": 1039,
+    "position": 33,
+    "title": "Weekly Word: neep",
+    "description": "Meaning: turnip\n\nExample: Mash the neeps gently before you serve.\n\nNotes: Traditional Scottish vegetable word; used in ‘haggis, neeps & tatties’."
+  },
+  {
+    "week": 34,
+    "item_id": 1041,
+    "position": 34,
+    "title": "Weekly Word: stane",
+    "description": "Meaning: stone\n\nExample: Throw the stane across the loch and watch the ripples.\n\nNotes: Scots word for ‘stone’; shows how Scots uses its own terms even when English has cognates."
+  },
+  {
+    "week": 35,
+    "item_id": 1043,
+    "position": 35,
+    "title": "Weekly Word: farl",
+    "description": "Meaning: quarter piece of bread / flatbread\n\nExample: Cut the oatcake into a farl and share it with tea.\n\nNotes: Traditional Scottish baking term; the quarter of a round cake or oatcake."
+  },
+  {
+    "week": 36,
+    "item_id": 1045,
+    "position": 36,
+    "title": "Weekly Word: teuchter",
+    "description": "Meaning: rural Highlander (slang)\n\nExample: He arrived in the city like a proper teuchter, gawky but full of stories.\n\nNotes: Lowland Scots term, with cultural/historical resonance; best used with caution."
+  },
+  {
+    "week": 37,
+    "item_id": 1047,
+    "position": 37,
+    "title": "Weekly Word: wirry‑cow",
+    "description": "Meaning: bugbear, ghost\n\nExample: As a bairn she’d say there was a wirry‑cow in the attic at night.\n\nNotes: Scots compound word, vivid and folkloric in flavour."
+  },
+  {
+    "week": 38,
+    "item_id": 1049,
+    "position": 38,
+    "title": "Weekly Word: bairn",
+    "description": "Meaning: child\n\nExample: Keep the bairn inside till the rain stops.\n\nNotes: Common in eastern & northern Scotland; part of Scots vocabulary widely used."
+  },
+  {
+    "week": 39,
+    "item_id": 1051,
+    "position": 39,
+    "title": "Weekly Word: brae",
+    "description": "Meaning: hill or slope\n\nExample: They climbed the steep brae to get a view over the loch.\n\nNotes: Used in place‑names (The Braes o Balquhidder, Drumbrae) and in Scots dialect."
+  },
+  {
+    "week": 40,
+    "item_id": 1053,
+    "position": 40,
+    "title": "Weekly Word: mingin",
+    "description": "Meaning: foul smell / disgusting\n\nExample: That’s a mingin bit of cheese — nae thanks.\n\nNotes: Modern colloquial Scots word; gives strong character."
+  },
+  {
+    "week": 41,
+    "item_id": 1055,
+    "position": 41,
+    "title": "Weekly Word: smirr",
+    "description": "Meaning: fine rain / drizzle\n\nExample: We set oot in the early smirr and still made good time.\n\nNotes: Weather‑word typical of Scots usage; evokes atmosphere."
+  },
+  {
+    "week": 42,
+    "item_id": 1057,
+    "position": 42,
+    "title": "Weekly Word: wean",
+    "description": "Meaning: child\n\nExample: The weans are all playing up in the yard.\n\nNotes: Used particularly in West Central Scotland; variant of 'bairn'."
+  },
+  {
+    "week": 43,
+    "item_id": 1059,
+    "position": 43,
+    "title": "Weekly Word: neep",
+    "description": "Meaning: turnip\n\nExample: Mash the neeps gently before you serve.\n\nNotes: Traditional Scottish vegetable word; used in ‘haggis, neeps & tatties’."
+  },
+  {
+    "week": 44,
+    "item_id": 1061,
+    "position": 44,
+    "title": "Weekly Word: stane",
+    "description": "Meaning: stone\n\nExample: Throw the stane across the loch and watch the ripples.\n\nNotes: Scots word for ‘stone’; shows how Scots uses its own terms even when English has cognates."
+  },
+  {
+    "week": 45,
+    "item_id": 1063,
+    "position": 45,
+    "title": "Weekly Word: farl",
+    "description": "Meaning: quarter piece of bread / flatbread\n\nExample: Cut the oatcake into a farl and share it with tea.\n\nNotes: Traditional Scottish baking term; the quarter of a round cake or oatcake."
+  },
+  {
+    "week": 46,
+    "item_id": 1065,
+    "position": 46,
+    "title": "Weekly Word: teuchter",
+    "description": "Meaning: rural Highlander (slang)\n\nExample: He arrived in the city like a proper teuchter, gawky but full of stories.\n\nNotes: Lowland Scots term, with cultural/historical resonance; best used with caution."
+  },
+  {
+    "week": 47,
+    "item_id": 791,
+    "position": 47,
+    "title": "Weekly Word: wirry‑cow",
+    "description": "Meaning: bugbear, ghost\n\nExample: As a bairn she’d say there was a wirry‑cow in the attic at night.\n\nNotes: Scots compound word, vivid and folkloric in flavour."
+  },
+  {
+    "week": 48,
+    "item_id": 1068,
+    "position": 48,
+    "title": "Weekly Word: bairn",
+    "description": "Meaning: child\n\nExample: Keep the bairn inside till the rain stops.\n\nNotes: Common in eastern & northern Scotland; part of Scots vocabulary widely used."
+  },
+  {
+    "week": 49,
+    "item_id": 793,
+    "position": 49,
+    "title": "Weekly Word: brae",
+    "description": "Meaning: hill or slope\n\nExample: They climbed the steep brae to get a view over the loch.\n\nNotes: Used in place‑names (The Braes o Balquhidder, Drumbrae) and in Scots dialect."
+  },
+  {
+    "week": 50,
+    "item_id": 1070,
+    "position": 50,
+    "title": "Weekly Word: bairn",
+    "description": "Meaning: child\n\nExample: Keep the bairn inside till the rain stops.\n\nNotes: Common in eastern & northern Scotland; part of Scots vocabulary widely used."
+  },
+  {
+    "week": 51,
+    "item_id": 797,
+    "position": 51,
+    "title": "Weekly Word: smirr",
+    "description": "Meaning: fine rain / drizzle\n\nExample: We set oot in the early smirr and still made good time.\n\nNotes: Weather‑word typical of Scots usage; evokes atmosphere."
+  },
+  {
+    "week": 52,
+    "item_id": 799,
+    "position": 1,
+    "title": "Weekly Word: neep",
+    "description": "Meaning: turnip\n\nExample: Mash the neeps gently before you serve.\n\nNotes: Traditional Scottish vegetable word; used in ‘haggis, neeps & tatties’."
+  }
+]

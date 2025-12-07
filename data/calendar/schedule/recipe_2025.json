@@ -1,0 +1,267 @@
+{
+  "category": "recipe",
+  "year": 2025,
+  "generated_at": "2025-12-03T11:16:13.880408+00:00",
+  "weeks": {
+    "1": {
+      "id": 48,
+      "position": 1,
+      "title": "Hogmanay Sausage Rolls"
+    },
+    "2": {
+      "id": 5,
+      "position": 2,
+      "title": "Rumbledethumps"
+    },
+    "3": {
+      "id": 9,
+      "position": 3,
+      "title": "Forfar Bridie"
+    },
+    "4": {
+      "id": 2,
+      "position": 4,
+      "title": "Cock-a-Leekie Soup"
+    },
+    "5": {
+      "id": 3,
+      "position": 5,
+      "title": "Haggis, Neeps & Tatties"
+    },
+    "6": {
+      "id": 4,
+      "position": 6,
+      "title": "Scotch Broth"
+    },
+    "7": {
+      "id": 6,
+      "position": 7,
+      "title": "Mince & Tatties"
+    },
+    "8": {
+      "id": 7,
+      "position": 8,
+      "title": "Stovies"
+    },
+    "9": {
+      "id": 8,
+      "position": 9,
+      "title": "Arbroath Smokies"
+    },
+    "10": {
+      "id": 10,
+      "position": 10,
+      "title": "Scotch Pie"
+    },
+    "11": {
+      "id": 11,
+      "position": 11,
+      "title": "Bannocks (Oat & Bere)"
+    },
+    "12": {
+      "id": 12,
+      "position": 12,
+      "title": "Oatcakes"
+    },
+    "13": {
+      "id": 13,
+      "position": 13,
+      "title": "Selkirk Bannock"
+    },
+    "14": {
+      "id": 14,
+      "position": 14,
+      "title": "Soda & Potato Scones"
+    },
+    "15": {
+      "id": 15,
+      "position": 15,
+      "title": "Shortbread (Three Regional Styles)"
+    },
+    "16": {
+      "id": 16,
+      "position": 16,
+      "title": "Dundee Cake"
+    },
+    "17": {
+      "id": 17,
+      "position": 17,
+      "title": "Clootie Dumpling"
+    },
+    "18": {
+      "id": 18,
+      "position": 18,
+      "title": "Cranachan"
+    },
+    "19": {
+      "id": 19,
+      "position": 19,
+      "title": "Rhubarb Fool"
+    },
+    "20": {
+      "id": 20,
+      "position": 20,
+      "title": "Smoked Salmon with Whisky Cream Sauce"
+    },
+    "21": {
+      "id": 21,
+      "position": 21,
+      "title": "Hot-Smoked Trout Salad"
+    },
+    "22": {
+      "id": 22,
+      "position": 22,
+      "title": "Fish Pie with Leeks & Cheddar Mash"
+    },
+    "23": {
+      "id": 23,
+      "position": 23,
+      "title": "Kedgeree (Scottish Colonial Twist)"
+    },
+    "24": {
+      "id": 24,
+      "position": 24,
+      "title": "Venison Stew with Juniper"
+    },
+    "25": {
+      "id": 25,
+      "position": 25,
+      "title": "Salmon en Croute (Scottish Style)"
+    },
+    "26": {
+      "id": 26,
+      "position": 26,
+      "title": "Raspberry Cranachan Parfait"
+    },
+    "27": {
+      "id": 27,
+      "position": 27,
+      "title": "Ecclefechan Tart"
+    },
+    "28": {
+      "id": 28,
+      "position": 28,
+      "title": "Treacle Scones"
+    },
+    "29": {
+      "id": 29,
+      "position": 29,
+      "title": "Clootie Dumpling (Harvest Version)"
+    },
+    "30": {
+      "id": 30,
+      "position": 30,
+      "title": "Scottish Lamb Hotpot"
+    },
+    "31": {
+      "id": 31,
+      "position": 31,
+      "title": "Beef & Ale Stew with Root Vegetables"
+    },
+    "32": {
+      "id": 32,
+      "position": 32,
+      "title": "Roe Deer with Rowan Jelly"
+    },
+    "33": {
+      "id": 33,
+      "position": 33,
+      "title": "Game Pie"
+    },
+    "34": {
+      "id": 34,
+      "position": 34,
+      "title": "Leek & Barley Broth"
+    },
+    "35": {
+      "id": 35,
+      "position": 35,
+      "title": "Haddock Chowder with Oats"
+    },
+    "36": {
+      "id": 36,
+      "position": 36,
+      "title": "Black Bun"
+    },
+    "37": {
+      "id": 37,
+      "position": 37,
+      "title": "Tablet"
+    },
+    "38": {
+      "id": 38,
+      "position": 38,
+      "title": "Atholl Brose"
+    },
+    "39": {
+      "id": 39,
+      "position": 39,
+      "title": "Hot Toddy"
+    },
+    "40": {
+      "id": 40,
+      "position": 40,
+      "title": "Whisky Marmalade"
+    },
+    "41": {
+      "id": 41,
+      "position": 41,
+      "title": "Rowan Jelly"
+    },
+    "42": {
+      "id": 42,
+      "position": 42,
+      "title": "Elderflower Cordial"
+    },
+    "43": {
+      "id": 43,
+      "position": 43,
+      "title": "Raspberry Jam"
+    },
+    "44": {
+      "id": 44,
+      "position": 44,
+      "title": "Bere Bread"
+    },
+    "45": {
+      "id": 45,
+      "position": 45,
+      "title": "Crowdie Cheese with Oatcakes"
+    },
+    "46": {
+      "id": 46,
+      "position": 46,
+      "title": "Scottish Kedgeree with Smoked Haddock"
+    },
+    "47": {
+      "id": 47,
+      "position": 47,
+      "title": "Fishcakes with Oat Crumb"
+    },
+    "48": {
+      "id": 1,
+      "position": 48,
+      "title": "Cullen Skink"
+    },
+    "49": {
+      "id": 49,
+      "position": 49,
+      "title": "Cranberry Cranachan (Modern Twist)"
+    },
+    "50": {
+      "id": 50,
+      "position": 50,
+      "title": "Whisky Truffles"
+    },
+    "51": {
+      "id": 51,
+      "position": 51,
+      "title": "Festive Shortbread Selection"
+    },
+    "52": {
+      "id": 52,
+      "position": 52,
+      "title": "Scotch Collops (New Year's Dish)"
+    }
+  }
+}

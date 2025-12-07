@@ -1,0 +1,366 @@
+[
+  {
+    "week": 1,
+    "item_id": 1235,
+    "position": 1,
+    "title": "Weekly Phrase: Gie it a bash",
+    "description": "Translation: Give it a try | Provenance: Scots and wider UK informal; very common 20th–21st c"
+  },
+  {
+    "week": 2,
+    "item_id": 1186,
+    "position": 2,
+    "title": "Weekly Phrase: Haud yer wheesht",
+    "description": "Translation: Be quiet | Provenance: Pan-Scots; very common everyday speech from 19th–21st c"
+  },
+  {
+    "week": 3,
+    "item_id": 1187,
+    "position": 3,
+    "title": "Weekly Phrase: Awa an bile yer heid",
+    "description": "Translation: Go away and stop talking nonsense | Provenance: Central Belt and Glasgow; humorous insult; common late 20th–21st c"
+  },
+  {
+    "week": 4,
+    "item_id": 1234,
+    "position": 4,
+    "title": "Weekly Phrase: Keep yersel tae yersel",
+    "description": "Translation: Keep yourself to yourself | Provenance: Scots and Scottish English; 19th–21st c"
+  },
+  {
+    "week": 5,
+    "item_id": 1188,
+    "position": 5,
+    "title": "Weekly Phrase: Whit’s the craic?",
+    "description": "Translation: What’s happening or what’s the news | Provenance: Borrowed via Irish; urban Scots; popular late 20th–21st c"
+  },
+  {
+    "week": 6,
+    "item_id": 1189,
+    "position": 6,
+    "title": "Weekly Phrase: Dinna fash yersel",
+    "description": "Translation: Don’t worry yourself | Provenance: Pan-Scots; from older verb fash; in print since at least 18th c"
+  },
+  {
+    "week": 7,
+    "item_id": 1190,
+    "position": 7,
+    "title": "Weekly Phrase: Gie it laldy",
+    "description": "Translation: Give it lots of energy or enthusiasm | Provenance: Central Belt; music and football contexts; late 20th–21st c"
+  },
+  {
+    "week": 8,
+    "item_id": 1191,
+    "position": 8,
+    "title": "Weekly Phrase: Lang may yer lum reek",
+    "description": "Translation: Long may your chimney smoke or may you prosper | Provenance: Traditional Scots toast; nationwide; 18th–20th c origin"
+  },
+  {
+    "week": 9,
+    "item_id": 1192,
+    "position": 9,
+    "title": "Weekly Phrase: Yer bum’s oot the windae",
+    "description": "Translation: You’re talking nonsense | Provenance: Glasgow and West-Central slang; late 20th–21st c"
+  },
+  {
+    "week": 10,
+    "item_id": 1193,
+    "position": 10,
+    "title": "Weekly Phrase: Ah’m fair scunnered",
+    "description": "Translation: I’m really fed up or disgusted | Provenance: Pan-Scots; scunner attested in Scots since at least 18th c"
+  },
+  {
+    "week": 11,
+    "item_id": 1194,
+    "position": 11,
+    "title": "Weekly Phrase: Ma heid’s mince",
+    "description": "Translation: My head is in a muddle | Provenance: Modern urban Scots; especially Central Belt; late 20th–21st c"
+  },
+  {
+    "week": 12,
+    "item_id": 1195,
+    "position": 12,
+    "title": "Weekly Phrase: Pure dead brilliant",
+    "description": "Translation: Really excellent or fantastic | Provenance: Glasgow catchphrase popularised late 20th c"
+  },
+  {
+    "week": 13,
+    "item_id": 1196,
+    "position": 13,
+    "title": "Weekly Phrase: Yer bum’s in the butter",
+    "description": "Translation: You’re in a very comfortable or fortunate position | Provenance: Older rural idiom; Lowlands; 19th–20th c"
+  },
+  {
+    "week": 14,
+    "item_id": 1197,
+    "position": 14,
+    "title": "Weekly Phrase: Nae bother at a’",
+    "description": "Translation: No problem at all | Provenance: Pan-Scots informal; 19th–21st c"
+  },
+  {
+    "week": 15,
+    "item_id": 1198,
+    "position": 15,
+    "title": "Weekly Phrase: A wee drappie o the best",
+    "description": "Translation: A small drink of good whisky | Provenance: Traditional Scots drinking phrase; nationwide; 19th–21st c"
+  },
+  {
+    "week": 16,
+    "item_id": 1199,
+    "position": 16,
+    "title": "Weekly Phrase: Haste ye back",
+    "description": "Translation: Come back soon | Provenance: Common farewell; Highlands and tourist areas; 20th–21st c"
+  },
+  {
+    "week": 17,
+    "item_id": 1200,
+    "position": 17,
+    "title": "Weekly Phrase: Gie’s a wee haund",
+    "description": "Translation: Give me a little help | Provenance: Pan-Scots working speech; 19th–21st c"
+  },
+  {
+    "week": 18,
+    "item_id": 1201,
+    "position": 18,
+    "title": "Weekly Phrase: Mind how ye go",
+    "description": "Translation: Take care as you leave | Provenance: Common Scots and UK farewell; mainly Lowlands; 20th–21st c"
+  },
+  {
+    "week": 19,
+    "item_id": 1202,
+    "position": 19,
+    "title": "Weekly Phrase: Ah’m no that fash’t",
+    "description": "Translation: I’m not that bothered | Provenance: Lowland and North-East Scots; uses older verb fash; 19th–21st c"
+  },
+  {
+    "week": 20,
+    "item_id": 1203,
+    "position": 20,
+    "title": "Weekly Phrase: That’s me awa",
+    "description": "Translation: That’s me off or I’m leaving now | Provenance: Pan-Scots farewell; 20th–21st c"
+  },
+  {
+    "week": 21,
+    "item_id": 1204,
+    "position": 21,
+    "title": "Weekly Phrase: Ah’m no keepin weel",
+    "description": "Translation: I’m not keeping well | Provenance: Older Scots or Scottish English; common with older speakers; 20th c"
+  },
+  {
+    "week": 22,
+    "item_id": 1205,
+    "position": 22,
+    "title": "Weekly Phrase: Oot o yer ain heid",
+    "description": "Translation: Out of your own head or on your own initiative | Provenance: Lowland Scots traditional speech; 19th–20th c"
+  },
+  {
+    "week": 23,
+    "item_id": 1206,
+    "position": 23,
+    "title": "Weekly Phrase: Ah’m awfy cheered",
+    "description": "Translation: I’m very pleased | Provenance: Older Scots or Scottish English; more common mid 20th c"
+  },
+  {
+    "week": 24,
+    "item_id": 1207,
+    "position": 24,
+    "title": "Weekly Phrase: Ah’m fair peely-wally",
+    "description": "Translation: I’m very pale and unwell | Provenance: Pan-Scots; peely-wally used urban and rural; 19th–21st c"
+  },
+  {
+    "week": 25,
+    "item_id": 1208,
+    "position": 25,
+    "title": "Weekly Phrase: That’s no ma job",
+    "description": "Translation: That’s not my responsibility | Provenance: Modern workplace Scots or Scottish English; 20th–21st c"
+  },
+  {
+    "week": 26,
+    "item_id": 1209,
+    "position": 26,
+    "title": "Weekly Phrase: Ah’m clean done in",
+    "description": "Translation: I’m completely exhausted | Provenance: Older Scots or Scottish English; Lowlands; 19th–20th c"
+  },
+  {
+    "week": 27,
+    "item_id": 1210,
+    "position": 27,
+    "title": "Weekly Phrase: Ye’re aff yer heid",
+    "description": "Translation: You’re crazy or not thinking straight | Provenance: Pan-Scots; youth and adult slang; 20th–21st c"
+  },
+  {
+    "week": 28,
+    "item_id": 1211,
+    "position": 28,
+    "title": "Weekly Phrase: It’s a sair fecht",
+    "description": "Translation: It’s a hard struggle | Provenance: From proverb it’s a sair fecht for half a loaf; in print 19th c onwards"
+  },
+  {
+    "week": 29,
+    "item_id": 1212,
+    "position": 29,
+    "title": "Weekly Phrase: Keep the heid",
+    "description": "Translation: Stay calm and don’t lose your temper | Provenance: Central Belt and wider; popularised late 20th–21st c"
+  },
+  {
+    "week": 30,
+    "item_id": 1213,
+    "position": 30,
+    "title": "Weekly Phrase: Canny go wrang",
+    "description": "Translation: It can’t really go wrong | Provenance: North-East and Central Belt; reassuring phrase; 20th–21st c"
+  },
+  {
+    "week": 31,
+    "item_id": 1214,
+    "position": 31,
+    "title": "Weekly Phrase: Gie’s peace",
+    "description": "Translation: Stop annoying me or give me a break | Provenance: Urban Scots; Glasgow and Dundee; late 20th–21st c"
+  },
+  {
+    "week": 32,
+    "item_id": 1215,
+    "position": 32,
+    "title": "Weekly Phrase: Nae chance",
+    "description": "Translation: pal | Provenance: Absolutely not my friend"
+  },
+  {
+    "week": 33,
+    "item_id": 1216,
+    "position": 33,
+    "title": "Weekly Phrase: We’ll see hoo it gangs",
+    "description": "Translation: We’ll see how it goes | Provenance: Pan-Scots traditional; 19th–21st c"
+  },
+  {
+    "week": 34,
+    "item_id": 1217,
+    "position": 34,
+    "title": "Weekly Phrase: It’ll a’ come oot in the wash",
+    "description": "Translation: It’ll all work out in the end | Provenance: Shared UK idiom; used in Scots 20th–21st c"
+  },
+  {
+    "week": 35,
+    "item_id": 1218,
+    "position": 35,
+    "title": "Weekly Phrase: Ye couldnae run a minodge",
+    "description": "Translation: You couldn’t run even a small stall or affair | Provenance: Older Scots insult; Central Belt; 19th–20th c"
+  },
+  {
+    "week": 36,
+    "item_id": 1219,
+    "position": 36,
+    "title": "Weekly Phrase: That’s neither here nor there",
+    "description": "Translation: That’s not relevant | Provenance: Shared UK idiom; used in Scots from 19th–21st c"
+  },
+  {
+    "week": 37,
+    "item_id": 1220,
+    "position": 37,
+    "title": "Weekly Phrase: Whit’s for ye’ll no go by ye",
+    "description": "Translation: What is meant for you will not pass you by | Provenance: Traditional Scots proverb; Lowlands; 19th c onwards"
+  },
+  {
+    "week": 38,
+    "item_id": 1221,
+    "position": 38,
+    "title": "Weekly Phrase: Nae use greetin ower spilt milk",
+    "description": "Translation: No point crying over spilt milk | Provenance: Scots form of common proverb; 19th–20th c"
+  },
+  {
+    "week": 39,
+    "item_id": 1222,
+    "position": 39,
+    "title": "Weekly Phrase: Better felt than telt",
+    "description": "Translation: Better experienced than explained | Provenance: Traditional Scots saying; North-East and Central; 19th–20th c"
+  },
+  {
+    "week": 40,
+    "item_id": 1223,
+    "position": 40,
+    "title": "Weekly Phrase: Ma feet are killin me",
+    "description": "Translation: My feet are very sore | Provenance: Scots or Scottish English everyday speech; 20th–21st c"
+  },
+  {
+    "week": 41,
+    "item_id": 1224,
+    "position": 41,
+    "title": "Weekly Phrase: Ye’re workin yersel intae a fankle",
+    "description": "Translation: You’re tying yourself in knots or overcomplicating things | Provenance: Lowland Scots; uses word fankle meaning tangle; 19th–21st c"
+  },
+  {
+    "week": 42,
+    "item_id": 1225,
+    "position": 42,
+    "title": "Weekly Phrase: Ma nerves are shattered",
+    "description": "Translation: My nerves are completely done | Provenance: Scottish English; common 20th–21st c"
+  },
+  {
+    "week": 43,
+    "item_id": 1226,
+    "position": 43,
+    "title": "Weekly Phrase: That’s a pure stooshie",
+    "description": "Translation: That’s a real commotion or fuss | Provenance: Scots noun stooshie; Glasgow and wider; 20th–21st c"
+  },
+  {
+    "week": 44,
+    "item_id": 1227,
+    "position": 44,
+    "title": "Weekly Phrase: Ah’m fair chuffed",
+    "description": "Translation: I’m really pleased | Provenance: Borrowed from wider English; common Scots usage since 20th c"
+  },
+  {
+    "week": 45,
+    "item_id": 1228,
+    "position": 45,
+    "title": "Weekly Phrase: That’s no my cuppie tea",
+    "description": "Translation: That’s not to my taste | Provenance: Scots variant of cup of tea; 20th–21st c"
+  },
+  {
+    "week": 46,
+    "item_id": 1229,
+    "position": 46,
+    "title": "Weekly Phrase: Ye’re chancin yer airms",
+    "description": "Translation: You’re pushing your luck | Provenance: Older Scots idiom; Central Belt; 19th–20th c"
+  },
+  {
+    "week": 47,
+    "item_id": 1230,
+    "position": 47,
+    "title": "Weekly Phrase: Dinna pit aw yer eggs in the ae basket",
+    "description": "Translation: Don’t put all your eggs in one basket | Provenance: Scots form of common proverb; 19th–20th c"
+  },
+  {
+    "week": 48,
+    "item_id": 1231,
+    "position": 48,
+    "title": "Weekly Phrase: He’s no the full shillin",
+    "description": "Translation: He’s not very bright or not all there | Provenance: Scottish and Irish idiom; urban speech mid 20th c onwards"
+  },
+  {
+    "week": 49,
+    "item_id": 1232,
+    "position": 49,
+    "title": "Weekly Phrase: Ye’re a richt glaikit wee soul",
+    "description": "Translation: You’re a properly foolish little person | Provenance: Pan-Scots; glaikit widely used; 19th–21st c"
+  },
+  {
+    "week": 50,
+    "item_id": 1233,
+    "position": 50,
+    "title": "Weekly Phrase: Ah’m aye on the go",
+    "description": "Translation: I’m always busy and moving | Provenance: Scots or Scottish English; 20th–21st c"
+  },
+  {
+    "week": 51,
+    "item_id": 1236,
+    "position": 51,
+    "title": "Weekly Phrase: Gaun yersel!",
+    "description": "Translation: Good for you or keep going | Provenance: Glasgow and West; shouted encouragement at events; late 20th–21st c"
+  },
+  {
+    "week": 52,
+    "item_id": 1237,
+    "position": 52,
+    "title": "Weekly Phrase: Ah’ve ma doots",
+    "description": "Translation: I have my doubts | Provenance: Scots form; Lowlands; 19th–21st c"
+  }
+]

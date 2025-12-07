@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}Sequence Manager - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <div class="scheduling-page-header" style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; color: #f1f5f9; margin: 0 0 0.5rem 0;">Sequence Manager</h1>
+        <p style="color: #94a3b8; margin: 0; font-size: 0.9375rem;">
+            Manage cyclic lists (Themes, Recipes, Profiles, Words &amp; Phrases)
+        </p>
+    </div>
+
+    <div class="sequence-controls" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+        <label for="seq-category" style="color: #cbd5e1; font-size: 0.875rem;">Category:</label>
+        <select id="seq-category" style="padding: 0.5rem; background: #0f172a; border: 1px solid #334155; color: #e5e7eb; border-radius: 4px;">
+            <option value="theme">Theme</option>
+            <option value="recipe">Recipe</option>
+            <option value="profile_product">Product Profile</option>
+            <option value="profile_surname">Surname Profile</option>
+            <option value="weekly_word">Weekly Word</option>
+            <option value="weekly_phrase">Weekly Phrase</option>
+        </select>
+        <button id="seq-refresh" type="button"
+                style="padding: 0.5rem 0.75rem; background: #334155; color: #e5e7eb; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8125rem;">
+            Refresh
+        </button>
+    </div>
+
+    <div class="sequence-add" style="margin-bottom: 1.5rem; padding: 1rem; background: #020617; border-radius: 6px; border: 1px solid #1f2933;">
+        <h2 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: #e5e7eb;">Add Item to Sequence</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
+            <div style="flex: 1 1 220px;">
+                <label for="seq-new-title" style="display:block; font-size: 0.75rem; color:#9ca3af; margin-bottom:0.25rem;">
+                    Title / Label
+                </label>
+                <input id="seq-new-title" type="text"
+                       placeholder="e.g. &quot;Tartan Tuesday Special&quot;"
+                       style="width: 100%; padding: 0.5rem; background:#020617; border:1px solid #334155; color:#e5e7eb; border-radius:4px; font-size:0.875rem;">
+            </div>
+            <div style="width: 140px;">
+                <label for="seq-insert-position" style="display:block; font-size: 0.75rem; color:#9ca3af; margin-bottom:0.25rem;">
+                    Insert at position
+                </label>
+                <input id="seq-insert-position" type="number" min="1"
+                       placeholder="(end)"
+                       style="width: 100%; padding: 0.5rem; background:#020617; border:1px solid #334155; color:#e5e7eb; border-radius:4px; font-size:0.875rem;">
+            </div>
+            <button id="seq-add-btn" type="button"
+                    style="padding: 0.6rem 1rem; background:#22c55e; color:#022c22; border:none; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.875rem;">
+                Add
+            </button>
+        </div>
+        <p style="margin-top:0.5rem; font-size:0.75rem; color:#9ca3af;">
+            For themes/recipes/words/phrases this sets the visible title. For profiles it will label the entry as
+            <code>Profile #ID</code> until wired to real post titles.
+        </p>
+    </div>
+
+    <div class="sequence-view-container" style="background:#020617; border:1px solid #1f2933; border-radius:8px; overflow:hidden;">
+        <table class="sequence-table" style="width:100%; border-collapse:collapse;">
+            <thead style="background:#020617;">
+                <tr>
+                    <th style="padding:0.75rem 1rem; text-align:left; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af; border-bottom:1px solid #1f2933; width:80px;">Pos</th>
+                    <th style="padding:0.75rem 1rem; text-align:left; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af; border-bottom:1px solid #1f2933;">Title</th>
+                    <th style="padding:0.75rem 1rem; text-align:left; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af; border-bottom:1px solid #1f2933; width:120px;">ID</th>
+                    <th style="padding:0.75rem 1rem; text-align:right; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af; border-bottom:1px solid #1f2933; width:160px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="seq-tbody">
+                <tr>
+                    <td colspan="4" style="padding:1.5rem; text-align:center; color:#6b7280; font-size:0.875rem;">
+                        Select a category to load sequence…
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+(function() {
+    const API_BASE = '/planning/api/calendar';
+    let currentCategory = 'theme';
+    let currentItems = []; // [{ id, position, title, raw }, ...]
+
+    function setLoading(message) {
+        const tbody = document.getElementById('seq-tbody');
+        if (!tbody) return;
+        tbody.innerHTML =
+            '<tr><td colspan="4" style="padding:1.5rem; text-align:center; color:#6b7280;">' +
+            (message || 'Loading…') +
+            '</td></tr>';
+    }
+
+    function loadCategory(category) {
+        currentCategory = category;
+        setLoading('Loading sequence…');
+        const url =
+            API_BASE +
+            '/list/get?category=' +
+            encodeURIComponent(category) +
+            '&_t=' +
+            Date.now();
+
+        fetch(url, { credentials: 'same-origin' })
+            .then((resp) => {
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                return resp.json();
+            })
+            .then((data) => {
+                if (!data || data.status !== 'ok') {
+                    throw new Error(data && data.message ? data.message : 'Unexpected response');
+                }
+                currentItems = Array.isArray(data.items) ? data.items.slice() : [];
+                renderList();
+            })
+            .catch((err) => {
+                console.error('Error loading sequence:', err);
+                const tbody = document.getElementById('seq-tbody');
+                if (!tbody) return;
+                tbody.innerHTML =
+                    '<tr><td colspan="4" style="padding:1.5rem; text-align:center; color:#ef4444;">' +
+                    'Error loading sequence: ' +
+                    err.message +
+                    '</td></tr>';
+            });
+    }
+
+    function renderList() {
+        const tbody = document.getElementById('seq-tbody');
+        if (!tbody) return;
+
+        if (!currentItems.length) {
+            tbody.innerHTML =
+                '<tr><td colspan="4" style="padding:1.5rem; text-align:center; color:#6b7280;">' +
+                'No items in this sequence yet.' +
+                '</td></tr>';
+            return;
+        }
+
+        const items = currentItems
+            .slice()
+            .sort((a, b) => (a.position || 0) - (b.position || 0));
+
+        tbody.innerHTML = '';
+
+        for (const item of items) {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #111827';
+
+            const posTd = document.createElement('td');
+            posTd.style.padding = '0.5rem 1rem';
+            posTd.style.fontFamily = 'monospace';
+            posTd.style.color = '#e5e7eb';
+            posTd.textContent = item.position;
+            tr.appendChild(posTd);
+
+            const titleTd = document.createElement('td');
+            titleTd.style.padding = '0.5rem 1rem';
+            titleTd.style.color = '#f9fafb';
+            titleTd.style.fontSize = '0.875rem';
+            titleTd.textContent = item.title || 'Item #' + item.id;
+            tr.appendChild(titleTd);
+
+            const idTd = document.createElement('td');
+            idTd.style.padding = '0.5rem 1rem';
+            idTd.style.fontFamily = 'monospace';
+            idTd.style.fontSize = '0.75rem';
+            idTd.style.color = '#9ca3af';
+            idTd.textContent = item.id;
+            tr.appendChild(idTd);
+
+            const actionsTd = document.createElement('td');
+            actionsTd.style.padding = '0.35rem 1rem';
+            actionsTd.style.textAlign = 'right';
+
+            const mkBtn = (label, title, handler, extraStyles) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = label;
+                btn.title = title;
+                btn.style.marginLeft = '0.25rem';
+                btn.style.padding = '0.35rem 0.6rem';
+                btn.style.fontSize = '0.75rem';
+                btn.style.borderRadius = '4px';
+                btn.style.border = 'none';
+                btn.style.cursor = 'pointer';
+                btn.style.background = '#1f2937';
+                btn.style.color = '#e5e7eb';
+                if (extraStyles) {
+                    Object.assign(btn.style, extraStyles);
+                }
+                btn.addEventListener('click', handler);
+                return btn;
+            };
+
+            actionsTd.appendChild(
+                mkBtn('↑', 'Move up', () => moveItem(item.id, -1))
+            );
+            actionsTd.appendChild(
+                mkBtn('↓', 'Move down', () => moveItem(item.id, +1))
+            );
+            actionsTd.appendChild(
+                mkBtn(
+                    '✕',
+                    'Delete',
+                    () => deleteItem(item.id),
+                    { background: '#7f1d1d', color: '#fecaca' }
+                )
+            );
+
+            tr.appendChild(actionsTd);
+            tbody.appendChild(tr);
+        }
+    }
+
+    function moveItem(itemId, delta) {
+        const item = currentItems.find((it) => it.id === itemId);
+        if (!item) {
+            alert('Item not found in current list');
+            return;
+        }
+
+        const oldPos = item.position;
+        const newPos = oldPos + delta;
+        if (newPos < 1) return;
+
+        const maxPos = Math.max.apply(
+            null,
+            currentItems.map((it) => it.position || 0)
+        );
+        if (newPos > maxPos) return;
+
+        if (
+            !confirm(
+                'Move item #' +
+                    itemId +
+                    ' from position ' +
+                    oldPos +
+                    ' to ' +
+                    newPos +
+                    '?'
+            )
+        ) {
+            return;
+        }
+
+        fetch(API_BASE + '/list/reorder', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                category: currentCategory,
+                item_id: itemId,
+                new_position: newPos,
+            }),
+        })
+            .then((r) => r.json())
+            .then((res) => {
+                if (!res || res.status !== 'ok') {
+                    throw new Error(
+                        res && res.message ? res.message : 'Reorder failed'
+                    );
+                }
+                loadCategory(currentCategory);
+            })
+            .catch((err) => {
+                console.error('Reorder error:', err);
+                alert('Reorder failed: ' + err.message);
+            });
+    }
+
+    function deleteItem(itemId) {
+        if (
+            !confirm('Delete item #' + itemId + ' from this sequence?')
+        )
+            return;
+
+        fetch(API_BASE + '/list/delete', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                category: currentCategory,
+                item_id: itemId,
+            }),
+        })
+            .then((r) => r.json())
+            .then((res) => {
+                if (!res || res.status !== 'ok') {
+                    throw new Error(
+                        res && res.message ? res.message : 'Delete failed'
+                    );
+                }
+                loadCategory(currentCategory);
+            })
+            .catch((err) => {
+                console.error('Delete error:', err);
+                alert('Delete failed: ' + err.message);
+            });
+    }
+
+    function addItem() {
+        const titleInput = document.getElementById('seq-new-title');
+        const positionInput = document.getElementById('seq-insert-position');
+        if (!titleInput) return;
+
+        const title = (titleInput.value || '').trim();
+        const rawPos =
+            positionInput && positionInput.value
+                ? parseInt(positionInput.value, 10)
+                : null;
+
+        if (!title) {
+            alert('Please enter a title/label for the new item.');
+            titleInput.focus();
+            return;
+        }
+
+        let insertPosition = rawPos;
+        if (
+            insertPosition !== null &&
+            (isNaN(insertPosition) || insertPosition < 1)
+        ) {
+            alert(
+                'Insert position must be a positive integer, or left blank for \"end\".'
+            );
+            return;
+        }
+
+        const dataPayload = {};
+        if (currentCategory === 'theme') {
+            dataPayload.theme_title = title;
+        } else if (currentCategory === 'recipe') {
+            dataPayload.recipe_title = title;
+        } else if (
+            currentCategory === 'weekly_word' ||
+            currentCategory === 'weekly_phrase'
+        ) {
+            dataPayload.idea_title = title;
+        } else if (
+            currentCategory === 'profile_product' ||
+            currentCategory === 'profile_surname'
+        ) {
+            alert(
+                'Adding new profile entries via this UI is not supported. Please create profiles elsewhere and wire them into the sequence table.'
+            );
+            return;
+        }
+
+        fetch(API_BASE + '/list/add', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                category: currentCategory,
+                insert_position: insertPosition,
+                data: dataPayload,
+            }),
+        })
+            .then((r) => r.json())
+            .then((res) => {
+                if (!res || res.status !== 'ok') {
+                    throw new Error(
+                        res && res.message ? res.message : 'Add failed'
+                    );
+                }
+                titleInput.value = '';
+                if (positionInput) positionInput.value = '';
+                loadCategory(currentCategory);
+            })
+            .catch((err) => {
+                console.error('Add error:', err);
+                alert('Add failed: ' + err.message);
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const categorySelect = document.getElementById('seq-category');
+        const refreshBtn = document.getElementById('seq-refresh');
+        const addBtn = document.getElementById('seq-add-btn');
+
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function () {
+                loadCategory(this.value);
+            });
+        }
+
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function () {
+                loadCategory(
+                    categorySelect ? categorySelect.value : currentCategory
+                );
+            });
+        }
+
+        if (addBtn) {
+            addBtn.addEventListener('click', addItem);
+        }
+
+        loadCategory(categorySelect ? categorySelect.value : currentCategory);
+    });
+})();
+</script>
+{% endblock %}
+
+

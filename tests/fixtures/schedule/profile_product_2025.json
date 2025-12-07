@@ -1,0 +1,16 @@
+{
+  "category": "profile_product",
+  "year": 2025,
+  "generated_at": "2025-01-01T00:00:00Z",
+  "weeks": {
+    "1": {
+      "id": 301,
+      "position": 1
+    },
+    "2": {
+      "id": 302,
+      "position": 2
+    }
+  }
+}
+
