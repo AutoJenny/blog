@@ -41,6 +41,7 @@
                     <th class="category-header">Surname</th>
                     <th class="category-header">Word</th>
                     <th class="category-header">Phrase</th>
+                    <th class="category-header">Insult</th>
                 </tr>
             </thead>
             <tbody id="scheduling-tbody">
@@ -296,6 +297,17 @@
     border-color: #a855f7;
 }
 
+.scheduling-item.insult {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f1f5f9;
+}
+
+.scheduling-item.insult:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: #ef4444;
+}
+
 .scheduling-item.empty {
     color: #64748b;
     font-style: italic;
@@ -520,7 +532,8 @@ const categoryMap = {
     'profile-product': 'profile_product',
     'profile-surname': 'profile_surname',
     'word': 'weekly_word',
-    'phrase': 'weekly_phrase'
+    'phrase': 'weekly_phrase',
+    'insult': 'weekly_insult'
 };
 
 // State management
@@ -686,6 +699,7 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             );
             const wordItems = data.filter(item => item && item.type === 'weekly_word');
             const phraseItems = data.filter(item => item && item.type === 'weekly_phrase');
+            const insultItems = data.filter(item => item && item.type === 'weekly_insult');
             
             // Theme column
             const themeCell = createCategoryCell(themeItem ? [themeItem] : [], 'theme', year, week);
@@ -710,6 +724,10 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             // Phrase column
             const phraseCell = createCategoryCell(phraseItems, 'phrase', year, week);
             row.appendChild(phraseCell);
+            
+            // Insult column
+            const insultCell = createCategoryCell(insultItems, 'insult', year, week);
+            row.appendChild(insultCell);
             
             tbody.appendChild(row);
         });
@@ -759,7 +777,7 @@ function createCategoryCell(items, categoryClass, year, week) {
             itemId = item.recipe_id || item.id;
         } else if (categoryClass === 'profile-product' || categoryClass === 'profile-surname') {
             itemId = item.post_id || item.id;
-        } else if (categoryClass === 'word' || categoryClass === 'phrase') {
+        } else if (categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
             itemId = item.item_id || item.id;
         }
         
@@ -816,6 +834,9 @@ function createCategoryCell(items, categoryClass, year, week) {
             tooltip = item.description || title;
         } else if (categoryClass === 'phrase') {
             title = item.title || item.idea_title || 'Phrase';
+            tooltip = item.description || title;
+        } else if (categoryClass === 'insult') {
+            title = item.title || item.idea_title || 'Insult';
             tooltip = item.description || title;
         }
         
@@ -1070,11 +1091,11 @@ function openItemModal(item, categoryClass, itemId, position, year = null, week 
         descField = item.recipe_description || '';
         descContainer.style.display = 'block';
         wordPhraseFields.style.display = 'none';
-    } else if (categoryClass === 'word' || categoryClass === 'phrase') {
+    } else if (categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
         titleField = item.title || item.idea_title || '';
         descField = item.description || item.idea_description || '';
         
-        // Hide standard description, show word/phrase fields
+        // Hide standard description, show word/phrase/insult fields
         descContainer.style.display = 'none';
         wordPhraseFields.style.display = 'block';
         
@@ -1084,8 +1105,8 @@ function openItemModal(item, categoryClass, itemId, position, year = null, week 
         document.getElementById('modal-usage1-input').value = parsed.usage1 || '';
         document.getElementById('modal-usage2-input').value = parsed.usage2 || '';
         
-        // Show notes field for phrases (they have "Provenance" which maps to notes)
-        if (categoryClass === 'phrase' && parsed.notes) {
+        // Show notes field for phrases and insults (they have "Provenance" which maps to notes)
+        if ((categoryClass === 'phrase' || categoryClass === 'insult') && parsed.notes) {
             notesContainer.style.display = 'block';
             document.getElementById('modal-notes-input').value = parsed.notes || '';
         } else {
@@ -1221,10 +1242,10 @@ async function saveItemEdit() {
                 const description = document.getElementById('modal-description-input').value.trim();
                 payload.data.recipe_title = title;
                 if (description) payload.data.recipe_description = description;
-            } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase') {
+            } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
                 payload.data.idea_title = title;
                 
-                // Build description from separate fields for words/phrases
+                // Build description from separate fields for words/phrases/insults
                 const translation = document.getElementById('modal-translation-input').value.trim();
                 const usage1 = document.getElementById('modal-usage1-input').value.trim();
                 const usage2 = document.getElementById('modal-usage2-input').value.trim();
@@ -1235,7 +1256,7 @@ async function saveItemEdit() {
                 if (usage1) descriptionParts.push(`Usage: ${usage1}`);
                 if (usage2) descriptionParts.push(`Usage: ${usage2}`);
                 if (notes) {
-                    if (currentModalCategory === 'phrase') {
+                    if (currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
                         descriptionParts.push(`Provenance: ${notes}`);
                     } else {
                         descriptionParts.push(`Notes: ${notes}`);
@@ -1291,10 +1312,10 @@ async function saveItemEdit() {
             const description = document.getElementById('modal-description-input').value.trim();
             payload.recipe_title = title;
             if (description) payload.recipe_description = description;
-        } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase') {
+        } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
             payload.idea_title = title;
             
-            // Build description from separate fields for words/phrases
+            // Build description from separate fields for words/phrases/insults
             const translation = document.getElementById('modal-translation-input').value.trim();
             const usage1 = document.getElementById('modal-usage1-input').value.trim();
             const usage2 = document.getElementById('modal-usage2-input').value.trim();
@@ -1305,8 +1326,8 @@ async function saveItemEdit() {
             if (usage1) descriptionParts.push(`Usage: ${usage1}`);
             if (usage2) descriptionParts.push(`Usage: ${usage2}`);
             if (notes) {
-                // For phrases, use "Provenance" instead of "Notes" if it's a phrase
-                if (currentModalCategory === 'phrase') {
+                // For phrases and insults, use "Provenance" instead of "Notes"
+                if (currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
                     descriptionParts.push(`Provenance: ${notes}`);
                 } else {
                     descriptionParts.push(`Notes: ${notes}`);

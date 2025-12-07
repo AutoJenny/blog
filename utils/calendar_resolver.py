@@ -62,7 +62,7 @@ def get_category_config(category: str, classification: str | None = None) -> dic
             "extra_filter": ("profile_type = %s", [classification]),
         }
     
-    if category in ("weekly_word", "weekly_phrase"):
+    if category in ("weekly_word", "weekly_phrase", "weekly_insult"):
         if not classification:
             classification = category
         return {
@@ -174,7 +174,7 @@ def get_week_override(category: str, year: int, week: int) -> Optional[Dict[str,
     
     'category' here must match the value stored by the API:
     e.g. 'theme', 'recipe', 'profile_product', 'profile_surname',
-    'weekly_word', 'weekly_phrase'.
+    'weekly_word', 'weekly_phrase', 'weekly_insult'.
     """
     try:
         with db_manager.get_cursor() as cursor:
@@ -320,7 +320,8 @@ def build_year_schedule(year: int, weeks: int = 52) -> list[dict]:
         "recipe": {...},
         "profile": {...},
         "weekly_word": {...},
-        "weekly_phrase": {...}
+        "weekly_phrase": {...},
+        "weekly_insult": {...}
       }
     """
     result: list[dict] = []
@@ -400,6 +401,17 @@ def build_year_schedule(year: int, weeks: int = 52) -> list[dict]:
             }
         else:
             week_entry["weekly_phrase"] = None
+        
+        # Weekly insult
+        wi = resolve_item_for_week("weekly_insult", year_int, week, classification="weekly_insult")
+        if wi:
+            week_entry["weekly_insult"] = {
+                "id": wi.get("id"),
+                "title": wi.get("idea_title"),
+                "position": wi.get("position"),
+            }
+        else:
+            week_entry["weekly_insult"] = None
         
         result.append(week_entry)
     
