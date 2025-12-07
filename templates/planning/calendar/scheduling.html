@@ -99,7 +99,7 @@
                     </div>
                 </div>
                 
-                <button onclick="saveItemEdit()" class="modal-button primary">Save Changes</button>
+                <button onclick="saveItemEdit()" class="modal-button primary" id="modal-save-button">Save Changes</button>
             </div>
             
             <!-- Move Section -->
@@ -117,6 +117,13 @@
                     <small style="color: #94a3b8; display: block; margin-top: 0.25rem;">The item will be moved to appear in this week</small>
                 </div>
                 <button onclick="moveItem()" class="modal-button">Move to Week</button>
+            </div>
+            
+            <!-- Add New Item Section -->
+            <div class="modal-section" style="border-top: 1px solid #334155; padding-top: 1rem;">
+                <h3 style="color: #10b981;">Add New Item</h3>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Add a new item at this week's position. The current item will be moved to the next week.</p>
+                <button onclick="addNewItem()" class="modal-button" style="background: #10b981; border-color: #10b981;">Add New Item Here</button>
             </div>
             
             <!-- Delete Section -->
@@ -776,7 +783,7 @@ function createCategoryCell(items, categoryClass, year, week) {
         div.style.cursor = 'pointer';
         div.addEventListener('click', (e) => {
             e.stopPropagation();
-            openItemModal(item, categoryClass, itemId, item.position);
+            openItemModal(item, categoryClass, itemId, item.position, year, week);
         });
         
         let title = '';
@@ -933,6 +940,8 @@ function handleDrop(e) {
 let currentModalItem = null;
 let currentModalCategory = null;
 let currentModalItemId = null;
+let currentModalWeek = null;
+let currentModalYear = null;
 
 function getISOWeekDateRange(year, week) {
     // Calculate the date of the Monday of the given ISO week
@@ -1023,10 +1032,12 @@ function parseDescription(description) {
     return parts;
 }
 
-function openItemModal(item, categoryClass, itemId, position) {
+function openItemModal(item, categoryClass, itemId, position, year = null, week = null) {
     currentModalItem = item;
     currentModalCategory = categoryClass;
     currentModalItemId = itemId;
+    currentModalYear = year;
+    currentModalWeek = week;
     
     const modal = document.getElementById('item-modal');
     const apiCategory = categoryMap[categoryClass] || categoryClass;
@@ -1034,6 +1045,12 @@ function openItemModal(item, categoryClass, itemId, position) {
     document.getElementById('modal-title').textContent = `Edit ${categoryClass.charAt(0).toUpperCase() + categoryClass.slice(1)}`;
     document.getElementById('modal-category').textContent = categoryClass;
     document.getElementById('modal-position').textContent = position || 'Unknown';
+    
+    // Update save button text for edit mode
+    const saveButton = document.getElementById('modal-save-button');
+    if (saveButton) {
+        saveButton.textContent = 'Save Changes';
+    }
     
     // Show/hide appropriate fields
     const descContainer = document.getElementById('modal-description-container');
@@ -1104,6 +1121,31 @@ function closeItemModal() {
     currentModalItem = null;
     currentModalCategory = null;
     currentModalItemId = null;
+    currentModalWeek = null;
+    currentModalYear = null;
+}
+
+function clearModalForNewItem() {
+    // Clear all input fields
+    document.getElementById('modal-title-input').value = '';
+    document.getElementById('modal-description-input').value = '';
+    document.getElementById('modal-translation-input').value = '';
+    document.getElementById('modal-usage1-input').value = '';
+    document.getElementById('modal-usage2-input').value = '';
+    document.getElementById('modal-notes-input').value = '';
+    
+    // Update modal title
+    document.getElementById('modal-title').textContent = `Add New ${currentModalCategory.charAt(0).toUpperCase() + currentModalCategory.slice(1)}`;
+    document.getElementById('modal-position').textContent = 'New';
+    
+    // Update save button text
+    const saveButton = document.getElementById('modal-save-button');
+    if (saveButton) {
+        saveButton.textContent = 'Add Item';
+    }
+    
+    // Clear the item ID so saveItemEdit knows it's a new item
+    currentModalItemId = null;
 }
 
 // Click outside modal to close
@@ -1125,7 +1167,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 async function saveItemEdit() {
-    if (!currentModalItemId || !currentModalCategory) return;
+    if (!currentModalCategory) return;
     
     const apiCategory = categoryMap[currentModalCategory] || currentModalCategory;
     const title = document.getElementById('modal-title-input').value.trim();
@@ -1135,71 +1177,172 @@ async function saveItemEdit() {
         return;
     }
     
-    const payload = {
-        category: apiCategory,
-        item_id: currentModalItemId
-    };
+    const isNewItem = !currentModalItemId;
     
-    // Add category-specific fields
-    if (currentModalCategory === 'theme') {
-        const description = document.getElementById('modal-description-input').value.trim();
-        payload.theme_title = title;
-        if (description) payload.theme_description = description;
-    } else if (currentModalCategory === 'recipe') {
-        const description = document.getElementById('modal-description-input').value.trim();
-        payload.recipe_title = title;
-        if (description) payload.recipe_description = description;
-    } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase') {
-        payload.idea_title = title;
+    if (isNewItem) {
+        // Adding a new item - need to calculate insert position from current week
+        if (!currentModalYear || !currentModalWeek) {
+            alert('Cannot add item: missing week/year information');
+            return;
+        }
         
-        // Build description from separate fields for words/phrases
-        const translation = document.getElementById('modal-translation-input').value.trim();
-        const usage1 = document.getElementById('modal-usage1-input').value.trim();
-        const usage2 = document.getElementById('modal-usage2-input').value.trim();
-        const notes = document.getElementById('modal-notes-input').value.trim();
-        
-        const descriptionParts = [];
-        if (translation) descriptionParts.push(`Translation: ${translation}`);
-        if (usage1) descriptionParts.push(`Usage: ${usage1}`);
-        if (usage2) descriptionParts.push(`Usage: ${usage2}`);
-        if (notes) {
-            // For phrases, use "Provenance" instead of "Notes" if it's a phrase
-            if (currentModalCategory === 'phrase') {
-                descriptionParts.push(`Provenance: ${notes}`);
+        try {
+            // Fetch list metadata to calculate position
+            const listResponse = await fetch(`/planning/api/calendar/list/get?category=${apiCategory}`, {
+                credentials: 'same-origin'
+            });
+            const listData = await listResponse.json();
+            
+            if (listData.status !== 'ok' || !listData.items) {
+                alert('Could not load list data');
+                return;
+            }
+            
+            const meta = listData.meta || {};
+            const listLength = meta.list_length || listData.items.length;
+            const cycleStartWeek = meta.cycle_start_week || 1;
+            
+            // Calculate target position using cyclic formula
+            const targetPosition = ((currentModalWeek - cycleStartWeek) % listLength + listLength) % listLength + 1;
+            
+            // Build payload for add endpoint
+            const payload = {
+                category: apiCategory,
+                insert_position: targetPosition,
+                data: {}
+            };
+            
+            // Add category-specific fields
+            if (currentModalCategory === 'theme') {
+                const description = document.getElementById('modal-description-input').value.trim();
+                payload.data.theme_title = title;
+                if (description) payload.data.theme_description = description;
+            } else if (currentModalCategory === 'recipe') {
+                const description = document.getElementById('modal-description-input').value.trim();
+                payload.data.recipe_title = title;
+                if (description) payload.data.recipe_description = description;
+            } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase') {
+                payload.data.idea_title = title;
+                
+                // Build description from separate fields for words/phrases
+                const translation = document.getElementById('modal-translation-input').value.trim();
+                const usage1 = document.getElementById('modal-usage1-input').value.trim();
+                const usage2 = document.getElementById('modal-usage2-input').value.trim();
+                const notes = document.getElementById('modal-notes-input').value.trim();
+                
+                const descriptionParts = [];
+                if (translation) descriptionParts.push(`Translation: ${translation}`);
+                if (usage1) descriptionParts.push(`Usage: ${usage1}`);
+                if (usage2) descriptionParts.push(`Usage: ${usage2}`);
+                if (notes) {
+                    if (currentModalCategory === 'phrase') {
+                        descriptionParts.push(`Provenance: ${notes}`);
+                    } else {
+                        descriptionParts.push(`Notes: ${notes}`);
+                    }
+                }
+                
+                if (descriptionParts.length > 0) {
+                    payload.data.idea_description = descriptionParts.join(' | ');
+                }
+            } else if (currentModalCategory === 'profile-product' || currentModalCategory === 'profile-surname') {
+                // For profiles, we need a post_id - this is more complex
+                alert('Adding new profile items requires selecting an existing post. Please use the sequence manager for this.');
+                return;
+            }
+            
+            const response = await fetch('/planning/api/calendar/list/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'ok') {
+                closeItemModal();
+                // Reload data
+                if (viewStartYear !== null && viewStartWeek !== null) {
+                    loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+                } else {
+                    loadSchedulingRange(null, null, null);
+                }
             } else {
-                descriptionParts.push(`Notes: ${notes}`);
+                alert('Error: ' + (result.message || 'Failed to add item'));
+            }
+        } catch (error) {
+            console.error('Error adding item:', error);
+            alert('Error adding item: ' + error.message);
+        }
+    } else {
+        // Updating existing item
+        const payload = {
+            category: apiCategory,
+            item_id: currentModalItemId
+        };
+        
+        // Add category-specific fields
+        if (currentModalCategory === 'theme') {
+            const description = document.getElementById('modal-description-input').value.trim();
+            payload.theme_title = title;
+            if (description) payload.theme_description = description;
+        } else if (currentModalCategory === 'recipe') {
+            const description = document.getElementById('modal-description-input').value.trim();
+            payload.recipe_title = title;
+            if (description) payload.recipe_description = description;
+        } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase') {
+            payload.idea_title = title;
+            
+            // Build description from separate fields for words/phrases
+            const translation = document.getElementById('modal-translation-input').value.trim();
+            const usage1 = document.getElementById('modal-usage1-input').value.trim();
+            const usage2 = document.getElementById('modal-usage2-input').value.trim();
+            const notes = document.getElementById('modal-notes-input').value.trim();
+            
+            const descriptionParts = [];
+            if (translation) descriptionParts.push(`Translation: ${translation}`);
+            if (usage1) descriptionParts.push(`Usage: ${usage1}`);
+            if (usage2) descriptionParts.push(`Usage: ${usage2}`);
+            if (notes) {
+                // For phrases, use "Provenance" instead of "Notes" if it's a phrase
+                if (currentModalCategory === 'phrase') {
+                    descriptionParts.push(`Provenance: ${notes}`);
+                } else {
+                    descriptionParts.push(`Notes: ${notes}`);
+                }
+            }
+            
+            if (descriptionParts.length > 0) {
+                payload.idea_description = descriptionParts.join(' | ');
             }
         }
         
-        if (descriptionParts.length > 0) {
-            payload.idea_description = descriptionParts.join(' | ');
-        }
-    }
-    
-    try {
-        const response = await fetch('/planning/api/calendar/item/update', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify(payload)
-        });
-        
-        const result = await response.json();
-        
-        if (result.status === 'ok') {
-            closeItemModal();
-            // Reload data
-            if (viewStartYear !== null && viewStartWeek !== null) {
-                loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+        try {
+            const response = await fetch('/planning/api/calendar/item/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'ok') {
+                closeItemModal();
+                // Reload data
+                if (viewStartYear !== null && viewStartWeek !== null) {
+                    loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+                } else {
+                    loadSchedulingRange(null, null, null);
+                }
             } else {
-                loadSchedulingRange(null, null, null);
+                alert('Error: ' + (result.message || 'Failed to update item'));
             }
-        } else {
-            alert('Error: ' + (result.message || 'Failed to update item'));
+        } catch (error) {
+            console.error('Error updating item:', error);
+            alert('Error updating item: ' + error.message);
         }
-    } catch (error) {
-        console.error('Error updating item:', error);
-        alert('Error updating item: ' + error.message);
     }
 }
 
@@ -1296,6 +1439,38 @@ async function moveItemToWeek(categoryClass, itemId, targetYear, targetWeek) {
     } catch (error) {
         console.error('Error moving item:', error);
         alert('Error moving item: ' + error.message);
+    }
+}
+
+async function addNewItem() {
+    if (!currentModalCategory || !currentModalYear || !currentModalWeek) {
+        alert('Cannot add item: missing week/year information');
+        return;
+    }
+    
+    if (!currentModalItemId) {
+        alert('Please use "Save Changes" to add a new item first, or click on an existing item to add a new one at its position.');
+        return;
+    }
+    
+    const apiCategory = categoryMap[currentModalCategory] || currentModalCategory;
+    
+    try {
+        // Step 1: Move current item to next week
+        const nextWeek = currentModalWeek === 52 ? 1 : currentModalWeek + 1;
+        const nextYear = currentModalWeek === 52 ? currentModalYear + 1 : currentModalYear;
+        
+        await moveItemToWeek(currentModalCategory, currentModalItemId, nextYear, nextWeek);
+        
+        // Step 2: Clear modal for new item entry
+        clearModalForNewItem();
+        
+        // Note: The user will now fill in the form and click "Save Changes"
+        // which will call saveItemEdit, which we need to update to handle "add" mode
+        
+    } catch (error) {
+        console.error('Error adding new item:', error);
+        alert('Error preparing to add new item: ' + error.message);
     }
 }
 
