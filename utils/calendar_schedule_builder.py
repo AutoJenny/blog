@@ -62,7 +62,8 @@ def _load_base_list_items(category: str) -> List[Dict[str, Any]]:
         title_col = "recipe_title"
         desc_col = "recipe_description"
     elif original_category in ("profile_product", "profile_surname"):
-        title_col = None
+        # For profile types, we need to JOIN with post table to get title
+        title_col = None  # Will be handled via JOIN
         desc_col = None
     elif original_category in ("weekly_word", "weekly_phrase"):
         title_col = "idea_title"
@@ -73,38 +74,74 @@ def _load_base_list_items(category: str) -> List[Dict[str, Any]]:
     
     try:
         with db_manager.get_cursor() as cursor:
-            select_cols = [id_col, pos_col]
-            if title_col:
-                select_cols.append(title_col)
-            if desc_col:
-                select_cols.append(desc_col)
-            
-            sql = f"SELECT {', '.join(select_cols)} FROM {table}"
-            params: List[Any] = []
-            
-            if extra_filter:
-                cond, extra_params = extra_filter
-                sql += f" WHERE {cond}"
-                params.extend(extra_params)
-            
-            sql += f" ORDER BY {pos_col} ASC"
-            
-            cursor.execute(sql, tuple(params))
-            rows = cursor.fetchall()
-            
-            result = []
-            for row in rows:
-                item = {
-                    "id": row[id_col],
-                    "position": row[pos_col],
-                }
-                if title_col and row.get(title_col):
-                    item["title"] = row[title_col]
-                if desc_col and row.get(desc_col):
-                    item["description"] = row[desc_col]
-                result.append(item)
-            
-            return result
+            # For profile types, JOIN with post table to get title
+            if original_category in ("profile_product", "profile_surname"):
+                sql = f"""
+                    SELECT cps.{id_col}, cps.{pos_col}, p.title
+                    FROM {table} cps
+                    LEFT JOIN post p ON cps.post_id = p.id
+                """
+                params: List[Any] = []
+                
+                if extra_filter:
+                    cond, extra_params = extra_filter
+                    # Qualify profile_type with table alias to avoid ambiguity
+                    cond = cond.replace("profile_type", "cps.profile_type")
+                    sql += f" WHERE {cond}"
+                    params.extend(extra_params)
+                
+                sql += f" ORDER BY cps.{pos_col} ASC"
+                
+                cursor.execute(sql, tuple(params))
+                rows = cursor.fetchall()
+                
+                result = []
+                for row in rows:
+                    item = {
+                        "id": row[id_col],
+                        "position": row[pos_col],
+                    }
+                    # Get title from post table
+                    post_title = row.get("title")
+                    if post_title:
+                        item["title"] = post_title
+                    result.append(item)
+                
+                return result
+            else:
+                # For non-profile types, use standard query
+                select_cols = [id_col, pos_col]
+                if title_col:
+                    select_cols.append(title_col)
+                if desc_col:
+                    select_cols.append(desc_col)
+                
+                sql = f"SELECT {', '.join(select_cols)} FROM {table}"
+                params: List[Any] = []
+                
+                if extra_filter:
+                    cond, extra_params = extra_filter
+                    sql += f" WHERE {cond}"
+                    params.extend(extra_params)
+                
+                sql += f" ORDER BY {pos_col} ASC"
+                
+                cursor.execute(sql, tuple(params))
+                rows = cursor.fetchall()
+                
+                result = []
+                for row in rows:
+                    item = {
+                        "id": row[id_col],
+                        "position": row[pos_col],
+                    }
+                    if title_col and row.get(title_col):
+                        item["title"] = row[title_col]
+                    if desc_col and row.get(desc_col):
+                        item["description"] = row[desc_col]
+                    result.append(item)
+                
+                return result
     except Exception as e:
         logger.error("Error loading base list for category=%s: %s", original_category, e)
         raise

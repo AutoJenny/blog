@@ -79,22 +79,30 @@ def build_schedule_item(category: str, entry: dict) -> dict:
         }
     
     if cat == "profile_product":
-        return {
+        result = {
             "type": "post",
             "item_type": "profile",
             "profile_type": "product",
             "post_id": item_id,
             "position": position,
         }
+        # Include title if available
+        if title:
+            result["post_title"] = title
+        return result
     
     if cat == "profile_surname":
-        return {
+        result = {
             "type": "post",
             "item_type": "profile",
             "profile_type": "surname",
             "post_id": item_id,
             "position": position,
         }
+        # Include title if available
+        if title:
+            result["post_title"] = title
+        return result
     
     if cat == "weekly_word":
         result = {
