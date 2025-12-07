@@ -1,5 +1,23 @@
 # Changelog
 
+## 2025-12-07 - Calendar Scheduling: Display Title Cleanup
+
+### Changed
+- **Surname Profile Titles**: Removed "Clan Profile" suffix from all 150 surname profile post titles
+  - Titles now display as just the clan name (e.g., "Langlands" instead of "Langlands Clan Profile")
+- **Weekly Word/Phrase Titles**: Removed "Weekly Word:" and "Weekly Phrase:" prefixes from all entries
+  - Words display as just the word (e.g., "braw" instead of "Weekly Word: braw")
+  - Phrases display as just the phrase (e.g., "Haud yer wheesht" instead of "Weekly Phrase: Haud yer wheesht")
+- **Column Headers**: Simplified header labels
+  - "Product Profile" → "Product"
+  - "Surname Profile" → "Surname"
+
+### Technical Details
+- Updated `utils/calendar_schedule_builder.py` to JOIN with post table for profile types to load titles
+- Fixed ambiguous column reference in SQL queries by qualifying `profile_type` with table alias
+- Added `post_title` field to display API response for profile types
+- Rebuilt all JSON schedules for 2025-2027 with cleaned titles
+
 ## 2025-12-07 - Calendar Scheduling: JSON-Backed System with Enhanced Modals
 
 ### Added
