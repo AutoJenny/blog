@@ -156,17 +156,7 @@ def planning_calendar_scheduling(post_id):
     current_year = now.year
     current_week = now.isocalendar()[1]
     
-    # Verify post exists (for error handling)
-    with db_manager.get_cursor() as cursor:
-        cursor.execute("SELECT id FROM post WHERE id = %s", (post_id,))
-        if not cursor.fetchone():
-            return render_template('planning/calendar/scheduling.html',
-                                  post_id=post_id,
-                                  current_year=current_year,
-                                  current_week=current_week,
-                                  blueprint_name='planning',
-                                  error='Post not found')
-    
+    # Simple render - no post verification needed for scheduling view
     return render_template('planning/calendar/scheduling.html',
                           post_id=post_id,
                           current_year=current_year,

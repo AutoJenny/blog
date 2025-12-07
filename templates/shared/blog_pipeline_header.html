@@ -19,6 +19,9 @@
             {% elif post_type is defined and post_type == 'generated' %}
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
             <span class="pipeline-title-theme" id="pipeline-title-theme">{{ post_title or 'Generated Post' }}</span>
+            {% elif post_type is defined and post_type == 'scheduling' %}
+            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
+            <span class="pipeline-title-theme" id="pipeline-title-theme">Scheduling Overview</span>
             {% else %}
             <!-- Fallback when post_type not defined - show placeholder -->
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>

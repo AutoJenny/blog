@@ -316,7 +316,26 @@
     
     <div class="detail-header">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h1 style="margin: 0;">{{ family.name }}</h1>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <h1 style="margin: 0;">{{ family.name }}</h1>
+                <a href="https://clan.com/family/{{ family.name|lower }}" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   style="color: #8b5cf6; text-decoration: none; font-size: 0.875rem; padding: 0.5rem 0.75rem; border: 1px solid #8b5cf6; border-radius: 6px; transition: all 0.2s; white-space: nowrap;"
+                   onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
+                   onmouseout="this.style.background='transparent'; this.style.color='#8b5cf6';"
+                   title="View on clan.com">
+                    View on clan.com ↗
+                </a>
+                <a href="{{ url_for('families.family_export', family_id=family.id) }}" 
+                   target="_blank"
+                   style="color: #10b981; text-decoration: none; font-size: 0.875rem; padding: 0.5rem 0.75rem; border: 1px solid #10b981; border-radius: 6px; transition: all 0.2s; white-space: nowrap;"
+                   onmouseover="this.style.background='#10b981'; this.style.color='white';"
+                   onmouseout="this.style.background='transparent'; this.style.color='#10b981';"
+                   title="Export as PDF">
+                    Export PDF 📄
+                </a>
+            </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 {% if family.prev_family %}
                 <a href="/families/{{ family.prev_family.id }}{% if family.current_filters and family.current_filters.filtered_ids %}?filtered_ids={{ family.current_filters.filtered_ids }}{% endif %}" 
@@ -367,36 +386,51 @@
         </div>
     </div>
     
-    {# Condensed legacy summary from generated legacy histories (history_legacy_generated) #}
-    {% if family.resources %}
-    {% set ns = namespace(has_generated_legacy=false) %}
-    {% for resource in family.resources %}
-        {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy_generated' %}
-            {% set ns.has_generated_legacy = true %}
+
+    {# Calculate which tabs have content #}
+    {% set has_relationships = family.aliases or family.variants or family.spelling_of or family.septs or family.sept_of %}
+    {% set ns = namespace(has_resources=false, has_texts=false, has_generated=false) %}
+    {% for resource in family.resources or [] %}
+        {% if resource.resource_type == 'image' %}
+            {% set ns.has_resources = true %}
+        {% elif resource.resource_type == 'text' and resource.resource_category != 'history_legacy_generated' %}
+            {% set ns.has_texts = true %}
+        {% elif resource.resource_type == 'text' and resource.resource_category == 'history_legacy_generated' %}
+            {% set ns.has_generated = true %}
         {% endif %}
     {% endfor %}
-    {% if ns.has_generated_legacy %}
-    <div class="detail-section" style="margin-bottom: 1.5rem;">
-        <h2>Condensed Legacy Summary</h2>
-        <p style="color: #94a3b8; margin-bottom: 0.75rem; font-size: 0.875rem;">
-            Short factual summary generated from the fact-checked narrative. No commentary or introduction; roughly 400 characters.
-        </p>
-        {% for resource in family.resources %}
-            {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy_generated' %}
-            <div class="legacy-summary" style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 1rem 1.25rem; color: #e5e7eb; font-size: 0.95rem; line-height: 1.6;">
-                {{ resource.resource_value | safe }}
-            </div>
-            {% endif %}
-        {% endfor %}
-    </div>
+    {% if family.research_data and family.research_data.metadata and family.research_data.metadata.narrative_fact_checked %}
+        {% set ns.has_generated = true %}
     {% endif %}
-    {% endif %}
+    {% set has_resources = ns.has_resources %}
+    {% set has_texts = ns.has_texts %}
+    {% set has_generated = ns.has_generated %}
+    {% set has_srt = family.srt_tartans and family.srt_tartans|length > 0 %}
 
     <div class="tabs">
-        <button class="tab active" onclick="switchTab('database', true)">Database Data (CSV Import)</button>
+        <button class="tab active" onclick="switchTab('database', true)">
+            <span {% if not family.id %}style="opacity: 0.5;"{% endif %}>Basic Info</span>
+        </button>
+        <button class="tab" onclick="switchTab('relationships', true)">
+            <span {% if not has_relationships %}style="opacity: 0.5;"{% endif %}>Relationships</span>
+        </button>
+        <button class="tab" onclick="switchTab('resources', true)">
+            <span {% if not has_resources %}style="opacity: 0.5;"{% endif %}>Resources</span>
+        </button>
+        <button class="tab" onclick="switchTab('texts', true)">
+            <span {% if not has_texts %}style="opacity: 0.5;"{% endif %}>Texts</span>
+        </button>
+        <button class="tab" onclick="switchTab('generated', true)">
+            <span {% if not has_generated %}style="opacity: 0.5;"{% endif %}>Generated</span>
+        </button>
         {% if family.research_data %}
-        <button class="tab" onclick="switchTab('research', true)">Research Data (Web Research)</button>
+        <button class="tab" onclick="switchTab('research', true)">
+            <span>Research Data</span>
+        </button>
         {% endif %}
+        <button class="tab" onclick="switchTab('srt', true)">
+            <span {% if not has_srt %}style="opacity: 0.5;"{% endif %}>SRT Tartans</span>
+        </button>
     </div>
     
     <!-- Database Data Tab -->
@@ -431,7 +465,25 @@
             </div>
         </div>
         
-        {% if family.aliases or family.variants or family.spelling_of or family.septs or family.sept_of %}
+        {% if family.designs %}
+        <div class="detail-section">
+            <h2>Designs</h2>
+            <div class="relationship-list">
+                {% for design in family.designs %}
+                <div class="relationship-item">
+                    Design ID: {{ design.design_id }}
+                    {% if design.design_year %}({{ design.design_year }}){% endif %}
+                    {% if design.is_default %}<strong> - Default</strong>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Relationships Tab -->
+    <div id="tab-relationships" class="tab-content">
+        {% if has_relationships %}
         <div class="detail-section">
             <h2>Relationships</h2>
             
@@ -488,84 +540,140 @@
             </div>
             {% endif %}
         </div>
-        {% endif %}
-        
-        {% if family.resources %}
+        {% else %}
         <div class="detail-section">
-            <h2>Resources</h2>
-            {% for resource in family.resources %}
-            <div class="resource-item">
-                <div class="resource-type">{{ resource.resource_type }}</div>
-                {% if resource.resource_category %}
-                <div class="resource-category">{{ resource.resource_category }}</div>
-                {% endif %}
-                {% if resource.resource_value %}
-                <div class="resource-value" style="white-space: pre-wrap; word-wrap: break-word;">
-                    {{ resource.resource_value | safe }}
-                </div>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {# Legacy histories (history_legacy text resources) #}
-        {% set has_legacy = false %}
-        {% for resource in family.resources or [] %}
-            {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy' %}
-                {% set has_legacy = true %}
-            {% endif %}
-        {% endfor %}
-
-        {% if has_legacy %}
-        <div class="detail-section">
-            <h2>Legacy Histories</h2>
-            <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.875rem;">
-                Legacy clan/family history texts imported from the original system (<code>history_legacy</code> resources).
-            </p>
-            {% for resource in family.resources %}
-                {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy' %}
-                <div class="legacy-history-item" style="margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #cbd5e1;">
-                    {% if resource.resource_metadata and resource.resource_metadata.title %}
-                    <h3 style="margin-top: 0; margin-bottom: 0.75rem; font-size: 1.125rem; color: #e5e7eb;">
-                        {{ resource.resource_metadata.title }}
-                    </h3>
-                    {% endif %}
-                    <div class="legacy-history-content" style="font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word;">
-                        {{ resource.resource_value | safe }}
-                    </div>
-                </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-        {% endif %}
-        
-        {% if family.designs %}
-        <div class="detail-section">
-            <h2>Designs</h2>
-            <div class="relationship-list">
-                {% for design in family.designs %}
-                <div class="relationship-item">
-                    Design ID: {{ design.design_id }}
-                    {% if design.design_year %}({{ design.design_year }}){% endif %}
-                    {% if design.is_default %}<strong> - Default</strong>{% endif %}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if not family.aliases and not family.variants and not family.spelling_of and not family.septs and not family.sept_of and not family.resources and not family.designs %}
-        <div class="detail-section">
-            <div class="empty-state">No additional database information available for this family.</div>
+            <div class="empty-state">No relationships defined for this family.</div>
         </div>
         {% endif %}
     </div>
     
-    <!-- Research Data Tab -->
-    {% if family.research_data %}
-    <div id="tab-research" class="tab-content">
-        {% if family.research_data.metadata and family.research_data.metadata.narrative_fact_checked %}
+    <!-- Resources Tab (Images) -->
+    <div id="tab-resources" class="tab-content">
+        {% if has_resources and family.image_groups %}
+        <div class="detail-section">
+            <h2>Image Resources</h2>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                Each category represents a different graphic style. Only one example per style is shown.
+            </p>
+            
+            {# Display grouped images #}
+            {% for group_data in family.image_groups %}
+                {% set resource = group_data.resource %}
+                {% set image_url = get_clan_com_image_url(family.name, resource.resource_category or '', resource.resource_value) %}
+                {% set style_title = group_data.title %}
+                
+                {# Get description for each style #}
+                {% set style_description = '' %}
+                {% if style_title == 'Bookplate' %}
+                    {% set style_description = 'A decorative framed layout traditionally used for bookplates, ex-libris labels, and formal stationery. This style features ornate borders and elegant presentation suitable for personal libraries and official documents.' %}
+                {% elif style_title == 'British (Fleet)' %}
+                    {% set style_description = 'A British-style clean rendering with crisp lines and formal presentation. This style reflects traditional British heraldic conventions with clear, unadorned execution suitable for official and ceremonial use.' %}
+                {% elif style_title == 'Crest (Scottish)' %}
+                    {% set style_description = 'A crest-only design featuring the clan-style belt and buckle, a distinctive Scottish heraldic element. This minimalist approach focuses on the crest itself, often displayed on a traditional Scottish belt and buckle mount.' %}
+                {% elif style_title == 'Crest (English)' %}
+                    {% set style_description = 'An English heraldic crest rendering, typically displayed on a torse (wreath) or coronet. This style follows English heraldic traditions with formal presentation of the crest element alone.' %}
+                {% elif style_title == 'Crest (Irish)' %}
+                    {% set style_description = 'An Irish or Gaelic crest design, often incorporating Celtic motifs and traditional Irish heraldic elements. This style reflects the distinctive heraldic traditions of Ireland and Gaelic culture.' %}
+                {% elif style_title == 'Families (Of Britain Pro Scottish)' %}
+                    {% set style_description = 'A detailed full Scottish-style coat of arms with complete heraldic achievement. This comprehensive rendering includes shield, crest, supporters (if applicable), and motto, representing the full armorial bearings in the Scottish heraldic tradition.' %}
+                {% elif style_title == 'Fighting (Irish)' %}
+                    {% set style_description = 'A martial Irish-style rendering with bold, dynamic presentation. This style emphasizes strength and warrior heritage, often featuring more aggressive or battle-ready depictions of heraldic elements.' %}
+                {% elif style_title == 'Scottish (Gentry)' %}
+                    {% set style_description = 'An elegant full Scottish gentry-style coat of arms. This refined rendering represents the armorial bearings of Scottish landed families and gentry, with sophisticated presentation suitable for formal and ceremonial contexts.' %}
+                {% elif style_title == 'Badge' %}
+                    {% set style_description = 'A clan or family badge, a simplified heraldic device used for identification and affiliation. Badges are often worn or displayed as symbols of clan membership and heritage, distinct from the full coat of arms.' %}
+                {% elif style_title == 'Book Cover' %}
+                    {% set style_description = 'A heraldic design formatted for book covers and publication use. This style is optimized for print and digital media, with clear presentation suitable for book jackets, stationery, and promotional materials.' %}
+                {% elif style_title == 'Hero Badge' %}
+                    {% set style_description = 'A prominent badge design featuring tartan integration, combining heraldic elements with traditional Scottish tartan patterns. This style creates a distinctive visual identity that merges clan heraldry with textile heritage.' %}
+                {% else %}
+                    {% set style_description = 'A heraldic or family emblem in this style category.' %}
+                {% endif %}
+                
+                <div class="resource-item" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #334155; border-radius: 6px; background: #0f172a;">
+                    <h3 style="color: #8b5cf6; font-weight: 600; font-size: 1rem; margin: 0 0 0.5rem 0;">
+                        {{ style_title }}
+                    </h3>
+                    <p style="color: #94a3b8; font-size: 0.875rem; line-height: 1.5; margin: 0 0 0.75rem 0;">
+                        {{ style_description }}
+                    </p>
+                    <div style="margin-top: 0.75rem;">
+                        <img src="{{ image_url }}" 
+                             alt="{{ style_title }} - {{ family.name }}"
+                             style="max-width: 100%; height: auto; border-radius: 4px; border: 1px solid #475569;"
+                             onerror="this.parentElement.parentElement.style.display='none';">
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="detail-section">
+            <div class="empty-state">No image resources available for this family.</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Texts Tab -->
+    <div id="tab-texts" class="tab-content">
+        {% if has_texts %}
+        <div class="detail-section">
+            <h2>Text Resources</h2>
+            {% for resource in family.resources %}
+                {% if resource.resource_type == 'text' and resource.resource_category != 'history_legacy_generated' %}
+                <div class="resource-item" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #334155; border-radius: 6px; background: #0f172a;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="color: #8b5cf6; font-weight: 500; font-size: 0.875rem;">{{ resource.resource_type }}</span>
+                        {% if resource.resource_category %}
+                        <span style="color: #64748b; font-size: 0.75rem;">{{ resource.resource_category }}</span>
+                        {% endif %}
+                    </div>
+                    {% if resource.resource_category == 'history_legacy' %}
+                        <div class="legacy-history-item" style="padding: 1rem 1.25rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #cbd5e1;">
+                            {% if resource.resource_metadata and resource.resource_metadata.title %}
+                            <h3 style="margin-top: 0; margin-bottom: 0.75rem; font-size: 1.125rem; color: #e5e7eb;">
+                                {{ resource.resource_metadata.title }}
+                            </h3>
+                            {% endif %}
+                            <div class="legacy-history-content" style="font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word;">
+                                {{ resource.resource_value | safe }}
+                            </div>
+                        </div>
+                    {% elif resource.resource_value %}
+                        <div class="resource-value" style="white-space: pre-wrap; word-wrap: break-word; color: #cbd5e1; font-size: 0.875rem;">
+                            {{ resource.resource_value | safe }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="detail-section">
+            <div class="empty-state">No text resources available for this family.</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Generated Tab -->
+    <div id="tab-generated" class="tab-content">
+        {% if has_generated %}
+        {# Condensed legacy summary from generated legacy histories (history_legacy_generated) #}
+        {% for resource in family.resources %}
+            {% if resource.resource_type == 'text' and resource.resource_category == 'history_legacy_generated' %}
+            <div class="detail-section">
+                <h2>Condensed Legacy Summary</h2>
+                <p style="color: #94a3b8; margin-bottom: 0.75rem; font-size: 0.875rem;">
+                    Short factual summary generated from the fact-checked narrative. No commentary or introduction; roughly 400 characters.
+                </p>
+                <div class="legacy-summary" style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 1rem 1.25rem; color: #e5e7eb; font-size: 0.95rem; line-height: 1.6;">
+                    {{ resource.resource_value | safe }}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+        
+        {# Fact-checked narrative from OpenAI #}
+        {% if family.research_data and family.research_data.metadata and family.research_data.metadata.narrative_fact_checked %}
         <div class="detail-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
@@ -625,7 +733,241 @@
                 </form>
             </div>
         </div>
-        {% elif family.research_data.metadata and family.research_data.metadata.narrative %}
+        {% endif %}
+        {% else %}
+        <div class="detail-section">
+            <div class="empty-state">No generated content available for this family.</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- SRT Tartans Tab -->
+    <div id="tab-srt" class="tab-content">
+        {% if has_srt %}
+        <div class="detail-section">
+            <h2>Scottish Register of Tartans</h2>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                Registered tartans associated with this family/clan. Sorted by registration date (newest first).
+            </p>
+            
+            {% for tartan in family.srt_tartans %}
+            <div class="detail-section" style="margin-bottom: 2rem; padding: 1.5rem; border: 1px solid #334155; border-radius: 8px; background: #0f172a;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <h3 style="color: #8b5cf6; font-size: 1.25rem; margin: 0;">{{ tartan.tartan_name }}</h3>
+                    {% if tartan.reference %}
+                    <span style="color: #64748b; font-size: 0.875rem;">Ref: {{ tartan.reference }}</span>
+                    {% endif %}
+                </div>
+                
+                {# Register CSV Data #}
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #8b5cf6; font-size: 1rem; margin-bottom: 0.75rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem;">Registration Data</h4>
+                    <div class="data-grid" style="margin-bottom: 1rem;">
+                        {% if tartan.register_id %}
+                        <div class="data-item">
+                            <span class="data-label">Register ID</span>
+                            <span class="data-value">{{ tartan.register_id }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.category %}
+                        <div class="data-item">
+                            <span class="data-label">Category</span>
+                            <span class="data-value">{{ tartan.category }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.registration_date %}
+                        <div class="data-item">
+                            <span class="data-label">Registration Date</span>
+                            <span class="data-value">{{ tartan.registration_date }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.tartan_date %}
+                        <div class="data-item">
+                            <span class="data-label">Tartan Date</span>
+                            <span class="data-value">{{ tartan.tartan_date }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.designer %}
+                        <div class="data-item">
+                            <span class="data-label">Designer</span>
+                            <span class="data-value">{{ tartan.designer }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.woven_sample %}
+                        <div class="data-item">
+                            <span class="data-label">Woven Sample</span>
+                            <span class="data-value">{{ tartan.woven_sample }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.sta_ref %}
+                        <div class="data-item">
+                            <span class="data-label">STA Reference</span>
+                            <span class="data-value">{{ tartan.sta_ref }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.stwr_ref %}
+                        <div class="data-item">
+                            <span class="data-label">STWR Reference</span>
+                            <span class="data-value">{{ tartan.stwr_ref }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.register_clan_id %}
+                        <div class="data-item">
+                            <span class="data-label">Register Clan ID</span>
+                            <span class="data-value">{{ tartan.register_clan_id }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.register_created_at %}
+                        <div class="data-item">
+                            <span class="data-label">Register Created At</span>
+                            <span class="data-value">{{ tartan.register_created_at }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.register_updated_at %}
+                        <div class="data-item">
+                            <span class="data-label">Register Updated At</span>
+                            <span class="data-value">{{ tartan.register_updated_at }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {# Clan CSV Data #}
+                {% if tartan.clan_id or tartan.clan_type or tartan.clan_name or tartan.clan_nationality or tartan.clan_legacy_id or tartan.clan_attribute or tartan.clan_offline or tartan.clan_restriction_supplier or tartan.clan_active or tartan.clan_customers or tartan.clan_created_at or tartan.clan_description or tartan.clan_preview %}
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #8b5cf6; font-size: 1rem; margin-bottom: 0.75rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem;">Clan Database Data</h4>
+                    <div class="data-grid" style="margin-bottom: 1rem;">
+                        {% if tartan.clan_id %}
+                        <div class="data-item">
+                            <span class="data-label">Clan ID</span>
+                            <span class="data-value">{{ tartan.clan_id }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_type %}
+                        <div class="data-item">
+                            <span class="data-label">Type</span>
+                            <span class="data-value">{{ tartan.clan_type }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_name %}
+                        <div class="data-item">
+                            <span class="data-label">Clan Name</span>
+                            <span class="data-value">{{ tartan.clan_name }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_family %}
+                        <div class="data-item">
+                            <span class="data-label">Clan Family</span>
+                            <span class="data-value">{{ tartan.clan_family }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_nationality %}
+                        <div class="data-item">
+                            <span class="data-label">Nationality</span>
+                            <span class="data-value">{{ tartan.clan_nationality }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_legacy_id %}
+                        <div class="data-item">
+                            <span class="data-label">Legacy ID</span>
+                            <span class="data-value">{{ tartan.clan_legacy_id }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_attribute %}
+                        <div class="data-item">
+                            <span class="data-label">Attribute</span>
+                            <span class="data-value">{{ tartan.clan_attribute }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_offline %}
+                        <div class="data-item">
+                            <span class="data-label">Offline</span>
+                            <span class="data-value">{{ tartan.clan_offline }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_restriction_supplier %}
+                        <div class="data-item">
+                            <span class="data-label">Restriction Supplier</span>
+                            <span class="data-value">{{ tartan.clan_restriction_supplier }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_active %}
+                        <div class="data-item">
+                            <span class="data-label">Active</span>
+                            <span class="data-value">{{ tartan.clan_active }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_customers %}
+                        <div class="data-item">
+                            <span class="data-label">Customers</span>
+                            <span class="data-value">{{ tartan.clan_customers }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_created_at %}
+                        <div class="data-item">
+                            <span class="data-label">Clan Created At</span>
+                            <span class="data-value">{{ tartan.clan_created_at }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tartan.clan_register_id %}
+                        <div class="data-item">
+                            <span class="data-label">Clan Register ID</span>
+                            <span class="data-value">{{ tartan.clan_register_id }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if tartan.clan_preview %}
+                    <div style="margin-top: 1rem;">
+                        <span class="data-label" style="font-size: 0.875rem;">Preview:</span>
+                        <span style="color: #94a3b8; font-size: 0.875rem; word-break: break-all;">{{ tartan.clan_preview }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tartan.clan_description and tartan.clan_description.strip() %}
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: #1e293b; border-left: 3px solid #8b5cf6; border-radius: 4px;">
+                        <strong style="color: #8b5cf6; font-size: 0.875rem;">Description:</strong>
+                        <p style="color: #cbd5e1; margin: 0.5rem 0 0 0; font-size: 0.875rem; line-height: 1.6;">{{ tartan.clan_description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {# Text Fields #}
+                {% if tartan.restrictions and tartan.restrictions.strip() and tartan.restrictions.lower() not in ['none', 'no', ''] %}
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: #1e293b; border-left: 3px solid #f59e0b; border-radius: 4px;">
+                    <strong style="color: #f59e0b; font-size: 0.875rem;">Restrictions:</strong>
+                    <p style="color: #cbd5e1; margin: 0.5rem 0 0 0; font-size: 0.875rem; line-height: 1.6;">{{ tartan.restrictions }}</p>
+                </div>
+                {% endif %}
+                
+                {% if tartan.registration_notes and tartan.registration_notes.strip() and tartan.registration_notes.lower() not in ['none', 'registration notes:', ''] %}
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="color: #cbd5e1; font-size: 1rem; margin-bottom: 0.5rem;">Registration Notes</h4>
+                    <p style="color: #cbd5e1; margin: 0; font-size: 0.875rem; line-height: 1.7; text-align: justify;">{{ tartan.registration_notes }}</p>
+                </div>
+                {% endif %}
+                
+                {% if tartan.registrant_details and tartan.registrant_details.strip() %}
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #334155;">
+                    <span class="data-label" style="font-size: 0.875rem;">Registrant Details:</span>
+                    <span style="color: #94a3b8; font-size: 0.875rem;">{{ tartan.registrant_details }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="detail-section">
+            <div class="empty-state">No tartans registered in the Scottish Register of Tartans for this family.</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Research Data Tab -->
+    {% if family.research_data %}
+    <div id="tab-research" class="tab-content">
+        {% if family.research_data.metadata and family.research_data.metadata.narrative %}
         <div class="detail-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h2 style="margin: 0;">Extended Historical Narrative (Unchecked)</h2>

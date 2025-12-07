@@ -1,0 +1,13 @@
+{
+  "year": 2025,
+  "categories": [
+    "theme",
+    "recipe",
+    "profile_product",
+    "profile_surname",
+    "weekly_word",
+    "weekly_phrase"
+  ],
+  "generated_at": "2025-12-03T08:50:23.675074+00:00",
+  "notes": "Auto-generated from calendar_scheduling_cache.json by migrate_calendar_cache_to_schedule_json.py"
+}
