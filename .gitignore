@@ -9,3 +9,5 @@ blog-core/blog_backup_*.sql
 blog-core/blog_test_backup_*.sql
 *.log
 *.safetensors
+logs/*.out
+logs/*.err
