@@ -7,15 +7,22 @@ This document describes the exact JSON structure used for calendar schedule file
 All schedule JSON files are stored in a single directory:
 
 ```
-data/calendar/schedule/theme_2025.json
-data/calendar/schedule/recipe_2025.json
-data/calendar/schedule/profile_product_2025.json
-data/calendar/schedule/profile_surname_2025.json
-data/calendar/schedule/weekly_word_2025.json
-data/calendar/schedule/weekly_phrase_2025.json
+data/calendar/schedule/theme/2025.json
+data/calendar/schedule/recipe/2025.json
+data/calendar/schedule/profile_product/2025.json
+data/calendar/schedule/profile_surname/2025.json
+data/calendar/schedule/weekly_word/2025.json
+data/calendar/schedule/weekly_phrase/2025.json
+data/calendar/schedule/weekly_insult/2025.json
 ```
 
-Each category/year file is named:
+Each category/year file is named (directory layout):
+
+```
+data/calendar/schedule/{category}/{year}.json
+```
+
+The system also supports a flat layout for backward compatibility:
 
 ```
 data/calendar/schedule/{category}_{year}.json
@@ -30,6 +37,7 @@ Supported categories:
 - `profile_surname`
 - `weekly_word`
 - `weekly_phrase`
+- `weekly_insult`
 
 ---
 
@@ -141,7 +149,7 @@ Each week entry in the `weeks` object contains:
 - `position`: Position in profile surname list
 - Note: No `title` field
 
-#### Weekly Word – `data/calendar/schedule/weekly_word_2025.json`
+#### Weekly Word – `data/calendar/schedule/weekly_word/2025.json`
 
 ```json
 {
@@ -159,7 +167,7 @@ Each week entry in the `weeks` object contains:
 - `title`: `idea_title` from database
 - `position`: Position in weekly word list
 
-#### Weekly Phrase – `data/calendar/schedule/weekly_phrase_2025.json`
+#### Weekly Phrase – `data/calendar/schedule/weekly_phrase/2025.json`
 
 ```json
 {
@@ -176,6 +184,24 @@ Each week entry in the `weeks` object contains:
 - `id`: ID from `calendar_ideas` table
 - `title`: `idea_title` from database
 - `position`: Position in weekly phrase list
+
+#### Weekly Insult – `data/calendar/schedule/weekly_insult/2025.json`
+
+```json
+{
+  "category": "weekly_insult",
+  "year": 2025,
+  "generated_at": "2025-01-01T12:34:56Z",
+  "weeks": {
+    "1": { "id": 1339, "position": 49, "title": "Ye'd argue wi a puddle" },
+    "2": { "id": 1340, "position": 50, "title": "Ye're as subtle as a brick through a windae" }
+  }
+}
+```
+
+- `id`: ID from `calendar_ideas` table (with `item_classification = 'weekly_insult'`)
+- `title`: `idea_title` from database
+- `position`: Position in weekly insult list
 
 ### Week Numbers
 

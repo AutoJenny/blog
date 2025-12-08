@@ -5,13 +5,13 @@ This document lists all components, files, and their responsibilities in the new
 ## Quick Summary
 
 ### Data Files
-- `data/schedule/theme/YYYY.json`
-- `data/schedule/recipe/YYYY.json`
-- `data/schedule/profile_product/YYYY.json`
-- `data/schedule/profile_surname/YYYY.json`
-- `data/schedule/weekly_word/YYYY.json`
-- `data/schedule/weekly_phrase/YYYY.json`
-- `data/schedule/meta/YYYY.json`
+- `data/calendar/schedule/theme/YYYY.json`
+- `data/calendar/schedule/recipe/YYYY.json`
+- `data/calendar/schedule/profile_product/YYYY.json`
+- `data/calendar/schedule/profile_surname/YYYY.json`
+- `data/calendar/schedule/weekly_word/YYYY.json`
+- `data/calendar/schedule/weekly_phrase/YYYY.json`
+- `data/calendar/schedule/weekly_insult/YYYY.json`
 
 ### Backend - Display Layer
 - `blueprints/planning_api_calendar_scheduling_cache.py` (rewritten to be JSON-backed, range-based)
@@ -24,11 +24,14 @@ This document lists all components, files, and their responsibilities in the new
 ### Backend - Base List Management
 - `blueprints/planning_api_calendar_cyclic.py` (already present but should be "pure list")
 
-### Backend - Future Overrides/Reassignments
-- `blueprints/planning_api_calendar_overrides.py` (future phase)
+### Backend - Overrides/Reassignments
+- `blueprints/planning_api_calendar_overrides.py` (Permanent Sequence Model - no overrides currently used)
+- `blueprints/planning_api_calendar_schedule.py` (Week-view API using cyclic resolver)
 
 ### Frontend
-- `templates/planning/calendar/scheduling.html` (updated JS + navigation)
+- `templates/planning/calendar/scheduling.html` (updated JS + navigation, drag & drop, modals)
+- `templates/planning/calendar/week_view.html` (integrated with new calendar system)
+- `static/js/planning/calendar-week-view.js` (week-view rendering, modal handlers)
 
 ### Config/Docs
 - `config/calendar_settings.py` (or equivalent)
@@ -64,7 +67,7 @@ This document lists all components, files, and their responsibilities in the new
 
 **File**: `blueprints/planning_api_calendar_scheduling_cache.py`
 
-**Status**: Existing file to replace or heavily rewrite
+**Status**: ✅ **IMPLEMENTED** - Fully JSON-backed and range-based
 
 **Responsibilities**:
 - Expose `GET /planning/api/calendar/scheduling/all`
@@ -195,39 +198,41 @@ python scripts/build_calendar_schedules.py --year 2025 --extra-years 2
 
 **File**: `blueprints/planning_api_calendar_cyclic.py`
 
-**Status**: Already exists, may need cleanup
+**Status**: ✅ **IMPLEMENTED** - Pure list management
 
 **Responsibilities**:
 - APIs for base lists only (Layer 1):
-  - `POST /planning/api/calendar/list/reorder` - Reorder items in a list
+  - `POST /planning/api/calendar/list/reorder` - Reorder items in a list (uses two-phase update to prevent constraint violations)
   - `POST /planning/api/calendar/list/add` - Add item to a list
-  - `POST /planning/api/calendar/list/delete` - Delete item from a list
-- **No override/week-logic in here** - This is pure list management
+  - `POST /planning/api/calendar/list/delete` - Delete item from a list (uses two-phase update)
+  - `POST /planning/api/calendar/item/update` - Update item content (title, description) without changing position
+  - `GET /planning/api/calendar/list/get` - Get current list with metadata (cycle_start_week, list_length)
+- **No override/week-logic** - This is pure list management
 - After any change:
-  - Optionally trigger or queue rebuild of affected JSON files
-  - e.g., rebuild same-year JSON or mark as stale
-  - Could call the builder script or queue a background task
+  - Automatically triggers JSON rebuild for affected category and all years
+  - Rebuilds current year + next 2 years, plus any years with existing JSON files
+- Supports all 7 categories: theme, recipe, profile_product, profile_surname, weekly_word, weekly_phrase, weekly_insult
 
-**Key Principle**: This module should be "list-only" and not week-aware. It manages the base cyclic sequences (Layer 1), not the calendar assignments.
+**Key Principle**: This module is "list-only" and not week-aware. It manages the base cyclic sequences (Layer 1), not the calendar assignments.
 
 ---
 
-## 5. Backend: Optional Override / Reassignment Layer (Future Phase)
+## 5. Backend: Override / Reassignment Layer
 
 **File**: `blueprints/planning_api_calendar_overrides.py`
 
-**Status**: Future phase - not needed for initial display implementation
+**Status**: ✅ **IMPLEMENTED** - Using Permanent Sequence Model (no overrides)
 
-**Responsibilities** (later):
-- `POST /planning/api/calendar/override/set` - Set an override for a specific week
-- `POST /planning/api/calendar/override/remove` - Remove an override
-- Update either:
-  - DB override tables, OR
-  - Directly patch per-year JSON and rewrite the file
-- Optionally provide an endpoint to:
-  - "Recompute year from base lists + overrides"
+**Current Implementation**:
+- System uses **Permanent Sequence Model** - all changes are made directly to base lists
+- No week-specific overrides are used
+- `GET /planning/api/calendar/list/get` - Retrieve current cyclic list for a category
+- Override endpoints exist but are not actively used:
+  - `POST /planning/api/calendar/override/set` - Set an override (not used)
+  - `POST /planning/api/calendar/override/remove` - Remove an override (not used)
+  - `POST /planning/api/calendar/override/rebuild-year` - Rebuild year JSON (not used)
 
-**Note**: For now, you don't need this implemented to get the fast display working. This is Phase 2 functionality.
+**Design Decision**: All modifications go through base list management (`/planning/api/calendar/list/*`), which triggers JSON rebuilds. This keeps the system simple and avoids override complexity.
 
 ---
 
@@ -235,41 +240,77 @@ python scripts/build_calendar_schedules.py --year 2025 --extra-years 2
 
 **File**: `templates/planning/calendar/scheduling.html`
 
-**Status**: Already exists, will need updating
+**Status**: ✅ **IMPLEMENTED** - Fully functional with drag & drop and modals
 
 **Responsibilities**:
 
 ### Table UI
 - Weeks × categories table (existing structure)
 - Render returned `weeks[]` into the table
+- Drag & drop functionality for reordering items within categories
+- Click handlers to open modals for editing items
 
 ### On Load
 - Compute "initial" `start_year`, `start_week` (or just rely on backend defaults)
 - Call `/planning/api/calendar/scheduling/all` with the proper query string
 - Render returned `weeks[]` into the table
 
-### New UI Elements/Logic
+### UI Elements/Logic
 
-#### 1. Navigation Controls
-- Buttons or controls for:
+#### 1. Navigation Controls ✅
+- Buttons for:
   - `<< Year` (previous year)
   - `< Month` (previous month)
   - `Month >` (next month)
   - `Year >>` (next year)
-- Maintain a small JS state:
+- Maintains JS state:
   - `viewStartYear`
   - `viewStartWeek`
-- On click, adjust that state and refetch from the same endpoint
+- On click, adjusts state and refetches from endpoint
 
-#### 2. Range Awareness (Optional but Helpful)
-- Display: "Showing weeks Wxx–Wyy (YYYY–YYYY)"
-- Uses the metadata returned by the endpoint (`range_start_year`, `range_start_week`, `range_weeks`)
+#### 2. Range Awareness ✅
+- Displays: "Showing weeks Wxx–Wyy (YYYY–YYYY)"
+- Uses metadata from endpoint (`range_start_year`, `range_start_week`, `range_weeks`)
 
-#### 3. (Later) Reassignment UI
-- Keep the modal structure (if it exists)
-- But change the logic to:
-  - Talk to override/reassignment endpoints (Phase 2)
-  - Trigger JSON rebuild or flag stale
+#### 3. Drag & Drop ✅
+- Items can be dragged within their category column
+- Drop handler calculates target position using cyclic formula
+- Calls `/planning/api/calendar/list/reorder` to update base sequence
+- Triggers JSON rebuild for affected years
+
+#### 4. Modal Editing ✅
+- Click any item to open edit modal
+- Modal supports:
+  - Editing title/description
+  - Moving item to different week
+  - Deleting item
+  - Adding new item (pushes current item down)
+- Modals close on ESC key
+- Category-specific fields (e.g., translation, usage for words/phrases/insults)
+
+### Week View Integration
+
+**File**: `templates/planning/calendar/week_view.html`
+
+**Status**: ✅ **INTEGRATED** - Uses new cyclic calendar system
+
+**Responsibilities**:
+- Displays single week view aligned with scheduling calendar
+- Uses `/planning/api/calendar/schedule/<year>/<week>` endpoint
+- Renders blog entries in consolidated row:
+  - Themes on Monday
+  - Recipes on Wednesday
+  - Surnames on Friday
+  - Products on Saturday
+- Renders words/phrases/insults in separate row:
+  - Words on Monday
+  - Phrases on Wednesday
+  - Insults on Friday
+- All items clickable to open modals:
+  - Themes → Idea modal
+  - Recipes → Navigate to `/recipes` page
+  - Profiles → Profile modal
+  - Words/Phrases/Insults → Idea modal
 
 ---
 

@@ -47,6 +47,7 @@ The system is structured into **five clearly separated layers**.
 - `profile_surname`
 - `weekly_word`
 - `weekly_phrase`
+- `weekly_insult`
 
 **Structure**: For each category, a simple database table stores:
 - `id` - Unique identifier

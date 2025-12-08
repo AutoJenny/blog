@@ -37,14 +37,15 @@ python scripts/build_calendar_schedules.py --year 2025
 
 This will:
 1. Read all base lists from the database
-2. Generate 52-week schedules for all 6 categories
-3. Write 6 JSON files to `data/calendar/schedule/`:
-   - `theme_2025.json`
-   - `recipe_2025.json`
-   - `profile_product_2025.json`
-   - `profile_surname_2025.json`
-   - `weekly_word_2025.json`
-   - `weekly_phrase_2025.json`
+2. Generate 52-week schedules for all 7 categories
+3. Write 7 JSON files to `data/calendar/schedule/` (directory layout):
+   - `theme/2025.json`
+   - `recipe/2025.json`
+   - `profile_product/2025.json`
+   - `profile_surname/2025.json`
+   - `weekly_word/2025.json`
+   - `weekly_phrase/2025.json`
+   - `weekly_insult/2025.json`
 
 #### Build One Category for a Year
 ```bash
@@ -122,8 +123,9 @@ The builder reads the base cyclic list from the database:
 - For `recipe`: `SELECT * FROM calendar_recipes ORDER BY position`
 - For `profile_product`: `SELECT * FROM calendar_profile_sequence WHERE type = 'product' ORDER BY position`
 - For `profile_surname`: `SELECT * FROM calendar_profile_sequence WHERE type = 'surname' ORDER BY position`
-- For `weekly_word`: `SELECT * FROM calendar_ideas WHERE type = 'word' ORDER BY position`
-- For `weekly_phrase`: `SELECT * FROM calendar_ideas WHERE type = 'phrase' ORDER BY position`
+- For `weekly_word`: `SELECT * FROM calendar_ideas WHERE item_classification = 'weekly_word' ORDER BY position`
+- For `weekly_phrase`: `SELECT * FROM calendar_ideas WHERE item_classification = 'weekly_phrase' ORDER BY position`
+- For `weekly_insult`: `SELECT * FROM calendar_ideas WHERE item_classification = 'weekly_insult' ORDER BY position`
 
 ### Step 2: Determine Cycle Start
 The builder determines where the cycle should start for the given year:
