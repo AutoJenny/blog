@@ -57,9 +57,27 @@ def api_calendar_schedule(year, week_number):
         
         # Recipe
         if recipe:
+            recipe_id = recipe.get('id')
+            # Fetch post_id if recipe has an associated post
+            post_id = None
+            if recipe_id:
+                try:
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT id FROM post 
+                            WHERE recipe_id = %s AND status != 'deleted'
+                            LIMIT 1
+                        """, (recipe_id,))
+                        post_row = cursor.fetchone()
+                        if post_row:
+                            post_id = post_row.get('id') if isinstance(post_row, dict) else post_row[0]
+                except Exception as e:
+                    logger.warning(f"Error fetching post_id for recipe {recipe_id}: {e}")
+            
             schedule.append({
                 'type': 'recipe',
-                'recipe_id': recipe.get('id'),
+                'recipe_id': recipe_id,
+                'post_id': post_id,  # Include post_id if recipe has a post
                 'recipe_title': recipe.get('recipe_title'),
                 'recipe_description': recipe.get('recipe_description'),
                 'position': recipe.get('position'),

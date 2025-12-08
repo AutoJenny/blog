@@ -100,15 +100,14 @@ def api_get_profile(profile_id):
     """Get a profile by ID"""
     try:
         with db_manager.get_cursor() as cur:
+            # Removed deprecated calendar_week_posts join - using new cyclic system
             cur.execute("""
                 SELECT 
                     p.id, p.title, p.profile_type, p.profile_product_id, p.profile_category_id,
                     p.profile_producer_id, p.profile_producer_name, p.profile_standfirst,
                     p.profile_explore_links, p.profile_quick_facts, p.slug,
-                    p.status, p.created_at, p.updated_at,
-                    cwp.year, cwp.week_number, cwp.weekday
+                    p.status, p.created_at, p.updated_at
                 FROM post p
-                LEFT JOIN calendar_week_posts cwp ON p.id = cwp.post_id
                 WHERE p.id = %s AND p.profile_type IS NOT NULL
             """, (profile_id,))
             
@@ -132,10 +131,7 @@ def api_get_profile(profile_id):
                     'slug': row.get('slug'),
                     'status': row.get('status'),
                     'created_at': row['created_at'].isoformat() if row.get('created_at') else None,
-                    'updated_at': row['updated_at'].isoformat() if row.get('updated_at') else None,
-                    'year': row.get('year'),
-                    'week_number': row.get('week_number'),
-                    'weekday': row.get('weekday')
+                    'updated_at': row['updated_at'].isoformat() if row.get('updated_at') else None
                 }
             else:
                 profile = {
@@ -152,10 +148,7 @@ def api_get_profile(profile_id):
                     'slug': row[10] if len(row) > 10 else None,
                     'status': row[11] if len(row) > 11 else None,
                     'created_at': row[12].isoformat() if len(row) > 12 and row[12] else None,
-                    'updated_at': row[13].isoformat() if len(row) > 13 and row[13] else None,
-                    'year': row[14] if len(row) > 14 else None,
-                    'week_number': row[15] if len(row) > 15 else None,
-                    'weekday': row[16] if len(row) > 16 else None
+                    'updated_at': row[13].isoformat() if len(row) > 13 and row[13] else None
                 }
             
             return jsonify({

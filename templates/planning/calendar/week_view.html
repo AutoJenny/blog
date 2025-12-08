@@ -695,6 +695,8 @@ function escapeHtml(text) {
     // Initialize idea modal and hook up click handlers after DOM loads
     document.addEventListener('DOMContentLoaded', () => {
         const ideaModal = getIdeaModal();
+        // Ensure profile modal is initialized
+        const profileModal = window.getProfileModal ? window.getProfileModal() : null;
         
         // Make theme items clickable - use event delegation on document
         document.addEventListener('click', (e) => {
@@ -730,6 +732,32 @@ function escapeHtml(text) {
                 loadWeek(currentYear, currentWeek);
             } else {
                 location.reload();
+            }
+        });
+        
+        // Close modals on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                // Close idea modal if open
+                const ideaModal = document.getElementById('idea-modal');
+                if (ideaModal && ideaModal.style.display === 'flex') {
+                    const modal = getIdeaModal();
+                    if (modal) {
+                        modal.close();
+                    }
+                }
+                
+                // Close profile modal if open
+                const profileModal = document.getElementById('profile-modal');
+                if (profileModal && profileModal.style.display === 'flex') {
+                    const modal = window.getProfileModal ? window.getProfileModal() : null;
+                    if (modal && typeof modal.close === 'function') {
+                        modal.close();
+                    } else {
+                        // Fallback: just hide the modal
+                        profileModal.style.display = 'none';
+                    }
+                }
             }
         });
     });
