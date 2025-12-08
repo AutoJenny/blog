@@ -118,6 +118,28 @@ function renderItems(container, items, type) {
       
       div.appendChild(icon);
       div.appendChild(textSpan);
+    } else if (type === 'theme' && item._theme) {
+      // Theme display: star icon + title
+      div.classList.add('idea');
+      div.classList.add('theme');
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.gap = '6px';
+      div.title = item.title || 'Theme';
+      // Icon
+      const icon = document.createElement('i');
+      icon.className = 'fas fa-star';
+      icon.style.fontSize = '0.875rem';
+      icon.style.color = '#f97316';
+      div.appendChild(icon);
+      // Text
+      const text = document.createElement('span');
+      text.textContent = item.title || 'Theme';
+      text.style.fontSize = '0.8rem';
+      text.style.overflow = 'hidden';
+      text.style.textOverflow = 'ellipsis';
+      text.style.whiteSpace = 'nowrap';
+      div.appendChild(text);
     } else if (type === 'profile' && item._profile) {
       // Profile display: Icon + Title
       div.classList.add('profile');
@@ -242,33 +264,42 @@ function renderItems(container, items, type) {
           });
         }
       }
-    } else if (type === 'weekly-word' || type === 'weekly-phrase') {
-      // Weekly Word/Phrase display: Show the word or phrase text
+    } else if (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult') {
+      // Weekly Word/Phrase/Insult display: Show as pill with title only (no description)
+      div.classList.add('pill');
       div.style.cursor = 'pointer';
-      div.title = `Click to edit ${type === 'weekly-word' ? 'word' : 'phrase'}`;
-      if (item.id) {
-        div.dataset.ideaId = item.id;
+      div.style.padding = '6px 10px';
+      div.style.borderRadius = '6px';
+      div.style.backgroundColor = type === 'weekly-word' ? 'rgba(34, 197, 94, 0.15)' : 
+                                  type === 'weekly-phrase' ? 'rgba(34, 197, 94, 0.15)' : 
+                                  'rgba(239, 68, 68, 0.15)';
+      div.style.border = `1px solid ${type === 'weekly-word' ? 'rgba(34, 197, 94, 0.3)' : 
+                                         type === 'weekly-phrase' ? 'rgba(34, 197, 94, 0.3)' : 
+                                         'rgba(239, 68, 68, 0.3)'}`;
+      
+      const itemId = item.item_id || item.id;
+      if (itemId) {
+        div.dataset.ideaId = itemId;
       }
       
-      // Extract word or phrase from tags or title
-      const tags = item.tags || {};
-      let displayText = '';
-      if (type === 'weekly-word') {
-        const word = typeof tags === 'object' ? (tags.word || '') : '';
-        displayText = word || item.idea_title?.replace('Weekly Word: ', '') || 'Word';
-      } else {
-        const phrase = typeof tags === 'object' ? (tags.phrase || '') : '';
-        displayText = phrase || item.idea_title?.replace('Weekly Phrase: ', '') || 'Phrase';
-      }
+      // Title with prefix only (no description)
+      const titleText = item.title || item.idea_title || '';
+      const titlePrefix = type === 'weekly-word' ? 'Word: ' : 
+                         type === 'weekly-phrase' ? 'Phrase: ' : 
+                         'Insult: ';
       
-      div.textContent = displayText;
+      div.textContent = titlePrefix + titleText;
+      div.style.fontSize = '0.8rem';
+      div.style.color = '#f1f5f9';
+      div.style.fontWeight = '500';
+      div.title = `Click to edit ${type === 'weekly-word' ? 'word' : type === 'weekly-phrase' ? 'phrase' : 'insult'}`;
       
       // Add click handler to open in idea modal
-      if (item.id) {
+      if (itemId) {
         div.addEventListener('click', () => {
           const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
           if (ideaModal) {
-            ideaModal.open(item.id);
+            ideaModal.open(itemId);
           }
         });
       }
@@ -411,11 +442,6 @@ function escapeHtml(text) {
 async function loadWeek(year, weekNumber) {
   document.getElementById('week-year').textContent = String(year);
   
-  // Set the "Create Post" link to Week Themes page
-  const createPostLink = document.getElementById('week-themes-create-link');
-  if (createPostLink) {
-    createPostLink.href = `/planning/calendar/ideas/week/${weekNumber}?year=${year}&week=${weekNumber}`;
-  }
   document.getElementById('week-number').textContent = String(weekNumber);
   
   // SINGLE SOURCE OF TRUTH: Update URL using WeekContext
@@ -498,6 +524,8 @@ async function loadWeek(year, weekNumber) {
     if (scheduleRes.status === 'fulfilled') {
       const scheduleData = scheduleRes.value;
       schedule = Array.isArray(scheduleData) ? scheduleData : (scheduleData?.schedule || []);
+      // Store full scheduleData for theme lookup (includes selected_theme_id at top level)
+      window.currentScheduleData = scheduleData;
     }
     // Combine product and blog_post syndication schedules
     const productSchedules = productSyndicationRes.status === 'fulfilled' ? (productSyndicationRes.value.schedules || []) : [];
@@ -537,14 +565,11 @@ async function loadWeek(year, weekNumber) {
   }
 
   // Get filter toggles
-  const showThemes = document.getElementById('toggle-themes')?.checked !== false;
-  const showIdeas = document.getElementById('toggle-ideas')?.checked !== false;
+  const showBlog = document.getElementById('toggle-blog')?.checked !== false;
   const showAnnualEvents = document.getElementById('toggle-annual-events')?.checked !== false;
   const showSpecialEvents = document.getElementById('toggle-special-events')?.checked !== false;
   const showSyndication = document.getElementById('toggle-syndication')?.checked !== false;
-  const showProfiles = document.getElementById('toggle-profiles')?.checked !== false;
   const showWordsPhrases = document.getElementById('toggle-words-phrases')?.checked !== false;
-  const showRecipes = document.getElementById('toggle-recipes')?.checked !== false;
 
   // Build row grids cells for rows container
   const ensureRowCells = (rowId) => {
@@ -562,40 +587,68 @@ async function loadWeek(year, weekNumber) {
     return cells;
   };
 
+  const blogCells = ensureRowCells('blog-row');
   const annualEventsCells = ensureRowCells('annual-events-row');
   const specialEventsCells = ensureRowCells('special-events-row');
-  const ideasCells = ensureRowCells('ideas-row');
   const syndicationCells = ensureRowCells('syndication-row');
-  const profilesCells = ensureRowCells('profiles-row');
   const wordsPhrasesCells = ensureRowCells('words-phrases-row');
-  const recipesCells = ensureRowCells('recipes-row');
 
   // Load themes from schedule (themes scheduled for this week)
+  // NEW SYSTEM: Uses cyclic position-based logic (same as scheduling calendar)
+  // DEPRECATED: Old week_number-based theme lookup is no longer used
   const themes = [];
   const scheduledThemeIds = new Set();
   
+  // Get scheduleData from window (set earlier in loadWeek)
+  const scheduleData = window.currentScheduleData || {};
+  
+  // Check for selected_theme_id at top level (from new cyclic system)
+  if (scheduleData && scheduleData.selected_theme_id) {
+    const themeId = scheduleData.selected_theme_id;
+    if (!scheduledThemeIds.has(themeId)) {
+      scheduledThemeIds.add(themeId);
+      // Find the theme entry in schedule array to get title
+      const themeEntry = schedule && Array.isArray(schedule) 
+        ? schedule.find(s => (s.theme_id === themeId || s.selected_theme_id === themeId) && s.type === 'theme_selection')
+        : null;
+      
+      themes.push({
+        id: themeId,
+        theme_title: themeEntry?.theme_title || 'Theme',
+        theme_description: themeEntry?.theme_description,
+        _selected: true,
+        _fromSchedule: true,
+        _from_cyclic_system: true
+      });
+    }
+  }
+  
+  // Also check schedule array for theme_selection entries (new cyclic system format)
   if (schedule && Array.isArray(schedule)) {
     schedule.forEach(s => {
-      // Check if schedule entry has a theme (theme_id or theme_title from calendar_themes join)
-      if (s.theme_id || s.calendar_theme_id || s.theme_title) {
-        const themeId = s.theme_id || s.calendar_theme_id;
+      // Check if schedule entry has a theme (theme_id, selected_theme_id, or theme_title)
+      if (s.type === 'theme_selection' || s.theme_id || s.selected_theme_id || s.calendar_theme_id || s.theme_title) {
+        const themeId = s.theme_id || s.selected_theme_id || s.calendar_theme_id;
         if (themeId && !scheduledThemeIds.has(themeId)) {
           scheduledThemeIds.add(themeId);
           themes.push({
             id: themeId,
-            theme_title: s.theme_title || s.post_idea_seed || 'Unknown Theme',
+            theme_title: s.theme_title || 'Unknown Theme',
+            theme_description: s.theme_description,
             _selected: true,
-            _fromSchedule: true
+            _fromSchedule: true,
+            _from_cyclic_system: s._from_cyclic_system || false
           });
         }
       }
     });
   }
   
-  // Also fetch perpetual themes for this week from calendar_themes API
+  // DEPRECATED: Old themes/week API now uses cyclic system too
+  // Fetch theme for this week from themes API (now uses cyclic calculation)
   let perpetualThemesPromise = null;
   try {
-    perpetualThemesPromise = fetchJSON(`/planning/api/calendar/themes/week/${weekNumber}`);
+    perpetualThemesPromise = fetchJSON(`/planning/api/calendar/themes/week/${weekNumber}?year=${year}`);
   } catch (e) {
     console.warn('Themes API not available yet:', e);
   }
@@ -608,12 +661,14 @@ async function loadWeek(year, weekNumber) {
       perpetualThemes = Array.isArray(perpetualData) ? perpetualData : [];
       
       // Add perpetual themes that aren't already in scheduled themes
+      // Note: These now come from cyclic system, not week_number lookup
       perpetualThemes.forEach(pt => {
         if (!scheduledThemeIds.has(pt.id)) {
           themes.push({
             ...pt,
             _selected: false,
-            _fromSchedule: false
+            _fromSchedule: false,
+            _from_cyclic_system: pt._from_cyclic_system || false
           });
         }
       });
@@ -622,147 +677,31 @@ async function loadWeek(year, weekNumber) {
     }
   }
   
-  // Separate ideas by classification
-  const allIdeas = Array.isArray(ideas) ? ideas : [];
-  
-  // Filter to get one weekly_word and one weekly_phrase per week (separate from regular ideas)
-  const weeklyWords = allIdeas.filter(idea => idea.item_classification === 'weekly_word');
-  const weeklyPhrases = allIdeas.filter(idea => idea.item_classification === 'weekly_phrase');
-  const regularIdeas = allIdeas.filter(idea => 
-    !idea.item_classification || 
-    (idea.item_classification !== 'weekly_word' && idea.item_classification !== 'weekly_phrase')
-  );
-  
-  // Select the best weekly_word (prefer non-placeholder entries)
+  // Get weekly word, phrase, and insult from schedule (new cyclic system)
   let selectedWord = null;
-  if (weeklyWords.length > 0) {
-    // Prefer entries with actual content (not placeholders)
-    const nonPlaceholders = weeklyWords.filter(w => {
-      const title = (w.idea_title || '').toLowerCase();
-      const tags = w.tags || {};
-      const word = typeof tags === 'object' ? (tags.word || '') : '';
-      return !title.includes('word') || (word && word.length > 3 && !word.match(/^word\d+$/i));
-    });
-    
-    selectedWord = nonPlaceholders.length > 0 ? nonPlaceholders[0] : weeklyWords[0];
-  }
-  
-  // Select the best weekly_phrase (prefer non-placeholder entries)
   let selectedPhrase = null;
-  if (weeklyPhrases.length > 0) {
-    // Prefer entries with actual content (not placeholders)
-    const nonPlaceholders = weeklyPhrases.filter(p => {
-      const title = (p.idea_title || '').toLowerCase();
-      const tags = p.tags || {};
-      const phrase = typeof tags === 'object' ? (tags.phrase || '') : '';
-      return !title.includes('phrase') || (phrase && phrase.length > 3 && !phrase.match(/^phrase\d+$/i));
-    });
-    
-    selectedPhrase = nonPlaceholders.length > 0 ? nonPlaceholders[0] : weeklyPhrases[0];
-  }
+  let selectedInsult = null;
   
-  // Also include ideas scheduled for this specific week (year/week) from calendar_schedule
-  // These are ideas that were assigned to this week but may have a different perpetual week_number
   if (schedule && Array.isArray(schedule)) {
-    const scheduledIdeaIds = new Set();
-    regularIdeas.forEach(idea => scheduledIdeaIds.add(idea.id));
-    
-    // Fetch scheduled ideas synchronously
-    const scheduledIdeasPromises = schedule
-      .filter(s => s.idea_id && !scheduledIdeaIds.has(s.idea_id))
-      .map(s => fetchJSON(`/planning/api/calendar/ideas/${s.idea_id}`).catch(err => {
-        console.warn('Error loading scheduled idea:', err);
-        return null;
-      }));
-    
-    if (scheduledIdeasPromises.length > 0) {
-      const scheduledIdeasResults = await Promise.allSettled(scheduledIdeasPromises);
-      scheduledIdeasResults.forEach((result, idx) => {
-        if (result.status === 'fulfilled' && result.value) {
-          const scheduledIdea = result.value.idea || result.value;
-          if (scheduledIdea && !regularIdeas.find(idea => idea.id === scheduledIdea.id)) {
-            regularIdeas.push(scheduledIdea);
-          }
-        }
-      });
-    }
+    selectedWord = schedule.find(s => s.type === 'weekly_word') || null;
+    selectedPhrase = schedule.find(s => s.type === 'weekly_phrase') || null;
+    selectedInsult = schedule.find(s => s.type === 'weekly_insult') || null;
   }
 
   // Toggle row visibility based on filters
-  const themesSections = document.querySelectorAll('[data-filter="themes"]');
+  const blogSections = document.querySelectorAll('[data-filter="blog"]');
   const annualEventsSections = document.querySelectorAll('[data-filter="annual-events"]');
   const specialEventsSections = document.querySelectorAll('[data-filter="special-events"]');
-  const ideasSections = document.querySelectorAll('[data-filter="ideas"]');
   const syndicationSections = document.querySelectorAll('[data-filter="syndication"]');
-  const profilesSections = document.querySelectorAll('[data-filter="profiles"]');
   const wordsPhrasesSections = document.querySelectorAll('[data-filter="words-phrases"]');
-  const recipesSections = document.querySelectorAll('[data-filter="recipes"]');
   
-  themesSections.forEach(section => section.classList.toggle('hidden', !showThemes));
+  blogSections.forEach(section => section.classList.toggle('hidden', !showBlog));
   annualEventsSections.forEach(section => section.classList.toggle('hidden', !showAnnualEvents));
   specialEventsSections.forEach(section => section.classList.toggle('hidden', !showSpecialEvents));
-  ideasSections.forEach(section => section.classList.toggle('hidden', !showIdeas));
   syndicationSections.forEach(section => section.classList.toggle('hidden', !showSyndication));
-  profilesSections.forEach(section => section.classList.toggle('hidden', !showProfiles));
   wordsPhrasesSections.forEach(section => section.classList.toggle('hidden', !showWordsPhrases));
-  recipesSections.forEach(section => section.classList.toggle('hidden', !showRecipes));
 
-  // Render Themes as week-wide themes: single row spanning the week
-  const weekThemesContainer = document.getElementById('week-themes');
-  if (weekThemesContainer) {
-    weekThemesContainer.innerHTML = '';
-    if (showThemes && themes.length) {
-      themes.forEach(theme => {
-        const div = document.createElement('div');
-        div.className = `item idea ${theme._selected ? 'selected' : ''}`;
-        div.textContent = theme.theme_title || theme.idea_title || 'Unknown Theme';
-        if (theme.id) {
-          div.dataset.themeId = theme.id;
-          div.title = 'Click to edit theme';
-          div.style.cursor = 'pointer';
-          
-          // Add click handler to open theme in modal
-          div.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
-            if (ideaModal) {
-              // Fetch theme data and open in modal
-              try {
-                const response = await fetch(`/planning/api/calendar/themes/${theme.id}`);
-                if (response.ok) {
-                  const data = await response.json();
-                  if (data.success && data.theme) {
-                    // Open modal with theme data, marking it as a theme
-                    ideaModal.openTheme(theme.id, data.theme);
-                  } else {
-                    console.error('Failed to load theme data');
-                  }
-                } else {
-                  console.error('Error fetching theme:', response.status);
-                }
-              } catch (error) {
-                console.error('Error loading theme:', error);
-                alert('Error loading theme: ' + error.message);
-              }
-            }
-          });
-        }
-        weekThemesContainer.appendChild(div);
-      });
-    }
-  }
-
-  // Render regular ideas per day into Ideas row
-  if (showIdeas && ideasCells && regularIdeas.length) {
-    regularIdeas.forEach((idea) => {
-      // Ideas are assigned to a specific weekday (default to Monday if not set)
-      const dayIdx = idea.weekday || idea.day || 1; // 1..7
-      const target = document.getElementById(`ideas-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-      if (target) renderItems(target, [idea], 'idea');
-    });
-  }
+  // Ideas row removed - no longer rendering regular ideas
 
   // Split events into annual and special based on event_recurrence_type
   const annualEvents = [];
@@ -898,63 +837,96 @@ async function loadWeek(year, weekNumber) {
     });
   }
   
-  // Render profiles per day into Profiles row
-  if (showProfiles && profilesCells && profiles.length) {
-    profiles.forEach((profile) => {
-      // Profiles are assigned to a specific weekday (default to Monday if not set)
-      const dayIdx = profile.weekday || profile.day || 1; // 1..7
-      const target = document.getElementById(`profiles-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+  // Render weekly words/phrases/insults into Words & Phrases row
+  if (showWordsPhrases && wordsPhrasesCells) {
+    // Word on Monday (day 1)
+    if (selectedWord) {
+      const wordTarget = document.getElementById('words-phrases-row-day-1');
+      if (wordTarget) {
+        // Pass item as-is; renderItems will add "Word: " prefix and show description
+        renderItems(wordTarget, [selectedWord], 'weekly-word');
+      }
+    }
+    // Phrase on Wednesday (day 3)
+    if (selectedPhrase) {
+      const phraseTarget = document.getElementById('words-phrases-row-day-3');
+      if (phraseTarget) {
+        // Pass item as-is; renderItems will add "Phrase: " prefix and show description
+        renderItems(phraseTarget, [selectedPhrase], 'weekly-phrase');
+      }
+    }
+    // Insult on Friday (day 5)
+    if (selectedInsult) {
+      const insultTarget = document.getElementById('words-phrases-row-day-5');
+      if (insultTarget) {
+        // Pass item as-is; renderItems will add "Insult: " prefix and show description
+        renderItems(insultTarget, [selectedInsult], 'weekly-insult');
+      }
+    }
+  }
+  
+  // Render consolidated Blog row: Theme (Mon), Recipe (Wed), Surname profile (Fri), Product profile (Sat)
+  if (showBlog && blogCells) {
+    // Theme for Monday
+    const themeEntry = themes[0];
+    if (themeEntry) {
+      const target = document.getElementById('blog-row-day-1');
       if (target) {
-        // Create profile item with click handler
+        const themeItem = {
+          id: themeEntry.id,
+          title: themeEntry.theme_title || 'Theme',
+          _theme: true
+        };
+        renderItems(target, [themeItem], 'theme');
+      }
+    }
+
+    // Recipe for Wednesday
+    const scheduleRecipe = schedule.find(s => s.type === 'recipe' || s.recipe_id || s.recipe_title) || recipes[0];
+    if (scheduleRecipe) {
+      const target = document.getElementById('blog-row-day-3');
+      if (target) {
+        const recipeItem = {
+          id: scheduleRecipe.id || scheduleRecipe.recipe_id,
+          title: scheduleRecipe.recipe_title || scheduleRecipe.title || 'Recipe',
+          recipe_week_number: scheduleRecipe.recipe_week_number,
+          _recipe: true,
+          _definition: scheduleRecipe._definition || false,
+          _scheduled: scheduleRecipe._scheduled || false
+        };
+        renderItems(target, [recipeItem], 'recipe');
+      }
+    }
+
+    // Surname profile for Friday
+    const surnameProfile = schedule.find(s => (s.type === 'post' && s.profile_type === 'surname')) || profiles.find(p => (p.profile_type === 'surname'));
+    if (surnameProfile) {
+      const target = document.getElementById('blog-row-day-5');
+      if (target) {
         const profileItem = {
-          id: profile.id,
-          title: profile.title,
-          profile_type: profile.profile_type || 'product',
+          id: surnameProfile.id || surnameProfile.post_id,
+          title: surnameProfile.title || surnameProfile.post_title || 'Surname Profile',
+          profile_type: 'surname',
           _profile: true
         };
         renderItems(target, [profileItem], 'profile');
       }
-    });
-  }
-  
-  // Render weekly words and phrases per day into Words & Phrases row
-  if (showWordsPhrases && wordsPhrasesCells) {
-    // Render word on Monday (day 1)
-    if (selectedWord) {
-      const wordTarget = document.getElementById('words-phrases-row-day-1');
-      if (wordTarget) {
-        renderItems(wordTarget, [selectedWord], 'weekly-word');
-      }
     }
-    
-    // Render phrase on Tuesday (day 2)
-    if (selectedPhrase) {
-      const phraseTarget = document.getElementById('words-phrases-row-day-2');
-      if (phraseTarget) {
-        renderItems(phraseTarget, [selectedPhrase], 'weekly-phrase');
-      }
-    }
-  }
-  
-  // Render recipes per day into Recipes row
-  if (showRecipes && recipesCells && recipes.length) {
-    recipes.forEach((recipe) => {
-      // Recipes are assigned to a specific weekday (default to Monday if not set)
-      const dayIdx = recipe.weekday || recipe.day || 1; // 1..7
-      const target = document.getElementById(`recipes-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
+
+    // Product profile for Saturday
+    const productProfile = schedule.find(s => (s.type === 'post' && s.profile_type === 'product')) || profiles.find(p => (p.profile_type === 'product'));
+    if (productProfile) {
+      const target = document.getElementById('blog-row-day-6');
       if (target) {
-        // Create recipe item - preserve all flags from API response
-        const recipeItem = {
-          id: recipe.id,
-          title: recipe.title,
-          recipe_week_number: recipe.recipe_week_number,
-          _recipe: true,
-          _definition: recipe._definition || false,
-          _scheduled: recipe._scheduled || false
+        const profileItem = {
+          id: productProfile.id || productProfile.post_id,
+          title: productProfile.title || productProfile.post_title || 'Product Profile',
+          profile_type: 'product',
+          _profile: true
         };
-        renderItems(target, [recipeItem], 'recipe');
+        renderItems(target, [profileItem], 'profile');
       }
-    });
+    }
   }
   
   // Render social focuses under day headers
@@ -1248,25 +1220,19 @@ async function loadWeek(year, weekNumber) {
       loadWeek(currentYear, currentWeek);
     });
   };
-      attach('toggle-themes');
-      attach('toggle-ideas');
+      attach('toggle-blog');
       attach('toggle-annual-events');
       attach('toggle-special-events');
       attach('toggle-syndication');
-      attach('toggle-profiles');
       attach('toggle-words-phrases');
-      attach('toggle-recipes');
 
   function updateFilterVisuals() {
     const map = [
-      { id: 'toggle-themes', cls: 'filter-themes' },
-      { id: 'toggle-ideas', cls: 'filter-ideas' },
+      { id: 'toggle-blog', cls: 'filter-blog' },
       { id: 'toggle-annual-events', cls: 'filter-annual-events' },
       { id: 'toggle-special-events', cls: 'filter-special-events' },
       { id: 'toggle-syndication', cls: 'filter-syndication' },
-      { id: 'toggle-profiles', cls: 'filter-profiles' },
       { id: 'toggle-words-phrases', cls: 'filter-words-phrases' },
-      { id: 'toggle-recipes', cls: 'filter-recipes' },
     ];
     map.forEach(({ id, cls }) => {
       const input = document.getElementById(id);

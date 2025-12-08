@@ -510,14 +510,46 @@ class BlogPipelineHeader {
                         const resp = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
                         if (resp.ok) {
                             const data = await resp.json();
-                            if (data.schedule && Array.isArray(data.schedule) && data.schedule.length > 0) {
+                            
+                            // NEW SYSTEM: Check for selected_theme_id at top level (from cyclic system)
+                            if (data.selected_theme_id) {
+                                // Find theme entry in schedule array to get title
+                                const themeEntry = data.schedule && Array.isArray(data.schedule)
+                                    ? data.schedule.find(s => (s.type === 'theme_selection' || s.theme_id === data.selected_theme_id || s.selected_theme_id === data.selected_theme_id))
+                                    : null;
+                                
+                                if (themeEntry && themeEntry.theme_title) {
+                                    selectedTheme = themeEntry.theme_title;
+                                } else {
+                                    // Fallback: fetch theme by ID
+                                    try {
+                                        const themeResp = await fetch(`/planning/api/calendar/themes/${data.selected_theme_id}`);
+                                        if (themeResp.ok) {
+                                            const themeData = await themeResp.json();
+                                            const theme = themeData.theme || themeData;
+                                            if (theme && theme.theme_title) {
+                                                selectedTheme = theme.theme_title;
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.warn('[Blog Pipeline Header] Error fetching theme:', e);
+                                    }
+                                }
+                            } else if (data.schedule && Array.isArray(data.schedule) && data.schedule.length > 0) {
+                                // Fallback: Check schedule array for theme_selection entries
                                 // CRITICAL: Only check for theme_id - NEVER use idea_id as theme
-                                const scheduleWithTheme = data.schedule.find(s => s.theme_id || s.calendar_theme_id || s.theme_title);
-                                if (scheduleWithTheme && (scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id)) {
+                                const scheduleWithTheme = data.schedule.find(s => 
+                                    s.type === 'theme_selection' || 
+                                    s.theme_id || 
+                                    s.selected_theme_id || 
+                                    s.calendar_theme_id || 
+                                    s.theme_title
+                                );
+                                if (scheduleWithTheme && (scheduleWithTheme.theme_id || scheduleWithTheme.selected_theme_id || scheduleWithTheme.calendar_theme_id)) {
                                     if (scheduleWithTheme.theme_title) {
                                         selectedTheme = scheduleWithTheme.theme_title;
                                     } else {
-                                        const themeId = scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id;
+                                        const themeId = scheduleWithTheme.theme_id || scheduleWithTheme.selected_theme_id || scheduleWithTheme.calendar_theme_id;
                                         try {
                                             const themeResp = await fetch(`/planning/api/calendar/themes/${themeId}`);
                                             if (themeResp.ok) {
