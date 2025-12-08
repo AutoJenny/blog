@@ -4,5 +4,8 @@ __pycache__/
 *.env
 backups/*.tar.gz
 backups/*.sql
+blog_backup_*.sql
+blog-core/blog_backup_*.sql
+blog-core/blog_test_backup_*.sql
 *.log
 *.safetensors

@@ -1,2 +1,0 @@
--- Database backup attempted at 2025-09-24 21:12:58.593345
--- Error: [Errno 2] No such file or directory: 'pg_dump'
