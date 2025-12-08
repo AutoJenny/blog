@@ -3,5 +3,6 @@ __pycache__/
 *.pyc
 *.env
 backups/*.tar.gz
+backups/*.sql
 *.log
 *.safetensors
