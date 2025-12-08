@@ -234,6 +234,8 @@ def api_calendar_ideas(week_number):
     return ideas_api_func(week_number)
 
 @bp.route('/api/calendar/themes/week/<int:week_number>', methods=['GET'])
+# DEPRECATED: This function uses old week_number-based theme lookup
+# NEW SYSTEM: Use /planning/api/calendar/themes/week/<week_number> which now uses cyclic system
 def api_calendar_themes(week_number):
     """Get perpetual themes for a specific week number"""
     return themes_api_func(week_number)

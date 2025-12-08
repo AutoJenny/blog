@@ -52,23 +52,11 @@
         </div>
 
         <div class="week-filters week-filters-v2">
-            <span class="filter-group-label-inline">Week:</span>
-            <label class="filter-pill-v2 filter-themes active" title="Week-defining themes">
-                <input type="checkbox" id="toggle-themes" checked>
-                <i class="fas fa-star"></i>
-                <span>Themes</span>
-            </label>
-            <span class="filter-separator">|</span>
             <span class="filter-group-label-inline">Blog:</span>
-            <label class="filter-pill-v2 filter-recipes active" title="Recipe blog posts">
-                <input type="checkbox" id="toggle-recipes" checked>
-                <i class="fas fa-utensils"></i>
-                <span>Recipes</span>
-            </label>
-            <label class="filter-pill-v2 filter-profiles active" title="Profile blog posts">
-                <input type="checkbox" id="toggle-profiles" checked>
-                <i class="fas fa-user"></i>
-                <span>Profiles</span>
+            <label class="filter-pill-v2 filter-blog active" title="Blog entries (theme, recipe, surname, product)">
+                <input type="checkbox" id="toggle-blog" checked>
+                <i class="fas fa-newspaper"></i>
+                <span>Blog entries</span>
             </label>
             <span class="filter-separator">|</span>
             <span class="filter-group-label-inline">Support:</span>
@@ -82,11 +70,6 @@
                 <i class="fas fa-calendar-check"></i>
                 <span>Special</span>
             </label>
-            <label class="filter-pill-v2 filter-ideas active" title="Content ideas">
-                <input type="checkbox" id="toggle-ideas" checked>
-                <i class="fas fa-lightbulb"></i>
-                <span>Ideas</span>
-            </label>
             <label class="filter-pill-v2 filter-words-phrases active" title="Weekly words and phrases">
                 <input type="checkbox" id="toggle-words-phrases" checked>
                 <i class="fas fa-book"></i>
@@ -99,29 +82,6 @@
                 <i class="fas fa-share-alt"></i>
                 <span>Syndication</span>
             </label>
-        </div>
-
-        <!-- Themes row (full-width, above day headers) -->
-        <div class="themes-section-v2" data-filter="themes" style="margin-bottom: 1.5rem;">
-            <div class="section-divider">
-                <span class="section-label">Week Definition</span>
-            </div>
-            <div class="row-header row-header-v2" data-type="theme" style="background: rgba(249, 115, 22, 0.15); border-left-color: #f97316;">
-                <span class="row-header-content">
-                    <i class="fas fa-star row-header-icon"></i>
-                    <span class="row-header-text">Themes</span>
-                </span>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <a href="#" id="week-themes-create-link" class="btn btn-primary" style="font-size: 0.875rem; padding: 6px 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Create Post</span>
-                    </a>
-                    <button class="row-add-btn" onclick="(() => { const w = parseInt(document.getElementById('week-number')?.textContent); getIdeaModal().openNew('theme', w || null); })()" title="Add New Theme">
-                        <i class="fas fa-plus"></i> Add New
-                    </button>
-                </div>
-            </div>
-            <div class="week-themes" id="week-themes"></div>
         </div>
 
         <div class="week-grid week-grid-headers">
@@ -160,32 +120,32 @@
             <!-- Section: Blog Posts -->
             <div class="content-section" data-section="blog-posts">
                 <div class="section-divider">
-                    <span class="section-label">Blog Posts</span>
+                    <span class="section-label">Blog Entries</span>
                 </div>
-                
-                <!-- Recipes row: header + 7 aligned cells -->
-                <div class="row-section" data-filter="recipes">
-                    <div class="row-header row-header-v2" data-type="recipe">
+                <div class="row-section" data-filter="blog">
+                    <div class="row-header row-header-v2" data-type="blog">
                         <span class="row-header-content">
-                            <i class="fas fa-utensils row-header-icon"></i>
-                            <span class="row-header-text">Recipes</span>
+                            <i class="fas fa-newspaper row-header-icon"></i>
+                            <span class="row-header-text">Blog Entries</span>
                         </span>
                     </div>
-                    <div class="row-grid" id="recipes-row"></div>
+                    <div class="row-grid" id="blog-row"></div>
                 </div>
+            </div>
 
-                <!-- Profiles row: header + 7 aligned cells -->
-                <div class="row-section" data-filter="profiles">
-                    <div class="row-header row-header-v2" data-type="profile">
+            <!-- Section: Words & Phrases -->
+            <div class="content-section" data-section="words-phrases">
+                <div class="section-divider">
+                    <span class="section-label">Words & Phrases</span>
+                </div>
+                <div class="row-section" data-filter="words-phrases">
+                    <div class="row-header row-header-v2" data-type="words-phrases">
                         <span class="row-header-content">
-                            <i class="fas fa-user row-header-icon"></i>
-                            <span class="row-header-text">Profiles</span>
+                            <i class="fas fa-book row-header-icon"></i>
+                            <span class="row-header-text">Words & Phrases</span>
                         </span>
-                        <button class="row-add-btn" onclick="getProfileModal().openNew()" title="Add New Profile">
-                            <i class="fas fa-plus"></i> Add New
-                        </button>
                     </div>
-                    <div class="row-grid" id="profiles-row"></div>
+                    <div class="row-grid" id="words-phrases-row"></div>
                 </div>
             </div>
 
@@ -218,31 +178,6 @@
                         </span>
                     </div>
                     <div class="row-grid" id="special-events-row"></div>
-                </div>
-
-                <!-- Ideas row: header + 7 aligned cells -->
-                <div class="row-section" data-filter="ideas">
-                    <div class="row-header row-header-v2" data-type="idea">
-                        <span class="row-header-content">
-                            <i class="fas fa-lightbulb row-header-icon"></i>
-                            <span class="row-header-text">Ideas</span>
-                        </span>
-                        <button class="row-add-btn" onclick="(() => { const w = parseInt(document.getElementById('week-number')?.textContent); getIdeaModal().openNew('idea', w || null); })()" title="Add New Idea">
-                            <i class="fas fa-plus"></i> Add New
-                        </button>
-                    </div>
-                    <div class="row-grid" id="ideas-row"></div>
-                </div>
-
-                <!-- Weekly Words & Phrases row: header + 7 aligned cells -->
-                <div class="row-section" data-filter="words-phrases">
-                    <div class="row-header row-header-v2" data-type="words-phrases">
-                        <span class="row-header-content">
-                            <i class="fas fa-book row-header-icon"></i>
-                            <span class="row-header-text">Words & Phrases</span>
-                        </span>
-                    </div>
-                    <div class="row-grid" id="words-phrases-row"></div>
                 </div>
             </div>
 
@@ -277,9 +212,6 @@
                     </span>
                     <span class="legend-item legend-item-v2 profile" title="Profile blog posts">
                         <i class="fas fa-user"></i> Profile
-                    </span>
-                    <span class="legend-item legend-item-v2 idea" title="Content ideas">
-                        <i class="fas fa-lightbulb"></i> Idea
                     </span>
                     <span class="legend-item legend-item-v2 event annual" title="Recurring annual events">
                         <i class="fas fa-calendar-alt"></i> Annual Event
@@ -381,6 +313,9 @@
 /* Themes: bright orange when active, darker orange when inactive */
 .filter-pill-v2.filter-themes { background:#7c2d12; border-color:#9a3412; color:#fff; }
 .filter-pill-v2.filter-themes.active { background:#f97316; border-color:#ea580c; color:#0f172a; font-weight: 600; }
+/* Blog entries */
+.filter-pill-v2.filter-blog { background:#0ea5e9; border-color:#38bdf8; color:#0f172a; }
+.filter-pill-v2.filter-blog.active { background:#38bdf8; border-color:#0ea5e9; color:#0f172a; font-weight: 600; }
 /* Ideas: purple background */
 .filter-pill-v2.filter-ideas { background:#6d28d9; border-color:#7c3aed; color:#fff; }
 .filter-pill-v2.filter-ideas.active { background:#8b5cf6; border-color:#a78bfa; color:#fff; }
@@ -784,29 +719,7 @@ function escapeHtml(text) {
             }
         });
         
-        // Make ideas in the ideas-row clickable - open in modal (for ideas in the ideas-row, not themes)
-        document.addEventListener('click', (e) => {
-            const ideaItem = e.target.closest('#ideas-row .item.idea');
-            if (ideaItem) {
-                if (ideaItem.dataset.ideaId) {
-                    // Existing idea with ID - open for editing
-                    const ideaId = parseInt(ideaItem.dataset.ideaId);
-                    console.log('Opening idea modal for ID:', ideaId);
-                    ideaModal.open(ideaId);
-                } else {
-                    // Legacy idea without ID - create new with this title
-                    const title = ideaItem.textContent.trim();
-                    const weekNumber = parseInt(document.getElementById('week-number')?.textContent || '44');
-                    console.log('Opening new idea modal for legacy idea:', title, 'week:', weekNumber);
-                    ideaModal.openNew('idea', weekNumber);
-                    // Pre-fill the title if possible
-                    setTimeout(() => {
-                        const titleInput = document.getElementById('idea-title');
-                        if (titleInput) titleInput.value = title;
-                    }, 100);
-                }
-            }
-        });
+        // Ideas row removed - no longer needed
         
         // Listen for idea-saved event to refresh calendar
         window.addEventListener('idea-saved', () => {
@@ -823,5 +736,6 @@ function escapeHtml(text) {
 </script>
 
 {% endblock %}
+
 
 

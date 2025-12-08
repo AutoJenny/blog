@@ -1,10 +1,18 @@
 """
 Calendar Themes API
-Themes are completely separate from ideas - they are week-wide concepts
+
+DEPRECATED: The old week_number-based theme system is deprecated.
+NEW SYSTEM: Themes now use cyclic position-based logic.
+
+This API has been updated to use the new cyclic system for consistency
+with the scheduling calendar. The week_number parameter is now used
+to calculate which theme appears via cyclic logic, not direct lookup.
 """
 
 from flask import Blueprint, jsonify, request
 from config.database import db_manager
+from utils.calendar_resolver import resolve_item_for_week
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,34 +21,49 @@ bp = Blueprint('planning_api_themes', __name__)
 
 @bp.route('/api/calendar/themes/week/<int:week_number>')
 def api_calendar_themes(week_number):
-    """Get perpetual themes for a specific week number"""
+    """
+    Get theme for a specific week number using NEW cyclic system.
+    
+    DEPRECATED: Old system queried calendar_themes WHERE week_number = X
+    NEW SYSTEM: Uses cyclic position logic to determine which theme appears
+    
+    Returns the theme that appears in this week based on cyclic calculation,
+    matching what the scheduling calendar shows.
+    """
     try:
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT ct.id, ct.week_number, ct.theme_title, ct.theme_description,
-                       ct.seasonal_context, ct.priority, ct.tags,
-                       ct.is_recurring, ct.can_span_weeks, ct.max_weeks,
-                       ct.is_evergreen, ct.evergreen_frequency, ct.last_used_date,
-                       ct.usage_count, ct.evergreen_notes, ct.sources, ct.important_notes,
-                       ct.created_at, ct.updated_at,
-                       '[]'::json as categories
-                FROM calendar_themes ct
-                WHERE ct.week_number = %s
-                ORDER BY 
-                    CASE ct.priority 
-                        WHEN 'mandatory' THEN 1 
-                        WHEN 'random' THEN 2 
-                        ELSE 3 
-                    END,
-                    ct.id
-            """, (week_number,))
-            
-            themes = cursor.fetchall()
+        # Get current year (or use request parameter if provided)
+        year = request.args.get('year', type=int)
+        if not year:
+            year = datetime.utcnow().isocalendar()[0]
+        
+        # Use new cyclic system to get theme for this week
+        theme = resolve_item_for_week("theme", year, week_number)
+        
+        if theme:
+            # Format response to match old API structure for backward compatibility
+            theme_data = {
+                'id': theme.get('id'),
+                'week_number': week_number,  # Keep for backward compatibility
+                'theme_title': theme.get('theme_title'),
+                'theme_description': theme.get('theme_description'),
+                'position': theme.get('position'),
+                '_from_cyclic_system': True,
+                '_override': theme.get('_override', False)
+            }
             
             return jsonify({
                 'success': True,
                 'week_number': week_number,
-                'themes': themes
+                'themes': [theme_data],  # Return as array for backward compatibility
+                '_deprecated_note': 'This endpoint now uses cyclic system. week_number parameter is used for cyclic calculation, not direct lookup.'
+            })
+        else:
+            # No theme found via cyclic system
+            return jsonify({
+                'success': True,
+                'week_number': week_number,
+                'themes': [],
+                '_deprecated_note': 'This endpoint now uses cyclic system. week_number parameter is used for cyclic calculation, not direct lookup.'
             })
             
     except Exception as e:
