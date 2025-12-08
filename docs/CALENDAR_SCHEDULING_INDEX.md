@@ -57,13 +57,16 @@ Quick reference guide to all calendar scheduling documentation.
 
 ### Key Files
 - **Configuration**: `config/calendar_settings.py` - Centralized configuration
-- **JSON Files**: `data/calendar/schedule/{category}_{year}.json`
+- **JSON Files**: `data/calendar/schedule/{category}/{year}.json` (directory layout)
 - **Display API**: `blueprints/planning_api_calendar_scheduling_cache.py`
+- **Week View API**: `blueprints/planning_api_calendar_schedule.py` - Uses cyclic resolver
 - **Builder Module**: `utils/calendar_schedule_builder.py`
 - **Builder Script**: `scripts/build_calendar_schedules.py`
 - **List Management**: `blueprints/planning_api_calendar_cyclic.py`
-- **Override API**: `blueprints/planning_api_calendar_overrides.py`
-- **Frontend**: `templates/planning/calendar/scheduling.html`
+- **Override API**: `blueprints/planning_api_calendar_overrides.py` (Permanent Sequence Model - no overrides)
+- **Resolver**: `utils/calendar_resolver.py` - Cyclic item resolution
+- **Frontend Scheduling**: `templates/planning/calendar/scheduling.html`
+- **Frontend Week View**: `templates/planning/calendar/week_view.html`
 
 ### Key Concepts
 - **5 Layers**: Database → Logic → JSON Storage → API → Frontend
@@ -72,8 +75,17 @@ Quick reference guide to all calendar scheduling documentation.
 - **12-Month Window**: UI shows rolling 12 months from today
 
 ### Implementation Status
-- **Phase 1 (Current)**: Display layer - fast page loads with JSON files
-- **Phase 2 (Future)**: Modification layer - reassignments, overrides, drag-and-drop
+- **Phase 1 (Complete)**: Display layer - fast page loads with JSON files
+- **Phase 2 (Complete)**: Modification layer - drag-and-drop, modals, list management
+- **Week View Integration (Complete)**: Week-view page aligned with scheduling calendar
+- **Modal Functionality (Complete)**: Themes, recipes, profiles all open in modals
+- **Categories (Complete)**: All 7 categories implemented (theme, recipe, profile_product, profile_surname, weekly_word, weekly_phrase, weekly_insult)
+
+### Recent Updates
+- **Weekly Insult**: Added as 7th category alongside weekly_word and weekly_phrase
+- **Week View**: Integrated with new cyclic calendar system, deprecating old week-specific assignments
+- **Modals**: Fixed modal functionality for all blog entry types (themes, recipes, surnames, products)
+- **Product Selection**: Refined algorithm for balanced category diversity
 
 ---
 

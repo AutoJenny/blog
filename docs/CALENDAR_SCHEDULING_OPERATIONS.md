@@ -26,8 +26,9 @@ The calendar scheduling system uses pre-computed JSON files to serve fast displa
    - Example: After reordering themes, rebuild `theme_2025.json` and `theme_2026.json`
 
 2. **After Override Changes**
-   - Automatically handled by override endpoints (synchronous rebuild)
-   - No manual action needed
+   - System uses Permanent Sequence Model (no overrides currently)
+   - All changes go through base list management APIs
+   - JSON rebuilds are automatic after list changes
 
 3. **Proactive Year Generation**
    - Generate next year's JSON in December (before it's needed)
@@ -106,7 +107,7 @@ python scripts/build_calendar_schedules.py --year 2025
 
 1. **Missing Files**
    - Check for missing `{category}_{year}.json` files
-   - Script: `find data/calendar/schedule -name "*.json" | wc -l` (should be 6 categories × N years)
+   - Script: `find data/calendar/schedule -name "*.json" | wc -l` (should be 7 categories × N years)
 
 2. **Outdated `generated_at` Timestamps**
    - JSON files include `generated_at` field
@@ -128,7 +129,7 @@ python scripts/build_calendar_schedules.py --year 2025
 # check_stale_json.sh
 
 YEAR=$(date +%Y)
-CATEGORIES=("theme" "recipe" "profile_product" "profile_surname" "weekly_word" "weekly_phrase")
+CATEGORIES=("theme" "recipe" "profile_product" "profile_surname" "weekly_word" "weekly_phrase" "weekly_insult")
 
 for category in "${CATEGORIES[@]}"; do
     file="data/calendar/schedule/${category}_${YEAR}.json"
@@ -316,7 +317,7 @@ psql your_database -c "SELECT year, COUNT(*) FROM calendar_week_overrides GROUP 
 ### JSON File Size
 
 - Typical file size: 5-20 KB per category/year
-- 6 categories × 3 years = ~18 files = ~180-360 KB total
+- 7 categories × 3 years = ~21 files = ~210-420 KB total
 - Negligible memory footprint
 
 ### Builder Performance
