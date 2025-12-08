@@ -107,8 +107,12 @@ class ProfileModal {
     switchType(type) {
         this.currentType = type;
         
-        // Update radio buttons
-        document.getElementById(`profile-type-${type}`).checked = true;
+        // Update radio buttons - map 'surname' to 'category' since HTML only has product/category
+        const mappedType = type === 'surname' ? 'category' : type;
+        const radioButton = document.getElementById(`profile-type-${mappedType}`);
+        if (radioButton) {
+            radioButton.checked = true;
+        }
         
         // Show/hide sections
         const productSection = document.getElementById('product-selection-section');
@@ -330,7 +334,9 @@ class ProfileModal {
             
             if (data.success && data.profile) {
                 const profile = data.profile;
-                this.currentType = profile.profile_type || 'product';
+                // Map 'surname' to 'category' for the modal UI
+                const modalType = profile.profile_type === 'surname' ? 'category' : (profile.profile_type || 'product');
+                this.currentType = modalType;
                 
                 // Populate form
                 this.populateForm(profile);

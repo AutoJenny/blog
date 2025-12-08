@@ -125,7 +125,11 @@ function renderItems(container, items, type) {
       div.style.display = 'flex';
       div.style.alignItems = 'center';
       div.style.gap = '6px';
-      div.title = item.title || 'Theme';
+      div.style.cursor = 'pointer';
+      div.title = `Click to edit theme: ${item.title || 'Theme'}`;
+      if (item.id) {
+        div.dataset.themeId = item.id;
+      }
       // Icon
       const icon = document.createElement('i');
       icon.className = 'fas fa-star';
@@ -140,6 +144,16 @@ function renderItems(container, items, type) {
       text.style.textOverflow = 'ellipsis';
       text.style.whiteSpace = 'nowrap';
       div.appendChild(text);
+      
+      // Add click handler to open theme modal
+      if (item.id) {
+        div.addEventListener('click', () => {
+          const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+          if (ideaModal) {
+            ideaModal.openTheme(item.id);
+          }
+        });
+      }
     } else if (type === 'profile' && item._profile) {
       // Profile display: Icon + Title
       div.classList.add('profile');
@@ -168,14 +182,19 @@ function renderItems(container, items, type) {
       div.appendChild(text);
       
       // Add click handler to open profile editor
-      div.addEventListener('click', () => {
-        const profileModal = window.getProfileModal ? window.getProfileModal() : null;
-        if (profileModal && item.id) {
-          profileModal.open(item.id);
-        } else {
-          // Fallback: navigate to profile page
-          const profileUrl = `/planning/posts/${item.id}/profile`;
-          window.location.href = profileUrl;
+      div.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const profileId = item.post_id || item.id; // Use post_id as primary ID for profiles
+        if (profileId) {
+          const profileModal = window.getProfileModal ? window.getProfileModal() : null;
+          if (profileModal) {
+            profileModal.open(profileId);
+          } else {
+            // Fallback: navigate to profile page
+            const profileUrl = `/planning/posts/${profileId}/profile`;
+            window.location.href = profileUrl;
+          }
         }
       });
     } else if (type === 'recipe' && item._recipe) {
@@ -187,7 +206,8 @@ function renderItems(container, items, type) {
       div.style.flexWrap = 'wrap';
       
       // Check if this is a definition (no post yet) or a scheduled post
-      if (item._definition) {
+      // Default to scheduled post if _definition is not explicitly true
+      if (item._definition === true) {
         // Recipe definition - show as available with create button
         div.style.cursor = 'default';
         div.title = `Recipe definition: ${item.title || 'Untitled'} (click to create post)`;
@@ -231,7 +251,13 @@ function renderItems(container, items, type) {
         
         createBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          await createRecipePostFromCalendar(item.recipe_week_number, createBtn);
+          // Use window function if available, otherwise navigate
+          if (typeof window.createRecipePostFromCalendar === 'function') {
+            await window.createRecipePostFromCalendar(item.recipe_week_number, createBtn);
+          } else {
+            // Fallback: navigate to recipes page
+            window.location.href = '/recipes';
+          }
         });
         
         div.appendChild(createBtn);
@@ -239,7 +265,7 @@ function renderItems(container, items, type) {
         // Scheduled recipe post - clickable
         div.style.cursor = 'pointer';
         div.title = `Click to view/edit recipe: ${item.title || 'Untitled'}`;
-        div.dataset.recipeId = item.id;
+        div.dataset.recipeId = item.id || item.recipe_id;
         
         // Create recipe icon (utensils icon)
         const icon = document.createElement('i');
@@ -257,12 +283,28 @@ function renderItems(container, items, type) {
         div.appendChild(text);
         
         // Add click handler for scheduled posts
-        if (item.id) {
-          div.addEventListener('click', () => {
-            const recipeUrl = `/planning/posts/${item.id}`;
-            window.location.href = recipeUrl;
-          });
-        }
+        // Recipes are in calendar_recipes table, not calendar_ideas
+        // If recipe has a post, navigate to it; otherwise navigate to recipes page
+        const recipeId = item.id || item.recipe_id;
+        const postId = item.post_id;
+        
+        // Always make recipe clickable, even if no ID (shouldn't happen but be defensive)
+        div.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          
+          if (postId) {
+            // Recipe has a post - navigate to it
+            window.location.href = `/planning/posts/${postId}`;
+          } else if (recipeId) {
+            // Recipe definition without post - navigate to recipes page
+            // Recipes are managed on the recipes page, not in the idea modal
+            window.location.href = `/recipes`;
+          } else {
+            // Fallback: just go to recipes page
+            window.location.href = `/recipes`;
+          }
+        });
       }
     } else if (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult') {
       // Weekly Word/Phrase/Insult display: Show as pill with title only (no description)
@@ -888,11 +930,13 @@ async function loadWeek(year, weekNumber) {
       if (target) {
         const recipeItem = {
           id: scheduleRecipe.id || scheduleRecipe.recipe_id,
+          recipe_id: scheduleRecipe.recipe_id || scheduleRecipe.id, // Ensure recipe_id is set
+          post_id: scheduleRecipe.post_id || null, // Include post_id if recipe has a post
           title: scheduleRecipe.recipe_title || scheduleRecipe.title || 'Recipe',
           recipe_week_number: scheduleRecipe.recipe_week_number,
           _recipe: true,
-          _definition: scheduleRecipe._definition || false,
-          _scheduled: scheduleRecipe._scheduled || false
+          _definition: false, // Recipes from schedule are never definitions - they're scheduled items
+          _scheduled: true
         };
         renderItems(target, [recipeItem], 'recipe');
       }
@@ -904,8 +948,9 @@ async function loadWeek(year, weekNumber) {
       const target = document.getElementById('blog-row-day-5');
       if (target) {
         const profileItem = {
-          id: surnameProfile.id || surnameProfile.post_id,
-          title: surnameProfile.title || surnameProfile.post_title || 'Surname Profile',
+          id: surnameProfile.post_id || surnameProfile.id, // Use post_id as primary ID for profiles
+          post_id: surnameProfile.post_id || surnameProfile.id, // Ensure post_id is set
+          title: surnameProfile.post_title || surnameProfile.title || 'Surname Profile',
           profile_type: 'surname',
           _profile: true
         };
@@ -919,8 +964,9 @@ async function loadWeek(year, weekNumber) {
       const target = document.getElementById('blog-row-day-6');
       if (target) {
         const profileItem = {
-          id: productProfile.id || productProfile.post_id,
-          title: productProfile.title || productProfile.post_title || 'Product Profile',
+          id: productProfile.post_id || productProfile.id, // Use post_id as primary ID for profiles
+          post_id: productProfile.post_id || productProfile.id, // Ensure post_id is set
+          title: productProfile.post_title || productProfile.title || 'Product Profile',
           profile_type: 'product',
           _profile: true
         };
@@ -1493,7 +1539,8 @@ function renderSocialFocuses(focuses) {
   }
   
   // Function to create recipe post from calendar view
-  async function createRecipePostFromCalendar(recipeWeekNumber, button) {
+  // Expose to window for access from renderItems
+  window.createRecipePostFromCalendar = async function(recipeWeekNumber, button) {
     if (!button) {
       // Try to find button from event target
       button = event?.target?.closest('.recipe-create-btn-small') || event?.target;
