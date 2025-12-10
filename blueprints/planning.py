@@ -71,8 +71,13 @@ def planning_concept(post_id):
 
 @bp.route('/posts/<int:post_id>/calendar')
 def planning_calendar(post_id):
-    """Planning calendar"""
-    return calendar_func(post_id)
+    """Planning calendar - DEPRECATED: Redirects to ideas page"""
+    from flask import redirect, url_for, request
+    # Get year/week from query params if provided
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    # Redirect to ideas page with same params
+    return redirect(url_for('planning.planning_calendar_ideas', post_id=post_id, year=year, week=week))
 
 @bp.route('/categories/manage')
 def categories_manage():

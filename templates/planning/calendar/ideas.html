@@ -18,10 +18,19 @@
     window.currentSubstage = 'ideas';
     
     // SINGLE SOURCE OF TRUTH: URL query parameters only
-    // If backend provided year/week but URL doesn't have them, update URL
+    // Always ensure WeekContext is set from URL or template variables
     {% if year and week_number %}
-    if (!window.location.search.includes('year=') || !window.location.search.includes('week=')) {
-        if (window.WeekContext) {
+    if (window.WeekContext) {
+        // Check if URL has year/week, if not use template values
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlYear = urlParams.get('year');
+        const urlWeek = urlParams.get('week');
+        if (urlYear && urlWeek) {
+            // URL has params, WeekContext.getWeekContext() will read them
+            // But ensure WeekContext is initialized
+            window.WeekContext.setWeekContext(parseInt(urlYear), parseInt(urlWeek));
+        } else {
+            // URL doesn't have params, use template values
             window.WeekContext.setWeekContext({{ year }}, {{ week_number }});
         }
     }
@@ -42,10 +51,6 @@
         </div>
         {% endif %}
         <div class="ideas-results">
-            <h3>Expanded Idea</h3>
-            <div id="current-idea-seed" class="idea-seed-display">
-                <!-- Current idea seed will appear here -->
-            </div>
             <!-- LLM Module with full prompt editing and results panel -->
             <div class="llm-module">
                 <!-- LLM Prompts Panel with full editing functionality -->
@@ -409,7 +414,7 @@
 let llmModule = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Set current stage for navigation
+    // Set current stage for navigation (Calendar stage deprecated, using Planning instead)
     window.currentStage = 'concept';
     window.currentSubstage = 'ideas';
     
@@ -436,6 +441,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // SINGLE SOURCE OF TRUTH: Week context is read from URL via WeekContext module
     // No window.weekNumber assignment needed
+    
+    // Update header week and theme after WeekContext is set
+    // Wait for blogPipelineHeader to be initialized and WeekContext to be available
+    // Try multiple times to ensure it runs
+    const updateTheme = async () => {
+        if (typeof blogPipelineHeader !== 'undefined' && blogPipelineHeader.updateWeekAndTheme) {
+            console.log('[Ideas Page] Calling updateWeekAndTheme');
+            await blogPipelineHeader.updateWeekAndTheme();
+        }
+    };
+    
+    // Try immediately if ready
+    if (typeof blogPipelineHeader !== 'undefined' && typeof window.WeekContext !== 'undefined') {
+        setTimeout(updateTheme, 100);
+    }
+    
+    // Also try after delays
+    setTimeout(updateTheme, 400);
+    setTimeout(updateTheme, 800);
     
     // Initialize LLM module (expanded idea generation)
     llmModule = initializeLLMModule('ideas', window.postId);
@@ -533,145 +557,18 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Load current seed then any existing expanded idea
-    loadCurrentIdeaSeed();
-    loadExpandedIdea();
+    // Expanded idea is now generated and displayed via the LLM module below
 });
 
 // Idea selection is handled in the Calendar stage; no week-ideas loading here
 
-async function loadCurrentIdeaSeed() {
-    try {
-        // Fetch post data to ensure idea_seed exists; if missing, instruct user to pick an idea first
-        const resp = await fetch(`/planning/api/posts/${window.postId}`);
-        const data = await resp.json();
-        if (!data.success || !data.post) {
-            displayCurrentIdeaSeed('Unable to load post data');
-            return;
-        }
-        const seed = data.post.idea_seed || null;
-        if (!seed) {
-            displayCurrentIdeaSeed('No idea set. Go to Calendar → Week Ideas to pick one.');
-            return;
-        }
-        displayCurrentIdeaSeed(seed);
-    } catch (error) {
-        console.error('Error loading current idea seed:', error);
-    }
-}
-
-// Removed available ideas UI
-
-// Removed auto-select
-
-// Removed selectIdea
-
-// Removed selected idea display
-
-function displayCurrentIdeaSeed(ideaSeed) {
-    const currentSeedDisplay = document.getElementById('current-idea-seed');
-    
-    if (!ideaSeed) {
-        currentSeedDisplay.innerHTML = '<div class="no-idea-seed">No idea seed set</div>';
-        return;
-    }
-    
-    currentSeedDisplay.innerHTML = `
-        <div class="idea-seed-content">${ideaSeed}</div>
-    `;
-}
-
-// Removed confirmSelection flow; selection happens in Calendar stage
-
-// Removed new idea dialog
-
-// Removed displayNoIdeas
+// Removed loadCurrentIdeaSeed and displayCurrentIdeaSeed - redundant field removed
+// Removed loadExpandedIdea, displayExpandedIdea, displayExpandedIdeaError - expanded idea now handled by LLM module
 
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
-}
-
-    async function loadExpandedIdea() {
-        try {
-            // SINGLE SOURCE OF TRUTH: Try URL first, then WeekContext, then template variables
-            let year = null;
-            let week = null;
-            
-            // 1. Try URL query parameters first
-            const urlParams = new URLSearchParams(window.location.search);
-            year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
-            week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
-            
-            // 2. If not in URL, try WeekContext (which may have been set by template)
-            if ((!year || !week) && window.WeekContext) {
-                const context = window.WeekContext.getWeekContext();
-                if (context) {
-                    year = year || context.year;
-                    week = week || context.week;
-                }
-            }
-            
-            // 3. If still missing, try template variables (from backend)
-            if (!year || !week) {
-                {% if year and week_number %}
-                year = year || {{ year }};
-                week = week || {{ week_number }};
-                // Update URL with template values for future use
-                if (window.WeekContext) {
-                    window.WeekContext.setWeekContext(year, week);
-                }
-                {% endif %}
-            }
-            
-            // 4. Final fallback: use WeekContext default (current week)
-            if (!year || !week) {
-                if (window.WeekContext) {
-                    const context = window.WeekContext.getWeekContextWithDefault();
-                    year = year || context.year;
-                    week = week || context.week;
-                }
-            }
-        
-        if (!year || !week) {
-            console.warn(`[loadExpandedIdea] Missing year/week parameters - cannot load expanded idea`);
-            displayExpandedIdeaError('Missing year and week parameters');
-            return;
-        }
-        
-        const url = `/planning/api/posts/${window.postId}/expanded-idea?year=${year}&week=${week}`;
-        console.log(`[loadExpandedIdea] Loading with year=${year}, week=${week}`);
-        
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.success) {
-            displayExpandedIdea(data.expanded_idea);
-        } else {
-            console.error('Error loading expanded idea:', data.error);
-            displayExpandedIdeaError(data.error);
-        }
-    } catch (error) {
-        console.error('Error loading expanded idea:', error);
-        displayExpandedIdeaError('Failed to load expanded idea');
-    }
-}
-
-function displayExpandedIdea(expandedIdea) {
-    const resultsDisplay = document.getElementById('llm-results-display');
-    
-    if (!expandedIdea) {
-        resultsDisplay.innerHTML = '<div class="no-results">No expanded idea generated yet. Click "Generate" to create one.</div>';
-        return;
-    }
-    
-    resultsDisplay.innerHTML = escapeHtml(expandedIdea);
-}
-
-function displayExpandedIdeaError(error) {
-    const resultsDisplay = document.getElementById('llm-results-display');
-    resultsDisplay.innerHTML = `<div class="error">Error loading expanded idea: ${error}</div>`;
 }
 
 // generateExpandedIdea function removed - functionality moved to LLM module's generate button

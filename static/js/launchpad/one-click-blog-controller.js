@@ -194,15 +194,54 @@ class OneClickPublicationController {
                 // Use resolved item_id if we didn't have one
                 const resolvedItemId = itemData.item_id || itemId;
                 
+                // Normalize outputChannel (ensure it's lowercase and valid)
+                const normalizedOutputChannel = (outputChannel || 'blog').toLowerCase().trim();
+                
+                console.log('[One-Click Publication Controller] Calendar item loaded:', {
+                    category,
+                    itemId: resolvedItemId,
+                    postId: itemData.post_id,
+                    outputChannel: normalizedOutputChannel,
+                    title: itemData.title
+                });
+                
                 // Display item information
-                this.displayCalendarItem(itemData, category, resolvedItemId, year, week, outputChannel);
+                this.displayCalendarItem(itemData, category, resolvedItemId, year, week, normalizedOutputChannel);
                 
                 // If post_id exists, load pipeline
                 if (itemData.post_id) {
-                    await this.pipelineManager.setPostId(itemData.post_id, outputChannel);
+                    console.log('[One-Click Publication Controller] Post already exists, loading pipeline for post_id:', itemData.post_id);
+                    await this.pipelineManager.setPostId(itemData.post_id, normalizedOutputChannel);
                 } else {
-                    // Show "Create Post" option
-                    this.showCreatePostOption(itemData, category, resolvedItemId, year, week, outputChannel);
+                    // Auto-create for blog output to mirror prior workflow; fallback to manual button
+                    console.log('[One-Click Publication Controller] No post_id found, checking auto-create conditions...', {
+                        outputChannel: normalizedOutputChannel,
+                        isBlog: normalizedOutputChannel === 'blog',
+                        category,
+                        itemId: resolvedItemId
+                    });
+                    
+                    const autoCreateKey = `${category}-${resolvedItemId || ''}-${year || ''}-${week || ''}-${normalizedOutputChannel}`;
+                    if (!this.autoCreateAttempts) {
+                        this.autoCreateAttempts = new Set();
+                    }
+                    
+                    if (normalizedOutputChannel === 'blog' && !this.autoCreateAttempts.has(autoCreateKey)) {
+                        console.log('[One-Click Publication Controller] Auto-create conditions met, creating post...');
+                        this.autoCreateAttempts.add(autoCreateKey);
+                        const created = await this.autoCreatePostFromCalendarItem(category, resolvedItemId, year, week, normalizedOutputChannel, itemData);
+                        if (!created) {
+                            console.log('[One-Click Publication Controller] Auto-create failed, showing manual button');
+                            this.showCreatePostOption(itemData, category, resolvedItemId, year, week, normalizedOutputChannel);
+                        }
+                    } else {
+                        console.log('[One-Click Publication Controller] Auto-create conditions not met, showing manual button', {
+                            outputChannel: normalizedOutputChannel,
+                            isBlog: normalizedOutputChannel === 'blog',
+                            alreadyAttempted: this.autoCreateAttempts.has(autoCreateKey)
+                        });
+                        this.showCreatePostOption(itemData, category, resolvedItemId, year, week, normalizedOutputChannel);
+                    }
                 }
             } else {
                 console.error('[One-Click Publication Controller] Error loading calendar item:', result.error);
@@ -211,6 +250,56 @@ class OneClickPublicationController {
         } catch (error) {
             console.error('[One-Click Publication Controller] Error loading calendar item:', error);
             alert(`Error loading calendar item: ${error.message}`);
+        }
+    }
+
+    async autoCreatePostFromCalendarItem(category, itemId, year, week, outputChannel, itemData) {
+        try {
+            console.log('[One-Click Publication Controller] Auto-creating post from calendar item:', { category, itemId, year, week, outputChannel });
+            
+            if (!itemId) {
+                console.error('[One-Click Publication Controller] Cannot auto-create: missing itemId');
+                return false;
+            }
+            
+            const resp = await fetch('/launchpad/one-click-publication/api/create-post-from-item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    category,
+                    item_id: itemId,
+                    year,
+                    week,
+                    output_channel: outputChannel
+                })
+            });
+            
+            if (!resp.ok) {
+                const errorText = await resp.text();
+                console.error('[One-Click Publication Controller] Auto-create HTTP error:', resp.status, errorText);
+                return false;
+            }
+            
+            const result = await resp.json();
+            console.log('[One-Click Publication Controller] Auto-create response:', result);
+            
+            if (result.success && result.post_id) {
+                console.log('[One-Click Publication Controller] Post created successfully, reloading with post_id:', result.post_id);
+                // Reload with post_id so pipeline can load immediately
+                const url = new URL(window.location.href);
+                url.searchParams.set('post_id', result.post_id);
+                url.searchParams.delete('item_id'); // post_id becomes primary
+                url.searchParams.delete('category'); // Clean up calendar item params
+                url.searchParams.delete('year');
+                url.searchParams.delete('week');
+                window.location.href = url.toString();
+                return true;
+            }
+            console.warn('[One-Click Publication Controller] Auto-create skipped or failed:', result);
+            return false;
+        } catch (err) {
+            console.error('[One-Click Publication Controller] Error auto-creating post:', err);
+            return false;
         }
     }
 

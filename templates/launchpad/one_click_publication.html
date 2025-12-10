@@ -1711,9 +1711,17 @@ function updateStepButtonState(stepId, state) {
             }
             // Populate selector immediately
             select.innerHTML = posts.map(p => `<option value="${p.id}">#${p.id} — ${escapeHtml(p.title || 'Untitled')}</option>`).join('');
-            // Determine default quickly (saved or first), then refine asynchronously to current week
-            const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
-            const quickDefaultId = (savedPostId && posts.find(p => p.id.toString() === savedPostId)) ? savedPostId : posts[0].id;
+            // Check URL for post_id parameter first (highest priority)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlPostId = urlParams.get('post_id');
+            // Determine default: URL param > saved > first post
+            let quickDefaultId;
+            if (urlPostId && posts.find(p => p.id.toString() === urlPostId)) {
+                quickDefaultId = urlPostId;
+            } else {
+                const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
+                quickDefaultId = (savedPostId && posts.find(p => p.id.toString() === savedPostId)) ? savedPostId : posts[0].id;
+            }
             select.value = quickDefaultId;
             localStorage.setItem('blogForgeSelectedPostId', quickDefaultId.toString());
             updateSelectedPostSummary(quickDefaultId);

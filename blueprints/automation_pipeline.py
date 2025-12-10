@@ -104,15 +104,13 @@ def get_pipeline_status(post_id):
             optimization_stats = cursor.fetchone()
             
             # Check calendar assignment
-            cursor.execute("""
-                SELECT EXISTS(
-                    SELECT 1 FROM calendar_schedule 
-                    WHERE post_id = %s
-                ) as is_scheduled
-            """, (post_id,))
-            
-            calendar_result = cursor.fetchone()
-            is_calendar_assigned = calendar_result['is_scheduled'] if calendar_result else False
+            # New system: posts are linked to calendar items via idea_seed (themes/weekly content) or recipe_id (recipes)
+            # Check if post has idea_seed (indicates calendar item link) or recipe_id
+            is_calendar_assigned = bool(
+                post.get('idea_seed') or 
+                post.get('recipe_id') is not None or
+                post.get('profile_category_id') is not None
+            )
             
             # Check image concepts completion from JSON data
             image_concepts_complete = False
@@ -684,18 +682,9 @@ def get_alerts():
     try:
         with db_manager.get_cursor() as cursor:
             # Get overdue posts
-            cursor.execute("""
-                SELECT p.id, p.title, cs.scheduled_date, cs.scheduled_time
-                FROM post p
-                JOIN post_development pd ON p.id = pd.post_id
-                JOIN calendar_schedule cs ON cs.post_id = p.id
-                WHERE p.status != 'published' 
-                AND cs.scheduled_date < CURRENT_DATE
-                AND cs.status = 'planned'
-                ORDER BY cs.scheduled_date ASC
-            """)
-            
-            overdue_posts = cursor.fetchall()
+            # Note: calendar_schedule table is deprecated. New system uses JSON schedules.
+            # For now, return empty list - alerts can be reimplemented using JSON schedule data if needed
+            overdue_posts = []
             
             alerts = []
             

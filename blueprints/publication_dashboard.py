@@ -18,7 +18,9 @@ bp = Blueprint('publication_dashboard', __name__, url_prefix='/publication')
 @bp.route('/dashboard')
 def dashboard():
     """Main publication dashboard."""
-    return render_template('publication/dashboard.html')
+    from flask import request
+    tab = request.args.get('tab', 'schedule')
+    return render_template('publication/dashboard.html', active_tab=tab)
 
 @bp.route('/dashboard/deprecated')
 def dashboard_deprecated():
@@ -356,6 +358,116 @@ def api_dashboard_schedule():
                                 if post_row:
                                     title = post_row.get('title') or title
                         
+                        # Fetch post status if post_id exists, or try to find post if missing
+                        post_status = None
+                        post_exists = post_id is not None
+                        
+                        # If post_id is missing, try to find existing post for this item
+                        if not post_id:
+                            if category == 'theme':
+                                # For themes, first check calendar_week_posts_v2 for this week/year
+                                cursor.execute("""
+                                    SELECT p.id, p.status
+                                    FROM calendar_week_posts_v2 cwp
+                                    JOIN post p ON cwp.post_id = p.id
+                                    WHERE cwp.year = %s 
+                                      AND cwp.week_number = %s
+                                      AND p.recipe_id IS NULL
+                                      AND p.profile_category_id IS NULL
+                                      AND (p.generated_source_type IS NULL OR p.generated_source_type = '')
+                                      AND p.status != 'deleted'
+                                    ORDER BY p.created_at DESC
+                                    LIMIT 1
+                                """, (year, week))
+                                post_row = cursor.fetchone()
+                                if post_row:
+                                    post_id = post_row.get('id')
+                                    post_exists = True
+                                else:
+                                    # If not in calendar_week_posts_v2, try matching by title
+                                    # Themed posts have NULL recipe_id, profile_category_id, and generated_source_type
+                                    if title:
+                                        cursor.execute("""
+                                            SELECT id, status
+                                            FROM post
+                                            WHERE title = %s
+                                              AND recipe_id IS NULL
+                                              AND profile_category_id IS NULL
+                                              AND (generated_source_type IS NULL OR generated_source_type = '')
+                                              AND status != 'deleted'
+                                            ORDER BY created_at DESC
+                                            LIMIT 1
+                                        """, (title,))
+                                        post_row = cursor.fetchone()
+                                        if post_row:
+                                            post_id = post_row.get('id')
+                                            post_exists = True
+                            elif category == 'recipe':
+                                # For recipes, check by recipe_id
+                                if item_id:
+                                    cursor.execute("""
+                                        SELECT id, status
+                                        FROM post
+                                        WHERE recipe_id = %s
+                                          AND status != 'deleted'
+                                        ORDER BY created_at DESC
+                                        LIMIT 1
+                                    """, (item_id,))
+                                    post_row = cursor.fetchone()
+                                    if post_row:
+                                        post_id = post_row.get('id')
+                                        post_exists = True
+                            elif category in ('profile_product', 'profile_surname'):
+                                # For profiles, check by profile_category_id
+                                if item_id:
+                                    cursor.execute("""
+                                        SELECT id, status
+                                        FROM post
+                                        WHERE profile_category_id = %s
+                                          AND status != 'deleted'
+                                        ORDER BY created_at DESC
+                                        LIMIT 1
+                                    """, (item_id,))
+                                    post_row = cursor.fetchone()
+                                    if post_row:
+                                        post_id = post_row.get('id')
+                                        post_exists = True
+                            elif category in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                                # For weekly items, check calendar_week_posts_v2 and match by title
+                                # Weekly posts don't have recipe_id or profile_category_id
+                                if title:
+                                    cursor.execute("""
+                                        SELECT p.id, p.status
+                                        FROM calendar_week_posts_v2 cwp
+                                        JOIN post p ON cwp.post_id = p.id
+                                        WHERE cwp.year = %s 
+                                          AND cwp.week_number = %s
+                                          AND p.recipe_id IS NULL
+                                          AND p.profile_category_id IS NULL
+                                          AND p.title = %s
+                                          AND p.status != 'deleted'
+                                        ORDER BY p.created_at DESC
+                                        LIMIT 1
+                                    """, (year, week, title))
+                                    post_row = cursor.fetchone()
+                                    if post_row:
+                                        post_id = post_row.get('id')
+                                        post_exists = True
+                        
+                        # Fetch post status if post_id exists (either from JSON or from database lookup above)
+                        if post_id:
+                            cursor.execute("""
+                                SELECT status
+                                FROM post
+                                WHERE id = %s
+                            """, (post_id,))
+                            post_row = cursor.fetchone()
+                            if post_row:
+                                raw_status = post_row.get('status')
+                                # Normalize status using helper function
+                                from blueprints.posts import get_display_status
+                                post_status = get_display_status(raw_status)
+                        
                         # Determine display type name
                         type_names = {
                             'theme': 'Theme',
@@ -373,6 +485,8 @@ def api_dashboard_schedule():
                             'item_id': item_id,
                             'title': title,
                             'post_id': post_id,
+                            'post_exists': post_exists,
+                            'post_status': post_status,  # 'draft', 'published', 'deleted', or None
                             'year': year,
                             'week': week,
                             'channel': channel,

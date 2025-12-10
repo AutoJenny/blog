@@ -605,6 +605,43 @@ def create_post_from_item():
                 VALUES (%s, %s)
             """, (post_id, idea_seed))
             
+            # Link post to week in calendar_week_items_deprecated if year and week provided
+            # calendar_week_posts_v2 is a view, so we insert into calendar_week_items_deprecated
+            if year and week:
+                try:
+                    # Determine item_type based on post_type
+                    item_type = None
+                    if post_type == 'recipe':
+                        item_type = 'recipe'
+                    elif post_type == 'themed':
+                        item_type = 'theme'  # For themed posts, we use 'theme' type
+                    elif post_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                        item_type = post_type
+                    elif post_type in ('profile_product', 'profile_surname'):
+                        item_type = 'profile'
+                    
+                    if item_type:
+                        # For theme items, is_selected must be TRUE (constraint requirement)
+                        is_selected = (item_type == 'theme')
+                        cursor.execute("""
+                            INSERT INTO calendar_week_items_deprecated (
+                                item_type, item_id, year, week_number, is_active, is_selected, created_at, updated_at
+                            )
+                            SELECT %s, %s, %s, %s, TRUE, %s, NOW(), NOW()
+                            WHERE NOT EXISTS (
+                                SELECT 1 FROM calendar_week_items_deprecated 
+                                WHERE item_type = %s 
+                                  AND item_id = %s 
+                                  AND year = %s 
+                                  AND week_number = %s
+                            )
+                        """, (item_type, post_id, year, week, is_selected, item_type, post_id, year, week))
+                        db_manager.conn.commit()
+                        logger.info(f"Linked post {post_id} to week {year}/{week} as {item_type}")
+                except Exception as e:
+                    logger.warning(f"Could not link post {post_id} to week {year}/{week}: {e}")
+                    # Don't fail the whole operation if calendar linking fails
+            
             # Return response with format information
             response_data = {
                 "success": True,

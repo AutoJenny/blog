@@ -72,28 +72,164 @@ function renderSchedule(channels) {
                 return; // Skip this item
             }
             
+            // Determine if post exists and get status
+            const postExists = item.post_exists === true || (item.post_id !== null && item.post_id !== undefined);
+            const postStatus = item.post_status && item.post_status.trim() ? item.post_status.trim().toLowerCase() : null;
+            
+            // Build status indicator, create button, or work button
+            let statusOrButton = '';
+            if (postExists && postStatus) {
+                // Post exists - show status badge and work button
+                const statusClass = `status-badge status-${postStatus}`;
+                const statusDisplay = postStatus.charAt(0).toUpperCase() + postStatus.slice(1);
+                statusOrButton = `
+                    <div class="${statusClass}">${statusDisplay}</div>
+                    <button class="btn-work-on">Work on This</button>
+                `;
+            } else {
+                // Post doesn't exist - show Create button
+                statusOrButton = `<button class="btn-create">Create</button>`;
+            }
+            
             itemCard.innerHTML = `
                 <div class="item-type-label">${typeName}</div>
                 <div class="item-title">${title}</div>
                 ${item.description ? `<div class="item-description">${item.description.substring(0, 50)}${item.description.length > 50 ? '...' : ''}</div>` : ''}
-                <button class="btn-work-on">Work on This</button>
+                ${statusOrButton}
             `;
             
-            // Add click handler
-            itemCard.querySelector('.btn-work-on').addEventListener('click', function(e) {
-                e.stopPropagation();
-                navigateToOneClick(item);
-            });
+            // Add click handlers
+            const createBtn = itemCard.querySelector('.btn-create');
+            if (createBtn) {
+                createBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    createPostFromItem(item, itemCard);
+                });
+            }
             
-            itemCard.addEventListener('click', function(e) {
-                if (!e.target.classList.contains('btn-work-on')) {
+            const workBtn = itemCard.querySelector('.btn-work-on');
+            if (workBtn) {
+                workBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
                     navigateToOneClick(item);
+                });
+            }
+            
+            // If post exists, clicking card should navigate to post (or one-click with post_id)
+            // If post doesn't exist, clicking card should also navigate (to create)
+            itemCard.addEventListener('click', function(e) {
+                // Don't navigate if clicking buttons (they have their own handlers)
+                if (!e.target.classList.contains('btn-create') && !e.target.classList.contains('btn-work-on')) {
+                    if (postExists) {
+                        navigateToOneClick(item);
+                    } else {
+                        // For items without posts, clicking card also creates
+                        createPostFromItem(item, itemCard);
+                    }
                 }
             });
             
             dayColumn.appendChild(itemCard);
         });
     });
+}
+
+async function createPostFromItem(item, itemCard) {
+    // Only create for blog channel
+    if (item.channel !== 'blog') {
+        // For non-blog channels, navigate to one-click (existing behavior)
+        navigateToOneClick(item);
+        return;
+    }
+    
+    // Disable button and show loading state
+    const createBtn = itemCard.querySelector('.btn-create');
+    if (createBtn) {
+        createBtn.disabled = true;
+        createBtn.textContent = 'Creating...';
+    }
+    
+    try {
+        const response = await fetch('/launchpad/one-click-publication/api/create-post-from-item', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                category: item.category,
+                item_id: item.item_id,
+                year: item.year,
+                week: item.week,
+                output_channel: item.channel
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.post_id) {
+            // Update the item data
+            item.post_id = result.post_id;
+            item.post_exists = true;
+            item.post_status = 'draft';
+            
+            // Update the card UI
+            updateItemCardAfterCreation(itemCard, item);
+        } else {
+            throw new Error(result.error || 'Failed to create post');
+        }
+    } catch (error) {
+        console.error('Error creating post:', error);
+        alert(`Error creating post: ${error.message}`);
+        
+        // Re-enable button
+        if (createBtn) {
+            createBtn.disabled = false;
+            createBtn.textContent = 'Create';
+        }
+    }
+}
+
+function updateItemCardAfterCreation(itemCard, item) {
+    // Update data attributes
+    itemCard.dataset.postId = item.post_id;
+    
+    // Get existing elements
+    const typeLabel = itemCard.querySelector('.item-type-label');
+    const title = itemCard.querySelector('.item-title');
+    const description = itemCard.querySelector('.item-description');
+    
+    // Build new status and button HTML
+    const statusClass = 'status-badge status-draft';
+    const statusDisplay = 'Draft';
+    const newContent = `
+        <div class="${statusClass}">${statusDisplay}</div>
+        <button class="btn-work-on">Work on This</button>
+    `;
+    
+    // Remove old button/status
+    const oldButton = itemCard.querySelector('.btn-create');
+    const oldStatus = itemCard.querySelector('.status-badge');
+    if (oldButton) oldButton.remove();
+    if (oldStatus) oldStatus.remove();
+    
+    // Insert new status and button
+    const container = document.createElement('div');
+    container.innerHTML = newContent;
+    while (container.firstChild) {
+        itemCard.appendChild(container.firstChild);
+    }
+    
+    // Add click handler to new work button
+    const workBtn = itemCard.querySelector('.btn-work-on');
+    if (workBtn) {
+        workBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            navigateToOneClick(item);
+        });
+    }
 }
 
 function navigateToOneClick(item) {

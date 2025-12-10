@@ -91,11 +91,6 @@
         <div class="main-stages-content">
             <div class="main-stages-left">
                 {% if post_type not in ['recipe', 'profile', 'generated'] %}
-            <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
-               class="stage-btn" data-stage="calendar">
-                <i class="fas fa-calendar-alt"></i>
-                Calendar
-            </a>
             <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
                class="stage-btn" data-stage="concept">
                 <i class="fas fa-lightbulb"></i>
@@ -114,11 +109,6 @@
                 Planning
             </a>
             {% elif post_type == 'generated' %}
-            <a href="{{ url_for('planning.planning_calendar', post_id=post_id) }}" 
-               class="stage-btn" data-stage="calendar">
-                <i class="fas fa-calendar-alt"></i>
-                Calendar
-            </a>
             <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
                class="stage-btn" data-stage="concept">
                 <i class="fas fa-lightbulb"></i>
@@ -172,28 +162,7 @@
     <div class="sub-stages-line" id="sub-stages-line">
         <!-- Sub-stage Navigation -->
         <div class="sub-stages" id="sub-stages">
-            {% set calendar_substages = get_substages_for_navbar(post_type or 'themed', 'calendar') %}
-            {% if calendar_substages %}
-            <!-- Calendar sub-stages -->
-            <div class="sub-stage-group" data-stage="calendar">
-                {% for substage in calendar_substages %}
-                    {% if substage.route_function %}
-                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
-                           class="sub-stage-btn sub-stage-shared" 
-                           data-substage="{{ substage.key.replace('_', '-') }}">
-                            {{ substage.label }}
-                        </a>
-                    {% else %}
-                        <a href="#" 
-                           id="week-themes-link"
-                           class="sub-stage-btn sub-stage-shared" 
-                           data-substage="{{ substage.key.replace('_', '-') }}">
-                            {{ substage.label }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            {% endif %}
+            <!-- Calendar sub-stages - DEPRECATED: Calendar stage has been removed -->
             
             <!-- Planning sub-stages -->
             <div class="sub-stage-group" data-stage="concept">

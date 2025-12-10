@@ -139,7 +139,24 @@ def posts_list():
     
     try:
         with db_manager.get_cursor() as cursor:
-            # Check if calendar_week_posts table exists, otherwise use calendar_schedule
+            # Check if calendar_week_posts_v2 table exists (current table)
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_posts_v2'
+                )
+            """)
+            result = cursor.fetchone()
+            # Handle both tuple and dict return types from psycopg
+            if isinstance(result, tuple):
+                has_v2_table = result[0]
+            elif isinstance(result, dict):
+                has_v2_table = result.get('exists', False)
+            else:
+                has_v2_table = False
+            
+            # Check if calendar_week_posts table exists (legacy)
             cursor.execute("""
                 SELECT EXISTS (
                     SELECT FROM information_schema.tables 
@@ -148,7 +165,6 @@ def posts_list():
                 )
             """)
             result = cursor.fetchone()
-            # Handle both tuple and dict return types from psycopg
             if isinstance(result, tuple):
                 has_week_posts_table = result[0]
             elif isinstance(result, dict):
@@ -156,8 +172,53 @@ def posts_list():
             else:
                 has_week_posts_table = False
             
-            if has_week_posts_table:
-                # Use new calendar_week_posts table (V2 architecture)
+            # Check if calendar_schedule table exists (legacy)
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_schedule'
+                )
+            """)
+            result = cursor.fetchone()
+            has_schedule_table = (isinstance(result, tuple) and result[0]) or (isinstance(result, dict) and result.get('exists', False))
+            
+            if has_v2_table:
+                # Use calendar_week_posts_v2 table (current)
+                if show_deleted:
+                    cursor.execute("""
+                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               p.recipe_week_number, p.profile_category_id,
+                               cwp.year AS sched_year, cwp.week_number AS sched_week, NULL AS scheduled_date, NULL AS weekday
+                        FROM post p
+                        LEFT JOIN LATERAL (
+                            SELECT year, week_number, updated_at, created_at
+                            FROM calendar_week_posts_v2
+                            WHERE post_id = p.id
+                            ORDER BY updated_at DESC, created_at DESC
+                            LIMIT 1
+                        ) cwp ON TRUE
+                        WHERE p.status = 'deleted'
+                        ORDER BY p.created_at DESC
+                    """)
+                else:
+                    cursor.execute("""
+                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               p.recipe_week_number, p.profile_category_id,
+                               cwp.year AS sched_year, cwp.week_number AS sched_week, NULL AS scheduled_date, NULL AS weekday
+                        FROM post p
+                        LEFT JOIN LATERAL (
+                            SELECT year, week_number, updated_at, created_at
+                            FROM calendar_week_posts_v2
+                            WHERE post_id = p.id
+                            ORDER BY updated_at DESC, created_at DESC
+                            LIMIT 1
+                        ) cwp ON TRUE
+                        WHERE p.status != 'deleted'
+                        ORDER BY p.updated_at DESC, p.id DESC
+                    """)
+            elif has_week_posts_table:
+                # Use calendar_week_posts table
                 if show_deleted:
                     cursor.execute("""
                         SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
@@ -190,8 +251,8 @@ def posts_list():
                         WHERE p.status != 'deleted'
                         ORDER BY p.updated_at DESC, p.id DESC
                     """)
-            else:
-                # Fallback to calendar_schedule (legacy)
+            elif has_schedule_table:
+                # Use calendar_schedule table
                 if show_deleted:
                     cursor.execute("""
                         SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
@@ -221,6 +282,26 @@ def posts_list():
                             ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
                             LIMIT 1
                         ) cs ON TRUE
+                        WHERE p.status != 'deleted'
+                        ORDER BY p.updated_at DESC, p.id DESC
+                    """)
+            else:
+                # Query posts directly without calendar table joins
+                if show_deleted:
+                    cursor.execute("""
+                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               p.recipe_week_number, p.profile_category_id,
+                               NULL AS sched_year, NULL AS sched_week, NULL AS scheduled_date
+                        FROM post p
+                        WHERE p.status = 'deleted'
+                        ORDER BY p.created_at DESC
+                    """)
+                else:
+                    cursor.execute("""
+                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                               p.recipe_week_number, p.profile_category_id,
+                               NULL AS sched_year, NULL AS sched_week, NULL AS scheduled_date
+                        FROM post p
                         WHERE p.status != 'deleted'
                         ORDER BY p.updated_at DESC, p.id DESC
                     """)
@@ -316,7 +397,9 @@ def posts_list():
         
         return render_template('posts_list.html', 
                              posts=formatted_posts,
-                             show_deleted=show_deleted)
+                             show_deleted=show_deleted,
+                             current_year=current_year,
+                             current_week=current_week)
         
     except Exception as e:
         logger.error(f"Error in posts_list: {e}")

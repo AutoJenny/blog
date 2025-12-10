@@ -32,50 +32,59 @@ def api_posts(post_id):
                 return jsonify({'error': 'Post not found'}), 404
             
             # Get calendar schedule with selected theme
-            # Check if new tables exist
+            # Check for calendar_week_posts_v2 table (current table)
             cursor.execute("""
                 SELECT EXISTS (
                     SELECT FROM information_schema.tables 
                     WHERE table_schema = 'public' 
-                    AND table_name = 'calendar_week_selection'
-                ) as has_selection,
-                EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
-                    AND table_name = 'calendar_week_posts'
-                ) as has_posts
+                    AND table_name = 'calendar_week_posts_v2'
+                ) as has_v2_posts
             """)
             table_check = cursor.fetchone()
-            has_new_tables = table_check['has_selection'] and table_check['has_posts']
+            has_v2_table = table_check['has_v2_posts'] if table_check else False
             
             schedule = None
-            if has_new_tables:
-                # Use new V2 architecture - get schedule from calendar_week_posts
+            if has_v2_table:
+                # Use V2 architecture - get schedule from calendar_week_items_deprecated (the actual table)
+                # calendar_week_posts_v2 is a view that only shows recipe/profile, so query calendar_week_items_deprecated directly
                 cursor.execute("""
-                    SELECT cwp.year, cwp.week_number, cwp.scheduled_date, cwp.created_at, cwp.updated_at,
+                    SELECT cwi.year, cwi.week_number, cwi.scheduled_date, cwi.created_at, cwi.updated_at,
                            cws.selected_theme_id,
                            ct.theme_title as selected_theme_title
-                    FROM calendar_week_posts cwp
-                    LEFT JOIN calendar_week_selection cws ON cwp.year = cws.year AND cwp.week_number = cws.week_number
+                    FROM calendar_week_items_deprecated cwi
+                    LEFT JOIN calendar_week_selection_v2 cws ON cwi.year = cws.year AND cwi.week_number = cws.week_number
                     LEFT JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
-                    WHERE cwp.post_id = %s
-                    ORDER BY cwp.created_at DESC
+                    WHERE cwi.item_id = %s
+                      AND cwi.is_active = TRUE
+                    ORDER BY cwi.created_at DESC
                     LIMIT 1
                 """, (post_id,))
                 schedule = cursor.fetchone()
             else:
-                # Fallback to old calendar_schedule table
+                # Check for legacy calendar_week_posts table
                 cursor.execute("""
-                    SELECT cs.id, cs.year, cs.week_number, cs.scheduled_date, cs.idea_id, 
-                           cs.created_at, cs.updated_at,
-                           ci.idea_title as selected_theme_title
-                    FROM calendar_schedule cs
-                    LEFT JOIN calendar_ideas ci ON cs.idea_id = ci.id
-                    WHERE cs.post_id = %s
-                    ORDER BY cs.created_at DESC
-                    LIMIT 1
-                """, (post_id,))
-                schedule = cursor.fetchone()
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'calendar_week_posts'
+                    ) as has_posts
+                """)
+                legacy_check = cursor.fetchone()
+                has_legacy_table = legacy_check['has_posts'] if legacy_check else False
+                
+                if has_legacy_table:
+                    cursor.execute("""
+                        SELECT cwp.year, cwp.week_number, cwp.scheduled_date, cwp.created_at, cwp.updated_at,
+                               cws.selected_theme_id,
+                               ct.theme_title as selected_theme_title
+                        FROM calendar_week_posts cwp
+                        LEFT JOIN calendar_week_selection cws ON cwp.year = cws.year AND cwp.week_number = cws.week_number
+                        LEFT JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                        WHERE cwp.post_id = %s
+                        ORDER BY cwp.created_at DESC
+                        LIMIT 1
+                    """, (post_id,))
+                    schedule = cursor.fetchone()
             
             # Get post sections from post_section table
             cursor.execute("""

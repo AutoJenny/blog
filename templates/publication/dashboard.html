@@ -378,16 +378,16 @@
             
         <!-- Tab Navigation -->
         <div class="dashboard-tabs">
-            <button class="dashboard-tab active" data-tab="schedule">
+            <button class="dashboard-tab {% if active_tab == 'schedule' %}active{% endif %}" data-tab="schedule">
                 <i class="fas fa-calendar-week"></i> Schedule
             </button>
-            <button class="dashboard-tab" data-tab="day-assignments">
+            <button class="dashboard-tab {% if active_tab == 'day-assignments' %}active{% endif %}" data-tab="day-assignments">
                 <i class="fas fa-cog"></i> Day Assignments
             </button>
         </div>
 
         <!-- Schedule Tab -->
-        <div id="tab-schedule" class="tab-content active">
+        <div id="tab-schedule" class="tab-content {% if active_tab == 'schedule' %}active{% endif %}">
             <!-- Blog Section -->
         <div id="channel-blog" class="channel-section">
             <h2><i class="fas fa-blog" style="color: var(--accent-blue);"></i> Blog</h2>
@@ -495,7 +495,7 @@
                 </div>
                 
         <!-- Day Assignments Tab -->
-        <div id="tab-day-assignments" class="tab-content">
+        <div id="tab-day-assignments" class="tab-content {% if active_tab == 'day-assignments' %}active{% endif %}">
             <div class="channel-section">
                 <div class="save-controls">
                 <div>

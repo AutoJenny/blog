@@ -96,12 +96,19 @@ class BlogPipelineHeader {
                     this.updateWeekAndTheme();
                 }, 300);
             } else {
-                // On other pages, wait a bit longer to allow page scripts to set window.year/weekNumber
+                // On other pages, wait a bit longer to allow page scripts to set WeekContext
                 // Pages with URL params need time for scripts to execute
                 setTimeout(() => {
-                    this.updateWeekAndTheme();
+                    // Check if WeekContext has year/week before calling
+                    const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
+                    if (weekContext && weekContext.year && weekContext.week) {
+                        this.updateWeekAndTheme();
+                    } else {
+                        // Wait a bit more if WeekContext not ready
+                        setTimeout(() => this.updateWeekAndTheme(), 200);
+                    }
                     // DO NOT call attachWeekParameterToNavLinks here - it causes race conditions
-                }, 200);
+                }, 300);
             }
             setTimeout(() => this.loadPostData(), 500);
         }
@@ -304,35 +311,51 @@ class BlogPipelineHeader {
             weekNumber = weekContext.week;
         }
         
+        console.log('[Blog Pipeline Header] updateWeekAndTheme called. Year:', year, 'Week:', weekNumber, 'WeekContext:', weekContext);
+        
         // PRIORITY 2: If we have viewed week, fetch theme for that week (not post schedule)
         if (year && weekNumber) {
+            console.log('[Blog Pipeline Header] Fetching theme for year/week:', year, weekNumber);
             // Fetch theme for the currently viewed week
             try {
                 const weekResp = await fetch(`/planning/api/calendar/schedule/${year}/${weekNumber}`);
                 if (weekResp.ok) {
                     const weekData = await weekResp.json();
+                    console.log('[Blog Pipeline Header] Schedule API response:', { selected_theme_id: weekData.selected_theme_id, schedule_length: weekData.schedule?.length });
+                    
+                    // PRIORITY 1: Check schedule array for theme_selection entries first (most reliable)
                     if (weekData.schedule && Array.isArray(weekData.schedule) && weekData.schedule.length > 0) {
-                        // Check for theme_id (from calendar_themes) first
-                        const scheduleWithTheme = weekData.schedule.find(s => s.theme_id || s.calendar_theme_id || s.theme_title);
-                        if (scheduleWithTheme && (scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id)) {
-                            // Use theme_title from schedule join if available
-                            if (scheduleWithTheme.theme_title) {
-                                selectedTheme = scheduleWithTheme.theme_title;
-                            } else {
-                                // Fallback: fetch theme by ID
-                                const themeId = scheduleWithTheme.theme_id || scheduleWithTheme.calendar_theme_id;
-                                try {
-                                    const themeResp = await fetch(`/planning/api/calendar/themes/${themeId}`);
-                                    if (themeResp.ok) {
-                                        const themeData = await themeResp.json();
-                                        const theme = themeData.theme || themeData;
-                                        if (theme && theme.theme_title) {
-                                            selectedTheme = theme.theme_title;
-                                        }
+                        const themeSelection = weekData.schedule.find(s => s.type === 'theme_selection');
+                        console.log('[Blog Pipeline Header] theme_selection found:', themeSelection);
+                        if (themeSelection && themeSelection.theme_title) {
+                            selectedTheme = themeSelection.theme_title;
+                            console.log('[Blog Pipeline Header] Set selectedTheme from theme_selection:', selectedTheme);
+                        }
+                    }
+                    
+                    // PRIORITY 2: Check for selected_theme_id at top level (from cyclic system)
+                    if (!selectedTheme && weekData.selected_theme_id) {
+                        console.log('[Blog Pipeline Header] Found selected_theme_id:', weekData.selected_theme_id);
+                        // Try to find in schedule first
+                        const themeEntry = weekData.schedule && Array.isArray(weekData.schedule)
+                            ? weekData.schedule.find(s => s.theme_id === weekData.selected_theme_id || s.selected_theme_id === weekData.selected_theme_id)
+                            : null;
+                        if (themeEntry && themeEntry.theme_title) {
+                            selectedTheme = themeEntry.theme_title;
+                        } else {
+                            // Fallback: fetch theme by ID directly
+                            try {
+                                const themeResp = await fetch(`/planning/api/calendar/themes/${weekData.selected_theme_id}`);
+                                if (themeResp.ok) {
+                                    const themeData = await themeResp.json();
+                                    const theme = themeData.theme || themeData;
+                                    if (theme && theme.theme_title) {
+                                        selectedTheme = theme.theme_title;
+                                        console.log('[Blog Pipeline Header] Set selectedTheme from API fetch:', selectedTheme);
                                     }
-                                } catch (e) {
-                                    console.warn('[Blog Pipeline Header] Error fetching theme by ID:', e);
                                 }
+                            } catch (e) {
+                                console.warn('[Blog Pipeline Header] Error fetching theme by selected_theme_id:', e);
                             }
                         }
                     }
@@ -682,8 +705,10 @@ class BlogPipelineHeader {
         // Update theme
         if (selectedTheme) {
             themeEl.textContent = selectedTheme;
+            console.log('[Blog Pipeline Header] Theme updated to:', selectedTheme);
         } else {
             themeEl.textContent = 'Unselected theme';
+            console.warn('[Blog Pipeline Header] No theme found. Year:', year, 'Week:', weekNumber);
         }
     }
 
