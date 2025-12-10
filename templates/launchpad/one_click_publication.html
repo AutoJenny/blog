@@ -103,29 +103,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Calendar Stage -->
-                    <tr class="stage-row" data-stage="calendar">
-                        <td class="stage-cell" rowspan="2">
-                            <div class="stage-name">
-                                <i class="fas fa-calendar-alt"></i>
-                                Calendar
-                            </div>
-                        </td>
-                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="calendar" data-substage="calendar-view">Calendar View</a></td>
-                        <td class="run-cell" style="text-align:right;"></td>
-                        <td class="run-cell" style="text-align:right;"></td>
-                    </tr>
-                    <tr>
-                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="calendar" data-substage="week-ideas">Week Ideas</a></td>
-                        <td class="run-cell" style="text-align:right;"><button id="run-week-ideas" class="run-btn ready">Run</button></td>
-                        <td class="run-cell" style="text-align:right;">
-                            <select class="mode-select" data-substage="week-ideas">
-                                <option value="auto" selected>Auto</option>
-                                <option value="manual">Manual</option>
-                            </select>
-                        </td>
-                    </tr>
-
                     <!-- Planning Stage -->
                     <tr class="stage-row" data-stage="planning">
                         <td class="stage-cell" rowspan="8">
@@ -499,7 +476,6 @@
 <script>
 // Global helper functions for visual feedback during pipeline execution
 const stepIdToButtonId = {
-    'week-ideas': 'run-week-ideas',
     'idea-generation': 'run-idea-generation',
     'taxonomy': 'run-taxonomy',
     'topic-brainstorming': 'run-topic-brainstorming',
@@ -523,7 +499,6 @@ let currentPipelineStatus = null;
 
 // Mapping from step.id to substage key in pipelineStatus
 const stepIdToSubstageKey = {
-    'week-ideas': 'idea_generation',
     'idea-generation': 'ideas',
     'taxonomy': 'taxonomy',
     'topic-brainstorming': 'topic_brainstorming',
@@ -662,7 +637,6 @@ function updateStepButtonState(stepId, state) {
 
     // Pipeline definition (order can be adjusted)
     let pipeline = [
-        { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
         { id:'taxonomy', label:'Planning — Taxonomy', run: runTaxonomy },
         { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
         { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
@@ -922,65 +896,6 @@ function updateStepButtonState(stepId, state) {
         const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
         return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
-    async function runWeekIdeas(){
-        const btn = document.getElementById('run-week-ideas');
-        if (!btn) return;
-        const originalText = btn.textContent;
-        try {
-            btn.disabled = true;
-            btn.textContent = 'Running…';
-            btn.classList.remove('dead','complete');
-            btn.classList.add('ready');
-
-            const week = getCurrentISOWeek();
-            const year = new Date().getFullYear();
-            // Fetch ideas for current week
-            const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${week}`);
-            const ideasData = await ideasResp.json();
-            let topic = null;
-            if (ideasData && ideasData.success && Array.isArray(ideasData.ideas) && ideasData.ideas.length){
-                const mandatory = ideasData.ideas.find(i => i.priority === 'mandatory');
-                topic = (mandatory || ideasData.ideas[0]).idea_title;
-            } else {
-                // Fallback: prompt user for a topic if no ideas available
-                topic = window.prompt('Enter a topic for this week (no ideas available):');
-                if (!topic) throw new Error('No topic provided');
-            }
-
-            // Confirm/create post without leaving the page
-            const confirmResp = await fetch('/planning/api/calendar/confirm-idea', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic, week_number: week, year })
-            });
-            const confirmData = await confirmResp.json();
-            if (!confirmResp.ok || !confirmData.success){
-                throw new Error(confirmData.error || 'Failed to create/reuse post');
-            }
-
-            // Mark as complete
-            btn.textContent = 'Done';
-            btn.classList.remove('dead','ready');
-            btn.classList.add('complete');
-        } catch (err){
-            console.error('Week Ideas run failed:', err);
-            alert('Week Ideas run failed: ' + err.message);
-            btn.classList.remove('complete');
-            btn.classList.add('dead');
-        } finally {
-            btn.disabled = false;
-            setTimeout(() => { btn.textContent = originalText; }, 1500);
-        }
-    }
-    const btn = document.getElementById('run-week-ideas');
-    if (btn){
-        btn.addEventListener('click', function(e){
-            e.preventDefault();
-            e.stopPropagation();
-            runWeekIdeas();
-        });
-    }
-    
     // Run Taxonomy: navigate to taxonomy page (manual assignment)
     async function runTaxonomy(){
         const postId = getSelectedPostId();
@@ -1635,13 +1550,6 @@ function updateStepButtonState(stepId, state) {
     }
     function routeFor(stage, substage, postId){
         const routes = {
-            calendar: {
-                'calendar-view': p => `/planning/posts/${p}/calendar/view`,
-                'week-ideas': (p) => {
-                    const week = getCurrentISOWeek();
-                    return (p && p.toString().trim()) ? `/planning/calendar/ideas/week/${week}?post_id=${p}` : `/planning/calendar/ideas/week/${week}`;
-                }
-            },
             planning: {
                 'taxonomy': p => `/planning/posts/${p}/calendar/taxonomy`,
                 'idea-generation': p => `/planning/posts/${p}/calendar/ideas`,
@@ -1679,7 +1587,7 @@ function updateStepButtonState(stepId, state) {
             e.preventDefault();
             const stage = this.getAttribute('data-stage');
             const substage = this.getAttribute('data-substage');
-            const requiresPost = !(stage === 'calendar' && substage === 'week-ideas');
+            const requiresPost = true;
             const postId = getSelectedPostId();
             if (requiresPost && !postId){
                 alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
@@ -2077,7 +1985,6 @@ function updateStepButtonState(stepId, state) {
         }
         
         // Themed steps (existing)
-        if (stepId === 'week-ideas') return runWeekIdeas;
         if (stepId === 'taxonomy') return runTaxonomy;
         if (stepId === 'idea-generation') return runIdeaGeneration;
         if (stepId === 'topic-brainstorming') return runTopicBrainstorming;
@@ -2461,8 +2368,6 @@ function updateStepButtonState(stepId, state) {
             
             // Mapping from config substage keys to HTML data-substage values
             const substageKeyToDataAttr = {
-                'calendar_view': 'calendar-view',
-                'idea_generation': 'week-ideas',
                 'ideas': 'idea-generation',
                 'taxonomy': 'taxonomy',
                 'topic_brainstorming': 'topic-brainstorming',
@@ -2575,10 +2480,6 @@ function updateStepButtonState(stepId, state) {
         
         // Mapping of substage keys to their button/indicator IDs
         const substageMappings = {
-            // Calendar stage
-            'calendar_view': null, // View-only, no indicator
-            'idea_generation': 'run-week-ideas',
-            
             // Planning stage
             'ideas': 'run-idea-generation',
             'taxonomy': 'run-taxonomy',
@@ -2753,7 +2654,6 @@ function updateStepButtonState(stepId, state) {
         
         // Default pipeline (themed posts) - will be replaced by loadPipelineForPostType
         let pipeline = [
-            { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
             { id:'taxonomy', label:'Planning — Taxonomy', run: runTaxonomy },
             { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
             { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
