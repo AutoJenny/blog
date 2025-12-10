@@ -171,33 +171,27 @@ def build_year(category: str, year: int, items: Optional[List[Dict[str, Any]]] =
         for w in range(1, 53):
             result.append({"week": w, "item_id": None, "position": None, "title": None})
     else:
+        # Items are already sorted by position (from ORDER BY in SQL)
+        # Use array-index lookup instead of position-number lookup to handle gaps
         for w in range(1, 53):
-            # Cyclic formula: pos = ((w - cycle_start_week) mod N) + 1
+            # Cyclic formula: offset = ((w - cycle_start_week) mod N)
+            # This gives us the array index (0-based) of the item to use
             offset = (w - cycle_start_week) % N
             if offset < 0:
                 offset += N
-            pos = offset + 1
             
-            # Find item at this position
-            item = next((it for it in items if it.get("position") == pos), None)
+            # Use array index directly (items are sorted by position)
+            item = items[offset]
             
-            if item:
-                entry = {
-                    "week": w,
-                    "item_id": item.get("id"),
-                    "position": item.get("position"),
-                    "title": item.get("title", "")
-                }
-                # Include description if available
-                if item.get("description"):
-                    entry["description"] = item["description"]
-            else:
-                entry = {
-                    "week": w,
-                    "item_id": None,
-                    "position": None,
-                    "title": None
-                }
+            entry = {
+                "week": w,
+                "item_id": item.get("id"),
+                "position": item.get("position"),  # Store actual position for reference
+                "title": item.get("title", "")
+            }
+            # Include description if available
+            if item.get("description"):
+                entry["description"] = item["description"]
             
             result.append(entry)
     

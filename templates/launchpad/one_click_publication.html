@@ -1,0 +1,2998 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One‑Click Publication</title>
+    <!-- Tailwind for dark theme parity with legacy page -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Reuse legacy page CSS for consistent centering and styling -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad/one-click-blog.css') }}">
+</head>
+<body>
+    {% include 'shared/header.html' %}
+
+    <div class="container">
+        <div class="header" style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                    <a href="/publication/dashboard" class="text-indigo-400 hover:text-indigo-300 hover:underline" style="text-decoration:none; font-size:14px; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+                <h1><i class="fas fa-magic"></i> One-Click Publication</h1>
+                <p>Automated Multi-Channel Publication Creation (Blog, Facebook, Instagram, Twitter, Newsletter)</p>
+            </div>
+            <div>
+                <a href="/newsletter" class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg" style="text-decoration:none;">
+                    <i class="fa-solid fa-envelope"></i>
+                    Newsletter
+                </a>
+            </div>
+        </div>
+
+        <!-- Post Selector (uses most recently updated by default) -->
+        <div class="post-selector" style="margin: 1rem 0 0.5rem 0; padding: 16px; background:#1a1f35; border:1px solid #2d3246; border-radius:8px;">
+            <div class="selector-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div class="selected-post-summary">
+                    <div id="selected-post-title" style="color:#e6e8ef; font-weight:700; font-size:18px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span id="post-title-text">Loading latest post…</span>
+                        <span id="post-type-badge" style="display:none; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600;"></span>
+                    </div>
+                    <div id="selected-post-subtitle" style="color:#9ca3af; font-size:14px; margin-top:4px;">&nbsp;</div>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+                    <div class="selector-control" style="min-width:260px;">
+                        <label for="pipeline-post-selector" style="display:block; color:#a8afc2; font-size:13px; margin-bottom:6px;">Viewing Pipeline For:</label>
+                        <select id="pipeline-post-selector" class="post-select" style="width:100%; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:8px 10px;">
+                            <option value="">Loading posts…</option>
+                        </select>
+                    </div>
+                    <div class="selector-control" style="min-width:200px;">
+                        <label for="output-channel-selector" style="display:block; color:#a8afc2; font-size:13px; margin-bottom:6px;">Output Channel:</label>
+                        <select id="output-channel-selector" class="post-select" style="width:100%; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:8px 10px;">
+                            <option value="blog">Blog</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="twitter">Twitter</option>
+                            <option value="newsletter">Newsletter</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a class="text-indigo-400 hover:underline" href="/launchpad/one-click-blog/legacy" target="_blank" rel="noopener">
+                Open old One‑Click Blog (legacy)
+            </a>
+        </div>
+
+        <!-- Pipeline Stages Table -->
+        <div class="pipeline-table-container mt-8">
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:10px;">
+                <div id="author-select-wrap" style="display:flex; align-items:center; gap:8px;">
+                    <label for="author-select" style="color:#a8afc2; font-size:13px;">Author:</label>
+                    <select id="author-select" style="background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:6px 10px; min-width:200px;"></select>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:#0f172a; border:1px solid #334155; border-radius:6px;">
+                    <label style="display:flex; align-items:center; gap:6px; color:#a8afc2; font-size:13px; cursor:pointer;">
+                        <input type="radio" name="run-mode" value="all" id="run-mode-all" checked style="cursor:pointer;">
+                        <span>Run All</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; color:#a8afc2; font-size:13px; cursor:pointer;">
+                        <input type="radio" name="run-mode" value="uncompleted" id="run-mode-uncompleted" style="cursor:pointer;">
+                        <span>Run Uncompleted</span>
+                    </label>
+                </div>
+                <button id="start-all" class="run-btn complete" style="padding:10px 18px; font-size:0.95rem;">
+                    <i class="fas fa-play" style="margin-right:6px;"></i>
+                    Start
+                </button>
+            </div>
+            <table class="pipeline-table">
+                <thead>
+                    <tr>
+                        <th class="stage-header">Stage</th>
+                        <th class="substage-header">Substage</th>
+                        <th class="run-header" style="width: 120px; text-align:right;">Run</th>
+                        <th class="run-header" style="width: 140px; text-align:right; padding-right:20px;">Mode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Calendar Stage -->
+                    <tr class="stage-row" data-stage="calendar">
+                        <td class="stage-cell" rowspan="2">
+                            <div class="stage-name">
+                                <i class="fas fa-calendar-alt"></i>
+                                Calendar
+                            </div>
+                        </td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="calendar" data-substage="calendar-view">Calendar View</a></td>
+                        <td class="run-cell" style="text-align:right;"></td>
+                        <td class="run-cell" style="text-align:right;"></td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="calendar" data-substage="week-ideas">Week Ideas</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-week-ideas" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="week-ideas">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <!-- Planning Stage -->
+                    <tr class="stage-row" data-stage="planning">
+                        <td class="stage-cell" rowspan="8">
+                            <div class="stage-name">
+                                <i class="fas fa-lightbulb"></i>
+                                Planning
+                            </div>
+                        </td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="taxonomy">Taxonomy</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-taxonomy" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="taxonomy">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="idea-generation">Idea Generation</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-idea-generation" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="idea-generation">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="topic-brainstorming">Topic Brainstorming</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-topic-brainstorming" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="topic-brainstorming">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-structure-design">Section Structure Design</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-section-structure" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="section-structure-design">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-ideas">Section Ideas</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-section-ideas" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="section-ideas">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-titling">Section Titling</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-section-titling" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="section-titling">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="product-data-review">Product Data Review</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-product-data-review" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="product-data-review">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="planning" data-substage="section-content-mapping">Section Content Mapping</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-section-content-mapping" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="section-content-mapping">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <!-- Authoring Stage -->
+                    <tr class="stage-row" data-stage="authoring">
+                        <td class="stage-cell" rowspan="5">
+                            <div class="stage-name">
+                                <i class="fas fa-pen-nib"></i>
+                                Authoring
+                            </div>
+                        </td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="drafting">Drafting</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-drafting" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="drafting">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-concepts">Image Concepts</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-concepts" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="image-concepts">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-prompts">Image Prompts</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-prompts" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="image-prompts">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="image-captions">Image Captions</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-captions" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="image-captions">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="authoring" data-substage="recipe-image-style-prompt">Image Style & Prompts</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-recipe-image-style-prompt" class="run-btn dead">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="recipe-image-style-prompt">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <!-- Imaging Stage -->
+                    <tr class="stage-row" data-stage="imaging">
+                        <td class="stage-cell" rowspan="2">
+                            <div class="stage-name">
+                                <i class="fas fa-magic"></i>
+                                Imaging
+                            </div>
+                        </td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="imaging" data-substage="image-generation">Image Generation</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-generation" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="image-generation">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="imaging" data-substage="optimise">Optimise</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-image-optimise" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="optimise">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <!-- Header Stage -->
+                    <tr class="stage-row" data-stage="header">
+                        <td class="stage-cell" rowspan="6">
+                            <div class="stage-name">
+                                <i class="fas fa-heading"></i>
+                                Header
+                            </div>
+                        </td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="title-summary">Title & Summary</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-title-summary" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-title-summary">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="header-image-prompt">Header Image — Prompt</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-image-prompt" class="run-btn ready" title="Generate header image prompt">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-image-prompt">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="header-image-details">Header Image — Captions/Alt</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-image-details" class="run-btn ready" title="Generate caption and alt text">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-image-details">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="header-image-generate">Header Image — Image</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-image-generate" class="run-btn ready" title="Generate header image">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-image-generate">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="header-image-optimise">Header Image — Optimise</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-image-optimize" class="run-btn ready" title="Optimize & Watermark header image">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-image-optimise">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="seo-meta">SEO & Meta</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-header-seo-meta" class="run-btn ready">Run</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="header-seo-meta">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                    
+                    <!-- Final Review Stage (separate) -->
+                    <tr class="stage-row">
+                        <td class="stage-cell" rowspan="1">
+                            <div class="stage-name">
+                                <i class="fas fa-check-circle"></i>
+                                Final Review
+                            </div>
+                        </td>
+                        <td class="substage-cell"><a href="#" class="substage-link" data-stage="header" data-substage="final-review">Preview</a></td>
+                        <td class="run-cell" style="text-align:right;"><button id="run-final-review" class="run-btn ready">Preview</button></td>
+                        <td class="run-cell" style="text-align:right;">
+                            <select class="mode-select" data-substage="final-review">
+                                <option value="auto" selected>Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <style>
+        .pipeline-table-container {
+            margin: 2rem auto;
+            max-width: 900px;
+        }
+
+        .pipeline-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #151a2e;
+            border: 1px solid #2d3246;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .pipeline-table thead {
+            background: #181c2a;
+        }
+
+        .pipeline-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #e6e8ef;
+            border-bottom: 2px solid #2d3246;
+        }
+
+        .pipeline-table .stage-header {
+            width: 25%;
+        }
+
+        .pipeline-table .substage-header {
+            width: 75%;
+        }
+
+        .pipeline-table tbody tr {
+            border-bottom: 1px solid #23273a;
+        }
+
+        .pipeline-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .pipeline-table .stage-row {
+            background: #1a1f35;
+        }
+
+        .pipeline-table .stage-cell {
+            background: #1a1f35;
+            font-weight: 600;
+            color: #e6e8ef;
+            padding: 16px;
+            vertical-align: top;
+            border-right: 2px solid #2d3246;
+        }
+
+        .pipeline-table .stage-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+
+        .pipeline-table .stage-name i {
+            color: #4e6bff;
+            font-size: 18px;
+        }
+
+        .pipeline-table .substage-cell {
+            padding: 12px 16px;
+            color: #a8afc2;
+            font-size: 14px;
+        }
+        .pipeline-table .substage-cell a { color: #a8afc2; text-decoration: none; }
+        .pipeline-table .substage-cell a:hover { color: #e6e8ef; text-decoration: underline; }
+
+        .pipeline-table .substage-cell:before {
+            content: "→ ";
+            color: #4e6bff;
+            margin-right: 4px;
+        }
+        .run-btn { padding:8px 14px; border-radius:8px; font-weight:800; font-size:0.85rem; border:1px solid #334155; }
+        .pipeline-table .run-cell button.run-btn { font-weight:800; }
+        .run-btn.dead { background:#111827; color:#e5e7eb; border-color:#374151; }
+        .run-btn.ready { background:#1f2937; color:#e5e7eb; border-color:#374151; }
+        .run-btn.complete { background:#10b981; color:#ffffff; border-color:#059669; }
+        /* Force consistent text color for all Run buttons within table */
+        .pipeline-table .run-cell .run-btn { color:#e5e7eb !important; }
+
+        /* Mode column and selects */
+        .pipeline-table .run-header { padding-right: 20px; }
+        .pipeline-table td.run-cell { padding-right: 18px; }
+        .pipeline-table td.run-cell:last-child { padding-right: 20px; padding-left: 18px; }
+        select.mode-select {
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 6px 10px;
+            min-width: 110px;
+        }
+        select.mode-select:focus { outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.35); }
+    </style>
+
+</body>
+</html>
+<script>
+// Global helper functions for visual feedback during pipeline execution
+const stepIdToButtonId = {
+    'week-ideas': 'run-week-ideas',
+    'idea-generation': 'run-idea-generation',
+    'taxonomy': 'run-taxonomy',
+    'topic-brainstorming': 'run-topic-brainstorming',
+    'section-structure-design': 'run-section-structure',
+    'section-ideas': 'run-section-ideas',
+    'section-titling': 'run-section-titling',
+    'drafting': 'run-drafting',
+    'image-concepts': 'run-image-concepts',
+    'image-prompts': 'run-image-prompts',
+    'image-captions': 'run-image-captions',
+    'image-generation': 'run-image-generation',
+    'optimise': 'run-image-optimise',
+    'header-title-summary': 'run-header-title-summary',
+    'header-image-generate': 'run-header-image-generate',
+    'header-seo-meta': 'run-header-seo-meta',
+    'final-review': 'run-final-review'
+};
+
+// Global pipeline status storage
+let currentPipelineStatus = null;
+
+// Mapping from step.id to substage key in pipelineStatus
+const stepIdToSubstageKey = {
+    'week-ideas': 'idea_generation',
+    'idea-generation': 'ideas',
+    'taxonomy': 'taxonomy',
+    'topic-brainstorming': 'topic_brainstorming',
+    'section-structure-design': 'section_structure',
+    'section-ideas': 'topic_allocation',
+    'section-titling': 'section_titling',
+    'drafting': 'author_first_drafts',
+    'image-concepts': 'image_concepts',
+    'image-prompts': 'image_prompts',
+    'image-captions': 'image_captions',
+    'image-generation': 'image_generation',
+    'optimise': 'optimise',
+    'header-title-summary': 'title_summary',
+    'header-image-generate': 'header_image',
+    'header-seo-meta': 'seo_meta',
+    'final-review': 'final_review'
+};
+
+// Helper function to check if a step is completed
+function isStepCompleted(stepId) {
+    if (!currentPipelineStatus || !currentPipelineStatus.stages) return false;
+    
+    const substageKey = stepIdToSubstageKey[stepId];
+    if (!substageKey) return false; // Unknown step, assume not completed
+    
+    // Search through all stages for this substage
+    for (const stageKey of Object.keys(currentPipelineStatus.stages)) {
+        const stage = currentPipelineStatus.stages[stageKey];
+        if (stage && stage.substages && stage.substages[substageKey]) {
+            return stage.substages[substageKey].status === 'complete';
+        }
+    }
+    return false;
+}
+
+// Helper function to update button state for visual feedback
+function updateStepButtonState(stepId, state) {
+    const buttonId = stepIdToButtonId[stepId];
+    if (!buttonId) return; // No button for this step
+    
+    const button = document.getElementById(buttonId);
+    if (!button) return; // Button doesn't exist
+    
+    const originalText = button.textContent.trim();
+    
+    switch(state) {
+        case 'running':
+            button.disabled = true;
+            button.textContent = 'Running…';
+            button.classList.remove('dead', 'complete');
+            button.classList.add('ready');
+            break;
+        case 'complete':
+            button.disabled = false;
+            button.textContent = 'Done';
+            button.classList.remove('dead', 'ready');
+            button.classList.add('complete');
+            // Reset text after a moment
+            setTimeout(() => {
+                if (button.textContent === 'Done') {
+                    button.textContent = originalText;
+                }
+            }, 2000);
+            break;
+        case 'error':
+            button.disabled = false;
+            button.textContent = 'Error';
+            button.classList.remove('ready', 'complete');
+            button.classList.add('dead');
+            setTimeout(() => {
+                if (button.textContent === 'Error') {
+                    button.textContent = originalText;
+                }
+            }, 3000);
+            break;
+    }
+}
+
+// Orchestrator overlay (moved below run handlers to avoid ReferenceError)
+(function(){
+    const overlay = document.createElement('div');
+    overlay.id = 'orchestrator-overlay';
+    overlay.style.cssText = 'position:fixed;right:16px;bottom:16px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:12px 14px;z-index:9999;min-width:300px;display:none;';
+    overlay.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <strong>Run All</strong>
+            <div>
+                <button id="orch-pause" class="run-btn dead" style="padding:4px 8px;">Pause</button>
+                <button id="orch-continue" class="run-btn ready" style="padding:4px 8px;display:none;">Continue</button>
+                <button id="orch-close" class="run-btn dead" style="padding:4px 8px;">Close</button>
+            </div>
+        </div>
+        <div id="orch-status" style="margin-top:8px;font-size:12px;color:#a8afc2;">Preparing…</div>
+        <div id="orch-steps" style="margin-top:8px;max-height:180px;overflow:auto;font-size:12px;"></div>
+    `;
+    document.body.appendChild(overlay);
+    // Defer pipeline wiring until after run handlers are defined later in the file
+    return;
+
+    function openOverlay(){ overlay.style.display='block'; }
+    function closeOverlay(){ overlay.style.display='none'; }
+    function setStatus(text){ const el=document.getElementById('orch-status'); if (el) el.textContent=text; }
+    function appendStep(text){ const el=document.getElementById('orch-steps'); if (el){ const d=document.createElement('div'); d.textContent=text; el.appendChild(d);} }
+
+    const modeKey = (id)=>`blogForgeMode_${id}`;
+    function getMode(id){
+        const sel = document.querySelector(`select.mode-select[data-substage="${id}"]`);
+        const saved = localStorage.getItem(modeKey(id));
+        const value = (saved || (sel ? sel.value : 'auto')) || 'auto';
+        if (sel) sel.value = value;
+        return value;
+    }
+    document.querySelectorAll('select.mode-select').forEach(sel => {
+        const id = sel.getAttribute('data-substage');
+        const saved = localStorage.getItem(modeKey(id));
+        if (saved) sel.value = saved;
+        sel.addEventListener('change', ()=> localStorage.setItem(modeKey(id), sel.value));
+    });
+
+    // Map completion events
+    const events = {
+        'titling_complete': 'titling_complete',
+        'drafting_complete': 'drafting_complete',
+        'image_concepts_complete': 'image_concepts_complete',
+        'image_prompts_complete': 'image_prompts_complete',
+        'image_captions_complete': 'image_captions_complete',
+        'image_generation_complete': 'image_generation_complete',
+        'image_optimise_complete': 'image_optimise_complete',
+        'header_title_summary_complete': 'header_title_summary_complete',
+        'header_image_prompt_complete': 'header_image_prompt_complete',
+        'header_image_details_complete': 'header_image_details_complete',
+        'header_image_generated': 'header_image_generated',
+        'header_image_optimized': 'header_image_optimized',
+        'header_seo_meta_complete': 'header_seo_meta_complete'
+    };
+
+    // Pipeline definition (order can be adjusted)
+    let pipeline = [
+        { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
+        { id:'taxonomy', label:'Planning — Taxonomy', run: runTaxonomy },
+        { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
+        { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
+        { id:'section-structure-design', label:'Planning — Section Structure', run: runSectionStructure },
+        { id:'section-ideas', label:'Planning — Section Ideas', run: runSectionIdeas },
+        { id:'section-titling', label:'Planning — Section Titling', run: runSectionTitling, completeEvent: events.titling_complete },
+        { id:'drafting', label:'Authoring — Drafting', run: runDrafting, completeEvent: events.drafting_complete },
+        { id:'image-concepts', label:'Authoring — Image Concepts', run: runImageConcepts, completeEvent: events.image_concepts_complete },
+        { id:'image-prompts', label:'Authoring — Image Prompts', run: runImagePrompts, completeEvent: events.image_prompts_complete },
+        { id:'image-captions', label:'Authoring — Image Captions', run: runImageCaptions, completeEvent: events.image_captions_complete },
+        { id:'image-generation', label:'Imaging — Image Generation', run: runImageGeneration, completeEvent: events.image_generation_complete },
+        { id:'optimise', label:'Imaging — Optimise', run: runImageOptimise, completeEvent: events.image_optimise_complete },
+        { id:'header-title-summary', label:'Header — Title & Summary', run: ()=>{ const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); }, completeEvent: events.header_title_summary_complete },
+        { id:'header-image-prompt', label:'Header Image — Prompt', run: runHeaderImagePrompt, completeEvent: events.header_image_prompt_complete },
+        { id:'header-image-details', label:'Header Image — Captions/Alt', run: runHeaderImageDetails, completeEvent: events.header_image_details_complete },
+        { id:'header-image-generate', label:'Header Image — Image', run: runHeaderImageGenerate, completeEvent: events.header_image_generated },
+        { id:'header-image-optimise', label:'Header Image — Optimise', run: runHeaderImageOptimize, completeEvent: events.header_image_optimized },
+        { id:'header-seo-meta', label:'Header — SEO & Meta', run: runHeaderSeoMeta, completeEvent: events.header_seo_meta_complete },
+        { id:'final-review', label:'Final Review — Preview', run: runFinalReview }
+    ];
+
+    function waitForEvent(eventName, timeoutMs=120000){
+        return new Promise((resolve, reject)=>{
+            let timer = setTimeout(()=>{ window.removeEventListener('message', onMsg); reject(new Error('Timeout waiting for '+eventName)); }, timeoutMs);
+            function onMsg(ev){ if (ev.data === eventName){ clearTimeout(timer); window.removeEventListener('message', onMsg); resolve(); } }
+            window.addEventListener('message', onMsg);
+        });
+    }
+
+    let paused = false;
+    function setPaused(v){ paused = v; document.getElementById('orch-continue').style.display = v ? '' : 'none'; }
+
+    let pendingManualResolve = null;
+
+    async function runAll(){
+        const startBtn = document.getElementById('start-all');
+        const runAllBtn = document.getElementById('run-all');
+        if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Running…'; }
+        if (runAllBtn){ runAllBtn.disabled = true; runAllBtn.textContent = 'Running…'; }
+        
+        // Check run mode
+        const runModeAll = document.getElementById('run-mode-all');
+        const runUncompletedOnly = runModeAll ? !runModeAll.checked : false;
+        
+        // Filter pipeline steps based on mode
+        let stepsToRun = pipeline;
+        if (runUncompletedOnly) {
+            stepsToRun = pipeline.filter(step => !isStepCompleted(step.id));
+            const skippedCount = pipeline.length - stepsToRun.length;
+            if (skippedCount > 0) {
+                console.log(`Skipping ${skippedCount} completed step(s)`);
+            }
+        }
+        
+        if (stepsToRun.length === 0) {
+            alert('All steps are already completed!');
+            if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Start'; }
+            if (runAllBtn){ runAllBtn.disabled = false; runAllBtn.textContent = 'Run All'; }
+            return;
+        }
+        
+        openOverlay(); 
+        setStatus('Starting…'); 
+        appendStep(`Initializing pipeline (${runUncompletedOnly ? stepsToRun.length + ' uncompleted' : 'all'} steps)`);
+        for (const step of stepsToRun){
+            const mode = getMode(step.id);
+            appendStep(`→ ${step.label} (${mode})`);
+            setStatus(step.label);
+            
+            // Update button to show it's running
+            updateStepButtonState(step.id, 'running');
+            
+            if (mode === 'manual'){
+                // For manual mode, just open the destination page like the run function would, but do not proceed automatically.
+                try { step.run(); } catch(_){}
+                setPaused(true);
+                await new Promise((resolve)=>{
+                    const cont = document.getElementById('orch-continue');
+                    const handler = ()=>{ cont.removeEventListener('click', handler); setPaused(false); if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Running…'; } resolve(); };
+                    cont.addEventListener('click', handler);
+                    pendingManualResolve = ()=>{ handler(); pendingManualResolve = null; };
+                    if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Resume'; }
+                });
+                appendStep(`✓ ${step.label} (manual)`);
+                updateStepButtonState(step.id, 'complete');
+                continue;
+            }
+            try{
+                // For steps with completion events, set up listener BEFORE calling run()
+                let eventReceived = false;
+                let eventListener = null;
+                if (step.completeEvent) {
+                    eventListener = (ev) => {
+                        if (ev.data === step.completeEvent) {
+                            eventReceived = true;
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                        }
+                    };
+                    window.addEventListener('message', eventListener);
+                }
+                
+                // Auto: invoke runner and await it (most are async functions)
+                const result = step.run && step.run();
+                
+                // Special handling for steps that open windows (like image generation)
+                let openedWindow = null;
+                if (result && result.window && typeof result.window === 'object') {
+                    openedWindow = result.window;
+                } else if (result && result instanceof Window) {
+                    openedWindow = result;
+                }
+                
+                // If it returns a Promise, await it
+                if (result && typeof result.then === 'function') {
+                    await result;
+                }
+                
+                // If it has a completion event, wait for it
+                if (step.completeEvent){
+                    const timeout = step.id === 'image-generation' ? 300000 : 180000;
+                    try {
+                        // For image generation, also poll window closure as fallback
+                        if (step.id === 'image-generation' && openedWindow) {
+                            // Race between event and window closure
+                            const eventPromise = new Promise((resolve, reject) => {
+                                if (eventReceived) {
+                                    resolve('event_received');
+                                    return;
+                                }
+                                const timer = setTimeout(() => {
+                                    window.removeEventListener('message', eventListener);
+                                    reject(new Error(`Timeout waiting for ${step.completeEvent}`));
+                                }, timeout);
+                                
+                                const checkEvent = (ev) => {
+                                    if (ev.data === step.completeEvent) {
+                                        clearTimeout(timer);
+                                        window.removeEventListener('message', checkEvent);
+                                        resolve('event_received');
+                                    }
+                                };
+                                window.addEventListener('message', checkEvent);
+                            });
+                            
+                            const windowClosedPromise = new Promise((resolve) => {
+                                const checkInterval = setInterval(() => {
+                                    if (openedWindow.closed) {
+                                        clearInterval(checkInterval);
+                                        resolve('window_closed');
+                                    }
+                                }, 1000);
+                                // Clear interval if event fires first
+                                eventPromise.then(() => clearInterval(checkInterval)).catch(() => {});
+                            });
+                            
+                            // Wait for either event or window closure
+                            const raceResult = await Promise.race([eventPromise, windowClosedPromise]);
+                            if (raceResult === 'window_closed') {
+                                appendStep(`⚠ ${step.label} - window closed (event may not have fired)`);
+                            }
+                            // Clean up listener
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                        } else {
+                            await waitForEvent(step.completeEvent, timeout);
+                            // Clean up listener
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                        }
+                    } catch (e) {
+                        // Clean up listener on error
+                        if (eventListener) {
+                            window.removeEventListener('message', eventListener);
+                        }
+                        // If timeout and we have a window, check if it's still open
+                        if (openedWindow) {
+                            if (openedWindow.closed) {
+                                // Window closed - might have completed, continue
+                                appendStep(`⚠ ${step.label} - window closed, assuming complete`);
+                            } else {
+                                // Window still open but no event - might be stuck
+                                throw new Error(`Timeout waiting for ${step.completeEvent}. Window is still open - you may need to complete it manually.`);
+                            }
+                        } else {
+                            throw e;
+                        }
+                    }
+                } else if (!result || typeof result.then !== 'function') {
+                    // Fallback: short delay for non-async, non-event steps
+                    await new Promise(r=>setTimeout(r, 1500));
+                }
+                appendStep(`✓ ${step.label}`);
+                updateStepButtonState(step.id, 'complete');
+                
+                // Refresh pipeline status to update green dots
+                const postId = getSelectedPostId();
+                if (postId) {
+                    try {
+                        const statusResp = await fetch(`/launchpad/one-click-publication/api/pipeline-status/${postId}`);
+                        if (statusResp.ok) {
+                            const statusData = await statusResp.json();
+                            if (statusData.success && statusData.data) {
+                                currentPipelineStatus = statusData.data;
+                                updatePipelineStatusIndicators(statusData.data);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Failed to refresh pipeline status:', e);
+                    }
+                }
+                }catch(e){
+                    appendStep(`✗ ${step.label} — ${e.message}`);
+                    const retry = confirm(`${step.label} failed: ${e.message}. Retry?`);
+                    if (retry){
+                        // One retry
+                        try{
+                            const retryResult = step.run && step.run();
+                            if (retryResult && typeof retryResult.then === 'function') {
+                                await retryResult;
+                            }
+                            if (step.completeEvent){ await waitForEvent(step.completeEvent, 180000); }
+                            appendStep(`✓ ${step.label} (retry)`);
+                        }catch(e2){ appendStep(`✗ ${step.label} — ${e2.message}`); break; }
+                } else {
+                    const skip = confirm('Skip this step and continue?');
+                    if (!skip) break;
+                }
+            }
+            // Pause support
+            while (paused){ await new Promise(r=>setTimeout(r, 300)); }
+        }
+        setStatus('Pipeline complete');
+        if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Start'; }
+        if (runAllBtn){ runAllBtn.disabled = false; runAllBtn.textContent = 'Run All'; }
+    }
+
+    const runAllBtn = document.getElementById('run-all');
+    if (runAllBtn){ runAllBtn.addEventListener('click', (e)=>{ e.preventDefault(); runAll(); }); }
+    const startBtn = document.getElementById('start-all');
+    if (startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); if (pendingManualResolve){ pendingManualResolve(); } else { runAll(); } }); }
+    const pauseBtn = document.getElementById('orch-pause');
+    if (pauseBtn){ pauseBtn.addEventListener('click', ()=> setPaused(!paused)); }
+    const closeBtn = document.getElementById('orch-close');
+    if (closeBtn){ closeBtn.addEventListener('click', ()=> closeOverlay()); }
+})();
+// Run Week Ideas creation without navigation: auto-pick an idea and call confirm endpoint
+(function(){
+    function getCurrentISOWeek(){
+        const date = new Date();
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+    async function runWeekIdeas(){
+        const btn = document.getElementById('run-week-ideas');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+
+            const week = getCurrentISOWeek();
+            const year = new Date().getFullYear();
+            // Fetch ideas for current week
+            const ideasResp = await fetch(`/planning/api/calendar/ideas/week/${week}`);
+            const ideasData = await ideasResp.json();
+            let topic = null;
+            if (ideasData && ideasData.success && Array.isArray(ideasData.ideas) && ideasData.ideas.length){
+                const mandatory = ideasData.ideas.find(i => i.priority === 'mandatory');
+                topic = (mandatory || ideasData.ideas[0]).idea_title;
+            } else {
+                // Fallback: prompt user for a topic if no ideas available
+                topic = window.prompt('Enter a topic for this week (no ideas available):');
+                if (!topic) throw new Error('No topic provided');
+            }
+
+            // Confirm/create post without leaving the page
+            const confirmResp = await fetch('/planning/api/calendar/confirm-idea', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic, week_number: week, year })
+            });
+            const confirmData = await confirmResp.json();
+            if (!confirmResp.ok || !confirmData.success){
+                throw new Error(confirmData.error || 'Failed to create/reuse post');
+            }
+
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Week Ideas run failed:', err);
+            alert('Week Ideas run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const btn = document.getElementById('run-week-ideas');
+    if (btn){
+        btn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runWeekIdeas();
+        });
+    }
+    
+    // Run Taxonomy: navigate to taxonomy page (manual assignment)
+    async function runTaxonomy(){
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        // Get week context from URL or use current week
+        let year, week;
+        if (window.WeekContext) {
+            const weekContext = window.WeekContext.getWeekContextWithDefault();
+            year = weekContext.year;
+            week = weekContext.week;
+        } else {
+            const now = new Date();
+            week = getCurrentISOWeek();
+            year = now.getFullYear();
+        }
+        
+        // Navigate to taxonomy page with week context
+        const url = `/planning/posts/${postId}/calendar/taxonomy?year=${year}&week=${week}`;
+        window.open(url, '_blank');
+    }
+    
+    // Run Idea Generation: generate expanded idea for selected post
+    async function runIdeaGeneration(){
+        const btn = document.getElementById('run-idea-generation');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+            
+            // Get idea_seed from post
+            const postResp = await fetch(`/planning/api/posts/${postId}`);
+            const postData = await postResp.json();
+            if (!postResp.ok || !postData.success || !postData.post){
+                throw new Error('Failed to load post data');
+            }
+            const ideaSeed = postData.post.idea_seed;
+            if (!ideaSeed){
+                throw new Error('No idea seed set. Go to Calendar → Week Ideas to pick one first.');
+            }
+            
+            // Generate expanded idea
+            const generateResp = await fetch(`/planning/api/posts/${postId}/expanded-idea`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idea_seed: ideaSeed })
+            });
+            const generateData = await generateResp.json();
+            if (!generateResp.ok || !generateData.success){
+                throw new Error(generateData.error || 'Failed to generate expanded idea');
+            }
+            
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Idea Generation run failed:', err);
+            alert('Idea Generation run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const runIdeaBtn = document.getElementById('run-idea-generation');
+    if (runIdeaBtn){
+        runIdeaBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runIdeaGeneration();
+        });
+    }
+    
+    // Run Topic Brainstorming: generate topics for selected post
+    async function runTopicBrainstorming(){
+        const btn = document.getElementById('run-topic-brainstorming');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+            
+            // Get expanded_idea from post
+            const postResp = await fetch(`/planning/api/posts/${postId}`);
+            const postData = await postResp.json();
+            if (!postResp.ok || !postData.success || !postData.post){
+                throw new Error('Failed to load post data');
+            }
+            const expandedIdea = postData.post.expanded_idea;
+            if (!expandedIdea || !expandedIdea.trim()){
+                throw new Error('No expanded idea found. Go to Planning → Idea Generation to generate one first.');
+            }
+            
+            // Generate brainstorm topics (default to comprehensive type)
+            const brainstormResp = await fetch('/planning/api/brainstorm/topics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    expanded_idea: expandedIdea,
+                    brainstorm_type: 'comprehensive',
+                    post_id: parseInt(postId)
+                })
+            });
+            const brainstormData = await brainstormResp.json();
+            if (!brainstormResp.ok || !brainstormData.success){
+                throw new Error(brainstormData.error || 'Failed to generate brainstorm topics');
+            }
+            
+            // Save topics to database
+            if (brainstormData.topics && brainstormData.topics.length > 0){
+                const saveResp = await fetch(`/planning/api/posts/${postId}/idea-scope`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topics: brainstormData.topics })
+                });
+                const saveData = await saveResp.json();
+                if (!saveData.success){
+                    console.warn('Topics generated but failed to save:', saveData.error);
+                }
+            }
+            
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Topic Brainstorming run failed:', err);
+            alert('Topic Brainstorming run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const runBrainstormBtn = document.getElementById('run-topic-brainstorming');
+    if (runBrainstormBtn){
+        runBrainstormBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runTopicBrainstorming();
+        });
+    }
+    
+    // Run Section Structure Design: design section structure for selected post
+    async function runSectionStructure(){
+        const btn = document.getElementById('run-section-structure');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+            
+            // Get post data to check prerequisites
+            const postResp = await fetch(`/planning/api/posts/${postId}`);
+            const postData = await postResp.json();
+            if (!postResp.ok || !postData.success || !postData.post){
+                throw new Error('Failed to load post data');
+            }
+            
+            // Check that topics exist (from brainstorming)
+            const ideaScope = postData.post.idea_scope;
+            let hasTopics = false;
+            if (ideaScope) {
+                try {
+                    const scopeData = JSON.parse(ideaScope);
+                    const topics = scopeData.generated_topics || [];
+                    hasTopics = topics.length > 0;
+                } catch (e) {
+                    // idea_scope is not valid JSON or doesn't have topics
+                }
+            }
+            if (!hasTopics){
+                throw new Error('No topics found. Go to Planning → Topic Brainstorming to generate topics first.');
+            }
+            
+            // Design section structure (API will fetch topics and expanded_idea automatically)
+            const designResp = await fetch('/planning/api/sections/design-structure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    post_id: parseInt(postId)
+                })
+            });
+            const designData = await designResp.json();
+            if (!designResp.ok || !designData.success){
+                throw new Error(designData.error || 'Failed to design section structure');
+            }
+            
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Section Structure Design run failed:', err);
+            alert('Section Structure Design run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const runStructureBtn = document.getElementById('run-section-structure');
+    if (runStructureBtn){
+        runStructureBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runSectionStructure();
+        });
+    }
+    
+    // Run Section Ideas (Topic Allocation): generate section-specific topics for selected post
+    async function runSectionIdeas(){
+        const btn = document.getElementById('run-section-ideas');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        try {
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            btn.classList.remove('dead','complete');
+            btn.classList.add('ready');
+            
+            // Get post data to check prerequisites
+            const postResp = await fetch(`/planning/api/posts/${postId}`);
+            const postData = await postResp.json();
+            if (!postResp.ok || !postData.success || !postData.post){
+                throw new Error('Failed to load post data');
+            }
+            
+            // Check that section_structure exists
+            const sectionStructure = postData.post.section_structure;
+            if (!sectionStructure){
+                throw new Error('No section structure found. Go to Planning → Section Structure Design to create one first.');
+            }
+            
+            // Generate section-specific topics
+            const generateResp = await fetch('/planning/api/sections/generate-section-specific-topics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    post_id: parseInt(postId)
+                })
+            });
+            const generateData = await generateResp.json();
+            if (!generateResp.ok || !generateData.success){
+                throw new Error(generateData.error || 'Failed to generate section-specific topics');
+            }
+            
+            // Mark as complete
+            btn.textContent = 'Done';
+            btn.classList.remove('dead','ready');
+            btn.classList.add('complete');
+        } catch (err){
+            console.error('Section Ideas run failed:', err);
+            alert('Section Ideas run failed: ' + err.message);
+            btn.classList.remove('complete');
+            btn.classList.add('dead');
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        }
+    }
+    const runSectionIdeasBtn = document.getElementById('run-section-ideas');
+    if (runSectionIdeasBtn){
+        runSectionIdeasBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runSectionIdeas();
+        });
+    }
+    
+    // Run Section Titling: open titling page in new window, trigger script, close when complete
+    function runSectionTitling(){
+        const btn = document.getElementById('run-section-titling');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open titling page in new window
+        const titlingWindow = window.open(`/planning/posts/${postId}/concept/titling?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        if (!titlingWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
+        // Listen for completion message from titling page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'titling_complete') {
+                if (titlingWindow) {
+                    try { titlingWindow.close(); } catch(_){}
+                }
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (titlingWindow && titlingWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: titlingWindow };
+    }
+    const runSectionTitlingBtn = document.getElementById('run-section-titling');
+    if (runSectionTitlingBtn){
+        runSectionTitlingBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runSectionTitling();
+        });
+    }
+    
+    // Run Drafting: open drafting page in new window, trigger Generate All, close when complete
+    function runDrafting(){
+        const btn = document.getElementById('run-drafting');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open drafting page in new window
+        const draftingWindow = window.open(`/posts/${postId}/sections/drafting?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        if (!draftingWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
+        // Listen for completion message from drafting page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'drafting_complete') {
+                if (draftingWindow) {
+                    try { draftingWindow.close(); } catch(_){}
+                }
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (draftingWindow && draftingWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: draftingWindow };
+    }
+    const runDraftingBtn = document.getElementById('run-drafting');
+    if (runDraftingBtn){
+        runDraftingBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runDrafting();
+        });
+    }
+    
+    // Run Image Concepts: open image_concepts page in new window, trigger Generate All, close when complete
+    function runImageConcepts(){
+        const btn = document.getElementById('run-image-concepts');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open image_concepts page in new window
+        const conceptsWindow = window.open(`/authoring/posts/${postId}/sections/image_concepts?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        if (!conceptsWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
+        // Listen for completion message from image_concepts page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'image_concepts_complete') {
+                if (conceptsWindow) {
+                    try { conceptsWindow.close(); } catch(_){}
+                }
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (conceptsWindow && conceptsWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: conceptsWindow };
+    }
+    const runImageConceptsBtn = document.getElementById('run-image-concepts');
+    if (runImageConceptsBtn){
+        runImageConceptsBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runImageConcepts();
+        });
+    }
+    
+    // Run Image Prompts: open image_prompts page in new window, trigger Generate All, close when complete
+    function runImagePrompts(){
+        const btn = document.getElementById('run-image-prompts');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open image_prompts page in new window
+        const promptsWindow = window.open(`/authoring/posts/${postId}/sections/image_prompts?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        if (!promptsWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
+        // Listen for completion message from image_prompts page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'image_prompts_complete') {
+                if (promptsWindow) {
+                    try { promptsWindow.close(); } catch(_){}
+                }
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (promptsWindow && promptsWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: promptsWindow };
+    }
+    const runImagePromptsBtn = document.getElementById('run-image-prompts');
+    if (runImagePromptsBtn){
+        runImagePromptsBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runImagePrompts();
+        });
+    }
+    
+    // Run Image Captions: open image_captions page in new window, trigger Generate All, close when complete
+    function runImageCaptions(){
+        const btn = document.getElementById('run-image-captions');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        
+        const postId = getSelectedPostId();
+        if (!postId){
+            alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead','complete');
+        btn.classList.add('ready');
+        
+        // Open image_captions page in new window
+        const captionsWindow = window.open(`/authoring/posts/${postId}/sections/image_captions?auto_run=true`, '_blank', 'width=1400,height=900');
+        
+        if (!captionsWindow) {
+            alert('Popup blocked. Please allow popups for this site.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
+        // Listen for completion message from image_captions page
+        window.addEventListener('message', function handleMessage(event) {
+            if (event.data === 'image_captions_complete') {
+                if (captionsWindow) {
+                    try { captionsWindow.close(); } catch(_){}
+                }
+                window.removeEventListener('message', handleMessage);
+                
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        });
+        
+        // Fallback: if window closes without message, assume complete
+        const checkClosed = setInterval(() => {
+            if (captionsWindow && captionsWindow.closed) {
+                clearInterval(checkClosed);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead','ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = originalText; }, 1500);
+            }
+        }, 1000);
+        
+        // Return window for runAll() to track
+        return { window: captionsWindow };
+    }
+    const runImageCaptionsBtn = document.getElementById('run-image-captions');
+    if (runImageCaptionsBtn){
+        runImageCaptionsBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runImageCaptions();
+        });
+    }
+    
+    // Substage links navigation based on selected post
+    function getSelectedPostId(){
+        const sel = document.getElementById('pipeline-post-selector');
+        return sel && sel.value ? sel.value : '';
+    }
+    function routeFor(stage, substage, postId){
+        const routes = {
+            calendar: {
+                'calendar-view': p => `/planning/posts/${p}/calendar/view`,
+                'week-ideas': (p) => {
+                    const week = getCurrentISOWeek();
+                    return (p && p.toString().trim()) ? `/planning/calendar/ideas/week/${week}?post_id=${p}` : `/planning/calendar/ideas/week/${week}`;
+                }
+            },
+            planning: {
+                'taxonomy': p => `/planning/posts/${p}/calendar/taxonomy`,
+                'idea-generation': p => `/planning/posts/${p}/calendar/ideas`,
+                'topic-brainstorming': p => `/planning/posts/${p}/concept/brainstorm`,
+                'section-structure-design': p => `/planning/posts/${p}/concept/section-structure`,
+                'section-ideas': p => `/planning/posts/${p}/concept/topic-allocation`,
+                'section-titling': p => `/planning/posts/${p}/concept/titling`
+            },
+            authoring: {
+                'drafting': p => `/authoring/posts/${p}/sections/author-first-drafts`,
+                'image-concepts': p => `/authoring/posts/${p}/sections/image-concepts`,
+                'image-prompts': p => `/authoring/posts/${p}/sections/image-prompts`,
+                'image-captions': p => `/authoring/posts/${p}/sections/image-captions`
+            },
+            imaging: {
+                'image-generation': p => `/imaging/posts/${p}/sections/image-generation`,
+                'optimise': p => `/imaging/posts/${p}/sections/optimise`
+                },
+                header: {
+                    'title-summary': p => `/header/posts/${p}/title-summary`,
+                    'header-image-prompt': p => `/header/posts/${p}/header-image`,
+                    'header-image-details': p => `/header/posts/${p}/header-image`,
+                    'header-image-generate': p => `/header/posts/${p}/header-image`,
+                    'header-image-optimise': p => `/header/posts/${p}/header-image`,
+                    'seo-meta': p => `/header/posts/${p}/seo-meta`,
+                    'final-review': p => `/header/posts/${p}/preview`
+            }
+        };
+        const fn = routes[stage] && routes[stage][substage];
+        if (!fn) return null;
+        return fn(postId);
+    }
+    document.querySelectorAll('.substage-link').forEach(a => {
+        a.addEventListener('click', function(e){
+            e.preventDefault();
+            const stage = this.getAttribute('data-stage');
+            const substage = this.getAttribute('data-substage');
+            const requiresPost = !(stage === 'calendar' && substage === 'week-ideas');
+            const postId = getSelectedPostId();
+            if (requiresPost && !postId){
+                alert('Please select a post in the "Viewing Pipeline For" dropdown first.');
+                return;
+            }
+            const url = routeFor(stage, substage, postId);
+            if (!url){ alert('Unknown destination for this substage'); return; }
+            window.location.href = url;
+        });
+    });
+
+    // Load posts for selector; default to saved or current week's scheduled post
+    async function loadPosts(){
+        try {
+            const resp = await fetch('/api/posts');
+            const data = await resp.json();
+            const posts = Array.isArray(data) ? data : (data.posts || []);
+            const select = document.getElementById('pipeline-post-selector');
+            const titleTextEl = document.getElementById('post-title-text');
+            const badgeEl = document.getElementById('post-type-badge');
+            const subtitleEl = document.getElementById('selected-post-subtitle');
+            if (!select) return;
+            if (!posts.length){
+                select.innerHTML = '<option value="">No posts</option>';
+                if (titleTextEl) titleTextEl.textContent = 'No posts available';
+                if (badgeEl) badgeEl.style.display = 'none';
+                if (subtitleEl) subtitleEl.textContent = '';
+                return;
+            }
+            // Populate selector immediately
+            select.innerHTML = posts.map(p => `<option value="${p.id}">#${p.id} — ${escapeHtml(p.title || 'Untitled')}</option>`).join('');
+            // Determine default quickly (saved or first), then refine asynchronously to current week
+            const savedPostId = localStorage.getItem('blogForgeSelectedPostId');
+            const quickDefaultId = (savedPostId && posts.find(p => p.id.toString() === savedPostId)) ? savedPostId : posts[0].id;
+            select.value = quickDefaultId;
+            localStorage.setItem('blogForgeSelectedPostId', quickDefaultId.toString());
+            updateSelectedPostSummary(quickDefaultId);
+            loadAuthorsForPost(quickDefaultId);
+            // Try refine to current week's post in background
+            (async ()=>{
+                const currentWeekId = await findCurrentWeekPostId(posts);
+                if (currentWeekId && currentWeekId.toString() !== quickDefaultId.toString() && !localStorage.getItem('blogForgeSelectedPostIdManual')){
+                    select.value = currentWeekId;
+                    localStorage.setItem('blogForgeSelectedPostId', currentWeekId.toString());
+                    updateSelectedPostSummary(currentWeekId);
+                    loadAuthorsForPost(currentWeekId);
+                }
+            })();
+            
+            select.addEventListener('change', () => {
+                const postId = select.value;
+                localStorage.setItem('blogForgeSelectedPostId', postId);
+                localStorage.setItem('blogForgeSelectedPostIdManual', '1');
+                updateSelectedPostSummary(postId);
+                loadAuthorsForPost(postId);
+            });
+            
+        } catch (e){
+            console.error('Failed to load posts:', e);
+        }
+    }
+
+    async function findCurrentWeekPostId(posts){
+        try{
+            const year = new Date().getFullYear();
+            const week = getCurrentISOWeek();
+            const check = posts.slice(0, 15);
+            for (const p of check){
+                const r = await fetch(`/planning/api/posts/${p.id}`);
+                if (!r.ok) continue;
+                const d = await r.json();
+                const sched = d && d.schedule;
+                if (sched && Number(sched.year) === Number(year) && Number(sched.week_number) === Number(week)){
+                    return p.id;
+                }
+            }
+            return null;
+        } catch(e){ return null; }
+    }
+
+    // Run Image Generation: open imaging page, auto-run batch generation, close when complete
+    function runImageGeneration(){
+        const btn = document.getElementById('run-image-generation');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        btn.disabled = true; btn.textContent = 'Running…'; btn.classList.remove('dead','complete'); btn.classList.add('ready');
+        const win = window.open(`/imaging/posts/${postId}/sections/image-generation?auto_run=generate`, '_blank', 'width=1400,height=900');
+        
+        // Return the window so runAll() can track it
+        if (typeof win !== 'undefined' && win) {
+            // Set up listener for button updates (when called standalone)
+            window.addEventListener('message', function handleMsg(ev){
+                if (ev.data === 'image_generation_complete'){
+                    try { win.close(); } catch(_){}
+                    window.removeEventListener('message', handleMsg);
+                    btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
+                }
+            });
+            const poll = setInterval(()=>{ 
+                if (win.closed){ 
+                    clearInterval(poll); 
+                    btn.textContent='Done'; 
+                    btn.classList.remove('dead','ready'); 
+                    btn.classList.add('complete'); 
+                    btn.disabled=false; 
+                    setTimeout(()=>btn.textContent=originalText,1500);
+                } 
+            }, 1000);
+            
+            // Return window for runAll() to track
+            return { window: win };
+        }
+    }
+    const runImageGenerationBtn = document.getElementById('run-image-generation');
+    if (runImageGenerationBtn){ runImageGenerationBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runImageGeneration(); }); }
+
+    // Run Header Title & Summary: open header page and click Generate All (page handles all logic)
+    function runHeaderTitleSummary(){
+        const btn = document.getElementById('run-header-title-summary');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        btn.disabled = true; btn.textContent = 'Running…'; btn.classList.remove('dead','complete'); btn.classList.add('ready');
+        const win = window.open(`/header/posts/${postId}/title-summary`, '_blank', 'width=1400,height=900');
+        const start = Date.now();
+        const maxWait = 20000; // 20s total
+        let clicked = false;
+        const interval = setInterval(()=>{
+            try {
+                if (!win || win.closed) { clearInterval(interval); return; }
+                if (!clicked && win.document && win.document.readyState === 'complete') {
+                    const b = win.document.getElementById('uber-generate-btn');
+                    if (b && !b.disabled) { b.click(); clicked = true; }
+                }
+            } catch(_) { /* cross-origin until ready; retry */ }
+            if (Date.now() - start > maxWait) { clearInterval(interval); }
+        }, 400);
+        // Listen for completion from header page
+        function handleHeaderDone(ev){
+            if (ev.data === 'header_title_summary_complete'){
+                window.removeEventListener('message', handleHeaderDone);
+                try { win && win.close(); } catch(_){}
+                btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
+            }
+        }
+        window.addEventListener('message', handleHeaderDone);
+        // Also fall back to window close
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=originalText,1500);} }, 1000);
+    }
+    const runHeaderTitleSummaryBtn = document.getElementById('run-header-title-summary');
+    if (runHeaderTitleSummaryBtn){ runHeaderTitleSummaryBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderTitleSummary(); }); }
+
+    // Header Image helpers
+    function openHeaderImageAndClick(buttonId, completionMessage){
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        const win = window.open(`/header/posts/${postId}/header-image`, '_blank', 'width=1400,height=900');
+        const start = Date.now();
+        const maxWait = 20000;
+        let clicked = false;
+        const interval = setInterval(()=>{
+            try {
+                if (!win || win.closed){ clearInterval(interval); return; }
+                if (!clicked && win.document && win.document.readyState === 'complete'){
+                    const b = win.document.getElementById(buttonId);
+                    if (b && !b.disabled){ b.click(); clicked = true; }
+                }
+            } catch(_) {}
+            if (Date.now() - start > maxWait){ clearInterval(interval); }
+        }, 400);
+        function handleDone(ev){
+            if (ev.data === completionMessage){
+                window.removeEventListener('message', handleDone);
+                try { win && win.close(); } catch(_){}
+            }
+        }
+        window.addEventListener('message', handleDone);
+        return win;
+    }
+
+    function runHeaderImagePrompt(){
+        const btn = document.getElementById('run-header-image-prompt');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const win = openHeaderImageAndClick('compile-prompt-btn','header_image_prompt_complete');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderImagePromptBtn = document.getElementById('run-header-image-prompt');
+    if (runHeaderImagePromptBtn){ runHeaderImagePromptBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImagePrompt(); }); }
+
+    function runHeaderImageDetails(){
+        const btn = document.getElementById('run-header-image-details');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const win = openHeaderImageAndClick('generate-details-btn','header_image_details_complete');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderImageDetailsBtn = document.getElementById('run-header-image-details');
+    if (runHeaderImageDetailsBtn){ runHeaderImageDetailsBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImageDetails(); }); }
+
+    function runHeaderImageGenerate(){
+        const btn = document.getElementById('run-header-image-generate');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const win = openHeaderImageAndClick('generate-header-btn','header_image_generated');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderImageGenerateBtn = document.getElementById('run-header-image-generate');
+    if (runHeaderImageGenerateBtn){ runHeaderImageGenerateBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImageGenerate(); }); }
+
+    function runHeaderImageOptimize(){
+        const btn = document.getElementById('run-header-image-optimize');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const win = openHeaderImageAndClick('optimize-image-btn','header_image_optimized');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderImageOptimizeBtn = document.getElementById('run-header-image-optimize');
+    if (runHeaderImageOptimizeBtn){ runHeaderImageOptimizeBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderImageOptimize(); }); }
+
+    // SEO & Meta: open page and click Generate Meta Data
+    function runHeaderSeoMeta(){
+        const btn = document.getElementById('run-header-seo-meta');
+        if (!btn) return; const original=btn.textContent; btn.disabled=true; btn.textContent='Running…';
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); btn.disabled=false; btn.textContent=original; return; }
+        const win = window.open(`/header/posts/${postId}/seo-meta`, '_blank', 'width=1400,height=900');
+        const start = Date.now();
+        const maxWait = 20000; let clicked=false;
+        const interval = setInterval(()=>{
+            try {
+                if (!win || win.closed){ clearInterval(interval); return; }
+                if (!clicked && win.document && win.document.readyState === 'complete'){
+                    const b = win.document.getElementById('generate-all-meta-btn');
+                    if (b && !b.disabled){ b.click(); clicked=true; }
+                }
+            } catch(_) {}
+            if (Date.now() - start > maxWait){ clearInterval(interval); }
+        }, 400);
+        function handleDone(ev){
+            if (ev.data === 'header_seo_meta_complete'){
+                window.removeEventListener('message', handleDone);
+                try { win && win.close(); } catch(_){}
+                btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);
+            }
+        }
+        window.addEventListener('message', handleDone);
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=original,1500);} }, 1000);
+    }
+    const runHeaderSeoMetaBtn = document.getElementById('run-header-seo-meta');
+    if (runHeaderSeoMetaBtn){ runHeaderSeoMetaBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runHeaderSeoMeta(); }); }
+
+    // Final Review: open header preview page
+    // Recipe-specific step functions
+    function runRecipeSelection() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        window.location.href = `/recipes`;
+    }
+    function runRecipeResearch() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        const win = window.open(`/posts/${postId}/recipes/research`, '_blank', 'width=1400,height=900');
+        const btn = document.querySelector('[data-step="recipe-research"]');
+        if (btn) {
+            btn.classList.remove('dead');
+            btn.classList.add('ready');
+        }
+    }
+    function runRecipeImageStylePrompt() {
+        const btn = document.getElementById('run-recipe-image-style-prompt');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        btn.disabled = true;
+        btn.textContent = 'Running…';
+        btn.classList.remove('dead', 'complete');
+        btn.classList.add('ready');
+        const win = window.open(`/posts/${postId}/recipes/image-style-prompt`, '_blank', 'width=1400,height=900');
+        const poll = setInterval(() => {
+            if (win && win.closed) {
+                clearInterval(poll);
+                btn.textContent = 'Done';
+                btn.classList.remove('dead', 'ready');
+                btn.classList.add('complete');
+                btn.disabled = false;
+                setTimeout(() => btn.textContent = originalText, 1500);
+            }
+        }, 1000);
+    }
+    
+    // Profile-specific step functions (placeholders - to be implemented)
+    function runProfileSelection() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        window.location.href = `/planning/posts/${postId}/calendar/ideas`;
+    }
+    function runProfileDataSync() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Profile data sync step - to be implemented');
+    }
+    function runProfileSections() {
+        const postId = getSelectedPostId();
+        if (!postId) { alert('Please select a post first.'); return; }
+        alert('Profile sections step - to be implemented');
+    }
+    function runProfileImageConcepts() { return runImageConcepts(); }
+    function runProfileImagePrompts() { return runImagePrompts(); }
+    function runProfileImageGeneration() { return runImageGeneration(); }
+    function runProfileImageOptimise() { return runImageOptimise(); }
+    
+    function runFinalReview(){
+        const btn = document.getElementById('run-final-review');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        btn.disabled = true; btn.textContent = 'Opening…';
+        const win = window.open(`/header/posts/${postId}/preview`, '_blank', 'width=1400,height=900');
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent = originalText; btn.disabled = false; } }, 800);
+    }
+    const runFinalReviewBtn = document.getElementById('run-final-review');
+    if (runFinalReviewBtn){ runFinalReviewBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runFinalReview(); }); }
+
+    // Run Optimise: open imaging page, auto-run batch optimize, close when complete
+    function runImageOptimise(){
+        const btn = document.getElementById('run-image-optimise');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        const postId = getSelectedPostId();
+        if (!postId){ alert('Please select a post in the "Viewing Pipeline For" dropdown first.'); return; }
+        btn.disabled = true; btn.textContent = 'Running…'; btn.classList.remove('dead','complete'); btn.classList.add('ready');
+        const win = window.open(`/imaging/posts/${postId}/sections/optimise?auto=1&auto_run=selected`, '_blank', 'width=1400,height=900');
+        window.addEventListener('message', function handleMsg(ev){
+            if (ev.data === 'image_optimise_complete'){
+                try { win.close(); } catch(_){}
+                window.removeEventListener('message', handleMsg);
+                btn.textContent = 'Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled = false; setTimeout(()=>btn.textContent=originalText,1500);
+            }
+        });
+        const poll = setInterval(()=>{ if (win && win.closed){ clearInterval(poll); btn.textContent='Done'; btn.classList.remove('dead','ready'); btn.classList.add('complete'); btn.disabled=false; setTimeout(()=>btn.textContent=originalText,1500);} }, 1000);
+    }
+    const runImageOptimiseBtn = document.getElementById('run-image-optimise');
+    if (runImageOptimiseBtn){ runImageOptimiseBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); runImageOptimise(); }); }
+
+    function escapeHtml(str){ const d=document.createElement('div'); d.textContent = (str||''); return d.innerHTML; }
+
+    function getWeekDateRange(year, week){
+        // ISO week Monday and Sunday
+        const simple = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+        const dow = simple.getUTCDay();
+        const ISOweekStart = new Date(simple);
+        if (dow <= 4)
+            ISOweekStart.setUTCDate(simple.getUTCDate() - simple.getUTCDay() + 1);
+        else
+            ISOweekStart.setUTCDate(simple.getUTCDate() + 8 - simple.getUTCDay());
+        const ISOweekEnd = new Date(ISOweekStart);
+        ISOweekEnd.setUTCDate(ISOweekStart.getUTCDate() + 6);
+        return { start: ISOweekStart, end: ISOweekEnd };
+    }
+
+    function fmtDate(d){
+        const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${days[d.getUTCDay()]} ${String(d.getUTCDate()).padStart(2,'0')} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+    }
+
+    // Get run function for a step based on post type
+    function getStepRunFunction(stepId, postType) {
+        // Recipe-specific steps
+        if (postType === 'recipe') {
+            if (stepId === 'recipe-selection') return runRecipeSelection;
+            if (stepId === 'recipe-research') return runRecipeResearch;
+            if (stepId === 'recipe-image-style-prompt') return runRecipeImageStylePrompt;
+        }
+        
+        // Profile-specific steps
+        if (postType === 'profile') {
+            if (stepId === 'profile-selection') return runProfileSelection;
+            if (stepId === 'profile-data-sync') return runProfileDataSync;
+            if (stepId === 'profile-sections') return runProfileSections;
+            if (stepId === 'profile-image-concepts') return runProfileImageConcepts;
+            if (stepId === 'profile-image-prompts') return runProfileImagePrompts;
+            if (stepId === 'profile-image-generation') return runProfileImageGeneration;
+            if (stepId === 'profile-image-optimise') return runProfileImageOptimise;
+        }
+        
+        // Themed steps (existing)
+        if (stepId === 'week-ideas') return runWeekIdeas;
+        if (stepId === 'taxonomy') return runTaxonomy;
+        if (stepId === 'idea-generation') return runIdeaGeneration;
+        if (stepId === 'topic-brainstorming') return runTopicBrainstorming;
+        if (stepId === 'section-structure-design') return runSectionStructure;
+        if (stepId === 'section-ideas') return runSectionIdeas;
+        if (stepId === 'section-titling') return runSectionTitling;
+        if (stepId === 'drafting') return runDrafting;
+        if (stepId === 'image-concepts') return runImageConcepts;
+        if (stepId === 'image-prompts') return runImagePrompts;
+        if (stepId === 'image-captions') return runImageCaptions;
+        if (stepId === 'image-generation') return runImageGeneration;
+        if (stepId === 'optimise') return runImageOptimise;
+        if (stepId === 'header-title-summary') return () => { const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); };
+        if (stepId === 'header-image-prompt') return runHeaderImagePrompt;
+        if (stepId === 'header-image-details') return runHeaderImageDetails;
+        if (stepId === 'header-image-generate') return runHeaderImageGenerate;
+        if (stepId === 'header-image-optimise') return runHeaderImageOptimize;
+        if (stepId === 'header-seo-meta') return runHeaderSeoMeta;
+        if (stepId === 'final-review') return runFinalReview;
+        
+        // Default: no-op
+        return () => { console.warn(`No run function for step: ${stepId}`); };
+    }
+
+    // Load pipeline dynamically based on post type
+    async function loadPipelineForPostType(postId, postType) {
+        try {
+            const response = await fetch(`/api/post-type-pipeline/${postType}`);
+            const data = await response.json();
+            if (!data.success) {
+                console.warn('Failed to load pipeline, using default:', data.error);
+                return;
+            }
+            
+            const steps = data.steps || [];
+            
+            // Map step IDs to run functions
+            pipeline = steps.map(step => {
+                const runFunction = getStepRunFunction(step.id, postType);
+                return {
+                    id: step.id,
+                    label: step.label || step.id,
+                    run: runFunction,
+                    completeEvent: step.complete_event || null
+                };
+            });
+            
+            console.log(`Loaded ${pipeline.length} steps for ${postType} post type`);
+        } catch (error) {
+            console.error('Error loading pipeline:', error);
+            // Keep default pipeline
+        }
+    }
+
+    async function updateSelectedPostSummary(postId){
+        const titleTextEl = document.getElementById('post-title-text');
+        const badgeEl = document.getElementById('post-type-badge');
+        const subtitleEl = document.getElementById('selected-post-subtitle');
+        try {
+            // Fetch post data, pipeline info, and pipeline status
+            const [postResp, pipelineResp, statusResp] = await Promise.all([
+                fetch(`/planning/api/posts/${postId}`),
+                fetch(`/api/post-type-pipeline/posts/${postId}/pipeline`),
+                fetch(`/launchpad/one-click-publication/api/pipeline-status/${postId}`)
+            ]);
+            
+            const postData = await postResp.json();
+            const pipelineData = await pipelineResp.json();
+            const statusData = statusResp.ok ? await statusResp.json() : { success: false, data: null };
+            const post = postData.post || {};
+            const schedule = postData.schedule || null;
+            const postType = statusData.success && statusData.data?.post_type 
+                ? statusData.data.post_type 
+                : (pipelineData.post_type || 'themed');
+            const title = post.title || 'Untitled';
+            
+            // Extract pipeline status data for sections and completion status
+            const pipelineStatus = statusData.success && statusData.data ? statusData.data : null;
+            // Store globally for runAll() to access
+            currentPipelineStatus = pipelineStatus;
+            
+            // Filter and reorder substages based on post_type
+            await filterSubstagesByPostType(postType);
+            
+            // Update title text
+            if (titleTextEl) titleTextEl.textContent = `#${postId} — ${title}`;
+            
+            // Update post type badge
+            if (badgeEl) {
+                const postTypeConfig = {
+                    'recipe': { icon: 'fa-utensils', label: 'Recipe', bg: '#fef3c7', color: '#92400e', border: '#fcd34d' },
+                    'profile': { icon: 'fa-tag', label: 'Profile', bg: '#e0e7ff', color: '#4338ca', border: '#a5b4fc' },
+                    'themed': { icon: 'fa-book', label: 'Themed', bg: '#dbeafe', color: '#1e40af', border: '#93c5fd' }
+                };
+                
+                const config = postTypeConfig[postType] || postTypeConfig['themed'];
+                badgeEl.innerHTML = `<i class="fas ${config.icon}"></i> ${config.label}`;
+                badgeEl.style.background = config.bg;
+                badgeEl.style.color = config.color;
+                badgeEl.style.border = `1px solid ${config.border}`;
+                badgeEl.style.display = 'inline-flex';
+                badgeEl.style.alignItems = 'center';
+                badgeEl.style.gap = '0.4rem';
+            }
+            
+            if (subtitleEl) {
+                if (schedule && schedule.year && schedule.week_number){
+                    const { start, end } = getWeekDateRange(schedule.year, schedule.week_number);
+                    subtitleEl.textContent = `Week W${schedule.week_number} — ${fmtDate(start)} – ${fmtDate(end)}`;
+                } else {
+                    subtitleEl.textContent = 'No week scheduled';
+                }
+            }
+            
+            // Load pipeline for this post type
+            await loadPipelineForPostType(postId, postType);
+            
+            // Update Idea Generation Run button state based on idea_seed availability
+            const ideaGenBtn = document.getElementById('run-idea-generation');
+            if (ideaGenBtn && post.idea_seed && post.idea_seed.trim()) {
+                ideaGenBtn.classList.remove('dead', 'complete');
+                ideaGenBtn.classList.add('ready');
+            } else if (ideaGenBtn) {
+                ideaGenBtn.classList.remove('ready', 'complete');
+                ideaGenBtn.classList.add('dead');
+            }
+            
+            // Update Topic Brainstorming Run button state based on expanded_idea availability
+            const brainstormBtn = document.getElementById('run-topic-brainstorming');
+            if (brainstormBtn && post.expanded_idea && post.expanded_idea.trim()) {
+                brainstormBtn.classList.remove('dead', 'complete');
+                brainstormBtn.classList.add('ready');
+            } else if (brainstormBtn) {
+                brainstormBtn.classList.remove('ready', 'complete');
+                brainstormBtn.classList.add('dead');
+            }
+            
+            // Update Section Structure Design Run button state based on topics availability
+            const structureBtn = document.getElementById('run-section-structure');
+            if (structureBtn) {
+                let hasTopics = false;
+                if (post.idea_scope) {
+                    try {
+                        const scopeData = JSON.parse(post.idea_scope);
+                        const topics = scopeData.generated_topics || [];
+                        hasTopics = topics.length > 0;
+                    } catch (e) {
+                        // idea_scope is not valid JSON or doesn't have topics
+                    }
+                }
+                if (hasTopics) {
+                    structureBtn.classList.remove('dead', 'complete');
+                    structureBtn.classList.add('ready');
+                } else {
+                    structureBtn.classList.remove('ready', 'complete');
+                    structureBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Section Ideas (Topic Allocation) Run button state based on section_structure availability
+            const sectionIdeasBtn = document.getElementById('run-section-ideas');
+            if (sectionIdeasBtn) {
+                let hasStructure = false;
+                if (post.section_structure) {
+                    try {
+                        const structData = typeof post.section_structure === 'string' 
+                            ? JSON.parse(post.section_structure) 
+                            : post.section_structure;
+                        const sections = Array.isArray(structData) ? structData : (structData.sections || []);
+                        hasStructure = sections.length > 0;
+                    } catch (e) {
+                        // section_structure is not valid JSON
+                    }
+                }
+                if (hasStructure) {
+                    sectionIdeasBtn.classList.remove('dead', 'complete');
+                    sectionIdeasBtn.classList.add('ready');
+                } else {
+                    sectionIdeasBtn.classList.remove('ready', 'complete');
+                    sectionIdeasBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Drafting Run button state based on sections availability
+            const draftingBtn = document.getElementById('run-drafting');
+            if (draftingBtn) {
+                // Check if sections exist (either in post_section table or post_development.sections)
+                let hasSections = false;
+                // Try to get sections from pipeline status data first, then fallback to post.sections
+                const sectionsFromStatus = pipelineStatus?.stages?.authoring?.substages?.author_first_drafts;
+                if (sectionsFromStatus && sectionsFromStatus.progress > 0) {
+                    hasSections = true;
+                } else if (post.sections) {
+                    try {
+                        const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
+                        if (Array.isArray(sectionsData)) {
+                            hasSections = sectionsData.length > 0;
+                        } else if (sectionsData.sections && Array.isArray(sectionsData.sections)) {
+                            hasSections = sectionsData.sections.length > 0;
+                        }
+                    } catch (e) {
+                        // sections is not valid JSON
+                    }
+                }
+                if (hasSections) {
+                    draftingBtn.classList.remove('dead', 'complete');
+                    draftingBtn.classList.add('ready');
+                } else {
+                    draftingBtn.classList.remove('ready', 'complete');
+                    draftingBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Image Concepts Run button state based on sections and draft availability
+            const imageConceptsBtn = document.getElementById('run-image-concepts');
+            if (imageConceptsBtn) {
+                // Check if sections exist and have drafts
+                let hasSectionsWithDrafts = false;
+                // Check pipeline status for authoring progress
+                const authoringStatus = pipelineStatus?.stages?.authoring?.substages?.author_first_drafts;
+                if (authoringStatus && authoringStatus.progress > 0) {
+                    hasSectionsWithDrafts = authoringStatus.progress >= 100 || authoringStatus.status === 'in_progress';
+                } else if (post.sections) {
+                    try {
+                        const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
+                        const sectionsList = Array.isArray(sectionsData) ? sectionsData : (sectionsData.sections || []);
+                        if (sectionsList.length > 0) {
+                            // Check if sections have drafts by checking post_section table via API
+                            // For now, assume if sections exist, drafts might exist
+                            hasSectionsWithDrafts = sectionsList.length > 0;
+                        }
+                    } catch (e) {
+                        // sections is not valid JSON
+                    }
+                }
+                if (hasSectionsWithDrafts) {
+                    imageConceptsBtn.classList.remove('dead', 'complete');
+                    imageConceptsBtn.classList.add('ready');
+                } else {
+                    imageConceptsBtn.classList.remove('ready', 'complete');
+                    imageConceptsBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Image Prompts Run button state based on image_concepts availability
+            const imagePromptsBtn = document.getElementById('run-image-prompts');
+            if (imagePromptsBtn) {
+                // Check if sections have image_concepts with selected concepts
+                let hasImageConcepts = false;
+                // Check pipeline status for image_concepts completion
+                const imageConceptsStatus = pipelineStatus?.stages?.authoring?.substages?.image_concepts;
+                if (imageConceptsStatus && imageConceptsStatus.progress > 0) {
+                    hasImageConcepts = imageConceptsStatus.status === 'complete' || imageConceptsStatus.status === 'in_progress';
+                } else if (post.sections) {
+                    try {
+                        const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
+                        const sectionsList = Array.isArray(sectionsData) ? sectionsData : (sectionsData.sections || []);
+                        if (sectionsList.length > 0) {
+                            // Check sections in post_section or JSON for image_concepts
+                            hasImageConcepts = sectionsList.some(s => s.image_concepts);
+                        }
+                    } catch (e) {
+                        // sections is not valid JSON
+                    }
+                }
+                // Also consider Image Concepts button readiness as a proxy (loosens coupling and UX friction)
+                const imageConceptsBtnEl = document.getElementById('run-image-concepts');
+                const conceptsStageLooksReady = imageConceptsBtnEl && (imageConceptsBtnEl.classList.contains('ready') || imageConceptsBtnEl.classList.contains('complete'));
+
+                if (hasImageConcepts || conceptsStageLooksReady) {
+                    imagePromptsBtn.classList.remove('dead', 'complete');
+                    imagePromptsBtn.classList.add('ready');
+                } else {
+                    imagePromptsBtn.classList.remove('ready', 'complete');
+                    imagePromptsBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Image Captions Run button state based on image_prompts availability
+            const imageCaptionsBtn = document.getElementById('run-image-captions');
+            if (imageCaptionsBtn) {
+                // Check if sections have image_prompts
+                let hasImagePrompts = false;
+                // Check pipeline status for image_prompts completion
+                const imagePromptsStatus = pipelineStatus?.stages?.authoring?.substages?.image_prompts;
+                if (imagePromptsStatus && imagePromptsStatus.progress > 0) {
+                    hasImagePrompts = imagePromptsStatus.status === 'complete' || imagePromptsStatus.status === 'in_progress';
+                } else if (post.sections) {
+                    try {
+                        const sectionsData = typeof post.sections === 'string' ? JSON.parse(post.sections) : post.sections;
+                        const sectionsList = Array.isArray(sectionsData) ? sectionsData : (sectionsData.sections || []);
+                        if (sectionsList.length > 0) {
+                            // Check sections in JSON for image_prompts
+                            hasImagePrompts = sectionsList.some(s => s.image_prompts);
+                        }
+                    } catch (e) {
+                        // sections is not valid JSON
+                    }
+                }
+                if (hasImagePrompts) {
+                    imageCaptionsBtn.classList.remove('dead', 'complete');
+                    imageCaptionsBtn.classList.add('ready');
+                } else {
+                    imageCaptionsBtn.classList.remove('ready', 'complete');
+                    imageCaptionsBtn.classList.add('dead');
+                }
+            }
+            
+            // Update Section Titling Run button state based on topic_allocation availability
+            // Check asynchronously since topic_allocation is not in the post data directly
+            const titlingBtn = document.getElementById('run-section-titling');
+            if (titlingBtn) {
+                // Check prerequisites: expanded_idea exists and section_structure exists (heuristic for section ideas being done)
+                const hasExpandedIdea = post.expanded_idea && post.expanded_idea.trim();
+                let hasStructure = false;
+                if (post.section_structure) {
+                    try {
+                        const structData = typeof post.section_structure === 'string' 
+                            ? JSON.parse(post.section_structure) 
+                            : post.section_structure;
+                        const sections = Array.isArray(structData) ? structData : (structData.sections || []);
+                        hasStructure = sections.length > 0;
+                    } catch (e) {
+                        // section_structure is not valid JSON
+                    }
+                }
+                
+                // If prerequisites exist, fetch topic_allocation to confirm
+                if (hasExpandedIdea && hasStructure) {
+                    fetch(`/planning/api/sections/allocate-topics/${postId}`)
+                        .then(resp => resp.json())
+                        .then(data => {
+                            if (data.success && data.allocations && data.allocations.allocations && Array.isArray(data.allocations.allocations) && data.allocations.allocations.length > 0) {
+                                titlingBtn.classList.remove('dead', 'complete');
+                                titlingBtn.classList.add('ready');
+                            } else {
+                                titlingBtn.classList.remove('ready', 'complete');
+                                titlingBtn.classList.add('dead');
+                            }
+                        })
+                        .catch(() => {
+                            titlingBtn.classList.remove('ready', 'complete');
+                            titlingBtn.classList.add('dead');
+                        });
+                } else {
+                    titlingBtn.classList.remove('ready', 'complete');
+                    titlingBtn.classList.add('dead');
+                }
+            }
+            
+            // Update UI with green dots for completed substages
+            if (pipelineStatus && pipelineStatus.stages) {
+                updatePipelineStatusIndicators(pipelineStatus);
+            }
+        } catch (e){
+            console.error('Failed to load post details:', e);
+        }
+    }
+    
+    // Function to filter and reorder substages based on post_type
+    async function filterSubstagesByPostType(postType) {
+        try {
+            // Fetch substage config for this post_type
+            const response = await fetch(`/launchpad/one-click-publication/api/post-types/${postType}/substages`);
+            if (!response.ok) {
+                console.warn('Failed to load substage config, showing all substages');
+                return;
+            }
+            const data = await response.json();
+            
+            if (!data.substages || typeof data.substages !== 'object') {
+                console.warn('Invalid substage config format, showing all substages');
+                return;
+            }
+            
+            // Map of stage -> substage keys in order
+            const validSubstages = {};
+            Object.keys(data.substages).forEach(stage => {
+                validSubstages[stage] = data.substages[stage].map(s => s.key);
+            });
+            
+            // Mapping from config substage keys to HTML data-substage values
+            const substageKeyToDataAttr = {
+                'calendar_view': 'calendar-view',
+                'idea_generation': 'week-ideas',
+                'ideas': 'idea-generation',
+                'taxonomy': 'taxonomy',
+                'topic_brainstorming': 'topic-brainstorming',
+                'section_structure': 'section-structure-design',
+                'topic_allocation': 'section-ideas',
+                'section_titling': 'section-titling',
+                'product_data_review': 'product-data-review',
+                'section_content_mapping': 'section-content-mapping',
+                'recipe_image_style_prompt': 'recipe-image-style-prompt',
+                'drafting': 'drafting',
+                'image_concepts': 'image-concepts',
+                'image_prompts': 'image-prompts',
+                'image_captions': 'image-captions',
+                'recipe_image_style_prompt': 'recipe-image-style-prompt',
+                'image_generation': 'image-generation',
+                'optimise': 'optimise',
+                'title_summary': 'title-summary',
+                'header_image': 'header-image-generate',
+                'seo_meta': 'seo-meta',
+                'product_match': 'product-match',
+                'final_review': 'final-review'
+            };
+            
+            // Process each stage
+            Object.keys(validSubstages).forEach(stage => {
+                const stageSubstages = validSubstages[stage];
+                const stageRows = [];
+                
+                // Find all rows for this stage
+                const stageRow = document.querySelector(`tr.stage-row[data-stage="${stage}"]`);
+                if (!stageRow) return;
+                
+                // Get all substage rows for this stage
+                let currentRow = stageRow.nextElementSibling;
+                while (currentRow && !currentRow.classList.contains('stage-row')) {
+                    const substageLink = currentRow.querySelector('.substage-link');
+                    if (substageLink) {
+                        const dataSubstage = substageLink.getAttribute('data-substage');
+                        stageRows.push({ row: currentRow, dataSubstage });
+                    }
+                    currentRow = currentRow.nextElementSibling;
+                }
+                
+                // Filter and reorder rows
+                const orderedRows = [];
+                const validDataSubstages = new Set();
+                
+                // Build ordered list based on config
+                stageSubstages.forEach(substageKey => {
+                    const dataSubstage = substageKeyToDataAttr[substageKey];
+                    if (dataSubstage) {
+                        validDataSubstages.add(dataSubstage);
+                        const matchingRow = stageRows.find(r => r.dataSubstage === dataSubstage);
+                        if (matchingRow) {
+                            orderedRows.push(matchingRow.row);
+                        }
+                    }
+                });
+                
+                // Hide invalid rows and show valid ones
+                stageRows.forEach(({ row, dataSubstage }) => {
+                    if (!validDataSubstages.has(dataSubstage)) {
+                        row.style.display = 'none';
+                    } else {
+                        row.style.display = '';
+                    }
+                });
+                
+                // Reorder rows to match config order
+                if (orderedRows.length > 0) {
+                    const tbody = stageRow.closest('tbody');
+                    if (tbody) {
+                        // Remove all rows from DOM temporarily
+                        const fragment = document.createDocumentFragment();
+                        orderedRows.forEach(row => {
+                            fragment.appendChild(row);
+                        });
+                        
+                        // Insert in correct order after stage row
+                        if (stageRow.nextSibling) {
+                            tbody.insertBefore(fragment, stageRow.nextSibling);
+                        } else {
+                            tbody.appendChild(fragment);
+                        }
+                    }
+                }
+                
+                // Update rowspan for stage cell (visible rows + 1 for the stage row itself)
+                const visibleRows = orderedRows.length;
+                if (visibleRows >= 0) {
+                    const stageCell = stageRow.querySelector('.stage-cell');
+                    if (stageCell) {
+                        // rowspan = number of substage rows + 1 (the stage row itself)
+                        stageCell.setAttribute('rowspan', visibleRows + 1);
+                    }
+                }
+            });
+            
+            console.log(`Filtered substages for post_type: ${postType}`);
+        } catch (error) {
+            console.error('Error filtering substages by post_type:', error);
+        }
+    }
+    
+    // Function to update pipeline status indicators (green dots) based on API data
+    function updatePipelineStatusIndicators(pipelineStatus) {
+        if (!pipelineStatus || !pipelineStatus.stages) return;
+        
+        const stages = pipelineStatus.stages;
+        
+        // Mapping of substage keys to their button/indicator IDs
+        const substageMappings = {
+            // Calendar stage
+            'calendar_view': null, // View-only, no indicator
+            'idea_generation': 'run-week-ideas',
+            
+            // Planning stage
+            'ideas': 'run-idea-generation',
+            'taxonomy': 'run-taxonomy',
+            'topic_brainstorming': 'run-topic-brainstorming',
+            'section_structure': 'run-section-structure',
+            'topic_allocation': 'run-section-ideas',
+            'section_titling': 'run-section-titling',
+            
+            // Authoring stage
+            'author_first_drafts': 'run-drafting',
+            'image_concepts': 'run-image-concepts',
+            'image_prompts': 'run-image-prompts',
+            'image_captions': 'run-image-captions',
+            
+            // Imaging stage
+            'image_generation': 'run-image-generation',
+            'optimise': 'run-image-optimise',
+            
+            // Header stage
+            'title_summary': 'run-header-title-summary',
+            'header_image': 'run-header-image-generate',
+            'seo_meta': 'run-header-seo-meta',
+            'product_match': null, // May not have a run button
+            'final_review': 'run-final-review'
+        };
+        
+        // Iterate through all stages and update indicators
+        Object.keys(stages).forEach(stageKey => {
+            const stage = stages[stageKey];
+            if (!stage || !stage.substages) return;
+            
+            Object.keys(stage.substages).forEach(substageKey => {
+                const substage = stage.substages[substageKey];
+                const buttonId = substageMappings[substageKey];
+                
+                if (!buttonId) return; // Skip if no button mapping
+                
+                const button = document.getElementById(buttonId);
+                if (!button) return; // Button doesn't exist in template
+                
+                // Update button state based on completion status
+                if (substage.status === 'complete') {
+                    button.classList.remove('dead', 'ready');
+                    button.classList.add('complete');
+                    
+                    // Add visual indicator (green dot) - check if there's a parent row/cell
+                    const row = button.closest('tr');
+                    if (row) {
+                        const substageCell = row.querySelector('.substage-cell');
+                        if (substageCell) {
+                            // Remove existing indicator
+                            const existingIndicator = substageCell.querySelector('.completion-indicator');
+                            if (existingIndicator) existingIndicator.remove();
+                            
+                            // Add green dot indicator
+                            const indicator = document.createElement('span');
+                            indicator.className = 'completion-indicator';
+                            indicator.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981; margin-left: 8px;"></i>';
+                            indicator.title = substage.completed_at ? `Completed ${new Date(substage.completed_at).toLocaleString()}` : 'Completed';
+                            substageCell.appendChild(indicator);
+                        }
+                    }
+                } else if (substage.status === 'in_progress') {
+                    button.classList.remove('dead', 'complete');
+                    if (!button.classList.contains('ready')) {
+                        button.classList.add('ready');
+                    }
+                }
+            });
+        });
+    }
+
+    // Initial load
+    loadPosts();
+
+    // Author selector logic
+    async function loadAuthorsForPost(postId){
+        try {
+            const sel = document.getElementById('author-select');
+            if (!sel) return;
+            // Pre-fill a sensible default to avoid empty UI
+            if (!sel.options.length){
+                sel.innerHTML = '<option value="Caitrin Stewart">Caitrin Stewart</option>';
+            }
+            const [authorsResp, tsResp] = await Promise.all([
+                fetch(`/header/api/posts/${postId}/authors`),
+                fetch(`/header/api/posts/${postId}/get-title-summary`)
+            ]);
+            const authorsData = authorsResp.ok ? await authorsResp.json() : { success:false, authors:[] };
+            const tsData = tsResp.ok ? await tsResp.json() : {};
+            const authors = (authorsData && authorsData.success && Array.isArray(authorsData.authors)) ? authorsData.authors : [];
+            const currentAuthor = (tsData && tsData.author_name) ? tsData.author_name : '';
+            const savedKey = `selectedAuthorName_${postId}`;
+            let selected = localStorage.getItem(savedKey) || currentAuthor || 'Caitrin Stewart';
+            if (authors.length){
+                const options = authors.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+                sel.innerHTML = options;
+            }
+            if (![...sel.options].some(o => o.value === selected)){
+                const opt = document.createElement('option');
+                opt.value = selected; opt.textContent = selected; sel.appendChild(opt);
+            }
+            sel.value = selected;
+            sel.onchange = ()=>{ localStorage.setItem(savedKey, sel.value); };
+        } catch(e){ console.warn('Failed to load authors:', e); }
+    }
+
+    async function ensureAuthorSaved(postId){
+        try{
+            const sel = document.getElementById('author-select');
+            if (!sel) return;
+            const desired = sel.value || 'Caitrin Stewart';
+            const tsResp = await fetch(`/header/api/posts/${postId}/get-title-summary`);
+            const tsData = await tsResp.json();
+            const currentAuthor = (tsData && tsData.author_name) ? tsData.author_name : '';
+            if (currentAuthor !== desired){
+                await fetch(`/header/api/posts/${postId}/save-author`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ author_name: desired })
+                });
+            }
+        } catch(e){ console.warn('Failed to ensure author saved:', e); }
+    }
+    // Re-attach orchestrator after all run handlers are defined so references exist
+    (function(){
+        const overlay = document.getElementById('orchestrator-overlay') || (function(){
+            const ov = document.createElement('div');
+            ov.id = 'orchestrator-overlay';
+            ov.style.cssText = 'position:fixed;right:16px;bottom:16px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:12px 14px;z-index:9999;min-width:300px;display:none;';
+            ov.innerHTML = '\n                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">\n                    <strong>Run All</strong>\n                    <div>\n                        <button id="orch-pause" class="run-btn dead" style="padding:4px 8px;">Pause</button>\n                        <button id="orch-continue" class="run-btn ready" style="padding:4px 8px;display:none;">Continue</button>\n                        <button id="orch-close" class="run-btn dead" style="padding:4px 8px;">Close</button>\n                    </div>\n                </div>\n                <div id="orch-status" style="margin-top:8px;font-size:12px;color:#a8afc2;">Preparing…</div>\n                <div id="orch-steps" style="margin-top:8px;max-height:180px;overflow:auto;font-size:12px;"></div>\n            ';
+            document.body.appendChild(ov);
+            return ov;
+        })();
+
+        function openOverlay(){ overlay.style.display='block'; }
+        function closeOverlay(){ overlay.style.display='none'; }
+        function setStatus(text){ const el=document.getElementById('orch-status'); if (el) el.textContent=text; }
+        function appendStep(text){ const el=document.getElementById('orch-steps'); if (el){ const d=document.createElement('div'); d.textContent=text; el.appendChild(d);} }
+
+        const modeKey = (id)=>`blogForgeMode_${id}`;
+        function getMode(id){
+            const sel = document.querySelector(`select.mode-select[data-substage="${id}"]`);
+            const saved = localStorage.getItem(modeKey(id));
+            const value = (saved || (sel ? sel.value : 'auto')) || 'auto';
+            if (sel) sel.value = value;
+            return value;
+        }
+        document.querySelectorAll('select.mode-select').forEach(sel => {
+            const id = sel.getAttribute('data-substage');
+            const saved = localStorage.getItem(modeKey(id));
+            if (saved) sel.value = saved;
+            sel.addEventListener('change', ()=> localStorage.setItem(modeKey(id), sel.value));
+        });
+
+        const events = {
+            'titling_complete': 'titling_complete',
+            'drafting_complete': 'drafting_complete',
+            'image_concepts_complete': 'image_concepts_complete',
+            'image_prompts_complete': 'image_prompts_complete',
+            'image_captions_complete': 'image_captions_complete',
+            'image_generation_complete': 'image_generation_complete',
+            'image_optimise_complete': 'image_optimise_complete',
+            'header_title_summary_complete': 'header_title_summary_complete',
+            'header_image_prompt_complete': 'header_image_prompt_complete',
+            'header_image_details_complete': 'header_image_details_complete',
+            'header_image_generated': 'header_image_generated',
+            'header_image_optimized': 'header_image_optimized',
+            'header_seo_meta_complete': 'header_seo_meta_complete'
+        };
+
+        // Run Taxonomy: navigate to taxonomy page (manual assignment) - duplicate definition removed (see above)
+        
+        // Default pipeline (themed posts) - will be replaced by loadPipelineForPostType
+        let pipeline = [
+            { id:'week-ideas', label:'Calendar — Week Ideas', run: runWeekIdeas },
+            { id:'taxonomy', label:'Planning — Taxonomy', run: runTaxonomy },
+            { id:'idea-generation', label:'Planning — Idea Generation', run: runIdeaGeneration },
+            { id:'topic-brainstorming', label:'Planning — Topic Brainstorming', run: runTopicBrainstorming },
+            { id:'section-structure-design', label:'Planning — Section Structure', run: runSectionStructure },
+            { id:'section-ideas', label:'Planning — Section Ideas', run: runSectionIdeas },
+            { id:'section-titling', label:'Planning — Section Titling', run: runSectionTitling, completeEvent: events.titling_complete },
+            { id:'drafting', label:'Authoring — Drafting', run: runDrafting, completeEvent: events.drafting_complete },
+            { id:'image-concepts', label:'Authoring — Image Concepts', run: runImageConcepts, completeEvent: events.image_concepts_complete },
+            { id:'image-prompts', label:'Authoring — Image Prompts', run: runImagePrompts, completeEvent: events.image_prompts_complete },
+            { id:'image-captions', label:'Authoring — Image Captions', run: runImageCaptions, completeEvent: events.image_captions_complete },
+            { id:'image-generation', label:'Imaging — Image Generation', run: runImageGeneration, completeEvent: events.image_generation_complete },
+            { id:'optimise', label:'Imaging — Optimise', run: runImageOptimise, completeEvent: events.image_optimise_complete },
+            { id:'header-title-summary', label:'Header — Title & Summary', run: ()=>{ const p=getSelectedPostId(); return p ? ensureAuthorSaved(p).then(()=>runHeaderTitleSummary()) : runHeaderTitleSummary(); }, completeEvent: events.header_title_summary_complete },
+            { id:'header-image-prompt', label:'Header Image — Prompt', run: runHeaderImagePrompt, completeEvent: events.header_image_prompt_complete },
+            { id:'header-image-details', label:'Header Image — Captions/Alt', run: runHeaderImageDetails, completeEvent: events.header_image_details_complete },
+            { id:'header-image-generate', label:'Header Image — Image', run: runHeaderImageGenerate, completeEvent: events.header_image_generated },
+            { id:'header-image-optimise', label:'Header Image — Optimise', run: runHeaderImageOptimize, completeEvent: events.header_image_optimized },
+            { id:'header-seo-meta', label:'Header — SEO & Meta', run: runHeaderSeoMeta, completeEvent: events.header_seo_meta_complete },
+            { id:'final-review', label:'Final Review — Preview', run: runFinalReview }
+        ];
+
+        function waitForEvent(eventName, timeoutMs=120000){
+            return new Promise((resolve, reject)=>{
+                let timer = setTimeout(()=>{ window.removeEventListener('message', onMsg); reject(new Error('Timeout waiting for '+eventName)); }, timeoutMs);
+                function onMsg(ev){ if (ev.data === eventName){ clearTimeout(timer); window.removeEventListener('message', onMsg); resolve(); } }
+                window.addEventListener('message', onMsg);
+            });
+        }
+
+        let paused = false;
+        function setPaused(v){ paused = v; const c=document.getElementById('orch-continue'); if (c) c.style.display = v ? '' : 'none'; }
+
+        let pendingManualResolve = null;
+
+        async function runAll(){
+            const startBtn = document.getElementById('start-all');
+            const runAllBtn = document.getElementById('run-all');
+            if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Running…'; }
+            if (runAllBtn){ runAllBtn.disabled = true; runAllBtn.textContent = 'Running…'; }
+            
+            // Check run mode
+            const runModeAll = document.getElementById('run-mode-all');
+            const runUncompletedOnly = runModeAll ? !runModeAll.checked : false;
+            
+            // Filter pipeline steps based on mode
+            let stepsToRun = pipeline;
+            if (runUncompletedOnly) {
+                stepsToRun = pipeline.filter(step => !isStepCompleted(step.id));
+                const skippedCount = pipeline.length - stepsToRun.length;
+                if (skippedCount > 0) {
+                    console.log(`Skipping ${skippedCount} completed step(s)`);
+                }
+            }
+            
+            if (stepsToRun.length === 0) {
+                alert('All steps are already completed!');
+                if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Start'; }
+                if (runAllBtn){ runAllBtn.disabled = false; runAllBtn.textContent = 'Run All'; }
+                return;
+            }
+            
+            openOverlay(); 
+            setStatus('Starting…'); 
+            appendStep(`Initializing pipeline (${runUncompletedOnly ? stepsToRun.length + ' uncompleted' : 'all'} steps)`);
+            for (const step of stepsToRun){
+                const mode = getMode(step.id);
+                appendStep(`→ ${step.label} (${mode})`);
+                setStatus(step.label);
+                
+                // Update button to show it's running
+                updateStepButtonState(step.id, 'running');
+                
+                if (mode === 'manual'){
+                    try { step.run(); } catch(_){ }
+                    setPaused(true);
+                    await new Promise((resolve)=>{
+                        const cont = document.getElementById('orch-continue');
+                        const handler = ()=>{ cont.removeEventListener('click', handler); setPaused(false); if (startBtn){ startBtn.disabled = true; startBtn.innerHTML = '<i class=\"fas fa-spinner fa-spin\" style=\"margin-right:6px;\"></i>Running…'; } resolve(); };
+                        cont.addEventListener('click', handler);
+                        pendingManualResolve = ()=>{ handler(); pendingManualResolve = null; };
+                        if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Resume'; }
+                    });
+                    appendStep(`✓ ${step.label} (manual)`);
+                    updateStepButtonState(step.id, 'complete');
+                    continue;
+                }
+                try{
+                    // For steps with completion events, set up listener BEFORE calling run()
+                    let eventReceived = false;
+                    let eventListener = null;
+                    if (step.completeEvent) {
+                        eventListener = (ev) => {
+                            if (ev.data === step.completeEvent) {
+                                eventReceived = true;
+                                if (eventListener) {
+                                    window.removeEventListener('message', eventListener);
+                                }
+                            }
+                        };
+                        window.addEventListener('message', eventListener);
+                    }
+                    
+                    // Auto: invoke runner and await it (most are async functions)
+                    const result = step.run && step.run();
+                    
+                    // Special handling for steps that open windows (like image generation)
+                    let openedWindow = null;
+                    if (result && result.window && typeof result.window === 'object') {
+                        openedWindow = result.window;
+                    } else if (result && result instanceof Window) {
+                        openedWindow = result;
+                    }
+                    
+                    // If it returns a Promise, await it
+                    if (result && typeof result.then === 'function') {
+                        await result;
+                    }
+                    
+                    // If it has a completion event, wait for it
+                    if (step.completeEvent){
+                        const timeout = step.id === 'image-generation' ? 300000 : 180000;
+                        try {
+                            // For window-based steps, race between event and window closure
+                            if (openedWindow) {
+                                const eventPromise = new Promise((resolve, reject) => {
+                                    if (eventReceived) {
+                                        resolve('event_received');
+                                        return;
+                                    }
+                                    const timer = setTimeout(() => {
+                                        if (eventListener) {
+                                            window.removeEventListener('message', eventListener);
+                                        }
+                                        reject(new Error(`Timeout waiting for ${step.completeEvent}`));
+                                    }, timeout);
+                                    
+                                    const checkEvent = (ev) => {
+                                        if (ev.data === step.completeEvent) {
+                                            clearTimeout(timer);
+                                            window.removeEventListener('message', checkEvent);
+                                            resolve('event_received');
+                                        }
+                                    };
+                                    window.addEventListener('message', checkEvent);
+                                });
+                                
+                                const windowClosedPromise = new Promise((resolve) => {
+                                    const checkInterval = setInterval(() => {
+                                        if (openedWindow && openedWindow.closed) {
+                                            clearInterval(checkInterval);
+                                            resolve('window_closed');
+                                        }
+                                    }, 1000);
+                                    eventPromise.then(() => clearInterval(checkInterval)).catch(() => {});
+                                });
+                                
+                                const raceResult = await Promise.race([eventPromise, windowClosedPromise]);
+                                if (raceResult === 'window_closed') {
+                                    console.log(`Window for ${step.label} closed, assuming completion.`);
+                                }
+                            } else {
+                                await waitForEvent(step.completeEvent, timeout);
+                            }
+                            // Clean up listener
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                        } catch (e) {
+                            // Clean up listener on error
+                            if (eventListener) {
+                                window.removeEventListener('message', eventListener);
+                            }
+                            // If timeout and we have a window, check if it's still open
+                            if (openedWindow) {
+                                if (openedWindow.closed) {
+                                    // Window closed - might have completed, continue
+                                    appendStep(`⚠ ${step.label} - window closed, assuming complete`);
+                                } else {
+                                    // Window still open but no event - might be stuck
+                                    throw new Error(`Timeout waiting for ${step.completeEvent}. Window is still open - you may need to complete it manually.`);
+                                }
+                            } else {
+                                throw e;
+                            }
+                        }
+                    } else if (!result || typeof result.then !== 'function') {
+                        // Fallback: short delay for non-async, non-event steps
+                        await new Promise(r=>setTimeout(r, 1500));
+                    }
+                    appendStep(`✓ ${step.label}`);
+                    updateStepButtonState(step.id, 'complete');
+                    
+                    // Refresh pipeline status to update green dots
+                    const postId = getSelectedPostId();
+                    if (postId) {
+                        try {
+                            const statusResp = await fetch(`/launchpad/one-click-publication/api/pipeline-status/${postId}`);
+                            if (statusResp.ok) {
+                                const statusData = await statusResp.json();
+                                if (statusData.success && statusData.data) {
+                                    currentPipelineStatus = statusData.data;
+                                    updatePipelineStatusIndicators(statusData.data);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Failed to refresh pipeline status:', e);
+                        }
+                    }
+                }catch(e){
+                    appendStep(`✗ ${step.label} — ${e.message}`);
+                    updateStepButtonState(step.id, 'error');
+                    const retry = confirm(`${step.label} failed: ${e.message}. Retry?`);
+                    if (retry){
+                        updateStepButtonState(step.id, 'running');
+                        try{
+                            const retryResult = step.run && step.run();
+                            if (retryResult && typeof retryResult.then === 'function') {
+                                await retryResult;
+                            }
+                            if (step.completeEvent){ await waitForEvent(step.completeEvent, 180000); }
+                            appendStep(`✓ ${step.label} (retry)`);
+                            updateStepButtonState(step.id, 'complete');
+                        }catch(e2){ 
+                            appendStep(`✗ ${step.label} — ${e2.message}`); 
+                            updateStepButtonState(step.id, 'error');
+                            break; 
+                        }
+                    } else {
+                        const skip = confirm('Skip this step and continue?');
+                        if (!skip) break;
+                    }
+                }
+                while (paused){ await new Promise(r=>setTimeout(r, 300)); }
+            }
+            setStatus('Pipeline complete');
+            if (startBtn){ startBtn.disabled = false; startBtn.innerHTML = '<i class="fas fa-play" style="margin-right:6px;"></i>Start'; }
+            if (runAllBtn){ runAllBtn.disabled = false; runAllBtn.textContent = 'Run All'; }
+        }
+
+        const runAllBtn = document.getElementById('run-all');
+        if (runAllBtn){ runAllBtn.addEventListener('click', (e)=>{ e.preventDefault(); runAll(); }); }
+        const startBtn = document.getElementById('start-all');
+        if (startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); if (pendingManualResolve){ pendingManualResolve(); } else { runAll(); } }); }
+        const pauseBtn = document.getElementById('orch-pause');
+        if (pauseBtn){ pauseBtn.addEventListener('click', ()=> setPaused(!paused)); }
+        const closeBtn = document.getElementById('orch-close');
+        if (closeBtn){ closeBtn.addEventListener('click', ()=> closeOverlay()); }
+    })();
+})();
+</script>

@@ -3,312 +3,364 @@
     "week": 1,
     "item_id": 49,
     "position": 1,
-    "title": "Cranberry Cranachan (Modern Twist)"
+    "title": "Cranberry Cranachan (Modern Twist)",
+    "description": "Scottish Recipe: Cranberry Cranachan (Modern Twist)"
   },
   {
     "week": 2,
     "item_id": 5,
     "position": 2,
-    "title": "Rumbledethumps"
+    "title": "Rumbledethumps",
+    "description": "Scottish Recipe: Rumbledethumps"
   },
   {
     "week": 3,
     "item_id": 3,
     "position": 3,
-    "title": "Haggis, Neeps & Tatties"
+    "title": "Haggis, Neeps & Tatties",
+    "description": "Scottish Recipe: Haggis, Neeps & Tatties"
   },
   {
     "week": 4,
     "item_id": 9,
     "position": 4,
-    "title": "Forfar Bridie"
+    "title": "Forfar Bridie",
+    "description": "Scottish Recipe: Forfar Bridie"
   },
   {
     "week": 5,
     "item_id": 2,
     "position": 5,
-    "title": "Cock-a-Leekie Soup"
+    "title": "Cock-a-Leekie Soup",
+    "description": "Scottish Recipe: Cock-a-Leekie Soup"
   },
   {
     "week": 6,
     "item_id": 4,
     "position": 6,
-    "title": "Scotch Broth"
+    "title": "Scotch Broth",
+    "description": "Scottish Recipe: Scotch Broth"
   },
   {
     "week": 7,
     "item_id": 6,
     "position": 7,
-    "title": "Mince & Tatties"
+    "title": "Mince & Tatties",
+    "description": "Scottish Recipe: Mince & Tatties"
   },
   {
     "week": 8,
     "item_id": 7,
     "position": 8,
-    "title": "Stovies"
+    "title": "Stovies",
+    "description": "Scottish Recipe: Stovies"
   },
   {
     "week": 9,
     "item_id": 8,
     "position": 9,
-    "title": "Arbroath Smokies"
+    "title": "Arbroath Smokies",
+    "description": "Scottish Recipe: Arbroath Smokies"
   },
   {
     "week": 10,
     "item_id": 10,
     "position": 10,
-    "title": "Scotch Pie"
+    "title": "Scotch Pie",
+    "description": "Scottish Recipe: Scotch Pie"
   },
   {
     "week": 11,
     "item_id": 11,
     "position": 11,
-    "title": "Bannocks (Oat & Bere)"
+    "title": "Bannocks (Oat & Bere)",
+    "description": "Scottish Recipe: Bannocks (Oat & Bere)"
   },
   {
     "week": 12,
     "item_id": 13,
     "position": 12,
-    "title": "Selkirk Bannock"
+    "title": "Selkirk Bannock",
+    "description": "Scottish Recipe: Selkirk Bannock"
   },
   {
     "week": 13,
     "item_id": 14,
     "position": 13,
-    "title": "Soda & Potato Scones"
+    "title": "Soda & Potato Scones",
+    "description": "Scottish Recipe: Soda & Potato Scones"
   },
   {
     "week": 14,
     "item_id": 15,
     "position": 14,
-    "title": "Shortbread (Three Regional Styles)"
+    "title": "Shortbread (Three Regional Styles)",
+    "description": "Scottish Recipe: Shortbread (Three Regional Styles)"
   },
   {
     "week": 15,
     "item_id": 12,
     "position": 15,
-    "title": "Oatcakes"
+    "title": "Oatcakes",
+    "description": "Scottish Recipe: Oatcakes"
   },
   {
     "week": 16,
     "item_id": 16,
     "position": 16,
-    "title": "Dundee Cake"
+    "title": "Dundee Cake",
+    "description": "Scottish Recipe: Dundee Cake"
   },
   {
     "week": 17,
     "item_id": 17,
     "position": 17,
-    "title": "Clootie Dumpling"
+    "title": "Clootie Dumpling",
+    "description": "Scottish Recipe: Clootie Dumpling"
   },
   {
     "week": 18,
     "item_id": 18,
     "position": 18,
-    "title": "Cranachan"
+    "title": "Cranachan",
+    "description": "Scottish Recipe: Cranachan"
   },
   {
     "week": 19,
     "item_id": 19,
     "position": 19,
-    "title": "Rhubarb Fool"
+    "title": "Rhubarb Fool",
+    "description": "Scottish Recipe: Rhubarb Fool"
   },
   {
     "week": 20,
     "item_id": 20,
     "position": 20,
-    "title": "Smoked Salmon with Whisky Cream Sauce"
+    "title": "Smoked Salmon with Whisky Cream Sauce",
+    "description": "Scottish Recipe: Smoked Salmon with Whisky Cream Sauce"
   },
   {
     "week": 21,
     "item_id": 21,
     "position": 21,
-    "title": "Hot-Smoked Trout Salad"
+    "title": "Hot-Smoked Trout Salad",
+    "description": "Scottish Recipe: Hot-Smoked Trout Salad"
   },
   {
     "week": 22,
     "item_id": 22,
     "position": 22,
-    "title": "Fish Pie with Leeks & Cheddar Mash"
+    "title": "Fish Pie with Leeks & Cheddar Mash",
+    "description": "Scottish Recipe: Fish Pie with Leeks & Cheddar Mash"
   },
   {
     "week": 23,
     "item_id": 23,
     "position": 23,
-    "title": "Kedgeree (Scottish Colonial Twist)"
+    "title": "Kedgeree (Scottish Colonial Twist)",
+    "description": "Scottish Recipe: Kedgeree (Scottish Colonial Twist)"
   },
   {
     "week": 24,
     "item_id": 24,
     "position": 24,
-    "title": "Venison Stew with Juniper"
+    "title": "Venison Stew with Juniper",
+    "description": "Scottish Recipe: Venison Stew with Juniper"
   },
   {
     "week": 25,
     "item_id": 25,
     "position": 25,
-    "title": "Salmon en Croute (Scottish Style)"
+    "title": "Salmon en Croute (Scottish Style)",
+    "description": "Scottish Recipe: Salmon en Croute (Scottish Style)"
   },
   {
     "week": 26,
     "item_id": 26,
     "position": 26,
-    "title": "Raspberry Cranachan Parfait"
+    "title": "Raspberry Cranachan Parfait",
+    "description": "Scottish Recipe: Raspberry Cranachan Parfait"
   },
   {
     "week": 27,
     "item_id": 27,
     "position": 27,
-    "title": "Ecclefechan Tart"
+    "title": "Ecclefechan Tart",
+    "description": "Scottish Recipe: Ecclefechan Tart"
   },
   {
     "week": 28,
     "item_id": 28,
     "position": 28,
-    "title": "Treacle Scones"
+    "title": "Treacle Scones",
+    "description": "Scottish Recipe: Treacle Scones"
   },
   {
     "week": 29,
     "item_id": 29,
     "position": 29,
-    "title": "Clootie Dumpling (Harvest Version)"
+    "title": "Clootie Dumpling (Harvest Version)",
+    "description": "Scottish Recipe: Clootie Dumpling (Harvest Version)"
   },
   {
     "week": 30,
     "item_id": 30,
     "position": 30,
-    "title": "Scottish Lamb Hotpot"
+    "title": "Scottish Lamb Hotpot",
+    "description": "Scottish Recipe: Scottish Lamb Hotpot"
   },
   {
     "week": 31,
     "item_id": 31,
     "position": 31,
-    "title": "Beef & Ale Stew with Root Vegetables"
+    "title": "Beef & Ale Stew with Root Vegetables",
+    "description": "Scottish Recipe: Beef & Ale Stew with Root Vegetables"
   },
   {
     "week": 32,
     "item_id": 32,
     "position": 32,
-    "title": "Roe Deer with Rowan Jelly"
+    "title": "Roe Deer with Rowan Jelly",
+    "description": "Scottish Recipe: Roe Deer with Rowan Jelly"
   },
   {
     "week": 33,
     "item_id": 33,
     "position": 33,
-    "title": "Game Pie"
+    "title": "Game Pie",
+    "description": "Scottish Recipe: Game Pie"
   },
   {
     "week": 34,
     "item_id": 34,
     "position": 34,
-    "title": "Leek & Barley Broth"
+    "title": "Leek & Barley Broth",
+    "description": "Scottish Recipe: Leek & Barley Broth"
   },
   {
     "week": 35,
     "item_id": 35,
     "position": 35,
-    "title": "Haddock Chowder with Oats"
+    "title": "Haddock Chowder with Oats",
+    "description": "Scottish Recipe: Haddock Chowder with Oats"
   },
   {
     "week": 36,
     "item_id": 36,
     "position": 36,
-    "title": "Black Bun"
+    "title": "Black Bun",
+    "description": "Scottish Recipe: Black Bun"
   },
   {
     "week": 37,
     "item_id": 37,
     "position": 37,
-    "title": "Tablet"
+    "title": "Tablet",
+    "description": "Scottish Recipe: Tablet"
   },
   {
     "week": 38,
     "item_id": 38,
     "position": 38,
-    "title": "Atholl Brose"
+    "title": "Atholl Brose",
+    "description": "Scottish Recipe: Atholl Brose"
   },
   {
     "week": 39,
     "item_id": 39,
     "position": 39,
-    "title": "Hot Toddy"
+    "title": "Hot Toddy",
+    "description": "Scottish Recipe: Hot Toddy"
   },
   {
     "week": 40,
     "item_id": 40,
     "position": 40,
-    "title": "Whisky Marmalade"
+    "title": "Whisky Marmalade",
+    "description": "Scottish Recipe: Whisky Marmalade"
   },
   {
     "week": 41,
     "item_id": 41,
     "position": 41,
-    "title": "Rowan Jelly"
+    "title": "Rowan Jelly",
+    "description": "Scottish Recipe: Rowan Jelly"
   },
   {
     "week": 42,
     "item_id": 42,
     "position": 42,
-    "title": "Elderflower Cordial"
+    "title": "Elderflower Cordial",
+    "description": "Scottish Recipe: Elderflower Cordial"
   },
   {
     "week": 43,
     "item_id": 43,
     "position": 43,
-    "title": "Raspberry Jam"
+    "title": "Raspberry Jam",
+    "description": "Scottish Recipe: Raspberry Jam"
   },
   {
     "week": 44,
     "item_id": 44,
     "position": 44,
-    "title": "Bere Bread"
+    "title": "Bere Bread",
+    "description": "Scottish Recipe: Bere Bread"
   },
   {
     "week": 45,
     "item_id": 45,
     "position": 45,
-    "title": "Crowdie Cheese with Oatcakes"
+    "title": "Crowdie Cheese with Oatcakes",
+    "description": "Scottish Recipe: Crowdie Cheese with Oatcakes"
   },
   {
     "week": 46,
     "item_id": 46,
     "position": 46,
-    "title": "Scottish Kedgeree with Smoked Haddock"
+    "title": "Scottish Kedgeree with Smoked Haddock",
+    "description": "Scottish Recipe: Scottish Kedgeree with Smoked Haddock"
   },
   {
     "week": 47,
     "item_id": 47,
     "position": 47,
-    "title": "Fishcakes with Oat Crumb"
+    "title": "Fishcakes with Oat Crumb",
+    "description": "Scottish Recipe: Fishcakes with Oat Crumb"
   },
   {
     "week": 48,
     "item_id": 1,
     "position": 48,
-    "title": "Cullen Skink"
+    "title": "Cullen Skink",
+    "description": "Scottish Recipe: Cullen Skink"
   },
   {
     "week": 49,
     "item_id": 50,
     "position": 49,
-    "title": "Whisky Truffles"
+    "title": "Whisky Truffles",
+    "description": "Scottish Recipe: Whisky Truffles"
   },
   {
     "week": 50,
-    "item_id": null,
-    "position": null,
-    "title": null
+    "item_id": 52,
+    "position": 51,
+    "title": "Scotch Collops (New Year's Dish)",
+    "description": "Scottish Recipe: Scotch Collops (New Year's Dish)"
   },
   {
     "week": 51,
     "item_id": 49,
     "position": 1,
-    "title": "Cranberry Cranachan (Modern Twist)"
+    "title": "Cranberry Cranachan (Modern Twist)",
+    "description": "Scottish Recipe: Cranberry Cranachan (Modern Twist)"
   },
   {
     "week": 52,
     "item_id": 5,
     "position": 2,
-    "title": "Rumbledethumps"
+    "title": "Rumbledethumps",
+    "description": "Scottish Recipe: Rumbledethumps"
   }
 ]

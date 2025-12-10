@@ -19,7 +19,7 @@ class ScheduleManager {
     async loadCurrentSchedule() {
         try {
             console.log('[Schedule Manager] loadCurrentSchedule() called');
-            const response = await fetch('/launchpad/one-click-blog/api/next-up');
+            const response = await fetch('/launchpad/one-click-publication/api/next-up');
             const result = await response.json();
             
             console.log('[Schedule Manager] API response:', result);
@@ -152,7 +152,7 @@ class ScheduleManager {
         try {
             console.log('[Schedule Manager] Updating schedule to:', newDate, newTime);
             
-            const response = await fetch('/launchpad/one-click-blog/api/update-schedule', {
+            const response = await fetch('/launchpad/one-click-publication/api/update-schedule', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

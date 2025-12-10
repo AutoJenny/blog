@@ -6,7 +6,17 @@
 class AutomationEngine {
     constructor() {
         this.settings = {};
+        this.currentOutputChannel = 'blog'; // Default to blog
         this.init();
+    }
+
+    getCurrentOutputChannel() {
+        // Get from selector if available
+        const selector = document.getElementById('output-channel-selector');
+        if (selector) {
+            return selector.value || 'blog';
+        }
+        return this.currentOutputChannel || 'blog';
     }
 
     init() {
@@ -19,7 +29,7 @@ class AutomationEngine {
      */
     async loadSettings() {
         try {
-            const response = await fetch('/launchpad/one-click-blog/api/substage-settings');
+            const response = await fetch('/launchpad/one-click-publication/api/substage-settings');
             const data = await response.json();
             
             if (data.success) {
@@ -45,7 +55,7 @@ class AutomationEngine {
      */
     async updateAutomationMode(stage, substage, mode) {
         try {
-            const response = await fetch(`/launchpad/one-click-blog/api/substage-settings/${stage}/${substage}`, {
+            const response = await fetch(`/launchpad/one-click-publication/api/substage-settings/${stage}/${substage}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -83,14 +93,18 @@ class AutomationEngine {
     async executeSubstage(stage, substage, postId, options = {}) {
         console.log(`[Automation Engine] Executing ${stage}/${substage} for post ${postId}`);
         
+        // Get output channel from options or default to 'blog'
+        const outputChannel = options.output || this.getCurrentOutputChannel() || 'blog';
+        
         try {
-            const response = await fetch(`/launchpad/one-click-blog/api/execute-substage/${stage}/${substage}`, {
+            const response = await fetch(`/launchpad/one-click-publication/api/execute-substage/${stage}/${substage}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     post_id: postId,
+                    output: outputChannel,
                     ...options
                 })
             });

@@ -1629,10 +1629,16 @@ def replenish_queue(config):
 # - blueprints/launchpad/publishing_validation.py (validation route)
 # All function bodies have been removed from this file to avoid duplication.
 
+@bp.route('/one-click-publication')
+def one_click_publication():
+    """One-Click Publication page - automated multi-channel publication creation."""
+    return render_template('launchpad/one_click_publication.html')
+
 @bp.route('/one-click-blog')
 def one_click_blog():
-    """New minimal One-Click Blog page (blank sheet) with link to legacy."""
-    return render_template('launchpad/one_click_blog_minimal.html')
+    """Legacy route - redirects to one-click-publication for backward compatibility."""
+    from flask import redirect, url_for
+    return redirect('/launchpad/one-click-publication')
 
 @bp.route('/one-click-blog/legacy')
 def one_click_blog_legacy():

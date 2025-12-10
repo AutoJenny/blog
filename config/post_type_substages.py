@@ -125,6 +125,13 @@ SUBSTAGE_METADATA = {
         'order': 2  # After drafting for recipe posts
     },
     
+    # Content substages (for weekly content types)
+    'format_content': {
+        'label': 'Format Content',
+        'route_function': None,  # May be handled by JavaScript or future route
+        'order': 1
+    },
+    
     # Imaging substages
     'image_generation': {
         'label': 'Image Generation',
@@ -194,6 +201,21 @@ POST_TYPE_SUBSTAGES = {
         'authoring': ['drafting', 'recipe_image_style_prompt', 'image_captions'],
         'imaging': ['image_generation', 'optimise'],
         'header': ['title_summary', 'header_image', 'seo_meta', 'final_review']
+    },
+    'weekly_word': {
+        'calendar': ['view'],
+        'content': ['format_content'],
+        'header': ['title_summary']
+    },
+    'weekly_phrase': {
+        'calendar': ['view'],
+        'content': ['format_content'],
+        'header': ['title_summary']
+    },
+    'weekly_insult': {
+        'calendar': ['view'],
+        'content': ['format_content'],
+        'header': ['title_summary']
     }
 }
 
@@ -203,8 +225,8 @@ def get_substages_for_post_type(post_type, stage=None):
     Get substages for a post type, optionally filtered by stage.
     
     Args:
-        post_type (str): Post type ('themed', 'profile', 'generated', 'recipe')
-        stage (str, optional): Stage name ('calendar', 'planning', 'research', 'authoring', 'imaging', 'header')
+        post_type (str): Post type ('themed', 'profile', 'generated', 'recipe', 'weekly_word', 'weekly_phrase', 'weekly_insult')
+        stage (str, optional): Stage name ('calendar', 'planning', 'research', 'authoring', 'imaging', 'header', 'content')
     
     Returns:
         dict or list: If stage is None, returns dict of {stage: [substages]}. 

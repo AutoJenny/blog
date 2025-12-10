@@ -4,8 +4,9 @@
  */
 
 class PipelineManager {
-    constructor(postId = null) {
+    constructor(postId = null, outputChannel = 'blog') {
         this.currentPostId = postId;
+        this.currentOutputChannel = outputChannel;
         this.stages = ['calendar', 'planning', 'authoring', 'imaging', 'header'];
         // Map API stage names to template IDs
         this.stageIdMap = {
@@ -13,13 +14,17 @@ class PipelineManager {
             'planning': 'concept',
             'authoring': 'authoring', 
             'imaging': 'imaging',
-            'header': 'header'
+            'header': 'header',
+            'content': 'content',
+            'syndication': 'syndication',
+            'publish': 'publish'
         };
         this.init();
     }
 
     init() {
-        console.log('[Pipeline Manager] Initializing with post ID:', this.currentPostId);
+        console.log('[Pipeline Manager] Initializing with post ID:', this.currentPostId, 'output channel:', this.currentOutputChannel)
+        this.setupOutputChannelSelector();;
         
         // Load posts list for selector
         this.loadPostsList();
@@ -46,8 +51,8 @@ class PipelineManager {
             selector.value = postId;
         }
         
-        // Load pipeline data for this post
-        await this.loadPipelineData(postId);
+        // Load pipeline data for this post with current output channel
+        await this.loadPipelineData(postId, this.currentOutputChannel);
     }
 
     /**
@@ -55,7 +60,7 @@ class PipelineManager {
      */
     async loadPostsList() {
         try {
-            const response = await fetch('/launchpad/one-click-blog/api/posts-in-development');
+            const response = await fetch('/launchpad/one-click-publication/api/posts-in-development');
             const data = await response.json();
             
             if (data.success) {
@@ -112,19 +117,25 @@ class PipelineManager {
     /**
      * Load pipeline data for a specific post
      */
-    async loadPipelineData(postId) {
+    async loadPipelineData(postId, outputChannel = null) {
         if (!postId) {
             console.log('[Pipeline Manager] No post ID provided');
             return;
         }
         
-        console.log('[Pipeline Manager] Loading pipeline data for post:', postId);
+        // Use provided output channel or current one
+        const channel = outputChannel || this.currentOutputChannel || 'blog';
+        if (outputChannel) {
+            this.currentOutputChannel = channel;
+        }
+        
+        console.log('[Pipeline Manager] Loading pipeline data for post:', postId, 'output channel:', channel);
         
         try {
             // Show loading state
             this.showLoadingState();
             
-            const response = await fetch(`/launchpad/one-click-blog/api/pipeline-status/${postId}`);
+            const response = await fetch(`/launchpad/one-click-publication/api/pipeline-status/${postId}?output=${channel}`);
             const data = await response.json();
             
             if (data.success) {
@@ -174,9 +185,14 @@ class PipelineManager {
             progressText.textContent = `${pipelineData.overall_progress}%`;
         }
         
-        // Update each stage
+        // Update each stage (dynamically handle all stages from API, not just predefined ones)
         if (pipelineData.stages) {
-            this.stages.forEach(stage => {
+            // Get all stages from the API response (supports channel-specific stages)
+            const apiStages = Object.keys(pipelineData.stages);
+            console.log('[Pipeline Manager] API returned stages:', apiStages);
+            
+            // Update each stage returned by the API
+            apiStages.forEach(stage => {
                 if (pipelineData.stages[stage]) {
                     this.updateStageDisplay(stage, pipelineData.stages[stage]);
                 }
@@ -190,18 +206,31 @@ class PipelineManager {
      * Update a specific stage's display
      */
     updateStageDisplay(stage, stageData) {
-        const templateStageId = this.stageIdMap[stage];
+        const templateStageId = this.stageIdMap[stage] || stage; // Fallback to stage name if not mapped
+        
+        // For channel-specific stages (content, syndication, publish), try to find existing row or log warning
+        const stageRow = document.querySelector(`[data-stage="${templateStageId}"]`) || 
+                        document.querySelector(`[data-stage="${stage}"]`);
+        
+        if (!stageRow && !this.stageIdMap[stage]) {
+            console.warn(`[Pipeline Manager] No template row found for stage: ${stage}. Channel-specific stages may need dynamic rendering.`);
+            // Could create dynamic rows here in the future
+            return;
+        }
         
         // Update stage status
-        const statusElement = document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-status');
+        const statusElement = stageRow?.querySelector('.stage-status') ||
+                            document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-status');
         if (statusElement) {
             statusElement.className = `stage-status ${stageData.status}`;
             statusElement.textContent = stageData.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
         
         // Update stage progress
-        const progressBar = document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-progress .progress-fill');
-        const progressText = document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-progress .progress-text');
+        const progressBar = stageRow?.querySelector('.stage-progress .progress-fill') ||
+                           document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-progress .progress-fill');
+        const progressText = stageRow?.querySelector('.stage-progress .progress-text') ||
+                            document.querySelector(`#${templateStageId}-content`)?.closest('.stage-accordion')?.querySelector('.stage-progress .progress-text');
         if (progressBar && progressText) {
             progressBar.style.width = `${stageData.progress}%`;
             progressText.textContent = `${stageData.progress}%`;
@@ -393,7 +422,7 @@ class PipelineManager {
         const postId = 69;
         
         try {
-            const response = await fetch(`/launchpad/one-click-blog/api/pipeline-status/${postId}`);
+            const response = await fetch(`/launchpad/one-click-publication/api/pipeline-status/${postId}`);
             const data = await response.json();
             
             if (data.success) {

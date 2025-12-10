@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --border-color: #334155;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+        
+        .deprecated-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+        }
+        
+        .deprecated-link:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--accent-blue);
+        }
+        
+        .channel-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .channel-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1rem;
+        }
+        
+        .day-column {
+            min-height: 200px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .day-column:hover {
+            border-color: var(--accent-blue);
+        }
+        
+        .day-header {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .empty-state {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 2rem 0;
+            opacity: 0.7;
+        }
+        
+        .item-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .item-card:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+        
+        .item-type-label {
+            color: var(--accent-green);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .item-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .item-description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .btn-work-on {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-work-on:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        /* Tab Styles */
+        .dashboard-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .dashboard-tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: -2px;
+        }
+        
+        .dashboard-tab:hover {
+            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .dashboard-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Day Assignment Table Styles */
+        .day-assignment-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .day-assignment-table th {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .day-assignment-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .day-assignment-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .day-select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            min-width: 140px;
+        }
+        
+        .day-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        
+        .day-select.changed {
+            border-color: var(--accent-yellow);
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .format-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+        
+        .primary-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        
+        .required-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        
+        .save-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-broadcast-tower"></i> Publication Dashboard</h1>
+            <a href="/publication/dashboard/deprecated" class="deprecated-link">
+                <i class="fas fa-history"></i> View Deprecated Version
+            </a>
+            </div>
+            
+        <!-- Tab Navigation -->
+        <div class="dashboard-tabs">
+            <button class="dashboard-tab active" data-tab="schedule">
+                <i class="fas fa-calendar-week"></i> Schedule
+            </button>
+            <button class="dashboard-tab" data-tab="day-assignments">
+                <i class="fas fa-cog"></i> Day Assignments
+            </button>
+        </div>
+
+        <!-- Schedule Tab -->
+        <div id="tab-schedule" class="tab-content active">
+            <!-- Blog Section -->
+        <div id="channel-blog" class="channel-section">
+            <h2><i class="fas fa-blog" style="color: var(--accent-blue);"></i> Blog</h2>
+            <div class="week-grid">
+                <div class="day-column">
+                    <div class="day-header">Monday</div>
+                    <div class="empty-state">No items</div>
+            </div>
+                <div class="day-column">
+                    <div class="day-header">Tuesday</div>
+                    <div class="empty-state">No items</div>
+                </div>
+                <div class="day-column">
+                    <div class="day-header">Wednesday</div>
+                    <div class="empty-state">No items</div>
+                                </div>
+                <div class="day-column">
+                    <div class="day-header">Thursday</div>
+                    <div class="empty-state">No items</div>
+                            </div>
+                <div class="day-column">
+                    <div class="day-header">Friday</div>
+                    <div class="empty-state">No items</div>
+                        </div>
+                <div class="day-column">
+                    <div class="day-header">Saturday</div>
+                    <div class="empty-state">No items</div>
+                        </div>
+                <div class="day-column">
+                    <div class="day-header">Sunday</div>
+                    <div class="empty-state">No items</div>
+                    </div>
+                </div>
+            </div>
+            
+        <!-- Facebook Section -->
+        <div id="channel-facebook" class="channel-section">
+            <h2><i class="fab fa-facebook" style="color: #1877f2;"></i> Facebook</h2>
+            <div class="week-grid">
+                <div class="day-column">
+                    <div class="day-header">Monday</div>
+                    <div class="empty-state">No items</div>
+                </div>
+                <div class="day-column">
+                    <div class="day-header">Tuesday</div>
+                    <div class="empty-state">No items</div>
+                        </div>
+                <div class="day-column">
+                    <div class="day-header">Wednesday</div>
+                    <div class="empty-state">No items</div>
+                        </div>
+                <div class="day-column">
+                    <div class="day-header">Thursday</div>
+                    <div class="empty-state">No items</div>
+                    </div>
+                <div class="day-column">
+                    <div class="day-header">Friday</div>
+                    <div class="empty-state">No items</div>
+                    </div>
+                <div class="day-column">
+                    <div class="day-header">Saturday</div>
+                    <div class="empty-state">No items</div>
+                        </div>
+                <div class="day-column">
+                    <div class="day-header">Sunday</div>
+                    <div class="empty-state">No items</div>
+                    </div>
+                </div>
+            </div>
+            
+        <!-- Newsletter Section -->
+        <div id="channel-newsletter" class="channel-section">
+            <h2><i class="fas fa-envelope" style="color: var(--accent-purple);"></i> Newsletter</h2>
+            <div class="week-grid">
+                        <div class="day-column">
+                            <div class="day-header">Monday</div>
+                    <div class="empty-state">No items</div>
+                                        </div>
+                        <div class="day-column">
+                            <div class="day-header">Tuesday</div>
+                    <div class="empty-state">No items</div>
+                            </div>
+                        <div class="day-column">
+                            <div class="day-header">Wednesday</div>
+                    <div class="empty-state">No items</div>
+                                        </div>
+                        <div class="day-column">
+                            <div class="day-header">Thursday</div>
+                    <div class="empty-state">No items</div>
+                                        </div>
+                        <div class="day-column">
+                            <div class="day-header">Friday</div>
+                    <div class="empty-state">No items</div>
+                                        </div>
+                        <div class="day-column">
+                            <div class="day-header">Saturday</div>
+                    <div class="empty-state">No items</div>
+                                        </div>
+                        <div class="day-column">
+                            <div class="day-header">Sunday</div>
+                    <div class="empty-state">No items</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+        <!-- Day Assignments Tab -->
+        <div id="tab-day-assignments" class="tab-content">
+            <div class="channel-section">
+                <div class="save-controls">
+                <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+                            <i class="fas fa-calendar-alt"></i> Publication Day Assignments
+                        </h2>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                            Configure which day of the week each post type publishes to each channel
+                        </p>
+                    </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary" id="btn-reset-changes">
+                            <i class="fas fa-undo"></i> Reset Changes
+                        </button>
+                        <button class="btn btn-primary" id="btn-save-all" disabled>
+                            <i class="fas fa-save"></i> Save All Changes
+                        </button>
+            </div>
+        </div>
+
+                <div class="filter-controls">
+                    <select class="filter-select" id="filter-post-type">
+                        <option value="">All Post Types</option>
+                    </select>
+                    <select class="filter-select" id="filter-channel">
+                        <option value="">All Channels</option>
+                    </select>
+            </div>
+            
+                <div style="overflow-x: auto;">
+                    <table class="day-assignment-table">
+                        <thead>
+                            <tr>
+                                <th>Post Type</th>
+                                <th>Content Format</th>
+                                <th>Blog</th>
+                                <th>Facebook</th>
+                                <th>Instagram</th>
+                                <th>Twitter</th>
+                                <th>Newsletter</th>
+                            </tr>
+                        </thead>
+                        <tbody id="day-assignments-tbody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading assignments...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                        </div>
+                </div>
+            </div>
+            
+    <script>
+        // Tab switching
+        document.querySelectorAll('.dashboard-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetTab = this.dataset.tab;
+                
+                // Update tab buttons
+                document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById('tab-' + targetTab).classList.add('active');
+                
+                // Load schedule when Schedule tab is shown
+                if (targetTab === 'schedule') {
+                    loadSchedule();
+                }
+            });
+        });
+        
+        // Schedule Management
+        async function loadSchedule() {
+            try {
+                const response = await fetch('/publication/api/dashboard/schedule');
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderSchedule(data.channels);
+                } else {
+                    console.error('Error loading schedule:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading schedule:', error);
+            }
+        }
+        
+        function renderSchedule(channels) {
+            // Clear all existing item cards (but keep empty states)
+            document.querySelectorAll('.day-column .item-card').forEach(el => {
+                el.remove();
+            });
+            
+            // Show all empty states by default
+            document.querySelectorAll('.day-column .empty-state').forEach(el => {
+                el.style.display = 'block';
+            });
+            
+            // Render items for each channel
+            Object.keys(channels).forEach(channel => {
+                const channelSection = document.querySelector(`#channel-${channel}`);
+                if (!channelSection) return;
+                
+                const items = channels[channel];
+                items.forEach(item => {
+                    const day = item.day;
+                    if (!day || day < 1 || day > 7) return;
+                    
+                    // Find the day column for this channel
+                    const dayColumns = channelSection.querySelectorAll('.day-column');
+                    if (dayColumns.length < day) return;
+                    
+                    const dayColumn = dayColumns[day - 1];
+                    if (!dayColumn) return;
+                    
+                    // Hide empty state
+                    const emptyState = dayColumn.querySelector('.empty-state');
+                    if (emptyState) {
+                        emptyState.style.display = 'none';
+                    }
+                    
+                    // Create item card
+                    const itemCard = document.createElement('div');
+                    itemCard.className = 'item-card';
+                    itemCard.dataset.category = item.category;
+                    itemCard.dataset.itemId = item.item_id;
+                    itemCard.dataset.year = item.year;
+                    itemCard.dataset.week = item.week;
+                    itemCard.dataset.channel = item.channel;
+                    itemCard.dataset.postId = item.post_id || '';
+                    itemCard.dataset.contentFormat = item.content_format;
+                    
+                    // Build title (remove prefixes since we have type badge)
+                    let title = item.title || 'Untitled';
+                    
+                    // Get type name
+                    const typeName = item.type_name || item.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    // Only skip if we have absolutely no data (no title, no item_id, no post_id)
+                    if ((!title || title === 'Untitled') && !item.item_id && !item.post_id) {
+                        return; // Skip this item
+                    }
+                    
+                    itemCard.innerHTML = `
+                        <div class="item-type-label">${typeName}</div>
+                        <div class="item-title">${title}</div>
+                        ${item.description ? `<div class="item-description">${item.description.substring(0, 50)}${item.description.length > 50 ? '...' : ''}</div>` : ''}
+                        <button class="btn-work-on">Work on This</button>
+                    `;
+                    
+                    // Add click handler
+                    itemCard.querySelector('.btn-work-on').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        navigateToOneClick(item);
+                    });
+                    
+                    itemCard.addEventListener('click', function(e) {
+                        if (!e.target.classList.contains('btn-work-on')) {
+                            navigateToOneClick(item);
+                        }
+                    });
+                    
+                    dayColumn.appendChild(itemCard);
+                });
+            });
+        }
+        
+        function navigateToOneClick(item) {
+            let url = '/launchpad/one-click-publication?';
+            const params = [];
+            
+            if (item.post_id) {
+                params.push(`post_id=${item.post_id}`);
+                    } else {
+                params.push(`category=${item.category}`);
+                params.push(`item_id=${item.item_id}`);
+                params.push(`year=${item.year}`);
+                params.push(`week=${item.week}`);
+            }
+            
+            params.push(`output=${item.channel}`);
+            
+            url += params.join('&');
+            window.location.href = url;
+        }
+        
+        // Load schedule on initial page load if Schedule tab is active
+        if (document.getElementById('tab-schedule')?.classList.contains('active')) {
+            loadSchedule();
+        }
+        
+        // Day Assignment Management
+        let assignments = [];
+        let changedAssignments = new Set();
+        let dayNames = {
+            1: 'Monday',
+            2: 'Tuesday',
+            3: 'Wednesday',
+            4: 'Thursday',
+            5: 'Friday',
+            6: 'Saturday',
+            7: 'Sunday'
+        };
+        
+        async function loadDayAssignments() {
+            try {
+                const response = await fetch('/publication/api/publication-days');
+                const data = await response.json();
+                
+                if (data.success) {
+                    assignments = data.assignments;
+                    dayNames = data.day_names;
+                    renderDayAssignments();
+                    populateFilters(data.post_types, data.channels);
+                        } else {
+                    console.error('Failed to load assignments:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading assignments:', error);
+            }
+        }
+        
+        function populateFilters(postTypes, channels) {
+            const postTypeFilter = document.getElementById('filter-post-type');
+            const channelFilter = document.getElementById('filter-channel');
+            
+            postTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                postTypeFilter.appendChild(option);
+            });
+            
+            channels.forEach(channel => {
+                const option = document.createElement('option');
+                option.value = channel;
+                option.textContent = channel.charAt(0).toUpperCase() + channel.slice(1);
+                channelFilter.appendChild(option);
+            });
+        }
+        
+        function renderDayAssignments() {
+            const tbody = document.getElementById('day-assignments-tbody');
+            const postTypeFilter = document.getElementById('filter-post-type').value;
+            const channelFilter = document.getElementById('filter-channel').value;
+            
+            // Group assignments by post_type and content_format
+            const grouped = {};
+            assignments.forEach(assignment => {
+                if (postTypeFilter && assignment.post_type !== postTypeFilter) return;
+                if (channelFilter && assignment.channel !== channelFilter) return;
+                
+                const key = `${assignment.post_type}|${assignment.content_format}`;
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        post_type: assignment.post_type,
+                        content_format: assignment.content_format,
+                        channels: {}
+                    };
+                }
+                grouped[key].channels[assignment.channel] = assignment;
+            });
+            
+            tbody.innerHTML = '';
+            
+            Object.keys(grouped).sort().forEach(key => {
+                const group = grouped[key];
+                const row = document.createElement('tr');
+                
+                // Post Type column
+                const typeCell = document.createElement('td');
+                typeCell.textContent = group.post_type;
+                row.appendChild(typeCell);
+                
+                // Content Format column
+                const formatCell = document.createElement('td');
+                formatCell.textContent = group.content_format;
+                row.appendChild(formatCell);
+                
+                // Channel columns
+                ['blog', 'facebook', 'instagram', 'twitter', 'newsletter'].forEach(channel => {
+                    const cell = document.createElement('td');
+                    const assignment = group.channels[channel];
+                    
+                    if (assignment) {
+                        const select = document.createElement('select');
+                        select.className = 'day-select';
+                        select.dataset.assignmentId = assignment.id;
+                        
+                        // Store original value for change detection
+                        // Normalize original value: convert to int or null
+                        const originalValue = assignment.publication_day !== null && assignment.publication_day !== undefined 
+                            ? parseInt(assignment.publication_day) 
+                            : null;
+                        // Store as string in data attribute (empty string for null)
+                        select.dataset.originalValue = originalValue !== null ? originalValue.toString() : '';
+                        
+                        // Add options
+                        const nullOption = document.createElement('option');
+                        nullOption.value = '';
+                        nullOption.textContent = 'Not assigned';
+                        if (originalValue === null) nullOption.selected = true;
+                        select.appendChild(nullOption);
+                        
+                        for (let day = 1; day <= 7; day++) {
+                            const option = document.createElement('option');
+                            option.value = day.toString();
+                            option.textContent = dayNames[day];
+                            if (originalValue === day) {
+                                option.selected = true;
+                            }
+                            select.appendChild(option);
+                        }
+                        
+                        select.addEventListener('change', function() {
+                            // Read stored original value (empty string means null)
+                            const originalStr = this.dataset.originalValue || '';
+                            const storedOriginal = originalStr === '' ? null : parseInt(originalStr);
+                            
+                            // Read new value (empty string means null)
+                            const newValue = this.value === '' ? null : parseInt(this.value);
+                            
+                            // Compare: both should be null or both should be same integer
+                            const isChanged = storedOriginal !== newValue;
+                            
+                            if (isChanged) {
+                                this.classList.add('changed');
+                                changedAssignments.add(assignment.id);
+                            } else {
+                                this.classList.remove('changed');
+                                changedAssignments.delete(assignment.id);
+                            }
+                            updateSaveButton();
+                        });
+                        
+                        // Append select first
+                        cell.appendChild(select);
+                        
+                        // Add badges as DOM elements (not innerHTML to avoid removing select)
+                        if (assignment.is_primary) {
+                            const primaryBadge = document.createElement('span');
+                            primaryBadge.className = 'primary-badge';
+                            primaryBadge.textContent = 'Primary';
+                            cell.appendChild(primaryBadge);
+                        }
+                        if (assignment.is_required) {
+                            const requiredBadge = document.createElement('span');
+                            requiredBadge.className = 'required-badge';
+                            requiredBadge.textContent = 'Required';
+                            cell.appendChild(requiredBadge);
+                        }
+                        if (!assignment.is_active) {
+                            const inactiveBadge = document.createElement('span');
+                            inactiveBadge.className = 'format-badge';
+                            inactiveBadge.style.opacity = '0.5';
+                            inactiveBadge.textContent = 'Inactive';
+                            cell.appendChild(inactiveBadge);
+                        }
+                    } else {
+                        cell.textContent = '-';
+                        cell.style.color = 'var(--text-secondary)';
+                        cell.style.opacity = '0.5';
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        function updateSaveButton() {
+            const saveBtn = document.getElementById('btn-save-all');
+            if (!saveBtn) return;
+            saveBtn.disabled = changedAssignments.size === 0;
+            if (changedAssignments.size > 0) {
+                saveBtn.textContent = `Save ${changedAssignments.size} Change(s)`;
+            } else {
+                saveBtn.textContent = 'Save All Changes';
+            }
+        }
+        
+        async function saveAllChanges() {
+            const updates = [];
+            document.querySelectorAll('.day-select.changed').forEach(select => {
+                const assignmentId = parseInt(select.dataset.assignmentId);
+                const newValue = select.value ? parseInt(select.value) : null;
+                updates.push({ id: assignmentId, publication_day: newValue });
+            });
+            
+            if (updates.length === 0) return;
+            
+            try {
+                const response = await fetch('/publication/api/publication-days/bulk', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ updates })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Remove changed class and clear changed set
+                    document.querySelectorAll('.day-select.changed').forEach(select => {
+                        select.classList.remove('changed');
+                    });
+                    changedAssignments.clear();
+                    updateSaveButton();
+                    
+                    // Reload to get updated data
+                    await loadDayAssignments();
+                    
+                    alert(`Successfully updated ${updates.length} assignment(s)`);
+                } else {
+                    alert('Error saving changes: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error saving changes:', error);
+                alert('Error saving changes. Please try again.');
+            }
+        }
+        
+        function resetChanges() {
+            document.querySelectorAll('.day-select.changed').forEach(select => {
+                const assignmentId = parseInt(select.dataset.assignmentId);
+                const assignment = assignments.find(a => a.id === assignmentId);
+                if (assignment) {
+                    select.value = assignment.publication_day || '';
+                    select.classList.remove('changed');
+                }
+            });
+            changedAssignments.clear();
+            updateSaveButton();
+        }
+        
+        // Event listeners
+        document.getElementById('btn-save-all').addEventListener('click', saveAllChanges);
+        document.getElementById('btn-reset-changes').addEventListener('click', resetChanges);
+        document.getElementById('filter-post-type').addEventListener('change', renderDayAssignments);
+        document.getElementById('filter-channel').addEventListener('change', renderDayAssignments);
+        
+        // Load assignments when day assignments tab is shown
+        document.querySelector('[data-tab="day-assignments"]').addEventListener('click', function() {
+            if (assignments.length === 0) {
+                loadDayAssignments();
+            }
+        });
+    </script>
+</body>
+</html>

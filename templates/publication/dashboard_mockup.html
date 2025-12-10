@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication Dashboard - Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .section-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-ready { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .status-progress { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+        .status-warning { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .status-missing { background: rgba(100, 116, 139, 0.2); color: var(--text-secondary); }
+        
+        .item-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .item-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+        
+        .item-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .item-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--bg-tertiary);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent-blue);
+        }
+        
+        .btn-success {
+            background: var(--accent-green);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .grid-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .day-column {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-height: 120px;
+        }
+        
+        .day-header {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .day-item {
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        
+        .day-item:hover {
+            background: var(--bg-primary);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .mini-calendar {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .calendar-week {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .calendar-day {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        
+        .calendar-day.current {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .calendar-day.has-items {
+            border: 2px solid var(--accent-green);
+        }
+        
+        .alert-item {
+            background: var(--bg-tertiary);
+            border-left: 4px solid var(--accent-yellow);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .alert-item.warning {
+            border-left-color: var(--accent-yellow);
+        }
+        
+        .alert-item.error {
+            border-left-color: var(--accent-red);
+        }
+        
+        .alert-item.info {
+            border-left-color: var(--accent-blue);
+        }
+        
+        .pipeline-stage {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            transition: width 0.3s;
+        }
+        
+        .post-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .type-themed { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .type-recipe { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+        .type-profile { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        .type-word { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+        .type-phrase { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        .type-insult { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        
+        .channel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            margin-right: 0.25rem;
+        }
+        
+        .channel-blog { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .channel-facebook { background: rgba(24, 119, 242, 0.2); color: #1877f2; }
+        .channel-instagram { background: rgba(225, 48, 108, 0.2); color: #e1306c; }
+        .channel-twitter { background: rgba(29, 161, 242, 0.2); color: #1da1f2; }
+        .channel-newsletter { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        
+        .channel-indicators {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+            margin-top: 0.25rem;
+        }
+        
+        .channel-view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            background: var(--bg-tertiary);
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+        
+        .channel-toggle-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .channel-toggle-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        
+        .channel-toggle-btn:hover:not(.active) {
+            background: var(--bg-secondary);
+            border-color: var(--bg-tertiary);
+        }
+        
+        .channel-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .channel-section-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .multi-channel-item {
+            border-left: 3px solid var(--accent-blue);
+        }
+        
+        .channel-filter-active {
+            opacity: 1;
+        }
+        
+        .channel-filter-inactive {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .empty-slot {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px dashed var(--bg-tertiary);
+        }
+
+        .day-header-empty {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="section-card" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">
+                        <i class="fas fa-calendar-check"></i> Publication Dashboard
+                    </h1>
+                    <p style="color: var(--text-secondary);">Central hub for all publication activities</p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.5rem; font-weight: 600;">Week 50</div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Dec 8-14, 2025</div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-blue);">7</div>
+                    <div class="stat-label">Scheduled</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-yellow);">2</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-green);">4</div>
+                    <div class="stat-label">Ready</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-purple);">1</div>
+                    <div class="stat-label">Published Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-red);">1</div>
+                    <div class="stat-label">Needs Attention</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Channel Publication Schedule (Most Prominent) -->
+        <div class="section-card" style="border: 2px solid var(--accent-blue);">
+            <div class="section-title" style="font-size: 1.5rem;">
+                <i class="fas fa-broadcast-tower"></i> Publication Schedule by Channel
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                See exactly what's publishing to each channel this week
+            </p>
+            
+            <!-- Blog Channel -->
+            <div class="channel-section" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">            <!-- Blog Channel -->
+            <div class="channel-section" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <div class="channel-section-title" style="font-size: 1.1rem;">
+                    <i class="fas fa-blog" style="color: var(--accent-blue); font-size: 1.2rem;"></i> Blog Posts
+                    <span style="margin-left: auto; font-size: 0.9rem; color: var(--text-secondary);">5 posts scheduled</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem; margin-top: 1rem;">
+                    <div>
+                        <div class="day-header-empty">Mon</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid var(--accent-blue);" data-post-id="97" data-channel="blog">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <div style="flex: 1;">
+                                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Hogmanay Traditions</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Theme • 2:00 PM</div>
+                                </div>
+                                <button class="btn btn-primary btn-work-on" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">Work on This</button>
+                            </div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid var(--accent-blue);">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Cullen Skink</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Recipe • 10:00 AM</div>
+                            <span class="status-badge status-progress">🟡 In Progress</span>
+                        </div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid var(--accent-blue);">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">haar</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Word • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Tue</div>
+                        <div class="empty-slot">No items</div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Wed</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid var(--accent-blue);">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">haud yer wheesht</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Phrase • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Thu</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid var(--accent-blue);">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Tartan Scarf</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-progress">🟡 In Progress</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Fri</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid var(--accent-blue);">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">MacLeod Profile</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Surname • 2:00 PM</div>
+                            <span class="status-badge status-warning">⚠️ Needs Attention</span>
+                        </div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid var(--accent-blue);">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Ye're as subtle...</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Insult • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Sat</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid var(--accent-blue);">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Kilt Accessories</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Sun</div>
+                        <div class="empty-slot">No items</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Facebook Channel -->
+            <div class="channel-section" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">            <!-- Facebook Channel -->
+            <div class="channel-section" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <div class="channel-section-title" style="font-size: 1.1rem;">
+                    <i class="fab fa-facebook" style="color: #1877f2; font-size: 1.2rem;"></i> Facebook Posts
+                    <span style="margin-left: auto; font-size: 0.9rem; color: var(--text-secondary);">6 posts scheduled</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem; margin-top: 1rem;">
+                    <div>
+                        <div class="day-header-empty">Mon</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Hogmanay Traditions</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Theme • 2:00 PM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">haar</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Word • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Tue</div>
+                        <div class="empty-slot">No items</div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Wed</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">haud yer wheesht</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Phrase • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Thu</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Tartan Scarf</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-progress">🟡 In Progress</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Fri</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Ye're as subtle...</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Insult • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Sat</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Kilt Accessories</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Sun</div>
+                        <div class="empty-slot">No items</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Instagram Channel -->
+            <div class="channel-section" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">            <!-- Instagram Channel -->
+            <div class="channel-section" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <div class="channel-section-title" style="font-size: 1.1rem;">
+                    <i class="fab fa-instagram" style="color: #e1306c; font-size: 1.2rem;"></i> Instagram Posts
+                    <span style="margin-left: auto; font-size: 0.9rem; color: var(--text-secondary);">3 posts scheduled</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem; margin-top: 1rem;">
+                    <div>
+                        <div class="day-header-empty">Mon</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #e1306c;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">haar</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Word • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Tue</div>
+                        <div class="empty-slot">No items</div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Wed</div>
+                        <div class="empty-slot">No items</div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Thu</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #e1306c;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Tartan Scarf</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-progress">🟡 In Progress</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Fri</div>
+                        <div class="empty-slot">No items</div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Sat</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #e1306c;">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Kilt Accessories</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="day-header-empty">Sun</div>
+                        <div class="empty-slot">No items</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Newsletter Channel -->
+            <div class="channel-section" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px;">
+                <div class="channel-section-title" style="font-size: 1.1rem;">
+                    <i class="fas fa-envelope" style="color: var(--accent-purple); font-size: 1.2rem;"></i> Newsletter
+                    <span style="margin-left: auto; font-size: 0.9rem; color: var(--text-secondary);">1 issue scheduled</span>
+                </div>
+                <div class="item-card" style="margin-top: 1rem; border-left: 3px solid var(--accent-purple);">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-title">Newsletter Issue #42</div>
+                            <div class="item-meta">
+                                <span>Scheduled: Wednesday, Dec 10 at 10:00 AM</span>
+                                <span style="margin-left: 1rem;">Includes: Hogmanay Traditions theme, product highlights, events</span>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-secondary"><i class="fas fa-eye"></i> Review</button>
+                            <button class="btn btn-success"><i class="fas fa-check"></i> Approve</button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        Status: <span class="status-badge status-ready">✅ Ready for Review</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: Week Overview with Channel View -->
+        <div class="section-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div class="section-title" style="margin-bottom: 0;">
+                    <i class="fas fa-calendar-week"></i> Week Overview (All Items)
+                </div>
+                <div class="channel-view-toggle">
+                    <button class="channel-toggle-btn active" data-channel="all">All Channels</button>
+                    <button class="channel-toggle-btn" data-channel="blog">📝 Blog</button>
+                    <button class="channel-toggle-btn" data-channel="facebook">📘 Facebook</button>
+                    <button class="channel-toggle-btn" data-channel="instagram">📷 Instagram</button>
+                    <button class="channel-toggle-btn" data-channel="newsletter">✉️ Newsletter</button>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem;">
+                <!-- Scheduled Items Grid -->
+                <div>
+                    <div class="grid-week">
+                        <div class="day-column">
+                            <div class="day-header">Monday</div>
+                            <div class="day-item multi-channel-item" data-channels="blog,facebook,newsletter">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-themed"><i class="fas fa-book"></i> Theme</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Hogmanay Traditions</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-newsletter"><i class="fas fa-envelope"></i> Newsletter</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                            <div class="day-item" data-channels="blog,facebook">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-recipe"><i class="fas fa-utensils"></i> Recipe</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Cullen Skink</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-progress">🟡 In Progress</span>
+                                </div>
+                            </div>
+                            <div class="day-item" data-channels="blog,facebook,instagram">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-word"><i class="fas fa-book-open"></i> Word</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">haar</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-instagram"><i class="fab fa-instagram"></i> Instagram</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Tuesday</div>
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; text-align: center; padding: 1rem 0;">
+                                No items scheduled
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Wednesday</div>
+                            <div class="day-item" data-channels="blog,facebook">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-phrase"><i class="fas fa-quote-left"></i> Phrase</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">haud yer wheesht</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Thursday</div>
+                            <div class="day-item" data-channels="blog,facebook,instagram">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-profile"><i class="fas fa-tag"></i> Product</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Tartan Scarf</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-instagram"><i class="fab fa-instagram"></i> Instagram</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-progress">🟡 In Progress</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Friday</div>
+                            <div class="day-item" data-channels="blog">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-profile"><i class="fas fa-users"></i> Surname</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">MacLeod Profile</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-warning">⚠️ Needs Attention</span>
+                                </div>
+                            </div>
+                            <div class="day-item" data-channels="blog,facebook,twitter">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-insult"><i class="fas fa-comment-dots"></i> Insult</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Ye're as subtle as a brick</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-twitter"><i class="fab fa-twitter"></i> Twitter</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Saturday</div>
+                            <div class="day-item" data-channels="blog,facebook,instagram">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-profile"><i class="fas fa-tag"></i> Product</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Kilt Accessories</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-instagram"><i class="fab fa-instagram"></i> Instagram</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Sunday</div>
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; text-align: center; padding: 1rem 0;">
+                                No items scheduled
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mini Calendar -->
+                <div>
+                    <div class="mini-calendar">
+                        <div class="calendar-header">
+                            <div style="font-weight: 600;">December 2025</div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem;"><i class="fas fa-chevron-left"></i></button>
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem;"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; margin-bottom: 0.5rem; font-size: 0.7rem; color: var(--text-secondary);">
+                            <div style="text-align: center;">M</div>
+                            <div style="text-align: center;">T</div>
+                            <div style="text-align: center;">W</div>
+                            <div style="text-align: center;">T</div>
+                            <div style="text-align: center;">F</div>
+                            <div style="text-align: center;">S</div>
+                            <div style="text-align: center;">S</div>
+                        </div>
+                        <div class="calendar-week">
+                            <div class="calendar-day">1</div>
+                            <div class="calendar-day">2</div>
+                            <div class="calendar-day">3</div>
+                            <div class="calendar-day">4</div>
+                            <div class="calendar-day">5</div>
+                            <div class="calendar-day">6</div>
+                            <div class="calendar-day">7</div>
+                        </div>
+                        <div class="calendar-week">
+                            <div class="calendar-day current has-items">8</div>
+                            <div class="calendar-day current">9</div>
+                            <div class="calendar-day current">10</div>
+                            <div class="calendar-day current">11</div>
+                            <div class="calendar-day current">12</div>
+                            <div class="calendar-day current">13</div>
+                            <div class="calendar-day current">14</div>
+                        </div>
+                        <div class="calendar-week">
+                            <div class="calendar-day">15</div>
+                            <div class="calendar-day">16</div>
+                            <div class="calendar-day">17</div>
+                            <div class="calendar-day">18</div>
+                            <div class="calendar-day">19</div>
+                            <div class="calendar-day">20</div>
+                            <div class="calendar-day">21</div>
+                        </div>
+                        <div style="margin-top: 0.5rem; text-align: center;">
+                            <a href="/planning/posts/0/calendar/scheduling" style="color: var(--accent-blue); text-decoration: none; font-size: 0.75rem;">
+                                <i class="fas fa-external-link-alt"></i> View Full Calendar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Publication Queue by Channel -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fas fa-paper-plane"></i> Publication Queue by Channel
+            </div>
+            
+            <!-- Channel Sections -->
+            <div class="channel-section">
+                <div class="channel-section-title">
+                    <i class="fas fa-blog" style="color: var(--accent-blue);"></i> Blog Posts
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Monday</div>
+                        <div class="item-card" style="padding: 0.75rem;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Cullen Skink</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Recipe • 10:00 AM</div>
+                            <span class="status-badge status-progress">🟡 In Progress</span>
+                        </div>
+                        <div class="item-card" style="padding: 0.75rem;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">haar</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Word • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Wednesday</div>
+                        <div class="item-card" style="padding: 0.75rem;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">haud yer wheesht</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Phrase • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Thursday</div>
+                        <div class="item-card" style="padding: 0.75rem;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Tartan Scarf</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-progress">🟡 In Progress</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Friday</div>
+                        <div class="item-card" style="padding: 0.75rem;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">MacLeod Profile</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Surname • 2:00 PM</div>
+                            <span class="status-badge status-warning">⚠️ Needs Attention</span>
+                        </div>
+                        <div class="item-card" style="padding: 0.75rem;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Ye're as subtle...</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Insult • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Saturday</div>
+                        <div class="item-card" style="padding: 0.75rem;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Kilt Accessories</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+            
+            <div class="channel-section" style="margin-top: 2rem;">
+                <div class="channel-section-title">
+                    <i class="fab fa-facebook" style="color: #1877f2;"></i> Facebook Posts
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Monday</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Hogmanay Traditions</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Theme • 2:00 PM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">haar</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Word • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Wednesday</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">haud yer wheesht</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Phrase • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Thursday</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Tartan Scarf</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-progress">🟡 In Progress</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Friday</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Ye're as subtle...</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Insult • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Saturday</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #1877f2;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Kilt Accessories</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+            
+            <div class="channel-section" style="margin-top: 2rem;">
+                <div class="channel-section-title">
+                    <i class="fab fa-instagram" style="color: #e1306c;"></i> Instagram Posts
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Monday</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #e1306c;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">haar</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Word • 9:00 AM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Thursday</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #e1306c;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Tartan Scarf</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-progress">🟡 In Progress</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Saturday</div>
+                        <div class="item-card" style="padding: 0.75rem; border-left: 3px solid #e1306c;">
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Kilt Accessories</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Product • 2:00 PM</div>
+                            <span class="status-badge status-ready">✅ Ready</span>
+                        </div>
+                    </div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+            
+            <div class="channel-section" style="margin-top: 2rem;">
+                <div class="channel-section-title">
+                    <i class="fas fa-envelope" style="color: var(--accent-purple);"></i> Newsletter
+                </div>
+                <div class="item-card">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-title">Newsletter Issue #42</div>
+                            <div class="item-meta">
+                                <span>Scheduled: Wednesday, Dec 10 at 10:00 AM</span>
+                                <span style="margin-left: 1rem;">Includes: Hogmanay Traditions theme, product highlights, events</span>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-secondary"><i class="fas fa-eye"></i> Review</button>
+                            <button class="btn btn-success"><i class="fas fa-check"></i> Approve</button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        Status: <span class="status-badge status-ready">✅ Ready for Review</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--bg-tertiary);">
+                <h3 style="font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Today's Publications</h3>
+                <div class="item-card multi-channel-item">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-title">Hogmanay Traditions</div>
+                            <div class="item-meta">
+                                <span class="post-type-badge type-themed"><i class="fas fa-book"></i> Themed Post</span>
+                                <span style="margin-left: 0.5rem;">Scheduled: Dec 8, 2025 at 2:00 PM</span>
+                            </div>
+                            <div class="channel-indicators" style="margin-top: 0.5rem;">
+                                <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                <span class="channel-badge channel-newsletter"><i class="fas fa-envelope"></i> Newsletter</span>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-secondary"><i class="fas fa-eye"></i> Review</button>
+                            <button class="btn btn-success"><i class="fas fa-check"></i> Approve</button>
+                            <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> Publish All</button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        Status: <span class="status-badge status-ready">✅ Ready</span>
+                        <span style="margin-left: 1rem;">Post ID: #456</span>
+                        <span style="margin-left: 1rem;">Pipeline: 100% Complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Production Pipeline -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fas fa-cogs"></i> Production Pipeline
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <h3 style="font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">In Progress</h3>
+                    <div class="pipeline-stage">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 0.9rem;">Cullen Skink Recipe</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                    <span class="post-type-badge type-recipe"><i class="fas fa-utensils"></i> Recipe</span>
+                                    <span style="margin-left: 0.5rem;">Post #789</span>
+                                </div>
+                            </div>
+                            <span class="status-badge status-progress">🟡 Authoring</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%;"></div>
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                            Next: Continue writing content sections
+                        </div>
+                        <div style="margin-top: 0.75rem;">
+                            <button class="btn btn-primary" style="font-size: 0.75rem;">
+                                <i class="fas fa-arrow-right"></i> Continue Work
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="pipeline-stage">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 0.9rem;">Tartan Scarf Profile</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                    <span class="post-type-badge type-profile"><i class="fas fa-tag"></i> Product Profile</span>
+                                    <span style="margin-left: 0.5rem;">Post #791</span>
+                                </div>
+                            </div>
+                            <span class="status-badge status-progress">🟡 Imaging</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%;"></div>
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                            Next: Generate header image
+                        </div>
+                        <div style="margin-top: 0.75rem;">
+                            <button class="btn btn-primary" style="font-size: 0.75rem;">
+                                <i class="fas fa-arrow-right"></i> Continue Work
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 style="font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Upcoming (Next Week)</h3>
+                    <div class="pipeline-stage">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 0.9rem;">Burns Night Theme</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                    <span class="post-type-badge type-themed"><i class="fas fa-book"></i> Themed Post</span>
+                                    <span style="margin-left: 0.5rem;">Week 51</span>
+                                </div>
+                            </div>
+                            <span class="status-badge status-missing">❌ Not Started</span>
+                        </div>
+                        <div style="margin-top: 0.75rem;">
+                            <button class="btn btn-secondary" style="font-size: 0.75rem;">
+                                <i class="fas fa-play"></i> Start Production
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Alerts & Actions Needed -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fas fa-exclamation-triangle"></i> Alerts & Actions Needed
+            </div>
+            
+            <div class="alert-item warning">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">Surname Profile Missing Content</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            MacLeod Profile for week 50 is scheduled but no post content has been created yet.
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                            Scheduled: Friday, Dec 12 at 2:00 PM
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="font-size: 0.75rem;">
+                        <i class="fas fa-plus"></i> Create Post
+                    </button>
+                </div>
+            </div>
+            
+            <div class="alert-item info">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">Newsletter Issue Ready for Review</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            Newsletter issue #42 is ready for review and approval.
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                            Scheduled: Wednesday, Dec 10
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="font-size: 0.75rem;">
+                        <i class="fas fa-eye"></i> Review
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Multi-Publication Status -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fas fa-broadcast-tower"></i> Multi-Publication Status
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-blog" style="color: var(--accent-blue);"></i> Blog Posts
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">5</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Scheduled this week</div>
+                    <div style="margin-top: 0.75rem; font-size: 0.75rem;">
+                        <div style="margin-bottom: 0.25rem;">✅ 4 Ready</div>
+                        <div style="margin-bottom: 0.25rem;">🟡 2 In Progress</div>
+                        <div>⚠️ 1 Needs Attention</div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-envelope" style="color: var(--accent-purple);"></i> Newsletter
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">#42</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Ready for review</div>
+                    <div style="margin-top: 0.75rem;">
+                        <button class="btn btn-primary" style="font-size: 0.75rem; width: 100%;">
+                            <i class="fas fa-eye"></i> Review Issue
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-share-alt" style="color: var(--accent-green);"></i> Social Media
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">7</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Posts queued</div>
+                    <div style="margin-top: 0.75rem; font-size: 0.75rem;">
+                        <div style="margin-bottom: 0.25rem;">📘 Facebook: 4</div>
+                        <div style="margin-bottom: 0.25rem;">📷 Instagram: 2</div>
+                        <div>🐦 Twitter: 1</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Channel filter functionality
+        document.querySelectorAll('.channel-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.channel-toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const selectedChannel = this.dataset.channel;
+                
+                // Filter day items
+                document.querySelectorAll('.day-item').forEach(item => {
+                    if (selectedChannel === 'all') {
+                        item.classList.remove('channel-filter-inactive');
+                        item.classList.add('channel-filter-active');
+                    } else {
+                        const channels = item.dataset.channels ? item.dataset.channels.split(',') : [];
+                        if (channels.includes(selectedChannel)) {
+                            item.classList.remove('channel-filter-inactive');
+                            item.classList.add('channel-filter-active');
+                        } else {
+                            item.classList.remove('channel-filter-active');
+                            item.classList.add('channel-filter-inactive');
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Basic interactivity for mockup
+        document.querySelectorAll('.day-item, .item-card').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') return; // Don't trigger on button clicks
+                console.log('Item clicked:', this.textContent);
+                
+                // Extract item data from the card
+                const itemTitle = this.querySelector('[style*="font-weight: 600"]')?.textContent?.trim();
+                const itemMeta = this.querySelector('[style*="color: var(--text-secondary)"]')?.textContent?.trim();
+                const channel = this.closest('[data-channel]')?.getAttribute('data-channel') || 'blog';
+                
+                // Determine post type from meta
+                let postType = 'themed';
+                if (itemMeta?.includes('Recipe')) postType = 'recipe';
+                else if (itemMeta?.includes('Word')) postType = 'weekly_word';
+                else if (itemMeta?.includes('Phrase')) postType = 'weekly_phrase';
+                else if (itemMeta?.includes('Insult')) postType = 'weekly_insult';
+                else if (itemMeta?.includes('Product')) postType = 'profile';
+                else if (itemMeta?.includes('Surname')) postType = 'profile';
+                
+                // Get post_id from data attribute if available, or use placeholder
+                const postId = this.getAttribute('data-post-id') || '0';
+                
+                // Navigate to One-Click Publication
+                const url = `/launchpad/one-click-publication?post_id=${postId}&output=${channel}`;
+                window.location.href = url;
+            });
+        });
+        
+        // Handle "Work on This" button clicks
+        document.querySelectorAll('.btn-work-on').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent card click
+                const card = this.closest('.item-card');
+                if (card) {
+                    card.click(); // Trigger card click handler
+                }
+            });
+        });
+        
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.addEventListener('click', function() {
+                console.log('Day clicked:', this.textContent);
+                // In real implementation, this would navigate to that week
+            });
+        });
+    </script>
+</body>
+</html>
+

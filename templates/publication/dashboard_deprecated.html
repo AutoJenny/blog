@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .section-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-ready { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .status-progress { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+        .status-warning { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .status-missing { background: rgba(100, 116, 139, 0.2); color: var(--text-secondary); }
+        
+        .item-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .item-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+        
+        .item-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .item-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--bg-tertiary);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent-blue);
+        }
+        
+        .btn-success {
+            background: var(--accent-green);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .grid-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .day-column {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-height: 120px;
+        }
+        
+        .day-header {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .day-item {
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        
+        .day-item:hover {
+            background: var(--bg-primary);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .mini-calendar {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .calendar-week {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .calendar-day {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        
+        .calendar-day.current {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .calendar-day.has-items {
+            border: 2px solid var(--accent-green);
+        }
+        
+        .alert-item {
+            background: var(--bg-tertiary);
+            border-left: 4px solid var(--accent-yellow);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .alert-item.warning {
+            border-left-color: var(--accent-yellow);
+        }
+        
+        .alert-item.error {
+            border-left-color: var(--accent-red);
+        }
+        
+        .alert-item.info {
+            border-left-color: var(--accent-blue);
+        }
+        
+        .pipeline-stage {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            transition: width 0.3s;
+        }
+        
+        .post-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .type-themed { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .type-recipe { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+        .type-profile { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        .type-word { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+        .type-phrase { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        .type-insult { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        
+        .channel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            margin-right: 0.25rem;
+        }
+        
+        .channel-blog { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .channel-facebook { background: rgba(24, 119, 242, 0.2); color: #1877f2; }
+        .channel-instagram { background: rgba(225, 48, 108, 0.2); color: #e1306c; }
+        .channel-twitter { background: rgba(29, 161, 242, 0.2); color: #1da1f2; }
+        .channel-newsletter { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        
+        .channel-indicators {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+            margin-top: 0.25rem;
+        }
+        
+        .channel-view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            background: var(--bg-tertiary);
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+        
+        .channel-toggle-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .channel-toggle-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        
+        .channel-toggle-btn:hover:not(.active) {
+            background: var(--bg-secondary);
+            border-color: var(--bg-tertiary);
+        }
+        
+        .channel-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .channel-section-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .multi-channel-item {
+            border-left: 3px solid var(--accent-blue);
+        }
+        
+        .channel-filter-active {
+            opacity: 1;
+        }
+        
+        .channel-filter-inactive {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .empty-slot {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px dashed var(--bg-tertiary);
+        }
+
+        .day-header-empty {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="section-card" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">
+                        <i class="fas fa-calendar-check"></i> Publication Dashboard
+                    </h1>
+                    <p style="color: var(--text-secondary);">Central hub for all publication activities</p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.5rem; font-weight: 600;">Week 50</div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Dec 8-14, 2025</div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-blue);">7</div>
+                    <div class="stat-label">Scheduled</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-yellow);">2</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-green);">4</div>
+                    <div class="stat-label">Ready</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-purple);">1</div>
+                    <div class="stat-label">Published Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-red);">1</div>
+                    <div class="stat-label">Needs Attention</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: Week Overview with Channel View -->
+        <div class="section-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div class="section-title" style="margin-bottom: 0;">
+                    <i class="fas fa-calendar-week"></i> Week Overview (All Items)
+                </div>
+                <div class="channel-view-toggle">
+                    <button class="channel-toggle-btn active" data-channel="all">All Channels</button>
+                    <button class="channel-toggle-btn" data-channel="blog">📝 Blog</button>
+                    <button class="channel-toggle-btn" data-channel="facebook">📘 Facebook</button>
+                    <button class="channel-toggle-btn" data-channel="instagram">📷 Instagram</button>
+                    <button class="channel-toggle-btn" data-channel="newsletter">✉️ Newsletter</button>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem;">
+                <!-- Scheduled Items Grid -->
+                <div>
+                    <div class="grid-week">
+                        <div class="day-column">
+                            <div class="day-header">Monday</div>
+                            <div class="day-item multi-channel-item" data-channels="blog,facebook,newsletter">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-themed"><i class="fas fa-book"></i> Theme</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Hogmanay Traditions</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-newsletter"><i class="fas fa-envelope"></i> Newsletter</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                            <div class="day-item" data-channels="blog,facebook">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-recipe"><i class="fas fa-utensils"></i> Recipe</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Cullen Skink</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-progress">🟡 In Progress</span>
+                                </div>
+                            </div>
+                            <div class="day-item" data-channels="blog,facebook,instagram">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-word"><i class="fas fa-book-open"></i> Word</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">haar</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-instagram"><i class="fab fa-instagram"></i> Instagram</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Tuesday</div>
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; text-align: center; padding: 1rem 0;">
+                                No items scheduled
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Wednesday</div>
+                            <div class="day-item" data-channels="blog,facebook">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-phrase"><i class="fas fa-quote-left"></i> Phrase</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">haud yer wheesht</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Thursday</div>
+                            <div class="day-item" data-channels="blog,facebook,instagram">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-profile"><i class="fas fa-tag"></i> Product</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Tartan Scarf</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-instagram"><i class="fab fa-instagram"></i> Instagram</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-progress">🟡 In Progress</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Friday</div>
+                            <div class="day-item" data-channels="blog">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-profile"><i class="fas fa-users"></i> Surname</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">MacLeod Profile</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-warning">⚠️ Needs Attention</span>
+                                </div>
+                            </div>
+                            <div class="day-item" data-channels="blog,facebook,twitter">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-insult"><i class="fas fa-comment-dots"></i> Insult</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Ye're as subtle as a brick</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-twitter"><i class="fab fa-twitter"></i> Twitter</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Saturday</div>
+                            <div class="day-item" data-channels="blog,facebook,instagram">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <span class="post-type-badge type-profile"><i class="fas fa-tag"></i> Product</span>
+                                        <div style="font-weight: 600; margin-top: 0.25rem; font-size: 0.8rem;">Kilt Accessories</div>
+                                        <div class="channel-indicators">
+                                            <span class="channel-badge channel-blog"><i class="fas fa-blog"></i> Blog</span>
+                                            <span class="channel-badge channel-facebook"><i class="fab fa-facebook"></i> Facebook</span>
+                                            <span class="channel-badge channel-instagram"><i class="fab fa-instagram"></i> Instagram</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-ready">✅ Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">Sunday</div>
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; text-align: center; padding: 1rem 0;">
+                                No items scheduled
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mini Calendar -->
+                <div>
+                    <div class="mini-calendar">
+                        <div class="calendar-header">
+                            <div style="font-weight: 600;">December 2025</div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem;"><i class="fas fa-chevron-left"></i></button>
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem;"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; margin-bottom: 0.5rem; font-size: 0.7rem; color: var(--text-secondary);">
+                            <div style="text-align: center;">M</div>
+                            <div style="text-align: center;">T</div>
+                            <div style="text-align: center;">W</div>
+                            <div style="text-align: center;">T</div>
+                            <div style="text-align: center;">F</div>
+                            <div style="text-align: center;">S</div>
+                            <div style="text-align: center;">S</div>
+                        </div>
+                        <div class="calendar-week">
+                            <div class="calendar-day">1</div>
+                            <div class="calendar-day">2</div>
+                            <div class="calendar-day">3</div>
+                            <div class="calendar-day">4</div>
+                            <div class="calendar-day">5</div>
+                            <div class="calendar-day">6</div>
+                            <div class="calendar-day">7</div>
+                        </div>
+                        <div class="calendar-week">
+                            <div class="calendar-day current has-items">8</div>
+                            <div class="calendar-day current">9</div>
+                            <div class="calendar-day current">10</div>
+                            <div class="calendar-day current">11</div>
+                            <div class="calendar-day current">12</div>
+                            <div class="calendar-day current">13</div>
+                            <div class="calendar-day current">14</div>
+                        </div>
+                        <div class="calendar-week">
+                            <div class="calendar-day">15</div>
+                            <div class="calendar-day">16</div>
+                            <div class="calendar-day">17</div>
+                            <div class="calendar-day">18</div>
+                            <div class="calendar-day">19</div>
+                            <div class="calendar-day">20</div>
+                            <div class="calendar-day">21</div>
+                        </div>
+                        <div style="margin-top: 0.5rem; text-align: center;">
+                            <a href="/planning/posts/0/calendar/scheduling" style="color: var(--accent-blue); text-decoration: none; font-size: 0.75rem;">
+                                <i class="fas fa-external-link-alt"></i> View Full Calendar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Publication Queue -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fas fa-paper-plane"></i> Publication Queue
+            </div>
+            <p style="color: var(--text-secondary); padding: 2rem; text-align: center;">
+                No items scheduled for publication.
+            </p>
+        </div>
+
+        <!-- Section 3: Production Pipeline -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fas fa-cogs"></i> Production Pipeline
+            </div>
+            <p style="color: var(--text-secondary); padding: 2rem; text-align: center;">
+                No items in production.
+            </p>
+        </div>
+
+        <!-- Section 4: Alerts & Actions Needed -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fas fa-exclamation-triangle"></i> Alerts & Actions Needed
+            </div>
+            <p style="color: var(--text-secondary); padding: 2rem; text-align: center;">
+                No alerts at this time.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Channel filter functionality
+        document.querySelectorAll('.channel-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.channel-toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const selectedChannel = this.dataset.channel;
+                
+                // Filter day items
+                document.querySelectorAll('.day-item').forEach(item => {
+                    if (selectedChannel === 'all') {
+                        item.classList.remove('channel-filter-inactive');
+                        item.classList.add('channel-filter-active');
+                    } else {
+                        const channels = item.dataset.channels ? item.dataset.channels.split(',') : [];
+                        if (channels.includes(selectedChannel)) {
+                            item.classList.remove('channel-filter-inactive');
+                            item.classList.add('channel-filter-active');
+                        } else {
+                            item.classList.remove('channel-filter-active');
+                            item.classList.add('channel-filter-inactive');
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Helper function to get current ISO week
+        function getCurrentISOWeek() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const days = Math.floor((now - start) / (24 * 60 * 60 * 1000));
+            const week = Math.ceil((days + start.getDay() + 1) / 7);
+            return { year: now.getFullYear(), week: week };
+        }
+        
+        // Basic interactivity for dashboard
+        document.querySelectorAll('.day-item, .item-card').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') return; // Don't trigger on button clicks
+                console.log('Item clicked:', this.textContent);
+                
+                // Extract calendar item context from data attributes
+                const category = this.getAttribute('data-category') || '';
+                const itemId = this.getAttribute('data-item-id') || '';
+                let year = this.getAttribute('data-year') || '';
+                let week = this.getAttribute('data-week') || '';
+                const postId = this.getAttribute('data-post-id') || '';
+                const channel = this.getAttribute('data-channel') || 'blog';
+                
+                // If year/week not provided, use current week
+                if (!year || !week) {
+                    const current = getCurrentISOWeek();
+                    year = year || current.year;
+                    week = week || current.week;
+                }
+                
+                // Build URL with calendar context
+                const params = new URLSearchParams();
+                if (postId && postId !== '0') {
+                    params.set('post_id', postId);
+                }
+                if (category) params.set('category', category);
+                if (itemId) params.set('item_id', itemId);
+                if (year) params.set('year', year);
+                if (week) params.set('week', week);
+                params.set('output', channel);
+                
+                // Navigate to One-Click Publication
+                const url = `/launchpad/one-click-publication?${params.toString()}`;
+                window.location.href = url;
+            });
+        });
+        
+        // Handle "Work on This" button clicks
+        document.querySelectorAll('.btn-work-on').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent card click
+                const card = this.closest('.item-card');
+                if (card) {
+                    // Extract calendar item context from data attributes
+                    const category = card.getAttribute('data-category') || '';
+                    const itemId = card.getAttribute('data-item-id') || '';
+                    let year = card.getAttribute('data-year') || '';
+                    let week = card.getAttribute('data-week') || '';
+                    const postId = card.getAttribute('data-post-id') || '';
+                    let channel = card.getAttribute('data-channel') || 'blog';
+                    
+                    // For weekly_word, weekly_phrase, weekly_insult: use facebook as default channel
+                    if (category && (category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult')) {
+                        if (channel === 'blog') {
+                            channel = 'facebook';
+                        }
+                    }
+                    
+                    // If year/week not provided, use current week
+                    if (!year || !week) {
+                        const current = getCurrentISOWeek();
+                        year = year || current.year;
+                        week = week || current.week;
+                    }
+                    
+                    // Build URL with calendar context
+                    const params = new URLSearchParams();
+                    if (postId && postId !== '0') {
+                        params.set('post_id', postId);
+                    }
+                    if (category) params.set('category', category);
+                    if (itemId) params.set('item_id', itemId);
+                    if (year) params.set('year', year);
+                    if (week) params.set('week', week);
+                    params.set('output', channel);
+                    
+                    // Navigate directly
+                    const url = `/launchpad/one-click-publication?${params.toString()}`;
+                    window.location.href = url;
+                }
+            });
+        });
+        
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.addEventListener('click', function() {
+                console.log('Day clicked:', this.textContent);
+                // In real implementation, this would navigate to that week
+            });
+        });
+        
+        // Load dashboard data from API
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/publication/api/dashboard/schedule');
+                const result = await response.json();
+                
+                if (result.success) {
+                    renderDashboardData(result.channels, result.year, result.week);
+                } else {
+                    console.error('Error loading dashboard data:', result.error);
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+        
+        function renderDashboardData(channels, year, week) {
+            // Render each channel section
+            const channelSections = {
+                'blog': { selector: '.channel-section:has(.fa-blog)', color: 'var(--accent-blue)' },
+                'facebook': { selector: '.channel-section:has(.fa-facebook)', color: '#1877f2' },
+                'instagram': { selector: '.channel-section:has(.fa-instagram)', color: '#e1306c' },
+                'twitter': { selector: '.channel-section:has(.fa-twitter)', color: '#1da1f2' },
+                'newsletter': { selector: '.channel-section:has(.fa-envelope)', color: 'var(--accent-purple)' }
+            };
+            
+            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            for (const [channel, config] of Object.entries(channelSections)) {
+                const section = document.querySelector(config.selector);
+                if (!section) continue;
+                
+                // Find the grid container
+                const grid = section.querySelector('[style*="grid-template-columns"]');
+                if (!grid) continue;
+                
+                // Clear existing items (keep day headers)
+                const existingItems = grid.querySelectorAll('.item-card');
+                existingItems.forEach(item => item.remove());
+                
+                // Group items by day
+                const itemsByDay = {};
+                for (let i = 1; i <= 7; i++) {
+                    itemsByDay[i] = [];
+                }
+                
+                channels[channel].forEach(item => {
+                    const day = item.day || 1;
+                    if (day >= 1 && day <= 7) {
+                        itemsByDay[day].push(item);
+                    }
+                });
+                
+                // Render items in each day column
+                const dayColumns = grid.querySelectorAll('> div');
+                dayColumns.forEach((column, index) => {
+                    const day = index + 1;
+                    const items = itemsByDay[day] || [];
+                    
+                    // Remove existing item cards (keep day header and empty-slot)
+                    const existingCards = column.querySelectorAll('.item-card');
+                    existingCards.forEach(card => card.remove());
+                    
+                    // Remove empty-slot if we have items
+                    const emptySlot = column.querySelector('.empty-slot');
+                    if (items.length > 0 && emptySlot) {
+                        emptySlot.remove();
+                    }
+                    
+                    // Add items
+                    items.forEach(item => {
+                        const card = createItemCard(item, config.color, channel);
+                        column.appendChild(card);
+                    });
+                    
+                    // Add empty-slot if no items
+                    if (items.length === 0 && !emptySlot) {
+                        const empty = document.createElement('div');
+                        empty.className = 'empty-slot';
+                        empty.textContent = 'No items';
+                        column.appendChild(empty);
+                    }
+                });
+                
+                // Update post count
+                const countSpan = section.querySelector('.channel-section-title span');
+                if (countSpan) {
+                    const totalItems = channels[channel].length;
+                    countSpan.textContent = `${totalItems} ${totalItems === 1 ? 'post' : 'posts'} scheduled`;
+                }
+            }
+        }
+        
+        function createItemCard(item, borderColor, channel) {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.style.cssText = `padding: 0.75rem; border-left: 3px solid ${borderColor};`;
+            
+            // Set data attributes
+            if (item.item_id) card.setAttribute('data-item-id', item.item_id);
+            if (item.category) card.setAttribute('data-category', item.category);
+            if (item.year) card.setAttribute('data-year', item.year);
+            if (item.week) card.setAttribute('data-week', item.week);
+            if (item.post_id) card.setAttribute('data-post-id', item.post_id);
+            card.setAttribute('data-channel', channel);
+            
+            // Determine category display name
+            const categoryNames = {
+                'theme': 'Theme',
+                'recipe': 'Recipe',
+                'profile_product': 'Product',
+                'profile_surname': 'Surname',
+                'weekly_word': 'Word',
+                'weekly_phrase': 'Phrase',
+                'weekly_insult': 'Insult'
+            };
+            const categoryName = categoryNames[item.category] || item.category;
+            
+            // Build card HTML
+            card.innerHTML = `
+                <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">${escapeHtml(item.title || 'Untitled')}</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${categoryName} • 9:00 AM</div>
+                <span class="status-badge status-ready">✅ Ready</span>
+            `;
+            
+            return card;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Load data when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadDashboardData);
+        } else {
+            loadDashboardData();
+        }
+    </script>
+</body>
+</html>
+

@@ -30,7 +30,7 @@ class NextUpPanel {
     async loadNextUp() {
         try {
             console.log('[Next Up Panel] Loading next up data...');
-            const response = await fetch('/launchpad/one-click-blog/api/next-up');
+            const response = await fetch('/launchpad/one-click-publication/api/next-up');
             const result = await response.json();
             
             if (result.success) {
@@ -204,7 +204,7 @@ class NextUpPanel {
             this.showNotification('Selecting idea...', 'info');
             
             // Call API to select the idea
-            const response = await fetch('/launchpad/one-click-blog/api/select-idea', {
+            const response = await fetch('/launchpad/one-click-publication/api/select-idea', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -311,7 +311,7 @@ class NextUpPanel {
      */
     async updatePostIdFromServer() {
         try {
-            const response = await fetch('/launchpad/one-click-blog/api/next-up');
+            const response = await fetch('/launchpad/one-click-publication/api/next-up');
             const data = await response.json();
             
             if (data.success) {

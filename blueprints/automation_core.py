@@ -7,6 +7,10 @@ from flask import Blueprint, jsonify, request
 import json
 from datetime import datetime
 from config.database import db_manager
+from utils.output_channel_resolver import (
+    validate_substage_for_output,
+    get_available_output_channels_for_post
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,7 +33,7 @@ from blueprints.automation_pipeline import bp as pipeline_bp
 from blueprints.automation_settings import bp as settings_bp
 
 # Create main blueprint
-bp = Blueprint('automation_core', __name__, url_prefix='/launchpad/one-click-blog/api')
+bp = Blueprint('automation_core', __name__, url_prefix='/launchpad/one-click-publication/api')
 
 # Register sub-blueprints
 bp.register_blueprint(calendar_bp)
@@ -38,15 +42,34 @@ bp.register_blueprint(settings_bp)
 
 @bp.route('/execute-substage/<stage>/<substage>', methods=['POST'])
 def execute_substage(stage, substage):
-    """Main router for substage execution"""
+    """Main router for substage execution, optionally filtered by output channel"""
     try:
         data = request.get_json() or {}
         post_id = data.get('post_id')
+        output_channel = data.get('output', 'blog').lower()  # Get output channel from request
         
         if not post_id:
             return jsonify({"success": False, "error": "Post ID is required"}), 400
         
+        # Validate output channel
+        valid_channels = ['blog', 'facebook', 'instagram', 'twitter', 'newsletter']
+        if output_channel not in valid_channels:
+            output_channel = 'blog'
+        
+        # Validate that substage is valid for this output channel
+        if not validate_substage_for_output(post_id, stage, substage, output_channel):
+            available_channels = get_available_output_channels_for_post(post_id)
+            return jsonify({
+                "success": False,
+                "error": f"Substage '{substage}' is not valid for output channel '{output_channel}'. Available channels: {', '.join(available_channels)}"
+            }), 400
+        
+        # Add output_channel to data for execution functions (for future channel-specific logic)
+        data['output_channel'] = output_channel
+        
         # Route to appropriate execution function
+        # Note: Most execution functions currently don't use output_channel, but it's available
+        # for future channel-specific implementations (e.g., format_for_facebook, publish_to_instagram)
         if stage == 'planning':
             if substage == 'topic_brainstorming':
                 result = execute_topic_brainstorming(post_id, data)
@@ -69,13 +92,58 @@ def execute_substage(stage, substage):
                 result = execute_image_captions(post_id, data)
             else:
                 return jsonify({"success": False, "error": f"Unknown authoring substage: {substage}"}), 400
+        elif stage == 'content':
+            # Channel-specific content formatting substages
+            if substage.startswith('format_for_') or substage.startswith('add_'):
+                # For now, return a placeholder - these will be implemented later
+                return jsonify({
+                    "success": False,
+                    "error": f"Substage '{substage}' for stage '{stage}' is not yet implemented. This is a channel-specific substage that requires custom logic."
+                }), 501  # Not Implemented
+            else:
+                return jsonify({"success": False, "error": f"Unknown content substage: {substage}"}), 400
+        elif stage == 'syndication':
+            # Syndication substages (extract_summary, format_for_*, publish_to_*)
+            if substage.startswith('extract_') or substage.startswith('format_for_') or substage.startswith('publish_to_'):
+                # For now, return a placeholder - these will be implemented later
+                return jsonify({
+                    "success": False,
+                    "error": f"Substage '{substage}' for stage '{stage}' is not yet implemented. This is a syndication substage that requires custom logic."
+                }), 501  # Not Implemented
+            else:
+                return jsonify({"success": False, "error": f"Unknown syndication substage: {substage}"}), 400
+        elif stage == 'imaging':
+            # Imaging substages (may have channel-specific variants)
+            if substage.startswith('optimize_for_') or substage.startswith('create_'):
+                # For now, return a placeholder - these will be implemented later
+                return jsonify({
+                    "success": False,
+                    "error": f"Substage '{substage}' for stage '{stage}' is not yet implemented. This is a channel-specific imaging substage."
+                }), 501  # Not Implemented
+            else:
+                return jsonify({"success": False, "error": f"Unknown imaging substage: {substage}"}), 400
+        elif stage == 'publish':
+            # Publish substages (publish_to_*)
+            if substage.startswith('publish_to_'):
+                # For now, return a placeholder - these will be implemented later
+                return jsonify({
+                    "success": False,
+                    "error": f"Substage '{substage}' for stage '{stage}' is not yet implemented. This is a publication substage that requires custom logic."
+                }), 501  # Not Implemented
+            else:
+                return jsonify({"success": False, "error": f"Unknown publish substage: {substage}"}), 400
         else:
             return jsonify({"success": False, "error": f"Unknown stage: {stage}"}), 400
         
-        # Handle result (could be tuple or direct response)
+        # Add output_channel to response for tracking
         if isinstance(result, tuple):
-            return jsonify(result[0]), result[1]
+            response_data, status_code = result
+            if isinstance(response_data, dict):
+                response_data['output_channel'] = output_channel
+            return jsonify(response_data), status_code
         else:
+            if isinstance(result, dict):
+                result['output_channel'] = output_channel
             return jsonify(result)
             
     except Exception as e:
@@ -225,4 +293,336 @@ def create_post():
             
     except Exception as e:
         logger.error(f"Error creating post: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/calendar-item', methods=['GET'])
+def get_calendar_item():
+    """Get calendar item data by category and item_id, or resolve by week if item_id missing"""
+    try:
+        category = request.args.get('category')
+        item_id = request.args.get('item_id')
+        year = request.args.get('year', type=int)
+        week = request.args.get('week', type=int)
+        output_channel = request.args.get('output', 'blog')
+        
+        if not category:
+            return jsonify({"success": False, "error": "category is required"}), 400
+        
+        # Use calendar resolver to get item data
+        from utils.calendar_resolver import resolve_item_for_week, get_category_config
+        from datetime import date
+        
+        item = None
+        
+        # If year and week provided, try to resolve for that week first (may get override)
+        if year and week:
+            # For weekly content, need to pass classification
+            classification = None
+            if category in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                classification = category
+            
+            item = resolve_item_for_week(category, year, week, classification=classification)
+            # If resolved, use the resolved item's ID
+            if item and item.get('id'):
+                item_id = str(item.get('id'))
+        
+        # If we still don't have an item, try to get by item_id
+        if not item and item_id:
+            cfg = get_category_config(category)
+            table = cfg["table"]
+            id_col = cfg["id_column"]
+            extra_filter = cfg["extra_filter"]
+            
+            with db_manager.get_cursor() as cursor:
+                sql = f"SELECT * FROM {table} WHERE {id_col} = %s"
+                params = [int(item_id)]
+                
+                if extra_filter:
+                    cond, extra_params = extra_filter
+                    sql += f" AND {cond}"
+                    params.extend(extra_params)
+                
+                cursor.execute(sql, tuple(params))
+                row = cursor.fetchone()
+                item = dict(row) if row else None
+        
+        # If still no item and we have year/week, try resolving again (fallback)
+        if not item and year and week:
+            classification = None
+            if category in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                classification = category
+            item = resolve_item_for_week(category, year, week, classification=classification)
+        
+        if not item:
+            return jsonify({"success": False, "error": "Item not found. Please provide item_id or year+week"}), 404
+        
+        # Check if post exists for this item
+        post_id = None
+        with db_manager.get_cursor() as cursor:
+            if category == 'theme':
+                cursor.execute("""
+                    SELECT p.id FROM post p
+                    JOIN post_development pd ON p.id = pd.post_id
+                    WHERE pd.idea_seed ILIKE %s AND p.status != 'deleted'
+                    ORDER BY p.created_at DESC
+                    LIMIT 1
+                """, (f'%{item.get("theme_title") or item.get("title", "")}%',))
+            elif category == 'recipe':
+                cursor.execute("""
+                    SELECT id FROM post
+                    WHERE recipe_id = %s AND status != 'deleted'
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                """, (item.get("id"),))
+            elif category in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                cursor.execute("""
+                    SELECT p.id FROM post p
+                    JOIN post_development pd ON p.id = pd.post_id
+                    WHERE pd.idea_seed ILIKE %s AND p.status != 'deleted'
+                    ORDER BY p.created_at DESC
+                    LIMIT 1
+                """, (f'%{item.get("idea_title") or item.get("title", "")}%',))
+            elif category == 'profile':
+                # Profile items already have post_id
+                post_id = item.get("post_id")
+            
+            if not post_id:
+                result = cursor.fetchone()
+                if result:
+                    post_id = result['id']
+        
+        # Build response
+        response_data = {
+            "title": item.get("theme_title") or item.get("idea_title") or item.get("title", ""),
+            "description": item.get("theme_description") or item.get("idea_description") or item.get("description", ""),
+            "item_id": item.get("id"),
+            "post_id": post_id,
+            "category": category,
+            "year": year,
+            "week": week
+        }
+        
+        # Add category-specific fields
+        if category in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            response_data["translation"] = item.get("translation", "")
+            response_data["usage1"] = item.get("usage1", "")
+            response_data["usage2"] = item.get("usage2", "")
+            if category == 'weekly_phrase':
+                response_data["notes"] = item.get("notes", "")
+            elif category == 'weekly_insult':
+                response_data["provenance"] = item.get("notes", "")  # Insults use notes field for provenance
+        
+        return jsonify({
+            "success": True,
+            "data": response_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting calendar item: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/create-post-from-item', methods=['POST'])
+def create_post_from_item():
+    """Create a post from a calendar item, respecting channel assignment rules"""
+    try:
+        data = request.get_json()
+        category = data.get('category')
+        item_id = data.get('item_id')
+        year = data.get('year')
+        week = data.get('week')
+        output_channel = data.get('output_channel', 'blog')
+        
+        if not category or not item_id:
+            return jsonify({"success": False, "error": "category and item_id are required"}), 400
+        
+        # Get calendar item data
+        from utils.calendar_resolver import get_category_config
+        from utils.channel_assignment import (
+            should_create_blog_post, 
+            get_content_format,
+            get_channels_for_post_type
+        )
+        from config.channel_content_formats import requires_post
+        
+        cfg = get_category_config(category)
+        table = cfg["table"]
+        id_col = cfg["id_column"]
+        extra_filter = cfg["extra_filter"]
+        
+        with db_manager.get_cursor() as cursor:
+            # Get item data
+            sql = f"SELECT * FROM {table} WHERE {id_col} = %s"
+            params = [int(item_id)]
+            
+            if extra_filter:
+                cond, extra_params = extra_filter
+                sql += f" AND {cond}"
+                params.extend(extra_params)
+            
+            cursor.execute(sql, tuple(params))
+            item = cursor.fetchone()
+            
+            if not item:
+                return jsonify({"success": False, "error": "Calendar item not found"}), 404
+            
+            item_dict = dict(item)
+            
+            # Determine post type and title
+            post_type = None
+            title = None
+            
+            if category == 'theme':
+                post_type = 'themed'
+                title = item_dict.get('theme_title') or item_dict.get('title', '')
+            elif category == 'recipe':
+                post_type = 'recipe'
+                title = item_dict.get('recipe_title') or item_dict.get('title', '')
+                recipe_id = item_dict.get('id')
+            elif category == 'weekly_word':
+                post_type = 'weekly_word'
+                title = item_dict.get('idea_title') or item_dict.get('title', '')
+            elif category == 'weekly_phrase':
+                post_type = 'weekly_phrase'
+                title = item_dict.get('idea_title') or item_dict.get('title', '')
+            elif category == 'weekly_insult':
+                post_type = 'weekly_insult'
+                title = item_dict.get('idea_title') or item_dict.get('title', '')
+            elif category == 'profile':
+                # Profile already has a post_id
+                post_id = item_dict.get('post_id')
+                if post_id:
+                    return jsonify({
+                        "success": True,
+                        "post_id": post_id,
+                        "message": "Post already exists for this profile"
+                    })
+                return jsonify({"success": False, "error": "Profile item has no associated post"}), 400
+            
+            if not title:
+                return jsonify({"success": False, "error": "Could not determine title for item"}), 400
+            
+            # Check channel assignment rules
+            content_format = get_content_format(post_type, output_channel)
+            
+            # If output_channel is 'blog', check if blog posts are allowed for this post type
+            if output_channel == 'blog':
+                if not should_create_blog_post(post_type):
+                    # This post type doesn't go to blog - return available channels
+                    channels = get_channels_for_post_type(post_type)
+                    return jsonify({
+                        "success": False,
+                        "error": f"Post type '{post_type}' does not publish to blog",
+                        "available_channels": [
+                            {
+                                "channel": ch['channel'],
+                                "content_format": ch['content_format'],
+                                "is_primary": ch.get('is_primary', False)
+                            }
+                            for ch in channels
+                        ],
+                        "message": f"Use one of the available channels: {', '.join([ch['channel'] for ch in channels])}"
+                    }), 400
+            
+            # Check if this format requires a blog post (for non-blog channels)
+            if output_channel != 'blog':
+                if content_format and not requires_post(output_channel, content_format):
+                    # This is a social media-only format (e.g., word_of_day on Facebook)
+                    # Don't create a blog post, just return success with channel info
+                    return jsonify({
+                        "success": True,
+                        "post_id": None,
+                        "message": f"Content ready for {output_channel} ({content_format} format). No blog post needed.",
+                        "channel": output_channel,
+                        "content_format": content_format,
+                        "requires_blog_post": False,
+                        "item_data": {
+                            "title": title,
+                            "description": item_dict.get('theme_description') or item_dict.get('idea_description') or item_dict.get('description', '')
+                        }
+                    })
+                elif not content_format:
+                    # No format found - this shouldn't happen, but handle gracefully
+                    logger.warning(f"No content format found for {post_type}/{output_channel}")
+                    return jsonify({
+                        "success": False,
+                        "error": f"No content format configuration found for {post_type} on {output_channel}"
+                    }), 400
+            
+            # Generate slug from title
+            import re
+            import time
+            try:
+                from slugify import slugify
+                base_slug = slugify(title)
+            except (ImportError, Exception) as e:
+                logger.warning(f"Error using slugify, falling back to regex: {e}")
+                # Fallback slug generation if slugify not available
+                base_slug = re.sub(r"[^a-z0-9\-]+", '-', title.lower().strip().replace(' ', '-'))
+                base_slug = re.sub(r"-+", '-', base_slug).strip('-') or 'post'
+            
+            # Ensure we have a valid slug
+            if not base_slug or len(base_slug.strip()) == 0:
+                base_slug = f"post-{int(time.time())}"
+            
+            # Ensure slug uniqueness
+            slug = base_slug
+            suffix = 1
+            while True:
+                cursor.execute("SELECT 1 FROM post WHERE slug = %s LIMIT 1", (slug,))
+                if not cursor.fetchone():
+                    break
+                suffix += 1
+                slug = f"{base_slug}-{suffix}"
+            
+            # Validate slug before insert
+            if not slug or len(slug.strip()) == 0:
+                logger.error(f"Generated empty slug from title: {title}")
+                slug = f"post-{int(time.time())}"
+            
+            logger.info(f"Creating post with title: {title}, slug: {slug}, format: {content_format}")
+            
+            # Create post (only if blog post is needed)
+            idea_seed = item_dict.get('theme_description') or item_dict.get('idea_description') or item_dict.get('description', '')
+            
+            cursor.execute("""
+                INSERT INTO post (title, slug, status, created_at, updated_at)
+                VALUES (%s, %s, 'draft', NOW(), NOW())
+                RETURNING id
+            """, (title, slug))
+            
+            post_id = cursor.fetchone()['id']
+            
+            # Link to calendar item based on category
+            if category == 'recipe':
+                cursor.execute("""
+                    UPDATE post SET recipe_id = %s WHERE id = %s
+                """, (recipe_id, post_id))
+            # For themes and weekly content, link via idea_seed in post_development
+            
+            # Create post_development entry
+            cursor.execute("""
+                INSERT INTO post_development (post_id, idea_seed)
+                VALUES (%s, %s)
+            """, (post_id, idea_seed))
+            
+            # Return response with format information
+            response_data = {
+                "success": True,
+                "post_id": post_id,
+                "message": "Post created successfully from calendar item",
+                "channel": output_channel,
+                "content_format": content_format or 'article'
+            }
+            
+            # If this is for a non-blog channel, include format info
+            if output_channel != 'blog' and content_format:
+                response_data["format_info"] = {
+                    "format": content_format,
+                    "requires_blog_post": requires_post(output_channel, content_format)
+                }
+            
+            return jsonify(response_data)
+            
+    except Exception as e:
+        logger.error(f"Error creating post from item: {e}")
         return jsonify({"success": False, "error": str(e)}), 500

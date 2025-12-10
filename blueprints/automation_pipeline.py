@@ -7,6 +7,11 @@ import json
 from datetime import datetime, timedelta, date
 from config.database import db_manager
 from config.post_type_substages import get_substages_for_post_type, is_substage_valid_for_post_type
+from config.output_channel_stages import (
+    get_stages_for_output,
+    get_substages_for_output,
+    get_all_stages_for_output
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,8 +20,15 @@ bp = Blueprint('automation_pipeline', __name__)
 
 @bp.route('/pipeline-status/<int:post_id>', methods=['GET'])
 def get_pipeline_status(post_id):
-    """Get current pipeline state for a post"""
+    """Get current pipeline state for a post, optionally filtered by output channel"""
     try:
+        # Get output channel from query parameter (defaults to 'blog')
+        output_channel = request.args.get('output', 'blog').lower()
+        
+        # Validate output channel
+        valid_channels = ['blog', 'facebook', 'instagram', 'twitter', 'newsletter']
+        if output_channel not in valid_channels:
+            output_channel = 'blog'
         with db_manager.get_cursor() as cursor:
             # Get post basic info with timestamps
             cursor.execute("""
@@ -54,6 +66,14 @@ def get_pipeline_status(post_id):
                 post_type = 'generated'
             else:
                 post_type = 'themed'
+            
+            # Get content format for this (post_type, output_channel) combination
+            content_format = None
+            try:
+                from utils.channel_assignment import get_content_format
+                content_format = get_content_format(post_type, output_channel)
+            except Exception as e:
+                logger.warning(f"Could not resolve content format for {post_type}/{output_channel}: {e}")
             
             # Get section completion status (limit to section_order <= 7)
             cursor.execute("""
@@ -349,28 +369,67 @@ def get_pipeline_status(post_id):
                 }
             }
             
-            # Filter substages by post_type
-            filtered_stages = {}
-            for stage_name, substages_data in all_substages_data.items():
-                # Get valid substages for this post_type and stage
-                valid_substages = get_substages_for_post_type(post_type, stage_name)
-                
-                # Only include substages that are valid for this post_type
-                filtered_substages = {
-                    key: data for key, data in substages_data.items()
-                    if key in valid_substages
-                }
-                
-                if filtered_substages:
-                    # Calculate stage-level status and progress
-                    stage_status = "complete" if all(s.get("status") == "complete" for s in filtered_substages.values()) else ("in_progress" if any(s.get("status") == "in_progress" for s in filtered_substages.values()) else "pending")
-                    stage_progress = int(sum(s.get("progress", 0) for s in filtered_substages.values()) / len(filtered_substages)) if filtered_substages else 0
-                    
-                    filtered_stages[stage_name] = {
-                        "status": stage_status,
-                        "progress": stage_progress,
-                        "substages": filtered_substages
+            # Get output channel configuration
+            # Get content format and resolve stages
+            output_config = get_stages_for_output(post_type, output_channel, content_format)
+            
+            # Determine which stages and substages to include
+            if output_config.get('use_post_type_config'):
+                # Use post_type_substages (blog output)
+                valid_stages = get_substages_for_post_type(post_type)
+                # Filter by post_type as before
+                filtered_stages = {}
+                for stage_name, substages_data in all_substages_data.items():
+                    if stage_name not in valid_stages:
+                        continue
+                    valid_substages = get_substages_for_post_type(post_type, stage_name)
+                    filtered_substages = {
+                        key: data for key, data in substages_data.items()
+                        if key in valid_substages
                     }
+                    if filtered_substages:
+                        stage_status = "complete" if all(s.get("status") == "complete" for s in filtered_substages.values()) else ("in_progress" if any(s.get("status") == "in_progress" for s in filtered_substages.values()) else "pending")
+                        stage_progress = int(sum(s.get("progress", 0) for s in filtered_substages.values()) / len(filtered_substages)) if filtered_substages else 0
+                        filtered_stages[stage_name] = {
+                            "status": stage_status,
+                            "progress": stage_progress,
+                            "substages": filtered_substages
+                        }
+            else:
+                # Use channel-specific stages
+                channel_stages = output_config.get('stages', [])
+                channel_substages = output_config.get('substages', {})
+                
+                filtered_stages = {}
+                for stage_name in channel_stages:
+                    # Get valid substages for this channel and stage
+                    valid_substages = channel_substages.get(stage_name, [])
+                    
+                    # Filter substages from all_substages_data
+                    # Note: For channel-specific stages like 'syndication', 'publish', etc.,
+                    # we may not have completion data yet - mark as pending
+                    filtered_substages = {}
+                    for substage_key in valid_substages:
+                        # Try to find matching substage in all_substages_data
+                        # For new channel-specific substages, create pending entries
+                        if stage_name in all_substages_data and substage_key in all_substages_data[stage_name]:
+                            filtered_substages[substage_key] = all_substages_data[stage_name][substage_key]
+                        else:
+                            # New channel-specific substage - mark as pending
+                            filtered_substages[substage_key] = {
+                                "status": "pending",
+                                "completed_at": None,
+                                "progress": 0
+                            }
+                    
+                    if filtered_substages:
+                        stage_status = "complete" if all(s.get("status") == "complete" for s in filtered_substages.values()) else ("in_progress" if any(s.get("status") == "in_progress" for s in filtered_substages.values()) else "pending")
+                        stage_progress = int(sum(s.get("progress", 0) for s in filtered_substages.values()) / len(filtered_substages)) if filtered_substages else 0
+                        filtered_stages[stage_name] = {
+                            "status": stage_status,
+                            "progress": stage_progress,
+                            "substages": filtered_substages
+                        }
             
             # Build response
             response_data = {
@@ -378,6 +437,7 @@ def get_pipeline_status(post_id):
                 "data": {
                     "post_id": post_id,
                     "post_type": post_type,
+                    "output_channel": output_channel,
                     "title": post['title'],
                     "status": post['status'],
                     "overall_progress": overall_progress,
@@ -393,26 +453,166 @@ def get_pipeline_status(post_id):
 
 @bp.route('/post-types/<post_type>/substages', methods=['GET'])
 def get_substages_for_post_type_api(post_type):
-    """Get substages configuration for a post type"""
+    """Get substages configuration for a post type, optionally filtered by output channel"""
     try:
         from config.post_type_substages import get_substages_with_metadata
         
         # Normalize post_type
-        if post_type not in ['themed', 'profile', 'generated', 'recipe']:
+        if post_type not in ['themed', 'profile', 'generated', 'recipe', 'weekly_word', 'weekly_phrase', 'weekly_insult']:
             post_type = 'themed'
         
-        # Get substages with metadata
-        stage = request.args.get('stage')
-        substages = get_substages_with_metadata(post_type, stage)
+        # Get output channel from query parameter (defaults to 'blog')
+        output_channel = request.args.get('output', 'blog').lower()
+        valid_channels = ['blog', 'facebook', 'instagram', 'twitter', 'newsletter']
+        if output_channel not in valid_channels:
+            output_channel = 'blog'
+        
+        # Get output channel configuration
+        # Get content format if available
+        content_format = None
+        try:
+            from utils.channel_assignment import get_content_format
+            content_format = get_content_format(post_type, output_channel)
+        except Exception:
+            pass
+        
+        output_config = get_stages_for_output(post_type, output_channel, content_format)
+        
+        if output_config.get('use_post_type_config'):
+            # Use post_type_substages (blog output)
+            stage = request.args.get('stage')
+            substages = get_substages_with_metadata(post_type, stage)
+        else:
+            # Use channel-specific stages
+            channel_stages = output_config.get('stages', [])
+            channel_substages = output_config.get('substages', {})
+            
+            stage = request.args.get('stage')
+            if stage:
+                # Return substages for specific stage
+                substage_keys = channel_substages.get(stage, [])
+                substages = []
+                for key in substage_keys:
+                    # Create basic metadata for channel-specific substages
+                    substages.append({
+                        'key': key,
+                        'label': key.replace('_', ' ').title(),
+                        'route_function': None,
+                        'order': substage_keys.index(key) + 1
+                    })
+            else:
+                # Return all stages with substages
+                substages = {}
+                for stage_name in channel_stages:
+                    substage_keys = channel_substages.get(stage_name, [])
+                    substages[stage_name] = []
+                    for key in substage_keys:
+                        substages[stage_name].append({
+                            'key': key,
+                            'label': key.replace('_', ' ').title(),
+                            'route_function': None,
+                            'order': substage_keys.index(key) + 1
+                        })
         
         return jsonify({
             "success": True,
             "post_type": post_type,
+            "output_channel": output_channel,
             "stage": stage,
             "substages": substages
         })
     except Exception as e:
         logger.error(f"Error getting substages for post type: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/pipeline/<int:post_id>', methods=['GET'])
+def get_pipeline_for_post(post_id):
+    """Get full pipeline definition for a post, optionally filtered by output channel"""
+    try:
+        # Get output channel from query parameter (defaults to 'blog')
+        output_channel = request.args.get('output', 'blog').lower()
+        valid_channels = ['blog', 'facebook', 'instagram', 'twitter', 'newsletter']
+        if output_channel not in valid_channels:
+            output_channel = 'blog'
+        
+        with db_manager.get_cursor() as cursor:
+            # Get post to determine post_type
+            cursor.execute("""
+                SELECT p.id, p.recipe_id, p.profile_category_id, p.generated_source_type
+                FROM post p
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            post = cursor.fetchone()
+            if not post:
+                return jsonify({"success": False, "error": "Post not found"}), 404
+            
+            # Determine post_type
+            if post.get('recipe_id') is not None:
+                post_type = 'recipe'
+            elif post.get('profile_category_id') is not None:
+                post_type = 'profile'
+            elif post.get('generated_source_type') is not None:
+                post_type = 'generated'
+            else:
+                post_type = 'themed'
+        
+        # Get output channel configuration
+        # Get content format if available
+        content_format = None
+        try:
+            from utils.channel_assignment import get_content_format
+            content_format = get_content_format(post_type, output_channel)
+        except Exception:
+            pass
+        
+        output_config = get_stages_for_output(post_type, output_channel, content_format)
+        
+        # Build pipeline definition
+        if output_config.get('use_post_type_config'):
+            # Use post_type_substages
+            from config.post_type_substages import get_substages_with_metadata
+            stages_data = get_substages_with_metadata(post_type)
+            
+            pipeline_stages = []
+            for stage_name, substages_list in stages_data.items():
+                pipeline_stages.append({
+                    'stage': stage_name,
+                    'substages': substages_list
+                })
+        else:
+            # Use channel-specific stages
+            channel_stages = output_config.get('stages', [])
+            channel_substages = output_config.get('substages', {})
+            
+            pipeline_stages = []
+            for stage_name in channel_stages:
+                substage_keys = channel_substages.get(stage_name, [])
+                substages_list = []
+                for key in substage_keys:
+                    substages_list.append({
+                        'key': key,
+                        'label': key.replace('_', ' ').title(),
+                        'route_function': None,
+                        'order': substage_keys.index(key) + 1
+                    })
+                pipeline_stages.append({
+                    'stage': stage_name,
+                    'substages': substages_list
+                })
+        
+        return jsonify({
+            "success": True,
+            "data": {
+                "post_id": post_id,
+                "post_type": post_type,
+                "output_channel": output_channel,
+                "stages": pipeline_stages
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting pipeline for post: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/posts-in-development', methods=['GET'])

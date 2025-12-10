@@ -154,6 +154,10 @@ def create_app(config_name=None):
     from blueprints.planning_api_themes import bp as planning_themes_api_bp
     app.register_blueprint(planning_themes_api_bp)
     
+    # Register publication dashboard blueprint
+    from blueprints.publication_dashboard import bp as publication_dashboard_bp
+    app.register_blueprint(publication_dashboard_bp)
+    
     from blueprints.authoring_api_photography import bp as authoring_photography_bp
     app.register_blueprint(authoring_photography_bp)
     
