@@ -4,6 +4,23 @@
 
 {% block content %}
 <div class="container" style="padding: 2rem 0;">
+    {# Legacy views link #}
+    <div class="legacy-views-link" style="margin-bottom: 1rem; padding: 0 2rem;">
+        <a href="/planning/posts/0/calendar/week-view?year={{ year }}&week={{ week }}" 
+           class="text-dark-accent hover:text-white text-sm transition" 
+           style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-history"></i>
+            <span>Legacy views</span>
+        </a>
+        <span style="color: var(--text-secondary); margin: 0 0.5rem;">|</span>
+        <a href="/publication/dashboard" 
+           class="text-dark-accent hover:text-white text-sm transition" 
+           style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Publication Dashboard</span>
+        </a>
+    </div>
+    
     {# Include the shared calendar header with tabs and week indication #}
     {% include 'planning/calendar/shared_calendar_header.html' with context %}
     
