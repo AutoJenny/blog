@@ -1,0 +1,134 @@
+{# Publication Schedule Scripts - extracted from publication/dashboard.html #}
+<script>
+// Schedule Management
+async function loadSchedule() {
+    try {
+        const response = await fetch('/publication/api/dashboard/schedule');
+        const data = await response.json();
+        
+        if (data.success) {
+            renderSchedule(data.channels);
+        } else {
+            console.error('Error loading schedule:', data.error);
+        }
+    } catch (error) {
+        console.error('Error loading schedule:', error);
+    }
+}
+
+function renderSchedule(channels) {
+    // Clear all existing item cards (but keep empty states)
+    document.querySelectorAll('.day-column .item-card').forEach(el => {
+        el.remove();
+    });
+    
+    // Show all empty states by default
+    document.querySelectorAll('.day-column .empty-state').forEach(el => {
+        el.style.display = 'block';
+    });
+    
+    // Render items for each channel
+    Object.keys(channels).forEach(channel => {
+        const channelSection = document.querySelector(`#channel-${channel}`);
+        if (!channelSection) return;
+        
+        const items = channels[channel];
+        items.forEach(item => {
+            const day = item.day;
+            if (!day || day < 1 || day > 7) return;
+            
+            // Find the day column for this channel
+            const dayColumns = channelSection.querySelectorAll('.day-column');
+            if (dayColumns.length < day) return;
+            
+            const dayColumn = dayColumns[day - 1];
+            if (!dayColumn) return;
+            
+            // Hide empty state
+            const emptyState = dayColumn.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+            
+            // Create item card
+            const itemCard = document.createElement('div');
+            itemCard.className = 'item-card';
+            itemCard.dataset.category = item.category;
+            itemCard.dataset.itemId = item.item_id;
+            itemCard.dataset.year = item.year;
+            itemCard.dataset.week = item.week;
+            itemCard.dataset.channel = item.channel;
+            itemCard.dataset.postId = item.post_id || '';
+            itemCard.dataset.contentFormat = item.content_format;
+            
+            // Build title (remove prefixes since we have type badge)
+            let title = item.title || 'Untitled';
+            
+            // Get type name
+            const typeName = item.type_name || item.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            // Only skip if we have absolutely no data (no title, no item_id, no post_id)
+            if ((!title || title === 'Untitled') && !item.item_id && !item.post_id) {
+                return; // Skip this item
+            }
+            
+            itemCard.innerHTML = `
+                <div class="item-type-label">${typeName}</div>
+                <div class="item-title">${title}</div>
+                ${item.description ? `<div class="item-description">${item.description.substring(0, 50)}${item.description.length > 50 ? '...' : ''}</div>` : ''}
+                <button class="btn-work-on">Work on This</button>
+            `;
+            
+            // Add click handler
+            itemCard.querySelector('.btn-work-on').addEventListener('click', function(e) {
+                e.stopPropagation();
+                navigateToOneClick(item);
+            });
+            
+            itemCard.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('btn-work-on')) {
+                    navigateToOneClick(item);
+                }
+            });
+            
+            dayColumn.appendChild(itemCard);
+        });
+    });
+}
+
+function navigateToOneClick(item) {
+    let url = '/launchpad/one-click-publication?';
+    const params = [];
+    
+    if (item.post_id) {
+        params.push(`post_id=${item.post_id}`);
+    } else {
+        params.push(`category=${item.category}`);
+        params.push(`item_id=${item.item_id}`);
+        params.push(`year=${item.year}`);
+        params.push(`week=${item.week}`);
+    }
+    
+    params.push(`output=${item.channel}`);
+    
+    url += params.join('&');
+    window.location.href = url;
+}
+
+// Load schedule on initial page load or when tab becomes visible
+document.addEventListener('DOMContentLoaded', function() {
+    loadScheduleIfVisible();
+});
+
+// Also load when tab is shown (in case of dynamic tab switching)
+function loadScheduleIfVisible() {
+    const scheduleView = document.querySelector('.publication-schedule-view');
+    if (scheduleView && scheduleView.offsetParent !== null) {
+        loadSchedule();
+    }
+}
+
+// Expose function globally for tab switching
+window.loadPublicationSchedule = loadScheduleIfVisible;
+</script>
+

@@ -1,0 +1,78 @@
+{# Week View Scripts - extracted from week_view.html #}
+<script>
+window.postId = 0;  {# No post_id needed for unified calendar #}
+window.currentStage = 'calendar';
+window.currentSubstage = 'week-view';
+</script>
+<script type="module" src="/static/js/planning/calendar-week-view.js"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-renderers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-forms.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-conversions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/idea-modal-core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planning/profile-modal-core.js') }}"></script>
+
+<script>
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const ideaModal = getIdeaModal();
+    const profileModal = window.getProfileModal ? window.getProfileModal() : null;
+    
+    document.addEventListener('click', (e) => {
+        const themeItem = e.target.closest('.week-themes .item.idea');
+        if (themeItem && themeItem.dataset.ideaId) {
+            const ideaId = themeItem.dataset.ideaId;
+            ideaModal.open(parseInt(ideaId));
+        }
+    });
+    
+    document.addEventListener('click', (e) => {
+        const eventItem = e.target.closest('.item.event');
+        if (eventItem && eventItem.dataset.eventId) {
+            const eventId = parseInt(eventItem.dataset.eventId);
+            const event = window.currentWeekEvents?.find(ev => ev.id === eventId);
+            if (event) {
+                ideaModal.open(null, event);
+            }
+        }
+    });
+    
+    window.addEventListener('idea-saved', () => {
+        const currentYear = parseInt(document.getElementById('week-year')?.textContent || new Date().getFullYear());
+        const currentWeek = parseInt(document.getElementById('week-number')?.textContent || 44);
+        if (typeof loadWeek === 'function') {
+            loadWeek(currentYear, currentWeek);
+        } else {
+            location.reload();
+        }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            const ideaModal = document.getElementById('idea-modal');
+            if (ideaModal && ideaModal.style.display === 'flex') {
+                const modal = getIdeaModal();
+                if (modal) {
+                    modal.close();
+                }
+            }
+            
+            const profileModal = document.getElementById('profile-modal');
+            if (profileModal && profileModal.style.display === 'flex') {
+                const modal = window.getProfileModal ? window.getProfileModal() : null;
+                if (modal && typeof modal.close === 'function') {
+                    modal.close();
+                } else {
+                    profileModal.style.display = 'none';
+                }
+            }
+        }
+    });
+});
+</script>
+

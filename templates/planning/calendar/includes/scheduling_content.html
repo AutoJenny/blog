@@ -1,0 +1,134 @@
+{# Scheduling View Content - extracted from scheduling.html #}
+<div class="scheduling-view">
+    <!-- Navigation Controls -->
+    <div class="scheduling-navigation" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div class="nav-buttons" style="display: flex; gap: 0.5rem;">
+            <button id="nav-year-back" class="nav-button" title="Previous Year (-52 weeks)">
+                &lt;&lt; Year
+            </button>
+            <button id="nav-month-back" class="nav-button" title="Previous Month (~4 weeks)">
+                &lt; Month
+            </button>
+            <button id="nav-month-forward" class="nav-button" title="Next Month (~4 weeks)">
+                Month &gt;
+            </button>
+            <button id="nav-year-forward" class="nav-button" title="Next Year (+52 weeks)">
+                Year &gt;&gt;
+            </button>
+        </div>
+        <div id="range-label" class="range-label" style="color: #94a3b8; font-size: 0.875rem; margin-left: auto;">
+            Loading...
+        </div>
+    </div>
+
+    <div class="scheduling-view-container">
+        <table class="scheduling-table" id="scheduling-table">
+            <thead>
+                <tr>
+                    <th class="week-header">Week</th>
+                    <th class="category-header">Theme</th>
+                    <th class="category-header">Recipe</th>
+                    <th class="category-header">Product</th>
+                    <th class="category-header">Surname</th>
+                    <th class="category-header">Word</th>
+                    <th class="category-header">Phrase</th>
+                    <th class="category-header">Insult</th>
+                </tr>
+            </thead>
+            <tbody id="scheduling-tbody">
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Item Edit Modal -->
+<div id="item-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">Edit Item</h2>
+            <button class="modal-close" onclick="closeItemModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="modal-item-info" style="margin-bottom: 1rem; padding: 0.75rem; background: #1e293b; border-radius: 6px;">
+                <div><strong>Category:</strong> <span id="modal-category"></span></div>
+                <div><strong>Current Position:</strong> <span id="modal-position"></span></div>
+            </div>
+            
+            <!-- Edit/Rename Section -->
+            <div class="modal-section">
+                <h3>Edit Content</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label for="modal-title-input">Title:</label>
+                    <input type="text" id="modal-title-input" class="modal-input" />
+                </div>
+                
+                <!-- Standard description field (for themes, recipes) -->
+                <div id="modal-description-container" style="margin-bottom: 1rem;">
+                    <label for="modal-description-input">Description (optional):</label>
+                    <textarea id="modal-description-input" class="modal-input" rows="3"></textarea>
+                </div>
+                
+                <!-- Word/Phrase specific fields -->
+                <div id="modal-word-phrase-fields" style="display: none;">
+                    <div style="margin-bottom: 1rem;">
+                        <label for="modal-translation-input">Translation:</label>
+                        <input type="text" id="modal-translation-input" class="modal-input" />
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label for="modal-usage1-input">Usage 1:</label>
+                        <textarea id="modal-usage1-input" class="modal-input" rows="2"></textarea>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label for="modal-usage2-input">Usage 2:</label>
+                        <textarea id="modal-usage2-input" class="modal-input" rows="2"></textarea>
+                    </div>
+                    <div id="modal-notes-container" style="margin-bottom: 1rem; display: none;">
+                        <label for="modal-notes-input">Notes:</label>
+                        <textarea id="modal-notes-input" class="modal-input" rows="2"></textarea>
+                    </div>
+                </div>
+                
+                <button onclick="saveItemEdit()" class="modal-button primary" id="modal-save-button">Save Changes</button>
+            </div>
+            
+            <!-- Move Section -->
+            <div class="modal-section">
+                <h3>Move to Week</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label for="modal-target-year">Year:</label>
+                    <input type="number" id="modal-target-year" class="modal-input" min="2020" max="2100" onchange="updateWeekDropdown()" />
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label for="modal-target-week">Week:</label>
+                    <select id="modal-target-week" class="modal-input">
+                        <option value="">Select a week...</option>
+                    </select>
+                    <small style="color: #94a3b8; display: block; margin-top: 0.25rem;">The item will be moved to appear in this week</small>
+                </div>
+                <button onclick="moveItem()" class="modal-button">Move to Week</button>
+            </div>
+            
+            <!-- Add New Item Section -->
+            <div class="modal-section" style="border-top: 1px solid #334155; padding-top: 1rem;">
+                <h3 style="color: #10b981;">Add New Item</h3>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Add a new item at this week's position. The current item will be moved to the next week.</p>
+                <button onclick="addNewItem()" class="modal-button" style="background: #10b981; border-color: #10b981;">Add New Item Here</button>
+            </div>
+            
+            <!-- Delete Section -->
+            <div class="modal-section" style="border-top: 1px solid #334155; padding-top: 1rem;">
+                <h3 style="color: #ef4444;">Danger Zone</h3>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">This will remove the item from the rotation entirely. This action cannot be undone.</p>
+                <button onclick="deleteItem()" class="modal-button danger">Delete from Rotation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Include scheduling styles and scripts #}
+{% include 'planning/calendar/includes/scheduling_styles.html' %}
+{% include 'planning/calendar/includes/scheduling_scripts.html' %}
+

@@ -1,0 +1,60 @@
+{# Publication Day Assignments Tab Content - extracted from publication/dashboard.html #}
+<div class="publication-day-assignments-view">
+    <div class="channel-section">
+        <div class="save-controls">
+            <div>
+                <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+                    <i class="fas fa-calendar-alt"></i> Publication Day Assignments
+                </h2>
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                    Configure which day of the week each post type publishes to each channel
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-secondary" id="btn-reset-changes">
+                    <i class="fas fa-undo"></i> Reset Changes
+                </button>
+                <button class="btn btn-primary" id="btn-save-all" disabled>
+                    <i class="fas fa-save"></i> Save All Changes
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-controls">
+            <select class="filter-select" id="filter-post-type">
+                <option value="">All Post Types</option>
+            </select>
+            <select class="filter-select" id="filter-channel">
+                <option value="">All Channels</option>
+            </select>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table class="day-assignment-table">
+                <thead>
+                    <tr>
+                        <th>Post Type</th>
+                        <th>Content Format</th>
+                        <th>Blog</th>
+                        <th>Facebook</th>
+                        <th>Instagram</th>
+                        <th>Twitter</th>
+                        <th>Newsletter</th>
+                    </tr>
+                </thead>
+                <tbody id="day-assignments-tbody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            <i class="fas fa-spinner fa-spin"></i> Loading assignments...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{# Include day assignments styles and scripts #}
+{% include 'planning/calendar/includes/publication_day_assignments_styles.html' %}
+{% include 'planning/calendar/includes/publication_day_assignments_scripts.html' %}
+

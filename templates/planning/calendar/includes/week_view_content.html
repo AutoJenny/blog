@@ -1,0 +1,224 @@
+{# Week View Content - extracted from week_view.html #}
+<div class="calendar-week-view">
+    <div class="week-controls">
+        <button class="nav-btn" id="prev-week"><i class="fas fa-chevron-left"></i></button>
+        <button class="nav-btn nav-btn-text" id="this-week-btn" title="Jump to current week">This week</button>
+        <div class="week-meta">
+            <div class="year">Year: <span id="week-year"></span></div>
+            <div class="week">Week: <span id="week-number"></span></div>
+            <div class="dates" id="week-dates"></div>
+        </div>
+        <div class="week-picker-container">
+            <button class="nav-btn nav-btn-text" id="week-picker-btn" title="Pick a week"><i class="fas fa-calendar"></i></button>
+            <div class="week-picker-popup" id="week-picker-popup" style="display: none;">
+                <div class="week-picker-content">
+                    <div class="week-picker-header">
+                        <button class="week-picker-nav" id="picker-year-prev"><i class="fas fa-chevron-left"></i></button>
+                        <select id="picker-year" class="week-picker-select"></select>
+                        <button class="week-picker-nav" id="picker-year-next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="week-picker-months" id="week-picker-months">
+                        <!-- Months and weeks will be generated here -->
+                    </div>
+                    <div class="week-picker-actions">
+                        <button class="week-picker-btn week-picker-cancel" id="week-picker-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="nav-btn" id="next-week"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <div class="week-filters week-filters-v2">
+        <span class="filter-group-label-inline">Blog:</span>
+        <label class="filter-pill-v2 filter-blog active" title="Blog entries (theme, recipe, surname, product)">
+            <input type="checkbox" id="toggle-blog" checked>
+            <i class="fas fa-newspaper"></i>
+            <span>Blog entries</span>
+        </label>
+        <span class="filter-separator">|</span>
+        <span class="filter-group-label-inline">Support:</span>
+        <label class="filter-pill-v2 filter-annual-events active" title="Recurring annual events">
+            <input type="checkbox" id="toggle-annual-events" checked>
+            <i class="fas fa-calendar-alt"></i>
+            <span>Annual</span>
+        </label>
+        <label class="filter-pill-v2 filter-special-events active" title="One-off special events">
+            <input type="checkbox" id="toggle-special-events" checked>
+            <i class="fas fa-calendar-check"></i>
+            <span>Special</span>
+        </label>
+        <label class="filter-pill-v2 filter-words-phrases active" title="Weekly words and phrases">
+            <input type="checkbox" id="toggle-words-phrases" checked>
+            <i class="fas fa-book"></i>
+            <span>Words</span>
+        </label>
+        <span class="filter-separator">|</span>
+        <span class="filter-group-label-inline">Ops:</span>
+        <label class="filter-pill-v2 filter-syndication active" title="Social media syndication">
+            <input type="checkbox" id="toggle-syndication" checked>
+            <i class="fas fa-share-alt"></i>
+            <span>Syndication</span>
+        </label>
+    </div>
+
+    <div class="week-grid week-grid-headers">
+        <div class="day-header" data-day="1">
+            <div class="day-title">Mon</div>
+            <div class="social-focus" data-day="1"></div>
+        </div>
+        <div class="day-header" data-day="2">
+            <div class="day-title">Tue</div>
+            <div class="social-focus" data-day="2"></div>
+        </div>
+        <div class="day-header" data-day="3">
+            <div class="day-title">Wed</div>
+            <div class="social-focus" data-day="3"></div>
+        </div>
+        <div class="day-header" data-day="4">
+            <div class="day-title">Thu</div>
+            <div class="social-focus" data-day="4"></div>
+        </div>
+        <div class="day-header" data-day="5">
+            <div class="day-title">Fri</div>
+            <div class="social-focus" data-day="5"></div>
+        </div>
+        <div class="day-header" data-day="6">
+            <div class="day-title">Sat</div>
+            <div class="social-focus" data-day="6"></div>
+        </div>
+        <div class="day-header" data-day="7">
+            <div class="day-title">Sun</div>
+            <div class="social-focus" data-day="7"></div>
+        </div>
+    </div>
+
+    <!-- Horizontal rows aligned with day columns -->
+    <div class="rows-container">
+        <!-- Section: Blog Posts -->
+        <div class="content-section" data-section="blog-posts">
+            <div class="section-divider">
+                <span class="section-label">Blog Entries</span>
+            </div>
+            <div class="row-section" data-filter="blog">
+                <div class="row-header row-header-v2" data-type="blog">
+                    <span class="row-header-content">
+                        <i class="fas fa-newspaper row-header-icon"></i>
+                        <span class="row-header-text">Blog Entries</span>
+                    </span>
+                </div>
+                <div class="row-grid" id="blog-row"></div>
+            </div>
+        </div>
+
+        <!-- Section: Words & Phrases -->
+        <div class="content-section" data-section="words-phrases">
+            <div class="section-divider">
+                <span class="section-label">Words & Phrases</span>
+            </div>
+            <div class="row-section" data-filter="words-phrases">
+                <div class="row-header row-header-v2" data-type="words-phrases">
+                    <span class="row-header-content">
+                        <i class="fas fa-book row-header-icon"></i>
+                        <span class="row-header-text">Words & Phrases</span>
+                    </span>
+                </div>
+                <div class="row-grid" id="words-phrases-row"></div>
+            </div>
+        </div>
+
+        <!-- Section: Supporting Content -->
+        <div class="content-section" data-section="supporting">
+            <div class="section-divider">
+                <span class="section-label">Supporting Content</span>
+            </div>
+            
+            <!-- Annual Events row: header + 7 aligned cells -->
+            <div class="row-section" data-filter="annual-events">
+                <div class="row-header row-header-v2" data-type="annual-event">
+                    <span class="row-header-content">
+                        <i class="fas fa-calendar-alt row-header-icon"></i>
+                        <span class="row-header-text">Annual Events</span>
+                    </span>
+                    <button class="row-add-btn" onclick="getIdeaModal().openNew('event')" title="Add New Event">
+                        <i class="fas fa-plus"></i> Add New
+                    </button>
+                </div>
+                <div class="row-grid" id="annual-events-row"></div>
+            </div>
+
+            <!-- Special Events row: header + 7 aligned cells -->
+            <div class="row-section" data-filter="special-events">
+                <div class="row-header row-header-v2" data-type="special-event">
+                    <span class="row-header-content">
+                        <i class="fas fa-calendar-check row-header-icon"></i>
+                        <span class="row-header-text">Special Events</span>
+                    </span>
+                </div>
+                <div class="row-grid" id="special-events-row"></div>
+            </div>
+        </div>
+
+        <!-- Section: Operations -->
+        <div class="content-section" data-section="operations">
+            <div class="section-divider">
+                <span class="section-label">Operations</span>
+            </div>
+            
+            <!-- Syndication row: header + 7 aligned cells -->
+            <div class="row-section" data-filter="syndication">
+                <div class="row-header row-header-v2" data-type="syndication">
+                    <span class="row-header-content">
+                        <i class="fas fa-share-alt row-header-icon"></i>
+                        <span class="row-header-text">Syndication</span>
+                    </span>
+                </div>
+                <div class="row-grid" id="syndication-row"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend legend-v2">
+        <div class="legend-section">
+            <div class="legend-title">Content Types</div>
+            <div class="legend-items">
+                <span class="legend-item legend-item-v2 theme" title="Week-defining themes">
+                    <i class="fas fa-star"></i> Theme
+                </span>
+                <span class="legend-item legend-item-v2 recipe" title="Recipe blog posts">
+                    <i class="fas fa-utensils"></i> Recipe
+                </span>
+                <span class="legend-item legend-item-v2 profile" title="Profile blog posts">
+                    <i class="fas fa-user"></i> Profile
+                </span>
+                <span class="legend-item legend-item-v2 event annual" title="Recurring annual events">
+                    <i class="fas fa-calendar-alt"></i> Annual Event
+                </span>
+                <span class="legend-item legend-item-v2 event special" title="One-off special events">
+                    <i class="fas fa-calendar-check"></i> Special Event
+                </span>
+                <span class="legend-item legend-item-v2 words-phrases" title="Weekly words and phrases">
+                    <i class="fas fa-book"></i> Words & Phrases
+                </span>
+                <span class="legend-item legend-item-v2 syndication" title="Social media syndication">
+                    <i class="fas fa-share-alt"></i> Syndication
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="calendar-actions bottom-actions">
+        <a href="{{ url_for('planning.categories_manage') }}" class="btn-secondary">
+            <i class="fas fa-tags mr-2"></i>Manage Categories
+        </a>
+    </div>
+</div>
+
+{# Include week view styles and scripts #}
+{% include 'planning/calendar/includes/week_view_styles.html' %}
+{% include 'planning/calendar/includes/week_view_scripts.html' %}
+
+{# Include modals #}
+{% include 'planning/calendar/idea_modal.html' %}
+{% include 'planning/calendar/social_focus_modal.html' %}
+{% include 'planning/calendar/profile_modal.html' %}
+

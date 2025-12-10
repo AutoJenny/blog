@@ -1,0 +1,29 @@
+{# Year View Content - extracted from view.html #}
+<div class="calendar-view">
+    <div class="calendar-controls">
+        <div class="year-selector">
+            <button class="nav-btn" id="prev-year"><i class="fas fa-chevron-left"></i></button>
+            <span class="current-year" id="current-year">2025</span>
+            <button class="nav-btn" id="next-year"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="current-week-info">
+            <span class="current-week" id="current-week">Week 1 of 52</span>
+        </div>
+    </div>
+    
+    <div class="calendar-container">
+        <div id="calendar-grid" class="calendar-grid">
+            <!-- Calendar will be generated here -->
+        </div>
+    </div>
+    <div class="calendar-actions bottom-actions">
+        <a href="{{ url_for('planning.categories_manage') }}" class="btn-secondary">
+            <i class="fas fa-tags mr-2"></i>Manage Categories
+        </a>
+    </div>
+</div>
+
+{# Include year view styles and scripts #}
+{% include 'planning/calendar/includes/year_view_styles.html' %}
+{% include 'planning/calendar/includes/year_view_scripts.html' %}
+

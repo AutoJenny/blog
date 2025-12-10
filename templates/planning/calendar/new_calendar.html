@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar - Planning - BlogForge{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    {# Include the shared calendar header with tabs and week indication #}
+    {% include 'planning/calendar/shared_calendar_header.html' with context %}
+    
+    {# Content area for the active view #}
+    <div class="calendar-content-wrapper">
+        {% if active_tab == 'year-view' %}
+            {# YEAR VIEW CONTENT #}
+            {% include 'planning/calendar/includes/year_view_content.html' %}
+            
+        {% elif active_tab == 'week-view' %}
+            {# WEEK VIEW CONTENT #}
+            {% include 'planning/calendar/includes/week_view_content.html' %}
+            
+        {% elif active_tab == 'scheduling' %}
+            {# SCHEDULING VIEW CONTENT #}
+            {% include 'planning/calendar/includes/scheduling_content.html' %}
+            
+        {% elif active_tab == 'publication-schedule' %}
+            {# PUBLICATION SCHEDULE VIEW CONTENT #}
+            {% include 'planning/calendar/includes/publication_schedule_content.html' %}
+            
+        {% elif active_tab == 'day-assignments' %}
+            {# DAY ASSIGNMENTS VIEW CONTENT #}
+            {% include 'planning/calendar/includes/publication_day_assignments_content.html' %}
+            
+        {% else %}
+            <div class="calendar-view-placeholder">
+                <h2>Calendar View</h2>
+                <p>Select a view from the tabs above.</p>
+                <p>Year: {{ year }}, Week: {{ week }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.calendar-content-wrapper {
+    padding: 0;
+}
+
+.calendar-view-placeholder {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #94a3b8;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    min-height: 400px;
+}
+
+.calendar-view-placeholder h2 {
+    font-size: 1.5rem;
+    color: #f1f5f9;
+    margin: 0 0 1rem 0;
+}
+
+.calendar-view-placeholder p {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    color: #cbd5e1;
+}
+</style>
+{% endblock %}

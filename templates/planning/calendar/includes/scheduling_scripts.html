@@ -1,0 +1,855 @@
+{# Scheduling Scripts - extracted from scheduling.html #}
+<script>
+// Map category CSS classes to API category names
+const categoryMap = {
+    'theme': 'theme',
+    'recipe': 'recipe',
+    'profile-product': 'profile_product',
+    'profile-surname': 'profile_surname',
+    'word': 'weekly_word',
+    'phrase': 'weekly_phrase',
+    'insult': 'weekly_insult'
+};
+
+// State management
+let viewStartYear = null;
+let viewStartWeek = null;
+const DEFAULT_RANGE_WEEKS = 52;
+
+function shiftWeeks(year, week, deltaWeeks) {
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const jan4Day = (jan4.getUTCDay() + 6) % 7;
+    const weekStart = new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - jan4Day));
+    weekStart.setUTCDate(weekStart.getUTCDate() + (deltaWeeks * 7));
+    const newYear = weekStart.getUTCFullYear();
+    const newJan4 = new Date(Date.UTC(newYear, 0, 4));
+    const newJan4Day = (newJan4.getUTCDay() + 6) % 7;
+    const daysSinceJan4 = Math.floor((weekStart.getTime() - newJan4.getTime()) / (1000 * 60 * 60 * 24));
+    const newWeek = Math.floor(daysSinceJan4 / 7) + 1;
+    return { year: newYear, week: newWeek };
+}
+
+function formatRangeLabel(rangeStartYear, rangeStartWeek, rangeWeeks) {
+    if (!rangeStartYear || !rangeStartWeek) {
+        return 'Loading...';
+    }
+    const endDate = shiftWeeks(rangeStartYear, rangeStartWeek, rangeWeeks - 1);
+    return `Showing weeks W${rangeStartWeek}–W${endDate.week} (${rangeStartYear}–${endDate.year})`;
+}
+
+async function loadSchedulingRange(startYear, startWeek, weeks) {
+    const tbody = document.getElementById('scheduling-tbody');
+    const rangeLabel = document.getElementById('range-label');
+    const navButtons = document.querySelectorAll('.nav-button');
+    
+    if (!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td></tr>';
+    rangeLabel.textContent = 'Loading...';
+    navButtons.forEach(btn => btn.disabled = true);
+    
+    try {
+        let url = '/planning/api/calendar/scheduling/all';
+        const params = new URLSearchParams();
+        
+        if (startYear !== null && startWeek !== null) {
+            params.append('start_year', startYear);
+            params.append('start_week', startWeek);
+        }
+        if (weeks !== null) {
+            params.append('weeks', weeks);
+        }
+        params.append('_t', new Date().getTime());
+        
+        if (params.toString()) {
+            url += '?' + params.toString();
+        }
+        
+        const response = await fetch(url, {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to load scheduling data');
+        }
+        
+        viewStartYear = result.data.range_start_year;
+        viewStartWeek = result.data.range_start_week;
+        
+        rangeLabel.textContent = formatRangeLabel(
+            result.data.range_start_year,
+            result.data.range_start_week,
+            result.data.range_weeks
+        );
+        
+        const weekData = result.data.weeks || [];
+        const currentYear = result.data.current_year;
+        const currentWeek = result.data.current_week;
+        
+        tbody.innerHTML = '';
+        
+        if (weekData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #94a3b8;">No scheduling data for this range.</td></tr>';
+            navButtons.forEach(btn => btn.disabled = false);
+            return;
+        }
+        
+        weekData.forEach((weekItem) => {
+            const { year, week, schedule } = weekItem;
+            const data = Array.isArray(schedule) ? schedule : [];
+            
+            const isCurrentWeek = year === currentYear && week === currentWeek;
+            const row = document.createElement('tr');
+            if (isCurrentWeek) {
+                row.classList.add('current-week');
+            }
+            
+            const weekCell = document.createElement('td');
+            weekCell.className = 'week-cell';
+            try {
+                const jan4 = new Date(Date.UTC(year, 0, 4));
+                const jan4Day = (jan4.getUTCDay() + 6) % 7;
+                const weekStart = new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - jan4Day));
+                const weekEnd = new Date(weekStart);
+                weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+                
+                weekCell.innerHTML = `
+                    <div style="font-weight: 600; color: #e2e8f0;">W${week}</div>
+                    <div class="week-number">${formatDate(weekStart)} - ${formatDate(weekEnd)}</div>
+                `;
+            } catch (error) {
+                weekCell.innerHTML = `<div style="font-weight: 600; color: #e2e8f0;">W${week}</div><div class="week-number">${year}</div>`;
+            }
+            row.appendChild(weekCell);
+            
+            const themeItem = data.find(item => item && item.type === 'theme_selection');
+            const recipeItems = data.filter(item => item && (
+                item.type === 'recipe' || 
+                (item.type === 'post' && item.item_type === 'recipe')
+            ));
+            const profileProductItems = data.filter(item => item && 
+                item.type === 'post' && 
+                item.item_type === 'profile' && 
+                item.profile_type === 'product'
+            );
+            const profileSurnameItems = data.filter(item => item && 
+                item.type === 'post' && 
+                item.item_type === 'profile' && 
+                item.profile_type === 'surname'
+            );
+            const wordItems = data.filter(item => item && item.type === 'weekly_word');
+            const phraseItems = data.filter(item => item && item.type === 'weekly_phrase');
+            const insultItems = data.filter(item => item && item.type === 'weekly_insult');
+            
+            row.appendChild(createCategoryCell(themeItem ? [themeItem] : [], 'theme', year, week));
+            row.appendChild(createCategoryCell(recipeItems, 'recipe', year, week));
+            row.appendChild(createCategoryCell(profileProductItems, 'profile-product', year, week));
+            row.appendChild(createCategoryCell(profileSurnameItems, 'profile-surname', year, week));
+            row.appendChild(createCategoryCell(wordItems, 'word', year, week));
+            row.appendChild(createCategoryCell(phraseItems, 'phrase', year, week));
+            row.appendChild(createCategoryCell(insultItems, 'insult', year, week));
+            
+            tbody.appendChild(row);
+        });
+        
+        navButtons.forEach(btn => btn.disabled = false);
+        
+    } catch (error) {
+        console.error('Error loading scheduling data:', error);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #ef4444;">Error loading scheduling data: ' + error.message + '</td></tr>';
+        rangeLabel.textContent = 'Error loading data';
+        navButtons.forEach(btn => btn.disabled = false);
+    }
+}
+
+async function loadSchedulingData() {
+    await loadSchedulingRange(null, null, null);
+}
+
+function createCategoryCell(items, categoryClass, year, week) {
+    const cell = document.createElement('td');
+    cell.className = 'content-cell';
+    cell.dataset.category = categoryClass;
+    cell.dataset.year = year;
+    cell.dataset.week = week;
+    
+    if (items.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'scheduling-item empty';
+        emptyDiv.textContent = '—';
+        cell.appendChild(emptyDiv);
+        return cell;
+    }
+    
+    items.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = `scheduling-item ${categoryClass}`;
+        let itemId = null;
+        if (categoryClass === 'theme') {
+            itemId = item.selected_theme_id || item.theme_id || item.id;
+        } else if (categoryClass === 'recipe') {
+            itemId = item.recipe_id || item.id;
+        } else if (categoryClass === 'profile-product' || categoryClass === 'profile-surname') {
+            itemId = item.post_id || item.id;
+        } else if (categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
+            itemId = item.item_id || item.id;
+        }
+        
+        if (!itemId) {
+            console.warn('No item ID found for item:', item, 'category:', categoryClass);
+        }
+        
+        div.dataset.itemId = itemId || '';
+        div.dataset.category = categoryClass;
+        div.dataset.year = year;
+        div.dataset.week = week;
+        div.dataset.position = item.position || '';
+        div.dataset.itemData = JSON.stringify(item);
+        
+        div.draggable = true;
+        div.addEventListener('dragstart', handleDragStart);
+        div.addEventListener('dragend', handleDragEnd);
+        
+        div.style.cursor = 'pointer';
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openItemModal(item, categoryClass, itemId, item.position, year, week);
+        });
+        
+        let title = '';
+        let tooltip = '';
+        let clickable = false;
+        
+        if (categoryClass === 'theme') {
+            title = item.theme_title || 'Theme';
+            tooltip = item.theme_description || title;
+        } else if (categoryClass === 'recipe') {
+            if (item.type === 'post' && item.post_title) {
+                title = item.post_title;
+                tooltip = `Status: ${item.post_status || 'unknown'}`;
+                clickable = !!item.post_id;
+            } else if (item.type === 'recipe' && item.recipe_title) {
+                title = item.recipe_title;
+                tooltip = item.recipe_description || title;
+                if (item._definition) {
+                    div.classList.add('definition');
+                }
+            } else {
+                title = item.recipe_title || item.post_title || 'Recipe';
+            }
+        } else if (categoryClass === 'profile-product' || categoryClass === 'profile-surname') {
+            title = item.post_title || `Profile #${item.post_id}`;
+            tooltip = `Status: ${item.post_status || 'unknown'}`;
+            clickable = !!item.post_id;
+        } else if (categoryClass === 'word') {
+            title = item.title || item.idea_title || 'Word';
+            tooltip = item.description || title;
+        } else if (categoryClass === 'phrase') {
+            title = item.title || item.idea_title || 'Phrase';
+            tooltip = item.description || title;
+        } else if (categoryClass === 'insult') {
+            title = item.title || item.idea_title || 'Insult';
+            tooltip = item.description || title;
+        }
+        
+        div.textContent = title;
+        if (tooltip) {
+            div.title = tooltip;
+        }
+        
+        if (clickable && item.post_id) {
+            div.ondblclick = (e) => {
+                e.stopPropagation();
+                window.location.href = `/planning/calendar?year=${year}&week=${week}&tab=week-view`;
+            };
+        }
+        
+        cell.appendChild(div);
+    });
+    
+    cell.addEventListener('dragover', handleDragOver);
+    cell.addEventListener('drop', handleDrop);
+    cell.addEventListener('dragenter', handleDragEnter);
+    cell.addEventListener('dragleave', handleDragLeave);
+    
+    return cell;
+}
+
+function formatDate(d) {
+    try {
+        if (!d || isNaN(d.getTime())) {
+            return 'Invalid date';
+        }
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch (error) {
+        return 'Invalid date';
+    }
+}
+
+let draggedElement = null;
+let draggedItemData = null;
+
+function handleDragStart(e) {
+    draggedElement = e.target;
+    draggedItemData = JSON.parse(e.target.dataset.itemData || '{}');
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target.outerHTML);
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    document.querySelectorAll('.content-cell').forEach(cell => {
+        cell.classList.remove('drag-over');
+    });
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    const cellCategory = e.currentTarget.dataset.category;
+    const draggedCategory = draggedElement?.dataset.category;
+    if (cellCategory === draggedCategory) {
+        e.dataTransfer.dropEffect = 'move';
+    } else {
+        e.dataTransfer.dropEffect = 'none';
+    }
+    return false;
+}
+
+function handleDragEnter(e) {
+    const cellCategory = e.currentTarget.dataset.category;
+    const draggedCategory = draggedElement?.dataset.category;
+    if (cellCategory === draggedCategory) {
+        e.currentTarget.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    const cellCategory = e.currentTarget.dataset.category;
+    const draggedCategory = draggedElement?.dataset.category;
+    if (cellCategory !== draggedCategory) {
+        return false;
+    }
+    const targetWeek = parseInt(e.currentTarget.dataset.week);
+    const targetYear = parseInt(e.currentTarget.dataset.year);
+    const itemId = parseInt(draggedElement.dataset.itemId);
+    moveItemToWeek(cellCategory, itemId, targetYear, targetWeek);
+    return false;
+}
+
+let currentModalItem = null;
+let currentModalCategory = null;
+let currentModalItemId = null;
+let currentModalWeek = null;
+let currentModalYear = null;
+
+function getISOWeekDateRange(year, week) {
+    try {
+        const jan4 = new Date(Date.UTC(year, 0, 4));
+        const jan4Day = (jan4.getUTCDay() + 6) % 7;
+        const weekStart = new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - jan4Day));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+        return {
+            start: weekStart,
+            end: weekEnd,
+            startFormatted: formatDate(weekStart),
+            endFormatted: formatDate(weekEnd)
+        };
+    } catch (error) {
+        return {
+            start: new Date(year, 0, 1),
+            end: new Date(year, 0, 7),
+            startFormatted: 'Invalid',
+            endFormatted: 'Invalid'
+        };
+    }
+}
+
+function updateWeekDropdown() {
+    const year = parseInt(document.getElementById('modal-target-year').value);
+    const weekSelect = document.getElementById('modal-target-week');
+    if (!year || year < 2020 || year > 2100) {
+        weekSelect.innerHTML = '<option value="">Select a year first</option>';
+        return;
+    }
+    weekSelect.innerHTML = '<option value="">Select a week...</option>';
+    for (let week = 1; week <= 52; week++) {
+        const weekInfo = getISOWeekDateRange(year, week);
+        const option = document.createElement('option');
+        option.value = week;
+        option.textContent = `W${week} ${weekInfo.startFormatted} - ${weekInfo.endFormatted}`;
+        weekSelect.appendChild(option);
+    }
+    const savedWeek = weekSelect.dataset.savedWeek;
+    if (savedWeek) {
+        weekSelect.value = savedWeek;
+        delete weekSelect.dataset.savedWeek;
+    }
+}
+
+function parseDescription(description) {
+    const parts = {
+        translation: '',
+        usage1: '',
+        usage2: '',
+        notes: ''
+    };
+    if (!description) return parts;
+    const sections = description.split(' | ');
+    for (const section of sections) {
+        if (section.startsWith('Translation: ')) {
+            parts.translation = section.replace('Translation: ', '');
+        } else if (section.startsWith('Usage: ')) {
+            if (!parts.usage1) {
+                parts.usage1 = section.replace('Usage: ', '');
+            } else {
+                parts.usage2 = section.replace('Usage: ', '');
+            }
+        } else if (section.startsWith('Notes: ')) {
+            parts.notes = section.replace('Notes: ', '');
+        } else if (section.startsWith('Provenance: ')) {
+            parts.notes = section.replace('Provenance: ', '');
+        }
+    }
+    return parts;
+}
+
+function openItemModal(item, categoryClass, itemId, position, year = null, week = null) {
+    currentModalItem = item;
+    currentModalCategory = categoryClass;
+    currentModalItemId = itemId;
+    currentModalYear = year;
+    currentModalWeek = week;
+    
+    const modal = document.getElementById('item-modal');
+    const apiCategory = categoryMap[categoryClass] || categoryClass;
+    
+    document.getElementById('modal-title').textContent = `Edit ${categoryClass.charAt(0).toUpperCase() + categoryClass.slice(1)}`;
+    document.getElementById('modal-category').textContent = categoryClass;
+    document.getElementById('modal-position').textContent = position || 'Unknown';
+    
+    const saveButton = document.getElementById('modal-save-button');
+    if (saveButton) {
+        saveButton.textContent = 'Save Changes';
+    }
+    
+    const descContainer = document.getElementById('modal-description-container');
+    const wordPhraseFields = document.getElementById('modal-word-phrase-fields');
+    const notesContainer = document.getElementById('modal-notes-container');
+    
+    let titleField = '';
+    let descField = '';
+    if (categoryClass === 'theme') {
+        titleField = item.theme_title || '';
+        descField = item.theme_description || '';
+        descContainer.style.display = 'block';
+        wordPhraseFields.style.display = 'none';
+    } else if (categoryClass === 'recipe') {
+        titleField = item.recipe_title || item.post_title || '';
+        descField = item.recipe_description || '';
+        descContainer.style.display = 'block';
+        wordPhraseFields.style.display = 'none';
+    } else if (categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
+        titleField = item.title || item.idea_title || '';
+        descField = item.description || item.idea_description || '';
+        descContainer.style.display = 'none';
+        wordPhraseFields.style.display = 'block';
+        const parsed = parseDescription(descField);
+        document.getElementById('modal-translation-input').value = parsed.translation || '';
+        document.getElementById('modal-usage1-input').value = parsed.usage1 || '';
+        document.getElementById('modal-usage2-input').value = parsed.usage2 || '';
+        if ((categoryClass === 'phrase' || categoryClass === 'insult') && parsed.notes) {
+            notesContainer.style.display = 'block';
+            document.getElementById('modal-notes-input').value = parsed.notes || '';
+        } else {
+            notesContainer.style.display = 'none';
+        }
+    } else {
+        descContainer.style.display = 'block';
+        wordPhraseFields.style.display = 'none';
+    }
+    
+    document.getElementById('modal-title-input').value = titleField;
+    document.getElementById('modal-description-input').value = descField;
+    
+    const defaultYear = viewStartYear || (new Date().getFullYear());
+    const defaultWeek = viewStartWeek || (() => {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 1);
+        const days = Math.floor((now - start) / (24 * 60 * 60 * 1000));
+        return Math.ceil((days + start.getDay() + 1) / 7);
+    })();
+    
+    document.getElementById('modal-target-year').value = defaultYear;
+    const weekSelect = document.getElementById('modal-target-week');
+    weekSelect.dataset.savedWeek = defaultWeek;
+    updateWeekDropdown();
+    
+    modal.style.display = 'flex';
+}
+
+function closeItemModal() {
+    document.getElementById('item-modal').style.display = 'none';
+    currentModalItem = null;
+    currentModalCategory = null;
+    currentModalItemId = null;
+    currentModalWeek = null;
+    currentModalYear = null;
+}
+
+function clearModalForNewItem() {
+    document.getElementById('modal-title-input').value = '';
+    document.getElementById('modal-description-input').value = '';
+    document.getElementById('modal-translation-input').value = '';
+    document.getElementById('modal-usage1-input').value = '';
+    document.getElementById('modal-usage2-input').value = '';
+    document.getElementById('modal-notes-input').value = '';
+    document.getElementById('modal-title').textContent = `Add New ${currentModalCategory.charAt(0).toUpperCase() + currentModalCategory.slice(1)}`;
+    document.getElementById('modal-position').textContent = 'New';
+    const saveButton = document.getElementById('modal-save-button');
+    if (saveButton) {
+        saveButton.textContent = 'Add Item';
+    }
+    currentModalItemId = null;
+}
+
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('item-modal');
+    if (e.target === modal) {
+        closeItemModal();
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        const modal = document.getElementById('item-modal');
+        if (modal && modal.style.display === 'flex') {
+            closeItemModal();
+        }
+    }
+});
+
+async function saveItemEdit() {
+    if (!currentModalCategory) return;
+    const apiCategory = categoryMap[currentModalCategory] || currentModalCategory;
+    const title = document.getElementById('modal-title-input').value.trim();
+    if (!title) {
+        alert('Title is required');
+        return;
+    }
+    const isNewItem = !currentModalItemId;
+    if (isNewItem) {
+        if (!currentModalYear || !currentModalWeek) {
+            alert('Cannot add item: missing week/year information');
+            return;
+        }
+        try {
+            const listResponse = await fetch(`/planning/api/calendar/list/get?category=${apiCategory}`, {
+                credentials: 'same-origin'
+            });
+            const listData = await listResponse.json();
+            if (listData.status !== 'ok' || !listData.items) {
+                alert('Could not load list data');
+                return;
+            }
+            const meta = listData.meta || {};
+            const listLength = meta.list_length || listData.items.length;
+            const cycleStartWeek = meta.cycle_start_week || 1;
+            const targetPosition = ((currentModalWeek - cycleStartWeek) % listLength + listLength) % listLength + 1;
+            const payload = {
+                category: apiCategory,
+                insert_position: targetPosition,
+                data: {}
+            };
+            if (currentModalCategory === 'theme') {
+                const description = document.getElementById('modal-description-input').value.trim();
+                payload.data.theme_title = title;
+                if (description) payload.data.theme_description = description;
+            } else if (currentModalCategory === 'recipe') {
+                const description = document.getElementById('modal-description-input').value.trim();
+                payload.data.recipe_title = title;
+                if (description) payload.data.recipe_description = description;
+            } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
+                payload.data.idea_title = title;
+                const translation = document.getElementById('modal-translation-input').value.trim();
+                const usage1 = document.getElementById('modal-usage1-input').value.trim();
+                const usage2 = document.getElementById('modal-usage2-input').value.trim();
+                const notes = document.getElementById('modal-notes-input').value.trim();
+                const descriptionParts = [];
+                if (translation) descriptionParts.push(`Translation: ${translation}`);
+                if (usage1) descriptionParts.push(`Usage: ${usage1}`);
+                if (usage2) descriptionParts.push(`Usage: ${usage2}`);
+                if (notes) {
+                    if (currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
+                        descriptionParts.push(`Provenance: ${notes}`);
+                    } else {
+                        descriptionParts.push(`Notes: ${notes}`);
+                    }
+                }
+                if (descriptionParts.length > 0) {
+                    payload.data.idea_description = descriptionParts.join(' | ');
+                }
+            } else if (currentModalCategory === 'profile-product' || currentModalCategory === 'profile-surname') {
+                alert('Adding new profile items requires selecting an existing post. Please use the sequence manager for this.');
+                return;
+            }
+            const response = await fetch('/planning/api/calendar/list/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (result.status === 'ok') {
+                closeItemModal();
+                if (viewStartYear !== null && viewStartWeek !== null) {
+                    loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+                } else {
+                    loadSchedulingRange(null, null, null);
+                }
+            } else {
+                alert('Error: ' + (result.message || 'Failed to add item'));
+            }
+        } catch (error) {
+            console.error('Error adding item:', error);
+            alert('Error adding item: ' + error.message);
+        }
+    } else {
+        const payload = {
+            category: apiCategory,
+            item_id: currentModalItemId
+        };
+        if (currentModalCategory === 'theme') {
+            const description = document.getElementById('modal-description-input').value.trim();
+            payload.theme_title = title;
+            if (description) payload.theme_description = description;
+        } else if (currentModalCategory === 'recipe') {
+            const description = document.getElementById('modal-description-input').value.trim();
+            payload.recipe_title = title;
+            if (description) payload.recipe_description = description;
+        } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
+            payload.idea_title = title;
+            const translation = document.getElementById('modal-translation-input').value.trim();
+            const usage1 = document.getElementById('modal-usage1-input').value.trim();
+            const usage2 = document.getElementById('modal-usage2-input').value.trim();
+            const notes = document.getElementById('modal-notes-input').value.trim();
+            const descriptionParts = [];
+            if (translation) descriptionParts.push(`Translation: ${translation}`);
+            if (usage1) descriptionParts.push(`Usage: ${usage1}`);
+            if (usage2) descriptionParts.push(`Usage: ${usage2}`);
+            if (notes) {
+                if (currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
+                    descriptionParts.push(`Provenance: ${notes}`);
+                } else {
+                    descriptionParts.push(`Notes: ${notes}`);
+                }
+            }
+            if (descriptionParts.length > 0) {
+                payload.idea_description = descriptionParts.join(' | ');
+            }
+        }
+        try {
+            const response = await fetch('/planning/api/calendar/item/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (result.status === 'ok') {
+                closeItemModal();
+                if (viewStartYear !== null && viewStartWeek !== null) {
+                    loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+                } else {
+                    loadSchedulingRange(null, null, null);
+                }
+            } else {
+                alert('Error: ' + (result.message || 'Failed to update item'));
+            }
+        } catch (error) {
+            console.error('Error updating item:', error);
+            alert('Error updating item: ' + error.message);
+        }
+    }
+}
+
+async function moveItem() {
+    if (!currentModalItemId || !currentModalCategory) return;
+    const targetYear = parseInt(document.getElementById('modal-target-year').value);
+    const targetWeek = parseInt(document.getElementById('modal-target-week').value);
+    if (!targetYear || targetYear < 2020 || targetYear > 2100) {
+        alert('Please enter a valid year (2020-2100)');
+        return;
+    }
+    if (!targetWeek || targetWeek < 1 || targetWeek > 52) {
+        alert('Please enter a valid week (1-52)');
+        return;
+    }
+    await moveItemToWeek(currentModalCategory, currentModalItemId, targetYear, targetWeek);
+    closeItemModal();
+}
+
+async function moveItemToWeek(categoryClass, itemId, targetYear, targetWeek) {
+    const apiCategory = categoryMap[categoryClass] || categoryClass;
+    try {
+        const listResponse = await fetch(`/planning/api/calendar/list/get?category=${apiCategory}`, {
+            credentials: 'same-origin'
+        });
+        const listData = await listResponse.json();
+        if (listData.status !== 'ok' || !listData.items) {
+            alert('Could not load list data');
+            return;
+        }
+        const currentItem = listData.items.find(item => item.id === itemId);
+        if (!currentItem) {
+            alert('Item not found in list');
+            return;
+        }
+        const meta = listData.meta || {};
+        const listLength = meta.list_length || listData.items.length;
+        const cycleStartWeek = meta.cycle_start_week || 1;
+        if (listLength === 0) {
+            alert('Cannot reorder; list is empty.');
+            return;
+        }
+        const targetPosition = ((targetWeek - cycleStartWeek) % listLength + listLength) % listLength + 1;
+        if (targetPosition < 1 || targetPosition > listLength) {
+            alert(`Calculated position ${targetPosition} is out of range (1-${listLength})`);
+            return;
+        }
+        const response = await fetch('/planning/api/calendar/list/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                category: apiCategory,
+                item_id: itemId,
+                new_position: targetPosition
+            })
+        });
+        const result = await response.json();
+        if (result.status === 'ok') {
+            if (viewStartYear !== null && viewStartWeek !== null) {
+                loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+            } else {
+                loadSchedulingRange(null, null, null);
+            }
+        } else {
+            alert('Error: ' + (result.message || 'Failed to move item'));
+        }
+    } catch (error) {
+        console.error('Error moving item:', error);
+        alert('Error moving item: ' + error.message);
+    }
+}
+
+async function addNewItem() {
+    if (!currentModalCategory || !currentModalYear || !currentModalWeek) {
+        alert('Cannot add item: missing week/year information');
+        return;
+    }
+    if (!currentModalItemId) {
+        alert('Please use "Save Changes" to add a new item first, or click on an existing item to add a new one at its position.');
+        return;
+    }
+    const apiCategory = categoryMap[currentModalCategory] || currentModalCategory;
+    try {
+        const nextWeek = currentModalWeek === 52 ? 1 : currentModalWeek + 1;
+        const nextYear = currentModalWeek === 52 ? currentModalYear + 1 : currentModalYear;
+        await moveItemToWeek(currentModalCategory, currentModalItemId, nextYear, nextWeek);
+        clearModalForNewItem();
+    } catch (error) {
+        console.error('Error adding new item:', error);
+        alert('Error preparing to add new item: ' + error.message);
+    }
+}
+
+async function deleteItem() {
+    if (!currentModalItemId || !currentModalCategory) return;
+    if (!confirm('Are you sure you want to delete this item from the rotation? This cannot be undone.')) {
+        return;
+    }
+    const apiCategory = categoryMap[currentModalCategory] || currentModalCategory;
+    try {
+        const response = await fetch('/planning/api/calendar/list/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                category: apiCategory,
+                item_id: currentModalItemId
+            })
+        });
+        const result = await response.json();
+        if (result.status === 'ok') {
+            closeItemModal();
+            if (viewStartYear !== null && viewStartWeek !== null) {
+                loadSchedulingRange(viewStartYear, viewStartWeek, DEFAULT_RANGE_WEEKS);
+            } else {
+                loadSchedulingRange(null, null, null);
+            }
+        } else {
+            alert('Error: ' + (result.message || 'Failed to delete item'));
+        }
+    } catch (error) {
+        console.error('Error deleting item:', error);
+        alert('Error deleting item: ' + error.message);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadSchedulingRange(null, null, null);
+    
+    document.getElementById('nav-year-back').addEventListener('click', () => {
+        if (viewStartYear !== null && viewStartWeek !== null) {
+            const newRange = shiftWeeks(viewStartYear, viewStartWeek, -52);
+            loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
+        }
+    });
+    
+    document.getElementById('nav-month-back').addEventListener('click', () => {
+        if (viewStartYear !== null && viewStartWeek !== null) {
+            const newRange = shiftWeeks(viewStartYear, viewStartWeek, -4);
+            loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
+        }
+    });
+    
+    document.getElementById('nav-month-forward').addEventListener('click', () => {
+        if (viewStartYear !== null && viewStartWeek !== null) {
+            const newRange = shiftWeeks(viewStartYear, viewStartWeek, 4);
+            loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
+        }
+    });
+    
+    document.getElementById('nav-year-forward').addEventListener('click', () => {
+        if (viewStartYear !== null && viewStartWeek !== null) {
+            const newRange = shiftWeeks(viewStartYear, viewStartWeek, 52);
+            loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
+        }
+    });
+});
+</script>
+

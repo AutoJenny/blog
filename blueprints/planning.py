@@ -101,10 +101,38 @@ def planning_calendar_week_view(post_id):
     """Calendar week (week-per-view) page"""
     return calendar_week_view_func(post_id)
 
+
 @bp.route('/posts/<int:post_id>/calendar/scheduling')
 def planning_calendar_scheduling(post_id):
     """Calendar scheduling view - Year overview"""
     return scheduling_func(post_id)
+
+@bp.route('/calendar')
+def planning_calendar_new():
+    """New unified calendar page with shared header and tabs"""
+    from flask import request
+    from datetime import datetime
+    
+    # Get year and week from URL params, default to current week
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    
+    # If not provided, use current week
+    if not year or not week:
+        now = datetime.now()
+        year = year or now.year
+        week = week or now.isocalendar()[1]
+    
+    # Determine active tab from URL path or default to week-view
+    active_tab = request.args.get('tab', 'week-view')
+    
+    return render_template('planning/calendar/new_calendar.html',
+                          year=year,
+                          week=week,
+                          current_year=year,
+                          current_week=week,
+                          active_tab=active_tab,
+                          blueprint_name='planning')
 
 @bp.route('/calendar/ideas/week/<int:week_number>')
 def planning_calendar_ideas_week(week_number):

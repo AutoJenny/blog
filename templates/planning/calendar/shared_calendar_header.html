@@ -1,0 +1,281 @@
+{# 
+    Shared Calendar Header with Tabs and Week Indication
+    
+    This header is designed to be shared across all calendar views.
+    It shows the current week of the year and provides navigation tabs.
+    
+    Usage:
+    {% include 'planning/calendar/shared_calendar_header.html' with context %}
+    
+    Required context variables:
+    - current_year: The current year (defaults to current year if not provided)
+    - current_week: The current week number 1-52 (defaults to current week if not provided)
+    - active_tab: The active tab name ('year-view', 'week-view', 'scheduling', etc.)
+    
+    Optional context variables:
+    - year: Override for current_year
+    - week: Override for current_week
+#}
+
+{# Get year and week from context, with fallbacks #}
+{% set display_year = year|default(current_year|default(2025)) %}
+{% set display_week = week|default(current_week|default(1)) %}
+{% set active_tab = active_tab|default('week-view') %}
+
+<div class="calendar-header-container">
+    <div class="calendar-header-top">
+        <div class="calendar-title-section">
+            <h1 class="calendar-main-title">Calendar</h1>
+            <p class="calendar-main-subtitle">Content scheduling and planning</p>
+        </div>
+        <div class="calendar-week-indicator">
+            <div class="week-indicator-content">
+                <div class="week-indicator-label">Current Week</div>
+                <div class="week-indicator-value">
+                    <span class="week-number">W{{ display_week }}</span>
+                    <span class="week-year">{{ display_year }}</span>
+                </div>
+                <div class="week-indicator-dates" id="week-date-range">
+                    Loading dates...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="calendar-tabs-container">
+        <nav class="calendar-tabs-nav">
+            <a href="/planning/calendar{% if display_year and display_week %}?year={{ display_year }}&week={{ display_week }}&tab=year-view{% else %}?tab=year-view{% endif %}" 
+               class="calendar-tab {% if active_tab == 'year-view' %}active{% endif %}"
+               data-tab="year-view">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Year View</span>
+            </a>
+            <a href="/planning/calendar{% if display_year and display_week %}?year={{ display_year }}&week={{ display_week }}&tab=week-view{% else %}?tab=week-view{% endif %}" 
+               class="calendar-tab {% if active_tab == 'week-view' %}active{% endif %}"
+               data-tab="week-view">
+                <i class="fas fa-calendar-week"></i>
+                <span>Week View</span>
+            </a>
+            <a href="/planning/calendar{% if display_year and display_week %}?year={{ display_year }}&week={{ display_week }}&tab=scheduling{% else %}?tab=scheduling{% endif %}" 
+               class="calendar-tab {% if active_tab == 'scheduling' %}active{% endif %}"
+               data-tab="scheduling">
+                <i class="fas fa-table"></i>
+                <span>Future items</span>
+            </a>
+            {# Publication Schedule and Day Assignments tabs #}
+            <a href="/planning/calendar{% if display_year and display_week %}?year={{ display_year }}&week={{ display_week }}&tab=publication-schedule{% else %}?tab=publication-schedule{% endif %}" 
+               class="calendar-tab {% if active_tab == 'publication-schedule' %}active{% endif %}"
+               data-tab="publication-schedule">
+                <i class="fas fa-calendar-week"></i>
+                <span>Channels schedule</span>
+            </a>
+            <a href="/planning/calendar{% if display_year and display_week %}?year={{ display_year }}&week={{ display_week }}&tab=day-assignments{% else %}?tab=day-assignments{% endif %}" 
+               class="calendar-tab {% if active_tab == 'day-assignments' %}active{% endif %}"
+               data-tab="day-assignments">
+                <i class="fas fa-cog"></i>
+                <span>Day Assignments</span>
+            </a>
+        </nav>
+    </div>
+</div>
+
+<style>
+.calendar-header-container {
+    background: #0f172a;
+    border-bottom: 1px solid #334155;
+    margin-bottom: 2rem;
+    padding: 1.5rem 0;
+}
+
+.calendar-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.calendar-title-section {
+    flex: 1;
+    min-width: 200px;
+}
+
+.calendar-main-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.2;
+}
+
+.calendar-main-subtitle {
+    font-size: 0.9375rem;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.calendar-week-indicator {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    min-width: 200px;
+}
+
+.week-indicator-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.week-indicator-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.week-indicator-value {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.week-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b82f6;
+    font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.week-year {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.week-indicator-dates {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.calendar-tabs-container {
+    padding: 0 2rem;
+}
+
+.calendar-tabs-nav {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.calendar-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    background: #1e293b;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.calendar-tab:hover:not(.disabled):not(.active) {
+    background: #334155;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+.calendar-tab.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.calendar-tab.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.calendar-tab i {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.calendar-tab.active i {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .calendar-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .calendar-week-indicator {
+        width: 100%;
+    }
+    
+    .calendar-tabs-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .calendar-tab {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// Calculate and display week date range
+document.addEventListener('DOMContentLoaded', function() {
+    function getISOWeekDateRange(year, week) {
+        // Calculate the date of the Monday of the given ISO week
+        const jan4 = new Date(Date.UTC(year, 0, 4));
+        const jan4Day = (jan4.getUTCDay() + 6) % 7; // Monday = 0
+        const weekStart = new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - jan4Day));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+        
+        return {
+            start: weekStart,
+            end: weekEnd
+        };
+    }
+    
+    function formatDate(date) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return months[date.getUTCMonth()] + ' ' + date.getUTCDate();
+    }
+    
+    function formatDateWithYear(date) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return months[date.getUTCMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
+    }
+    
+    const year = {{ display_year }};
+    const week = {{ display_week }};
+    const dateRange = getISOWeekDateRange(year, week);
+    const dateRangeEl = document.getElementById('week-date-range');
+    
+    if (dateRangeEl) {
+        dateRangeEl.textContent = formatDate(dateRange.start) + ' - ' + formatDateWithYear(dateRange.end);
+    }
+});
+</script>
+
