@@ -1,5 +1,15 @@
 # Changelog
 
+## 2025-12-11 - Calendar Legends & Action Rows Unification
+
+### Changed
+- Standardized calendar legend pills (Theme, Recipe, Profile, Word, Phrase, Insult, Annual, Special, Syndication) across week view, scheduling, and publication schedule tabs with consistent colors.
+- Updated publication schedule cards to use a compact action row with a single status pill above the Play/Rocket/Info buttons and tightened event binding to prevent duplicate handlers after create/update flows.
+- Added a compact action row to the One-Click Publication page with create/open/calendar controls and shared status pill styling for calendar-linked posts.
+
+### Notes
+- Ensures all planning calendar tabs and one-click workflows present the same minimal UI and avoid duplicated buttons after updates.
+
 ## 2025-12-07 - Calendar Scheduling: Display Title Cleanup
 
 ### Changed

@@ -52,306 +52,229 @@ function getSyndicationUrl(platform, contentType) {
   return `/launchpad/syndication/${platformName}/${urlContentType}`;
 }
 
-function renderItems(container, items, type) {
+// Helper function to build compact item card with action row (matching publication-schedule format)
+function buildItemCard(item, options) {
+  const { type, typeName, title, postId, postStatus, postExists, description, onInfo, onCreate } = options;
+  
+  const card = document.createElement('div');
+  card.className = `item-card type-${type}`;
+  
+  // Type label
+  const typeLabel = document.createElement('div');
+  typeLabel.className = 'item-type-label';
+  typeLabel.textContent = typeName || type;
+  card.appendChild(typeLabel);
+  
+  // Title
+  const titleEl = document.createElement('div');
+  titleEl.className = 'item-title';
+  titleEl.textContent = title || 'Untitled';
+  card.appendChild(titleEl);
+  
+  // Compact action row: status + actions
+  const actionRow = document.createElement('div');
+  actionRow.className = 'compact-action-row';
+  
+  // Status line (non-clickable)
+  const statusLine = document.createElement('div');
+  statusLine.className = 'status-line';
+  const statusBadge = document.createElement('span');
+  statusBadge.className = postStatus ? `status-badge status-${postStatus}` : 'status-badge status-none';
+  statusBadge.textContent = postStatus ? (postStatus.charAt(0).toUpperCase() + postStatus.slice(1)) : 'Not created';
+  statusLine.appendChild(statusBadge);
+  actionRow.appendChild(statusLine);
+  
+  // Action buttons
+  const actions = document.createElement('div');
+  actions.className = 'item-actions';
+  
+  if (postExists && postId) {
+    // Rocket = open 1-click
+    const rocketBtn = document.createElement('button');
+    rocketBtn.className = 'icon-btn-compact btn-work-on';
+    rocketBtn.title = 'Open 1‑click';
+    rocketBtn.innerHTML = '<i class="fas fa-rocket"></i>';
+    rocketBtn.onclick = (e) => {
+      e.stopPropagation();
+      window.location.href = `/launchpad/one-click-publication?post_id=${postId}&output=blog`;
+    };
+    actions.appendChild(rocketBtn);
+  } else {
+    // Play = create
+    const createBtn = document.createElement('button');
+    createBtn.className = 'icon-btn-compact btn-create';
+    createBtn.title = 'Create post';
+    createBtn.innerHTML = '<i class="fas fa-play"></i>';
+    createBtn.onclick = (e) => {
+      e.stopPropagation();
+      // Create post logic here - will be handled by item-specific handlers
+      if (onCreate) {
+        onCreate(e);
+      } else if (item._onCreate) {
+        item._onCreate(e);
+      }
+    };
+    actions.appendChild(createBtn);
+  }
+  
+  // Info = open modal (same as card click)
+  const infoBtn = document.createElement('button');
+  infoBtn.className = 'icon-btn-compact btn-info';
+  infoBtn.title = 'View details';
+  infoBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
+  infoBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (onInfo) {
+      onInfo(e);
+    }
+  };
+  actions.appendChild(infoBtn);
+  
+  actionRow.appendChild(actions);
+  card.appendChild(actionRow);
+  
+  // Description (optional)
+  if (description) {
+    const descEl = document.createElement('div');
+    descEl.className = 'item-description';
+    descEl.textContent = description.length > 50 ? description.substring(0, 50) + '...' : description;
+    card.appendChild(descEl);
+  }
+  
+  return card;
+}
+
+function renderItems(container, items, type, year, week) {
   if (!items || !Array.isArray(items) || items.length === 0) return;
   
+  // Use current week context if not provided
+  const itemYear = year || window.currentYear || new Date().getFullYear();
+  const itemWeek = week || window.currentWeek || getISOWeekInfo(new Date()).weekNumber;
+  
   items.forEach((item) => {
-    const div = document.createElement('div');
-    div.className = `item ${type}`;
-    if (type === 'idea') {
-      // Make all ideas clickable, even legacy ones without IDs
-      if (item.id) {
-        div.dataset.ideaId = item.id;
-        div.title = 'Click to edit idea';
-      } else {
-        div.title = 'Click to add full details for this idea';
-      }
-      div.style.cursor = 'pointer';
-    }
-    if (type === 'event' && (item.id || item._eventId)) {
-      div.dataset.eventId = item.id || item._eventId;
-      div.style.cursor = 'pointer';
-      div.title = 'Click to view/edit event';
-      // Add class based on recurrence type
-      if (item.event_recurrence_type === 'one_off') {
-        div.classList.add('special');
-      } else {
-        // Default to annual for null/undefined or explicit 'annual'
-        div.classList.add('annual');
-      }
-    }
-    if (type === 'scheduled' && item._syndication) {
-      // Syndication display: Platform icon + Operation — Time
-      div.classList.add('syndication');
-      div.style.cursor = 'pointer';
-      div.style.display = 'flex';
-      div.style.alignItems = 'center';
-      div.style.gap = '6px';
-      div.title = `Click to manage ${item.operation || 'Product'} posts on ${item.channel || 'Facebook'}`;
-      
-      // Create platform icon
-      const icon = document.createElement('i');
-      const platformName = (item.platform || item.channel || 'facebook').toLowerCase();
-      icon.className = getPlatformIcon(platformName);
-      icon.style.fontSize = '0.875rem';
-      // Platform-specific icon colors
-      icon.style.color = platformName === 'instagram' ? '#E1306C' : 
-                         platformName === 'twitter' ? '#1DA1F2' :
-                         platformName === 'linkedin' ? '#0077B5' :
-                         '#93c5fd'; // Default blue for Facebook
-      
-      // Create text content
-      const textSpan = document.createElement('span');
-      textSpan.textContent = `${item.operation || 'Product'} — ${item.time_display || item.time || ''}`.trim();
-      
-      // Build URL for click
-      const platform = (item.platform || item.channel || 'facebook').toLowerCase();
-      const contentType = (item.content_type || (item.operation === 'Blog' ? 'blog_post' : 'product_post')).toLowerCase();
-      const url = getSyndicationUrl(platform, contentType);
-      
-      // Make clickable
-      div.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.location.href = url;
-      };
-      
-      div.appendChild(icon);
-      div.appendChild(textSpan);
-    } else if (type === 'theme' && item._theme) {
-      // Theme display: star icon + title
-      div.classList.add('idea');
-      div.classList.add('theme');
-      div.style.display = 'flex';
-      div.style.alignItems = 'center';
-      div.style.gap = '6px';
-      div.style.cursor = 'pointer';
-      div.title = `Click to edit theme: ${item.title || 'Theme'}`;
-      if (item.id) {
-        div.dataset.themeId = item.id;
-      }
-      // Icon
-      const icon = document.createElement('i');
-      icon.className = 'fas fa-star';
-      icon.style.fontSize = '0.875rem';
-      icon.style.color = '#f97316';
-      div.appendChild(icon);
-      // Text
-      const text = document.createElement('span');
-      text.textContent = item.title || 'Theme';
-      text.style.fontSize = '0.8rem';
-      text.style.overflow = 'hidden';
-      text.style.textOverflow = 'ellipsis';
-      text.style.whiteSpace = 'nowrap';
-      div.appendChild(text);
-      
-      // Add click handler to open theme modal
-      if (item.id) {
-        div.addEventListener('click', () => {
+    // Use compact card format for all items
+    const postId = item.post_id || item.id;
+    const postExists = !!(postId);
+    const postStatus = item.post_status ? item.post_status.toLowerCase() : null;
+    const typeName = type === 'idea' ? 'Theme' : 
+                     type === 'recipe' ? 'Recipe' :
+                     type === 'profile' ? 'Profile' :
+                     type === 'weekly-word' ? 'Word' :
+                     type === 'weekly-phrase' ? 'Phrase' :
+                     type === 'weekly-insult' ? 'Insult' :
+                     type === 'event' ? (item.event_recurrence_type === 'one_off' ? 'Special' : 'Annual') :
+                     type === 'scheduled' ? 'Syndication' : type;
+    
+    const title = item.title || item.theme_title || item.recipe_title || item.post_title || 'Untitled';
+    const description = item.description || item.theme_description || item.recipe_description || null;
+    
+    // Store year/week in item for info button
+    item.year = item.year || itemYear;
+    item.week = item.week || itemWeek;
+    
+    const card = buildItemCard(item, {
+      type,
+      typeName,
+      title,
+      postId,
+      postStatus,
+      postExists,
+      description,
+      onInfo: () => {
+        // Item-specific info handling - open appropriate modal
+        if (type === 'idea' || type === 'theme') {
+          const itemId = item.id || item.theme_id || item.item_id;
+          if (itemId) {
+            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+            if (ideaModal) {
+              ideaModal.openTheme(itemId);
+              return;
+            }
+          }
+        }
+        if (type === 'profile') {
+          const profileId = item.post_id || item.id;
+          if (profileId) {
+            const profileModal = window.getProfileModal ? window.getProfileModal() : null;
+            if (profileModal) {
+              profileModal.open(profileId);
+              return;
+            }
+          }
+        }
+        if (type === 'recipe') {
+          if (item.post_id) {
+            window.location.href = `/planning/posts/${item.post_id}`;
+            return;
+          } else if (item.id) {
+            window.location.href = `/recipes`;
+            return;
+          }
+        }
+        if (type === 'event') {
+          const eventId = item.id || item._eventId;
+          if (eventId) {
+            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+            if (ideaModal) {
+              ideaModal.openEvent(eventId);
+              return;
+            }
+          }
+        }
+        if (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult') {
+          const itemId = item.item_id || item.id;
+          if (itemId) {
+            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+            if (ideaModal) {
+              ideaModal.open(itemId);
+              return;
+            }
+          }
+        }
+        // Fallback: navigate to week-view
+        const y = item.year || itemYear;
+        const w = item.week || itemWeek;
+        window.location.href = `/planning/calendar?year=${y}&week=${w}&tab=week-view`;
+      },
+      onCreate: async () => {
+        if (type === 'recipe' && typeof window.createRecipePostFromCalendar === 'function') {
+          await window.createRecipePostFromCalendar(item.recipe_week_number);
+          return;
+        }
+        if (type === 'idea' && item.id) {
           const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
           if (ideaModal) {
             ideaModal.openTheme(item.id);
           }
-        });
-      }
-    } else if (type === 'profile' && item._profile) {
-      // Profile display: Icon + Title
-      div.classList.add('profile');
-      div.style.cursor = 'pointer';
-      div.style.display = 'flex';
-      div.style.alignItems = 'center';
-      div.style.gap = '6px';
-      div.title = `Click to view/edit ${item.profile_type || 'product'} profile: ${item.title || 'Untitled'}`;
-      div.dataset.profileId = item.id;
-      
-      // Create profile type icon
-      const icon = document.createElement('i');
-      const profileType = (item.profile_type || 'product').toLowerCase();
-      icon.className = profileType === 'product' ? 'fas fa-briefcase' : 'fas fa-folder';
-      icon.style.fontSize = '0.875rem';
-      icon.style.color = profileType === 'product' ? '#0ea5e9' : '#6366f1';
-      
-      div.appendChild(icon);
-      
-      const text = document.createElement('span');
-      text.textContent = item.title || 'Untitled Profile';
-      text.style.fontSize = '0.8rem';
-      text.style.overflow = 'hidden';
-      text.style.textOverflow = 'ellipsis';
-      text.style.whiteSpace = 'nowrap';
-      div.appendChild(text);
-      
-      // Add click handler to open profile editor
-      div.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const profileId = item.post_id || item.id; // Use post_id as primary ID for profiles
-        if (profileId) {
-          const profileModal = window.getProfileModal ? window.getProfileModal() : null;
-          if (profileModal) {
-            profileModal.open(profileId);
-          } else {
-            // Fallback: navigate to profile page
-            const profileUrl = `/planning/posts/${profileId}/profile`;
-            window.location.href = profileUrl;
-          }
         }
-      });
-    } else if (type === 'recipe' && item._recipe) {
-      // Recipe display: Icon + Title + Create button (if definition)
-      div.classList.add('recipe');
-      div.style.display = 'flex';
-      div.style.alignItems = 'center';
-      div.style.gap = '6px';
-      div.style.flexWrap = 'wrap';
-      
-      // Check if this is a definition (no post yet) or a scheduled post
-      // Default to scheduled post if _definition is not explicitly true
-      if (item._definition === true) {
-        // Recipe definition - show as available with create button
-        div.style.cursor = 'default';
-        div.title = `Recipe definition: ${item.title || 'Untitled'} (click to create post)`;
-        div.dataset.recipeDefId = item.id;
-        div.dataset.recipeWeekNumber = item.recipe_week_number;
-        
-        // Create recipe icon (utensils icon)
-        const icon = document.createElement('i');
-        icon.className = 'fas fa-utensils';
-        icon.style.fontSize = '0.875rem';
-        icon.style.color = '#f59e0b';
-        div.appendChild(icon);
-        
-        const text = document.createElement('span');
-        text.textContent = item.title || 'Untitled Recipe';
-        text.style.fontSize = '0.8rem';
-        text.style.overflow = 'hidden';
-        text.style.textOverflow = 'ellipsis';
-        text.style.whiteSpace = 'nowrap';
-        text.style.flex = '1';
-        div.appendChild(text);
-        
-        // Create "Create Post" button for recipe definitions
-        const createBtn = document.createElement('button');
-        createBtn.className = 'recipe-create-btn-small';
-        createBtn.innerHTML = '<i class="fas fa-plus"></i>';
-        createBtn.title = 'Create recipe post';
-        createBtn.style.cssText = `
-          background: #d97706;
-          color: white;
-          border: none;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 0.7rem;
-          cursor: pointer;
-          margin-left: auto;
-          transition: background 0.2s;
-        `;
-        createBtn.onmouseover = () => createBtn.style.background = '#b45309';
-        createBtn.onmouseout = () => createBtn.style.background = '#d97706';
-        
-        createBtn.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          // Use window function if available, otherwise navigate
-          if (typeof window.createRecipePostFromCalendar === 'function') {
-            await window.createRecipePostFromCalendar(item.recipe_week_number, createBtn);
-          } else {
-            // Fallback: navigate to recipes page
-            window.location.href = '/recipes';
-          }
-        });
-        
-        div.appendChild(createBtn);
-      } else {
-        // Scheduled recipe post - clickable
-        div.style.cursor = 'pointer';
-        div.title = `Click to view/edit recipe: ${item.title || 'Untitled'}`;
-        div.dataset.recipeId = item.id || item.recipe_id;
-        
-        // Create recipe icon (utensils icon)
-        const icon = document.createElement('i');
-        icon.className = 'fas fa-utensils';
-        icon.style.fontSize = '0.875rem';
-        icon.style.color = '#f59e0b';
-        div.appendChild(icon);
-        
-        const text = document.createElement('span');
-        text.textContent = item.title || 'Untitled Recipe';
-        text.style.fontSize = '0.8rem';
-        text.style.overflow = 'hidden';
-        text.style.textOverflow = 'ellipsis';
-        text.style.whiteSpace = 'nowrap';
-        div.appendChild(text);
-        
-        // Add click handler for scheduled posts
-        // Recipes are in calendar_recipes table, not calendar_ideas
-        // If recipe has a post, navigate to it; otherwise navigate to recipes page
-        const recipeId = item.id || item.recipe_id;
-        const postId = item.post_id;
-        
-        // Always make recipe clickable, even if no ID (shouldn't happen but be defensive)
-        div.addEventListener('click', (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          
-          if (postId) {
-            // Recipe has a post - navigate to it
-            window.location.href = `/planning/posts/${postId}`;
-          } else if (recipeId) {
-            // Recipe definition without post - navigate to recipes page
-            // Recipes are managed on the recipes page, not in the idea modal
-            window.location.href = `/recipes`;
-          } else {
-            // Fallback: just go to recipes page
-            window.location.href = `/recipes`;
-          }
-        });
       }
-    } else if (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult') {
-      // Weekly Word/Phrase/Insult display: Show as pill with title only (no description)
-      div.classList.add('pill');
-      div.style.cursor = 'pointer';
-      div.style.padding = '6px 10px';
-      div.style.borderRadius = '6px';
-      div.style.backgroundColor = type === 'weekly-word' ? 'rgba(34, 197, 94, 0.15)' : 
-                                  type === 'weekly-phrase' ? 'rgba(34, 197, 94, 0.15)' : 
-                                  'rgba(239, 68, 68, 0.15)';
-      div.style.border = `1px solid ${type === 'weekly-word' ? 'rgba(34, 197, 94, 0.3)' : 
-                                         type === 'weekly-phrase' ? 'rgba(34, 197, 94, 0.3)' : 
-                                         'rgba(239, 68, 68, 0.3)'}`;
+    });
+    
+    // Store original item data
+    card.dataset.itemType = type;
+    if (item.id) card.dataset.itemId = item.id;
+    if (postId) card.dataset.postId = postId;
+    
+    // Add click handler for card (opens modal or navigates)
+    card.onclick = (e) => {
+      if (e.target.closest('.icon-btn-compact')) return; // Buttons handled separately
       
-      const itemId = item.item_id || item.id;
-      if (itemId) {
-        div.dataset.ideaId = itemId;
+      // Item-specific click handlers
+      if (type === 'idea' && item.id) {
+        const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+        if (ideaModal) ideaModal.openTheme(item.id);
+      } else if (type === 'profile' && (item.post_id || item.id)) {
+        const profileModal = window.getProfileModal ? window.getProfileModal() : null;
+        if (profileModal) profileModal.open(item.post_id || item.id);
+      } else if (type === 'recipe' && item.id) {
+        // Recipe click handler
+      } else if (type === 'event' && (item.id || item._eventId)) {
+        const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+        if (ideaModal) ideaModal.openEvent(item.id || item._eventId);
       }
-      
-      // Title with prefix only (no description)
-      const titleText = item.title || item.idea_title || '';
-      const titlePrefix = type === 'weekly-word' ? 'Word: ' : 
-                         type === 'weekly-phrase' ? 'Phrase: ' : 
-                         'Insult: ';
-      
-      div.textContent = titlePrefix + titleText;
-      div.style.fontSize = '0.8rem';
-      div.style.color = '#f1f5f9';
-      div.style.fontWeight = '500';
-      div.title = `Click to edit ${type === 'weekly-word' ? 'word' : type === 'weekly-phrase' ? 'phrase' : 'insult'}`;
-      
-      // Add click handler to open in idea modal
-      if (itemId) {
-        div.addEventListener('click', () => {
-          const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
-          if (ideaModal) {
-            ideaModal.open(itemId);
-          }
-        });
-      }
-    } else {
-      div.textContent = item.title || item.idea_title || item.name || item.summary || item.event_title || 'Untitled';
-    }
-    if (type === 'idea' && item._selected) {
-      div.classList.add('selected');
-    }
-    container.appendChild(div);
+    };
+    
+    container.appendChild(card);
   });
 }
 
@@ -782,13 +705,13 @@ async function loadWeek(year, weekNumber) {
           // Only render the main event icon if the event date is actually in this week
           const dayIdx = ev.weekday || ev.day || 1; // 1..7
           const target = document.getElementById(`annual-events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-          renderItems(target, [ev], 'event');
+          renderItems(target, [ev], 'event', year, weekNumber);
         }
       } else {
         // Fallback: render if no start_date (shouldn't happen, but handle gracefully)
         const dayIdx = ev.weekday || ev.day || 1; // 1..7
         const target = document.getElementById(`annual-events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-        renderItems(target, [ev], 'event');
+        renderItems(target, [ev], 'event', year, weekNumber);
       }
       
       // Always render advance notice period if the event has one
@@ -819,13 +742,13 @@ async function loadWeek(year, weekNumber) {
           // Only render the main event icon if the event date is actually in this week
           const dayIdx = ev.weekday || ev.day || 1; // 1..7
           const target = document.getElementById(`special-events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-          renderItems(target, [ev], 'event');
+          renderItems(target, [ev], 'event', year, weekNumber);
         }
       } else {
         // Fallback: render if no start_date (shouldn't happen, but handle gracefully)
         const dayIdx = ev.weekday || ev.day || 1; // 1..7
         const target = document.getElementById(`special-events-row-day-${Math.min(Math.max(dayIdx, 1), 7)}`);
-        renderItems(target, [ev], 'event');
+        renderItems(target, [ev], 'event', year, weekNumber);
       }
       
       // Always render advance notice period if the event has one
@@ -874,7 +797,7 @@ async function loadWeek(year, weekNumber) {
           name: s.name || '', 
           _syndication: true 
         };
-        renderItems(target, [item], 'scheduled');
+        renderItems(target, [item], 'scheduled', year, weekNumber);
       });
     });
   }
@@ -886,7 +809,7 @@ async function loadWeek(year, weekNumber) {
       const wordTarget = document.getElementById('words-phrases-row-day-1');
       if (wordTarget) {
         // Pass item as-is; renderItems will add "Word: " prefix and show description
-        renderItems(wordTarget, [selectedWord], 'weekly-word');
+        renderItems(wordTarget, [selectedWord], 'weekly-word', year, weekNumber);
       }
     }
     // Phrase on Wednesday (day 3)
@@ -894,7 +817,7 @@ async function loadWeek(year, weekNumber) {
       const phraseTarget = document.getElementById('words-phrases-row-day-3');
       if (phraseTarget) {
         // Pass item as-is; renderItems will add "Phrase: " prefix and show description
-        renderItems(phraseTarget, [selectedPhrase], 'weekly-phrase');
+        renderItems(phraseTarget, [selectedPhrase], 'weekly-phrase', year, weekNumber);
       }
     }
     // Insult on Friday (day 5)
@@ -902,7 +825,7 @@ async function loadWeek(year, weekNumber) {
       const insultTarget = document.getElementById('words-phrases-row-day-5');
       if (insultTarget) {
         // Pass item as-is; renderItems will add "Insult: " prefix and show description
-        renderItems(insultTarget, [selectedInsult], 'weekly-insult');
+        renderItems(insultTarget, [selectedInsult], 'weekly-insult', year, weekNumber);
       }
     }
   }
@@ -919,7 +842,7 @@ async function loadWeek(year, weekNumber) {
           title: themeEntry.theme_title || 'Theme',
           _theme: true
         };
-        renderItems(target, [themeItem], 'theme');
+        renderItems(target, [themeItem], 'theme', year, weekNumber);
       }
     }
 
@@ -938,7 +861,7 @@ async function loadWeek(year, weekNumber) {
           _definition: false, // Recipes from schedule are never definitions - they're scheduled items
           _scheduled: true
         };
-        renderItems(target, [recipeItem], 'recipe');
+        renderItems(target, [recipeItem], 'recipe', year, weekNumber);
       }
     }
 
@@ -954,7 +877,7 @@ async function loadWeek(year, weekNumber) {
           profile_type: 'surname',
           _profile: true
         };
-        renderItems(target, [profileItem], 'profile');
+        renderItems(target, [profileItem], 'profile', year, weekNumber);
       }
     }
 
@@ -970,7 +893,7 @@ async function loadWeek(year, weekNumber) {
           profile_type: 'product',
           _profile: true
         };
-        renderItems(target, [profileItem], 'profile');
+        renderItems(target, [profileItem], 'profile', year, weekNumber);
       }
     }
   }

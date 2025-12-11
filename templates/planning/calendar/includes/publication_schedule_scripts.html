@@ -60,12 +60,13 @@ function renderSchedule(channels) {
             itemCard.dataset.channel = item.channel;
             itemCard.dataset.postId = item.post_id || '';
             itemCard.dataset.contentFormat = item.content_format;
+            itemCard.dataset.typeName = item.type_name || '';
             
             // Build title (remove prefixes since we have type badge)
             let title = item.title || 'Untitled';
             
             // Get type name
-            const typeName = item.type_name || item.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const typeName = getTypeName(item);
             
             // Only skip if we have absolutely no data (no title, no item_id, no post_id)
             if ((!title || title === 'Untitled') && !item.item_id && !item.post_id) {
@@ -75,63 +76,98 @@ function renderSchedule(channels) {
             // Determine if post exists and get status
             const postExists = item.post_exists === true || (item.post_id !== null && item.post_id !== undefined);
             const postStatus = item.post_status && item.post_status.trim() ? item.post_status.trim().toLowerCase() : null;
-            
-            // Build status indicator, create button, or work button
-            let statusOrButton = '';
-            if (postExists && postStatus) {
-                // Post exists - show status badge and work button
-                const statusClass = `status-badge status-${postStatus}`;
-                const statusDisplay = postStatus.charAt(0).toUpperCase() + postStatus.slice(1);
-                statusOrButton = `
-                    <div class="${statusClass}">${statusDisplay}</div>
-                    <button class="btn-work-on">Work on This</button>
-                `;
-            } else {
-                // Post doesn't exist - show Create button
-                statusOrButton = `<button class="btn-create">Create</button>`;
-            }
-            
-            itemCard.innerHTML = `
-                <div class="item-type-label">${typeName}</div>
-                <div class="item-title">${title}</div>
-                ${item.description ? `<div class="item-description">${item.description.substring(0, 50)}${item.description.length > 50 ? '...' : ''}</div>` : ''}
-                ${statusOrButton}
-            `;
-            
-            // Add click handlers
-            const createBtn = itemCard.querySelector('.btn-create');
-            if (createBtn) {
-                createBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    createPostFromItem(item, itemCard);
-                });
-            }
-            
-            const workBtn = itemCard.querySelector('.btn-work-on');
-            if (workBtn) {
-                workBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    navigateToOneClick(item);
-                });
-            }
-            
-            // If post exists, clicking card should navigate to post (or one-click with post_id)
-            // If post doesn't exist, clicking card should also navigate (to create)
-            itemCard.addEventListener('click', function(e) {
-                // Don't navigate if clicking buttons (they have their own handlers)
-                if (!e.target.classList.contains('btn-create') && !e.target.classList.contains('btn-work-on')) {
-                    if (postExists) {
-                        navigateToOneClick(item);
-                    } else {
-                        // For items without posts, clicking card also creates
-                        createPostFromItem(item, itemCard);
-                    }
-                }
+            const description = item.description ? `${item.description.substring(0, 50)}${item.description.length > 50 ? '...' : ''}` : '';
+            setItemCardContent(itemCard, item, {
+                postExists,
+                typeName,
+                title,
+                description
             });
-            
             dayColumn.appendChild(itemCard);
         });
     });
+}
+
+function getTypeName(item) {
+    return item.type_name || item.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function buildStatusLine(postStatus) {
+    const normalized = postStatus && postStatus.trim() ? postStatus.trim().toLowerCase() : null;
+    const statusClass = normalized ? `status-badge status-${normalized}` : 'status-badge status-none';
+    const display = normalized ? (normalized.charAt(0).toUpperCase() + normalized.slice(1)) : 'Not created';
+    return `<div class="status-line"><span class="${statusClass}" title="Status">${display}</span></div>`;
+}
+
+function buildActionButtons(postExists) {
+    return `
+        <div class="item-actions">
+            ${postExists ? `
+                <button class="icon-btn-compact btn-work-on" title="Open 1‑click">
+                    <i class="fas fa-rocket"></i>
+                </button>
+            ` : `
+                <button class="icon-btn-compact btn-create" title="Create post">
+                    <i class="fas fa-play"></i>
+                </button>
+            `}
+            <button class="icon-btn-compact btn-info" title="View in calendar">
+                <i class="fas fa-info-circle"></i>
+            </button>
+        </div>
+    `;
+}
+
+function setItemCardContent(itemCard, item, options) {
+    const postStatus = options?.postExists ? (item.post_status || 'draft') : (item.post_status || null);
+    const statusHtml = buildStatusLine(postStatus);
+    const actionsHtml = buildActionButtons(options?.postExists);
+    const descriptionHtml = options?.description ? `<div class="item-description">${options.description}</div>` : '';
+    const typeName = options?.typeName || getTypeName(item);
+    const title = options?.title || item.title || 'Untitled';
+
+    itemCard.innerHTML = `
+        <div class="item-type-label">${typeName}</div>
+        <div class="item-title">${title}</div>
+        <div class="compact-action-row">
+            ${statusHtml}
+            ${actionsHtml}
+        </div>
+        ${descriptionHtml}
+    `;
+
+    bindItemCardActions(itemCard, item);
+}
+
+function bindItemCardActions(itemCard, item) {
+    const createBtn = itemCard.querySelector('.btn-create');
+    if (createBtn) {
+        createBtn.onclick = function(e) {
+            e.stopPropagation();
+            createPostFromItem(item, itemCard);
+        };
+    }
+
+    const workBtn = itemCard.querySelector('.btn-work-on');
+    if (workBtn) {
+        workBtn.onclick = function(e) {
+            e.stopPropagation();
+            navigateToOneClick(item);
+        };
+    }
+
+    const infoBtn = itemCard.querySelector('.btn-info');
+    if (infoBtn) {
+        infoBtn.onclick = function(e) {
+            e.stopPropagation();
+            openItemModal(item);
+        };
+    }
+
+    itemCard.onclick = function(e) {
+        if (e.target.closest('.icon-btn-compact')) return;
+        openItemModal(item);
+    };
 }
 
 async function createPostFromItem(item, itemCard) {
@@ -195,41 +231,73 @@ async function createPostFromItem(item, itemCard) {
 function updateItemCardAfterCreation(itemCard, item) {
     // Update data attributes
     itemCard.dataset.postId = item.post_id;
+    item.post_exists = true;
+    const postStatus = (item.post_status || 'draft').toLowerCase();
     
-    // Get existing elements
-    const typeLabel = itemCard.querySelector('.item-type-label');
-    const title = itemCard.querySelector('.item-title');
-    const description = itemCard.querySelector('.item-description');
+    const typeLabelText = itemCard.querySelector('.item-type-label')?.textContent || getTypeName(item);
+    const titleText = itemCard.querySelector('.item-title')?.textContent || item.title || 'Untitled';
+    const descEl = itemCard.querySelector('.item-description');
+    const descHtml = descEl ? descEl.innerHTML : '';
+
+    setItemCardContent(itemCard, item, {
+        postExists: true,
+        typeName: typeLabelText,
+        title: titleText,
+        description: descHtml
+    });
+}
+
+function openItemModal(item) {
+    // Open appropriate modal based on item category
+    const category = item.category || '';
+    const itemId = item.item_id || item.id;
+    const postId = item.post_id;
     
-    // Build new status and button HTML
-    const statusClass = 'status-badge status-draft';
-    const statusDisplay = 'Draft';
-    const newContent = `
-        <div class="${statusClass}">${statusDisplay}</div>
-        <button class="btn-work-on">Work on This</button>
-    `;
-    
-    // Remove old button/status
-    const oldButton = itemCard.querySelector('.btn-create');
-    const oldStatus = itemCard.querySelector('.status-badge');
-    if (oldButton) oldButton.remove();
-    if (oldStatus) oldStatus.remove();
-    
-    // Insert new status and button
-    const container = document.createElement('div');
-    container.innerHTML = newContent;
-    while (container.firstChild) {
-        itemCard.appendChild(container.firstChild);
+    if (category === 'theme' || category === 'theme_selection') {
+        if (itemId) {
+            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+            if (ideaModal) {
+                ideaModal.openTheme(itemId);
+                return;
+            }
+        }
+    } else if (category === 'profile_product' || category === 'profile_surname') {
+        const profileId = postId || itemId;
+        if (profileId) {
+            const profileModal = window.getProfileModal ? window.getProfileModal() : null;
+            if (profileModal) {
+                profileModal.open(profileId);
+                return;
+            }
+        }
+    } else if (category === 'recipe') {
+        if (postId) {
+            window.location.href = `/planning/posts/${postId}`;
+            return;
+        } else if (itemId) {
+            window.location.href = `/recipes`;
+            return;
+        }
+    } else if (category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult') {
+        if (itemId) {
+            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+            if (ideaModal) {
+                ideaModal.open(itemId);
+                return;
+            }
+        }
     }
     
-    // Add click handler to new work button
-    const workBtn = itemCard.querySelector('.btn-work-on');
-    if (workBtn) {
-        workBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            navigateToOneClick(item);
-        });
-    }
+    // Fallback: navigate to week-view
+    openInCalendar(item);
+}
+
+function openInCalendar(item) {
+    // Navigate to week-view so users get contextual modal/details
+    const y = item.year || new Date().getFullYear();
+    const w = item.week || (new Date()).getWeek ? (new Date()).getWeek() : '';
+    const url = `/planning/calendar?year=${y}&week=${w}&tab=week-view`;
+    window.open(url, '_blank');
 }
 
 function navigateToOneClick(item) {
