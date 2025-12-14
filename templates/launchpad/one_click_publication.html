@@ -10,6 +10,64 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Reuse legacy page CSS for consistent centering and styling -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad/one-click-blog.css') }}">
+    <style>
+        .compact-action-row {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.35rem;
+        }
+        .compact-action-row .status-line { margin: 0; }
+        .status-line { margin: 0; }
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .icon-btn-compact {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-btn-compact:hover { border-color: #3b82f6; color: #3b82f6; }
+        .icon-btn-compact:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            border: 1px solid transparent;
+            background: #0f172a;
+        }
+        .status-badge.status-draft { color: #f59e0b; border-color: #f59e0b; }
+        .status-badge.status-published { color: #10b981; border-color: #10b981; }
+        .status-badge.status-error { color: #ef4444; border-color: #ef4444; }
+        .status-badge.status-publishing { color: #3b82f6; border-color: #3b82f6; }
+        .status-badge.status-none { color: #cbd5e1; border-color: #334155; }
+        #pipeline-post-selector {
+            max-width: 260px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        #pipeline-post-selector option {
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
 </head>
 <body>
     {% include 'shared/header.html' %}
@@ -37,17 +95,19 @@
         <!-- Post Selector (uses most recently updated by default) -->
         <div class="post-selector" style="margin: 1rem 0 0.5rem 0; padding: 16px; background:#1a1f35; border:1px solid #2d3246; border-radius:8px;">
             <div class="selector-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-                <div class="selected-post-summary">
-                    <div id="selected-post-title" style="color:#e6e8ef; font-weight:700; font-size:18px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                        <span id="post-title-text">Loading latest post…</span>
+                <div class="selected-post-summary" style="flex:1; min-width:0;">
+                    <div id="post-title-main" style="color:#e6e8ef; font-weight:700; font-size:24px; line-height:1.3; margin-bottom:8px; text-transform:capitalize;">Loading latest post…</div>
+                    <div id="selected-post-meta" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; color:#9ca3af; font-size:13px;">
+                        <span id="post-id-display" style="color:#94a3b8;">#—</span>
                         <span id="post-type-badge" style="display:none; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600;"></span>
+                        <span id="post-status-display" style="display:none; padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600;"></span>
                     </div>
                     <div id="selected-post-subtitle" style="color:#9ca3af; font-size:14px; margin-top:4px;">&nbsp;</div>
                 </div>
                 <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                    <div class="selector-control" style="min-width:260px;">
+                    <div class="selector-control" style="min-width:260px; max-width:260px;">
                         <label for="pipeline-post-selector" style="display:block; color:#a8afc2; font-size:13px; margin-bottom:6px;">Viewing Pipeline For:</label>
-                        <select id="pipeline-post-selector" class="post-select" style="width:100%; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:8px 10px;">
+                        <select id="pipeline-post-selector" class="post-select" style="width:100%; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:8px 10px; max-width:100%;" title="">
                             <option value="">Loading posts…</option>
                         </select>
                     </div>
@@ -61,7 +121,36 @@
                             <option value="newsletter">Newsletter</option>
                         </select>
                     </div>
+                    <div class="selector-control" style="min-width:180px;">
+                        <label for="post-type-selector" style="display:block; color:#a8afc2; font-size:13px; margin-bottom:6px;">Post Type:</label>
+                        <select id="post-type-selector" class="post-select" style="width:100%; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:8px 10px;">
+                            <option value="themed">Theme</option>
+                            <option value="recipe">Recipe</option>
+                            <option value="profile">Profile</option>
+                            <option value="generated">Generated</option>
+                            <option value="weekly_word">Weekly Word</option>
+                            <option value="weekly_phrase">Weekly Phrase</option>
+                            <option value="weekly_insult">Weekly Insult</option>
+                        </select>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="compact-action-row" id="one-click-action-row" style="margin: 0.5rem 0 1.25rem 0;">
+            <div class="status-line">
+                <span class="status-badge status-none" id="one-click-status-pill">Not created</span>
+            </div>
+            <div class="item-actions">
+                <button class="icon-btn-compact" id="one-click-create-btn" title="Create post">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="icon-btn-compact" id="one-click-open-btn" title="Open 1‑click">
+                    <i class="fas fa-rocket"></i>
+                </button>
+                <button class="icon-btn-compact" id="one-click-calendar-btn" title="View in calendar">
+                    <i class="fas fa-info-circle"></i>
+                </button>
             </div>
         </div>
 
@@ -70,6 +159,119 @@
                 Open old One‑Click Blog (legacy)
             </a>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const statusPill = document.getElementById('one-click-status-pill');
+                const createBtn = document.getElementById('one-click-create-btn');
+                const openBtn = document.getElementById('one-click-open-btn');
+                const infoBtn = document.getElementById('one-click-calendar-btn');
+
+                if (!statusPill || !createBtn || !openBtn || !infoBtn) return;
+
+                const params = new URLSearchParams(window.location.search);
+                let postId = params.get('post_id') || '';
+                const category = params.get('category') || '';
+                const itemId = params.get('item_id') || '';
+                const yearParam = params.get('year') || '';
+                const weekParam = params.get('week') || '';
+                const output = params.get('output') || 'blog';
+
+                function setStatus(label, cls) {
+                    statusPill.textContent = label;
+                    statusPill.className = `status-badge ${cls}`;
+                }
+
+                function openCalendar() {
+                    const y = yearParam || new Date().getFullYear();
+                    const w = weekParam || '';
+                    const search = [`year=${y}`, w ? `week=${w}` : '', 'tab=week-view'].filter(Boolean).join('&');
+                    const url = `/planning/calendar?${search}`;
+                    window.open(url, '_blank');
+                }
+
+                async function createFromContext() {
+                    if (!category && !itemId) {
+                        setStatus('Missing context', 'status-error');
+                        createBtn.disabled = true;
+                        return;
+                    }
+                    createBtn.disabled = true;
+                        setStatus('Creating...', 'status-publishing');
+                    try {
+                        const response = await fetch('/launchpad/one-click-publication/api/create-post-from-item', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                category,
+                                item_id: itemId,
+                                year: yearParam || undefined,
+                                week: weekParam || undefined,
+                                output_channel: output
+                            })
+                        });
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(errorText || `HTTP ${response.status}`);
+                        }
+                        const result = await response.json();
+                        if (result.success && result.post_id) {
+                            postId = result.post_id;
+                            params.set('post_id', postId);
+                            setStatus('Draft', 'status-draft');
+                            createBtn.disabled = true;
+                        } else {
+                            throw new Error(result.error || 'Failed to create post');
+                        }
+                    } catch (err) {
+                        console.error('[One-Click Action Row] Create failed:', err);
+                        setStatus('Error creating', 'status-error');
+                        createBtn.disabled = false;
+                    }
+                }
+
+                createBtn.onclick = (e) => {
+                    e.preventDefault();
+                    if (createBtn.disabled) return;
+                    createFromContext();
+                };
+
+                openBtn.onclick = (e) => {
+                    e.preventDefault();
+                    const url = new URL(window.location.href);
+                    if (postId) {
+                        url.searchParams.set('post_id', postId);
+                    }
+                    url.searchParams.set('output', output);
+                    window.location.href = url.toString();
+                };
+
+                infoBtn.onclick = (e) => {
+                    e.preventDefault();
+                    openCalendar();
+                };
+
+                window.updateOneClickActionRow = function(opts = {}) {
+                    const hasPost = opts.hasPost || !!opts.postId || !!postId;
+                    if (opts.postId) {
+                        postId = opts.postId;
+                    }
+                    const status = (opts.postStatus || (hasPost ? 'draft' : null) || '').toLowerCase();
+                    if (hasPost) {
+                        createBtn.disabled = true;
+                    }
+                    if (status) {
+                        setStatus(status.charAt(0).toUpperCase() + status.slice(1), `status-${status}`);
+                    } else if (hasPost) {
+                        setStatus('Draft', 'status-draft');
+                    } else {
+                        setStatus('Not created', 'status-none');
+                    }
+                };
+
+                window.updateOneClickActionRow({ postStatus: params.get('status'), hasPost: !!postId, postId, year: yearParam, week: weekParam });
+            });
+        </script>
 
         <!-- Pipeline Stages Table -->
         <div class="pipeline-table-container mt-8">
@@ -918,7 +1120,17 @@ function updateStepButtonState(stepId, state) {
         
         // Navigate to taxonomy page with week context
         const url = `/planning/posts/${postId}/calendar/taxonomy?year=${year}&week=${week}`;
-        window.open(url, '_blank');
+        window.location.href = url;
+    }
+    
+    // Add click listener for taxonomy Run button
+    const runTaxonomyBtn = document.getElementById('run-taxonomy');
+    if (runTaxonomyBtn){
+        runTaxonomyBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            runTaxonomy();
+        });
     }
     
     // Run Idea Generation: generate expanded idea for selected post
@@ -1225,8 +1437,20 @@ function updateStepButtonState(stepId, state) {
         btn.classList.remove('dead','complete');
         btn.classList.add('ready');
         
-        // Open titling page in new window
-        const titlingWindow = window.open(`/planning/posts/${postId}/concept/titling?auto_run=true`, '_blank', 'width=1400,height=900');
+        // Get week context from URL or use current week
+        let year, week;
+        if (window.WeekContext) {
+            const weekContext = window.WeekContext.getWeekContextWithDefault();
+            year = weekContext.year;
+            week = weekContext.week;
+        } else {
+            const now = new Date();
+            week = getCurrentISOWeek();
+            year = now.getFullYear();
+        }
+        
+        // Open titling page in new window with week context
+        const titlingWindow = window.open(`/planning/posts/${postId}/concept/titling?auto_run=true&year=${year}&week=${week}`, '_blank', 'width=1400,height=900');
         
         if (!titlingWindow) {
             alert('Popup blocked. Please allow popups for this site.');
@@ -1549,14 +1773,31 @@ function updateStepButtonState(stepId, state) {
         return sel && sel.value ? sel.value : '';
     }
     function routeFor(stage, substage, postId){
+        // Get week context for planning routes
+        let year, week;
+        if (window.WeekContext) {
+            const weekContext = window.WeekContext.getWeekContextWithDefault();
+            year = weekContext.year;
+            week = weekContext.week;
+        } else {
+            const now = new Date();
+            const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            year = now.getFullYear();
+        }
+        const weekParams = `?year=${year}&week=${week}`;
+        
         const routes = {
             planning: {
-                'taxonomy': p => `/planning/posts/${p}/calendar/taxonomy`,
-                'idea-generation': p => `/planning/posts/${p}/calendar/ideas`,
-                'topic-brainstorming': p => `/planning/posts/${p}/concept/brainstorm`,
-                'section-structure-design': p => `/planning/posts/${p}/concept/section-structure`,
-                'section-ideas': p => `/planning/posts/${p}/concept/topic-allocation`,
-                'section-titling': p => `/planning/posts/${p}/concept/titling`
+                'taxonomy': p => `/planning/posts/${p}/calendar/taxonomy${weekParams}`,
+                'idea-generation': p => `/planning/posts/${p}/calendar/ideas${weekParams}`,
+                'topic-brainstorming': p => `/planning/posts/${p}/concept/brainstorm${weekParams}`,
+                'section-structure-design': p => `/planning/posts/${p}/concept/section-structure${weekParams}`,
+                'section-ideas': p => `/planning/posts/${p}/concept/topic-allocation${weekParams}`,
+                'section-titling': p => `/planning/posts/${p}/concept/titling${weekParams}`
             },
             authoring: {
                 'drafting': p => `/authoring/posts/${p}/sections/author-first-drafts`,
@@ -1606,19 +1847,29 @@ function updateStepButtonState(stepId, state) {
             const data = await resp.json();
             const posts = Array.isArray(data) ? data : (data.posts || []);
             const select = document.getElementById('pipeline-post-selector');
-            const titleTextEl = document.getElementById('post-title-text');
+            const titleMainEl = document.getElementById('post-title-main');
             const badgeEl = document.getElementById('post-type-badge');
             const subtitleEl = document.getElementById('selected-post-subtitle');
             if (!select) return;
             if (!posts.length){
                 select.innerHTML = '<option value="">No posts</option>';
-                if (titleTextEl) titleTextEl.textContent = 'No posts available';
+                if (titleMainEl) titleMainEl.textContent = 'No posts available';
                 if (badgeEl) badgeEl.style.display = 'none';
                 if (subtitleEl) subtitleEl.textContent = '';
                 return;
             }
-            // Populate selector immediately
-            select.innerHTML = posts.map(p => `<option value="${p.id}">#${p.id} — ${escapeHtml(p.title || 'Untitled')}</option>`).join('');
+            // Helper function to truncate text to 30 characters
+            function truncateText(text, maxLength = 30) {
+                if (!text) return '';
+                if (text.length <= maxLength) return text;
+                return text.substring(0, maxLength - 3) + '...';
+            }
+            // Populate selector immediately with truncated titles
+            select.innerHTML = posts.map(p => {
+                const title = truncateText(p.title || 'Untitled', 30);
+                const fullTitle = p.title || 'Untitled';
+                return `<option value="${p.id}" title="${escapeHtml(fullTitle)}">#${p.id} — ${escapeHtml(title)}</option>`;
+            }).join('');
             // Check URL for post_id parameter first (highest priority)
             const urlParams = new URLSearchParams(window.location.search);
             const urlPostId = urlParams.get('post_id');
@@ -1632,6 +1883,11 @@ function updateStepButtonState(stepId, state) {
             }
             select.value = quickDefaultId;
             localStorage.setItem('blogForgeSelectedPostId', quickDefaultId.toString());
+            // Set title attribute with full post title
+            const defaultPost = posts.find(p => p.id.toString() === quickDefaultId.toString());
+            if (defaultPost && defaultPost.title) {
+                select.title = defaultPost.title;
+            }
             updateSelectedPostSummary(quickDefaultId);
             loadAuthorsForPost(quickDefaultId);
             // Try refine to current week's post in background
@@ -1640,6 +1896,11 @@ function updateStepButtonState(stepId, state) {
                 if (currentWeekId && currentWeekId.toString() !== quickDefaultId.toString() && !localStorage.getItem('blogForgeSelectedPostIdManual')){
                     select.value = currentWeekId;
                     localStorage.setItem('blogForgeSelectedPostId', currentWeekId.toString());
+                    // Set title attribute with full post title
+                    const weekPost = posts.find(p => p.id.toString() === currentWeekId.toString());
+                    if (weekPost && weekPost.title) {
+                        select.title = weekPost.title;
+                    }
                     updateSelectedPostSummary(currentWeekId);
                     loadAuthorsForPost(currentWeekId);
                 }
@@ -1649,9 +1910,51 @@ function updateStepButtonState(stepId, state) {
                 const postId = select.value;
                 localStorage.setItem('blogForgeSelectedPostId', postId);
                 localStorage.setItem('blogForgeSelectedPostIdManual', '1');
+                // Update title attribute with full post title
+                const selectedPost = posts.find(p => p.id.toString() === postId);
+                if (selectedPost && selectedPost.title) {
+                    select.title = selectedPost.title;
+                }
                 updateSelectedPostSummary(postId);
                 loadAuthorsForPost(postId);
             });
+            
+            // Post type selector - allows override of inferred post type
+            const postTypeSelector = document.getElementById('post-type-selector');
+            if (postTypeSelector) {
+                postTypeSelector.addEventListener('change', async () => {
+                    const selectedPostType = postTypeSelector.value;
+                    const postId = getSelectedPostId();
+                    if (postId) {
+                        // Update pipeline for the selected post type
+                        await filterSubstagesByPostType(selectedPostType);
+                        await loadPipelineForPostType(postId, selectedPostType);
+                        
+                        // Update badge to reflect selected type
+                        const badgeEl = document.getElementById('post-type-badge');
+                        if (badgeEl) {
+                            const postTypeConfig = {
+                                'recipe': { icon: 'fa-utensils', label: 'Recipe', bg: '#fef3c7', color: '#92400e', border: '#fcd34d' },
+                                'profile': { icon: 'fa-tag', label: 'Profile', bg: '#e0e7ff', color: '#4338ca', border: '#a5b4fc' },
+                                'themed': { icon: 'fa-book', label: 'Themed', bg: '#dbeafe', color: '#1e40af', border: '#93c5fd' },
+                                'generated': { icon: 'fa-robot', label: 'Generated', bg: '#f3e8ff', color: '#7c3aed', border: '#a78bfa' },
+                                'weekly_word': { icon: 'fa-book', label: 'Word', bg: '#dcfce7', color: '#166534', border: '#86efac' },
+                                'weekly_phrase': { icon: 'fa-comment-dots', label: 'Phrase', bg: '#cffafe', color: '#155e75', border: '#67e8f9' },
+                                'weekly_insult': { icon: 'fa-bolt', label: 'Insult', bg: '#fce7f3', color: '#9f1239', border: '#f9a8d4' }
+                            };
+                            
+                            const config = postTypeConfig[selectedPostType] || postTypeConfig['themed'];
+                            badgeEl.innerHTML = `<i class="fas ${config.icon}"></i> ${config.label}`;
+                            badgeEl.style.background = config.bg;
+                            badgeEl.style.color = config.color;
+                            badgeEl.style.border = `1px solid ${config.border}`;
+                            badgeEl.style.display = 'inline-flex';
+                            badgeEl.style.alignItems = 'center';
+                            badgeEl.style.gap = '0.4rem';
+                        }
+                    }
+                });
+            }
             
         } catch (e){
             console.error('Failed to load posts:', e);
@@ -2010,9 +2313,21 @@ function updateStepButtonState(stepId, state) {
     }
 
     // Load pipeline dynamically based on post type
+    // Get currently selected post type from dropdown (or fallback to inferred)
+    function getSelectedPostType(inferredType = 'themed') {
+        const postTypeSelector = document.getElementById('post-type-selector');
+        if (postTypeSelector && postTypeSelector.value) {
+            return postTypeSelector.value;
+        }
+        return inferredType;
+    }
+
     async function loadPipelineForPostType(postId, postType) {
         try {
-            const response = await fetch(`/api/post-type-pipeline/${postType}`);
+            // Use selected post type from dropdown if available, otherwise use provided type
+            const effectivePostType = getSelectedPostType(postType);
+            
+            const response = await fetch(`/api/post-type-pipeline/${effectivePostType}`);
             const data = await response.json();
             if (!data.success) {
                 console.warn('Failed to load pipeline, using default:', data.error);
@@ -2023,7 +2338,7 @@ function updateStepButtonState(stepId, state) {
             
             // Map step IDs to run functions
             pipeline = steps.map(step => {
-                const runFunction = getStepRunFunction(step.id, postType);
+                const runFunction = getStepRunFunction(step.id, effectivePostType);
                 return {
                     id: step.id,
                     label: step.label || step.id,
@@ -2032,7 +2347,7 @@ function updateStepButtonState(stepId, state) {
                 };
             });
             
-            console.log(`Loaded ${pipeline.length} steps for ${postType} post type`);
+            console.log(`Loaded ${pipeline.length} steps for ${effectivePostType} post type`);
         } catch (error) {
             console.error('Error loading pipeline:', error);
             // Keep default pipeline
@@ -2040,8 +2355,10 @@ function updateStepButtonState(stepId, state) {
     }
 
     async function updateSelectedPostSummary(postId){
-        const titleTextEl = document.getElementById('post-title-text');
+        const titleMainEl = document.getElementById('post-title-main');
+        const postIdDisplayEl = document.getElementById('post-id-display');
         const badgeEl = document.getElementById('post-type-badge');
+        const statusDisplayEl = document.getElementById('post-status-display');
         const subtitleEl = document.getElementById('selected-post-subtitle');
         try {
             // Fetch post data, pipeline info, and pipeline status
@@ -2060,24 +2377,42 @@ function updateStepButtonState(stepId, state) {
                 ? statusData.data.post_type 
                 : (pipelineData.post_type || 'themed');
             const title = post.title || 'Untitled';
+            const postStatus = post.status || 'draft';
             
             // Extract pipeline status data for sections and completion status
             const pipelineStatus = statusData.success && statusData.data ? statusData.data : null;
             // Store globally for runAll() to access
             currentPipelineStatus = pipelineStatus;
             
+            // Update post type selector with inferred type
+            const postTypeSelector = document.getElementById('post-type-selector');
+            if (postTypeSelector) {
+                postTypeSelector.value = postType;
+            }
+            
             // Filter and reorder substages based on post_type
             await filterSubstagesByPostType(postType);
             
-            // Update title text
-            if (titleTextEl) titleTextEl.textContent = `#${postId} — ${title}`;
+            // Update main title (large, title case)
+            if (titleMainEl) {
+                titleMainEl.textContent = title;
+            }
+            
+            // Update post ID display
+            if (postIdDisplayEl) {
+                postIdDisplayEl.textContent = `#${postId}`;
+            }
             
             // Update post type badge
             if (badgeEl) {
                 const postTypeConfig = {
                     'recipe': { icon: 'fa-utensils', label: 'Recipe', bg: '#fef3c7', color: '#92400e', border: '#fcd34d' },
                     'profile': { icon: 'fa-tag', label: 'Profile', bg: '#e0e7ff', color: '#4338ca', border: '#a5b4fc' },
-                    'themed': { icon: 'fa-book', label: 'Themed', bg: '#dbeafe', color: '#1e40af', border: '#93c5fd' }
+                    'themed': { icon: 'fa-book', label: 'Themed', bg: '#dbeafe', color: '#1e40af', border: '#93c5fd' },
+                    'generated': { icon: 'fa-robot', label: 'Generated', bg: '#f3e8ff', color: '#7c3aed', border: '#a78bfa' },
+                    'weekly_word': { icon: 'fa-book', label: 'Word', bg: '#dcfce7', color: '#166534', border: '#86efac' },
+                    'weekly_phrase': { icon: 'fa-comment-dots', label: 'Phrase', bg: '#cffafe', color: '#155e75', border: '#67e8f9' },
+                    'weekly_insult': { icon: 'fa-bolt', label: 'Insult', bg: '#fce7f3', color: '#9f1239', border: '#f9a8d4' }
                 };
                 
                 const config = postTypeConfig[postType] || postTypeConfig['themed'];
@@ -2088,6 +2423,29 @@ function updateStepButtonState(stepId, state) {
                 badgeEl.style.display = 'inline-flex';
                 badgeEl.style.alignItems = 'center';
                 badgeEl.style.gap = '0.4rem';
+            }
+            
+            // Update status display
+            if (statusDisplayEl) {
+                const statusConfig = {
+                    'draft': { label: 'Draft', bg: '#fef3c7', color: '#92400e', border: '#fcd34d' },
+                    'published': { label: 'Published', bg: '#dcfce7', color: '#166534', border: '#86efac' },
+                    'publishing': { label: 'Publishing', bg: '#dbeafe', color: '#1e40af', border: '#93c5fd' },
+                    'error': { label: 'Error', bg: '#fee2e2', color: '#991b1b', border: '#fca5a5' }
+                };
+                
+                const normalizedStatus = (postStatus || 'draft').toLowerCase();
+                const config = statusConfig[normalizedStatus] || statusConfig['draft'];
+                statusDisplayEl.textContent = config.label;
+                statusDisplayEl.style.background = config.bg;
+                statusDisplayEl.style.color = config.color;
+                statusDisplayEl.style.border = `1px solid ${config.border}`;
+                statusDisplayEl.style.display = 'inline-flex';
+                statusDisplayEl.style.alignItems = 'center';
+                statusDisplayEl.style.padding = '0.25rem 0.75rem';
+                statusDisplayEl.style.borderRadius = '999px';
+                statusDisplayEl.style.fontSize = '0.75rem';
+                statusDisplayEl.style.fontWeight = '600';
             }
             
             if (subtitleEl) {
@@ -2347,8 +2705,11 @@ function updateStepButtonState(stepId, state) {
     // Function to filter and reorder substages based on post_type
     async function filterSubstagesByPostType(postType) {
         try {
+            // Use selected post type from dropdown if available, otherwise use provided type
+            const effectivePostType = getSelectedPostType(postType);
+            
             // Fetch substage config for this post_type
-            const response = await fetch(`/launchpad/one-click-publication/api/post-types/${postType}/substages`);
+            const response = await fetch(`/launchpad/one-click-publication/api/post-types/${effectivePostType}/substages`);
             if (!response.ok) {
                 console.warn('Failed to load substage config, showing all substages');
                 return;
