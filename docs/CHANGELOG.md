@@ -1,5 +1,27 @@
 # Changelog
 
+## 2025-12-15 - Preview Page Fixes & Calendar System Migration Completion
+
+### Fixed
+- **Preview Cross-Promotion Widgets**: Moved widget HTML auto-generation from publish-only path to preview loader (`cross_promotion_loader.py`) so x-marketing widgets appear in preview without needing to publish first
+- **Image Captions Priority**: Section `image_captions` from authoring page now takes priority over generic archive captions in preview
+- **Brainstorm Timeout**: Reduced comprehensive brainstorm from 50 to 30 topics, surface real LLM error messages instead of generic "Failed to generate topics"
+- **Section Structure Validation**: Reject sections with empty title/description and return clear error messages
+- **Header Image Prompt Assembly**: Fixed 500 errors by removing `calendar_schedule` fallbacks, now uses `calendar_week_selection_v2` view exclusively
+- **Preview Page**: Removed `calendar_schedule` dependency from `post_data_loader.py` that was causing 500 errors
+
+### Changed
+- **Calendar System Migration**: Completed removal of all `calendar_schedule` fallbacks from:
+  - `automation_calendar.py` (hard-disabled legacy endpoints with 410 responses)
+  - `posts.py` (post listing now uses `calendar_week_posts_v2` or bare post rows)
+  - `planning_api_brainstorm.py` (theme context now uses `calendar_week_selection_v2` only)
+  - `header/api_prompt_compilation.py` (prompt assembly uses V2 structures exclusively)
+
+### Technical Details
+- Preview now auto-selects random category/product if none configured and generates widget HTML on-the-fly
+- Image caption logic prioritizes `post_section.image_captions` over `image_archive.caption`
+- All calendar-related endpoints now fail clearly with 500 errors if V2 tables/views are missing (no silent fallbacks)
+
 ## 2025-12-11 - Calendar Legends & Action Rows Unification
 
 ### Changed
