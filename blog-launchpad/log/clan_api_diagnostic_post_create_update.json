@@ -1,58 +1,56 @@
 {
-  "timestamp": "2025-11-24T19:49:51.867800",
+  "timestamp": "2025-12-15T17:55:30.843090",
   "call_type": "post_create_update",
-  "url": "https://clan.com/clan/blog_api/editPost",
+  "url": "https://clan.com/clan/blog_api/createPost",
   "data": {
     "api_user": "blog",
     "api_key": "AC%7ef2a5A!24bd*E844a83f9F$49a02",
-    "json_args": "{\"post_id\": 409, \"title\": \"6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage\", \"url_key\": \"6oz-matt-black-hip-flask-lion-rampant-timeless-scottish-heritage\", \"short_content\": \"The 6oz Matt Black Hip Flask Lion Rampant is a masterful blend of heritage and functionality, inspired by Scotland's iconic symbol of bravery and strength. Crafted from high-quality materials with attention to precision engineering, this hip flask features a sleek design that's both durable and stylish, while proudly showcasing the Lion Rampant emblem on its side panel. Whether you're outdoorsy, adventurous, or simply appreciate Scottish heritage, this 6oz Matt Black Hip Flask Lion Rampant is a testament to Scotland's rich history and craftsmanship, making it an excellent companion for any outdoor enthusiast or Scots heritage aficionado.\", \"status\": 2, \"categories\": [14, 15], \"list_thumbnail\": \"/blog/header_95_1764013791.jpg\", \"post_thumbnail\": \"/blog/header_95_1764013791.jpg\", \"meta_title\": \"Lion Rampant Hip Flask Scotland Heritage\", \"meta_tags\": \"Scotland, Lion Rampant, Hip Flask, Outdoor Gear, Scottish Heritage, Luxury Accessories\", \"meta_description\": \"Discover the timeless blend of heritage and functionality in this 6oz Matt Black Lion Rampant hip flask.\", \"meta_image\": \"https://clan.com/images/default-scottish-heritage.jpg\", \"meta_type\": \"article\", \"meta_site_name\": \"Clan.com Blog\"}"
+    "json_args": "{\"title\": \"What Makes the Triskelion Unique? A Deep Dive into its Symbolism\", \"url_key\": \"what-makes-the-triskelion-unique-a-deep-dive-into-its-symbolism\", \"short_content\": \"The triskelion, a symbol of ancient Celtic significance, is an enigmatic emblem that has captivated the imagination of scholars and enthusiasts alike. This curious emblem has been woven into various forms and interpretations across Celtic cultures, including Scotland, Ireland, Wales, and Cornwall, with its earliest known examples dating back to the Neolithic period. The triskelion's design is deeply rooted in astronomy, reflecting the celestial movements of the stars and constellations, while also embodying the cycles of nature, growth, and decay. As a powerful symbol of balance, harmony, and unity, the triskelion continues to inspire artists, writers, and spiritual seekers alike, reminding us of our deep connection to the natural world, cultural heritage, and personal honour.\", \"status\": 2, \"categories\": [14, 15], \"list_thumbnail\": \"/blog/header_705_1765821328.jpg\", \"post_thumbnail\": \"/blog/header_705_1765821328.jpg\", \"meta_title\": \"What Makes the Triskelion Unique? A Deep Dive into its Symbolism\", \"meta_tags\": \"triskelion,the,makes,what\", \"meta_description\": \"The triskelion, a symbol of ancient Celtic significance, is an enigmatic emblem that has captivated the imagination of scholars and enthusiasts alike. This curi\", \"meta_image\": \"None\", \"meta_type\": \"article\", \"meta_site_name\": \"Clan.com Blog\"}"
   },
   "files_info": {
     "html_file": {
-      "filename": "post_95_1764013791.html",
+      "filename": "post_705_1765821330.html",
       "mime_type": "text/html",
-      "content_length": 10185
+      "content_length": 12553
     }
   },
   "json_args_raw": {
-    "post_id": 409,
-    "title": "6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage",
-    "url_key": "6oz-matt-black-hip-flask-lion-rampant-timeless-scottish-heritage",
-    "short_content": "The 6oz Matt Black Hip Flask Lion Rampant is a masterful blend of heritage and functionality, inspired by Scotland's iconic symbol of bravery and strength. Crafted from high-quality materials with attention to precision engineering, this hip flask features a sleek design that's both durable and stylish, while proudly showcasing the Lion Rampant emblem on its side panel. Whether you're outdoorsy, adventurous, or simply appreciate Scottish heritage, this 6oz Matt Black Hip Flask Lion Rampant is a testament to Scotland's rich history and craftsmanship, making it an excellent companion for any outdoor enthusiast or Scots heritage aficionado.",
+    "title": "What Makes the Triskelion Unique? A Deep Dive into its Symbolism",
+    "url_key": "what-makes-the-triskelion-unique-a-deep-dive-into-its-symbolism",
+    "short_content": "The triskelion, a symbol of ancient Celtic significance, is an enigmatic emblem that has captivated the imagination of scholars and enthusiasts alike. This curious emblem has been woven into various forms and interpretations across Celtic cultures, including Scotland, Ireland, Wales, and Cornwall, with its earliest known examples dating back to the Neolithic period. The triskelion's design is deeply rooted in astronomy, reflecting the celestial movements of the stars and constellations, while also embodying the cycles of nature, growth, and decay. As a powerful symbol of balance, harmony, and unity, the triskelion continues to inspire artists, writers, and spiritual seekers alike, reminding us of our deep connection to the natural world, cultural heritage, and personal honour.",
     "status": 2,
     "categories": [
       14,
       15
     ],
-    "list_thumbnail": "/blog/header_95_1764013791.jpg",
-    "post_thumbnail": "/blog/header_95_1764013791.jpg",
-    "meta_title": "Lion Rampant Hip Flask Scotland Heritage",
-    "meta_tags": "Scotland, Lion Rampant, Hip Flask, Outdoor Gear, Scottish Heritage, Luxury Accessories",
-    "meta_description": "Discover the timeless blend of heritage and functionality in this 6oz Matt Black Lion Rampant hip flask.",
-    "meta_image": "https://clan.com/images/default-scottish-heritage.jpg",
+    "list_thumbnail": "/blog/header_705_1765821328.jpg",
+    "post_thumbnail": "/blog/header_705_1765821328.jpg",
+    "meta_title": "What Makes the Triskelion Unique? A Deep Dive into its Symbolism",
+    "meta_tags": "triskelion,the,makes,what",
+    "meta_description": "The triskelion, a symbol of ancient Celtic significance, is an enigmatic emblem that has captivated the imagination of scholars and enthusiasts alike. This curi",
+    "meta_image": "None",
     "meta_type": "article",
     "meta_site_name": "Clan.com Blog"
   },
-  "html_content_length": 10183,
+  "html_content_length": 12543,
   "image_info": null,
   "json_args_parsed": {
-    "post_id": 409,
-    "title": "6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage",
-    "url_key": "6oz-matt-black-hip-flask-lion-rampant-timeless-scottish-heritage",
-    "short_content": "The 6oz Matt Black Hip Flask Lion Rampant is a masterful blend of heritage and functionality, inspired by Scotland's iconic symbol of bravery and strength. Crafted from high-quality materials with attention to precision engineering, this hip flask features a sleek design that's both durable and stylish, while proudly showcasing the Lion Rampant emblem on its side panel. Whether you're outdoorsy, adventurous, or simply appreciate Scottish heritage, this 6oz Matt Black Hip Flask Lion Rampant is a testament to Scotland's rich history and craftsmanship, making it an excellent companion for any outdoor enthusiast or Scots heritage aficionado.",
+    "title": "What Makes the Triskelion Unique? A Deep Dive into its Symbolism",
+    "url_key": "what-makes-the-triskelion-unique-a-deep-dive-into-its-symbolism",
+    "short_content": "The triskelion, a symbol of ancient Celtic significance, is an enigmatic emblem that has captivated the imagination of scholars and enthusiasts alike. This curious emblem has been woven into various forms and interpretations across Celtic cultures, including Scotland, Ireland, Wales, and Cornwall, with its earliest known examples dating back to the Neolithic period. The triskelion's design is deeply rooted in astronomy, reflecting the celestial movements of the stars and constellations, while also embodying the cycles of nature, growth, and decay. As a powerful symbol of balance, harmony, and unity, the triskelion continues to inspire artists, writers, and spiritual seekers alike, reminding us of our deep connection to the natural world, cultural heritage, and personal honour.",
     "status": 2,
     "categories": [
       14,
       15
     ],
-    "list_thumbnail": "/blog/header_95_1764013791.jpg",
-    "post_thumbnail": "/blog/header_95_1764013791.jpg",
-    "meta_title": "Lion Rampant Hip Flask Scotland Heritage",
-    "meta_tags": "Scotland, Lion Rampant, Hip Flask, Outdoor Gear, Scottish Heritage, Luxury Accessories",
-    "meta_description": "Discover the timeless blend of heritage and functionality in this 6oz Matt Black Lion Rampant hip flask.",
-    "meta_image": "https://clan.com/images/default-scottish-heritage.jpg",
+    "list_thumbnail": "/blog/header_705_1765821328.jpg",
+    "post_thumbnail": "/blog/header_705_1765821328.jpg",
+    "meta_title": "What Makes the Triskelion Unique? A Deep Dive into its Symbolism",
+    "meta_tags": "triskelion,the,makes,what",
+    "meta_description": "The triskelion, a symbol of ancient Celtic significance, is an enigmatic emblem that has captivated the imagination of scholars and enthusiasts alike. This curi",
+    "meta_image": "None",
     "meta_type": "article",
     "meta_site_name": "Clan.com Blog"
   },
-  "html_content_preview": "<div class=\"mp-content std fix-me\">\n    <header class=\"blog-post__header\" style=\"text-align: center; margin: 2.5rem 0 2rem; padding-bottom: 2rem; border-bottom: 2px solid #b80000;\">\n        <h1 style=\"font-size: 2.6rem; font-weight: 900; color: #222; margin: 0 0 1.2rem; line-height: 1.1; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Lato', Arial, sans-serif;\">6oz Matt Black Hip Flask Lion Rampant: Timeless Scottish Heritage</h1>\n        \n        <div class=\"header-image\" style=\"margin: 20px 0; text-align: center;\">\n            <img src=\"https://static.clan.com/media/blog/header_95_1764013791.jpg\" \n                 alt=\"Header image\" \n                 style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\"\n                 onerror=\"this.style.display='none';\">\n            <p class=\"header-image-caption\" style=\"text-align: center; font-style: italic; color: #6b7280; margin-top: 1rem; margin-bottom: 0;\"><em>Generated artistic im..."
+  "html_content_preview": "<div class=\"mp-content std fix-me\">\n    <header class=\"blog-post__header\" style=\"text-align: center; margin: 2.5rem 0 2rem; padding-bottom: 2rem; border-bottom: 2px solid #b80000;\">\n        <h1 style=\"font-size: 2.6rem; font-weight: 900; color: #222; margin: 0 0 1.2rem; line-height: 1.1; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Lato', Arial, sans-serif;\">What Makes the Triskelion Unique? A Deep Dive into its Symbolism</h1>\n        \n        <div class=\"header-image\" style=\"margin: 20px 0; text-align: center;\">\n            <img src=\"https://static.clan.com/media/blog/header_705_1765821328.jpg\" \n                 alt=\"Header image\" \n                 style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\"\n                 onerror=\"this.style.display='none';\">\n        </div>\n        \n        \n        \n    </header>\n    \n    <div class=\"post-meta\" style=\"text-align: center;\">\n        <span class=\"post-meta__date\">Published on <..."
 }

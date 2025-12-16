@@ -172,17 +172,6 @@ def posts_list():
             else:
                 has_week_posts_table = False
             
-            # Check if calendar_schedule table exists (legacy)
-            cursor.execute("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
-                    AND table_name = 'calendar_schedule'
-                )
-            """)
-            result = cursor.fetchone()
-            has_schedule_table = (isinstance(result, tuple) and result[0]) or (isinstance(result, dict) and result.get('exists', False))
-            
             if has_v2_table:
                 # Use calendar_week_posts_v2 table (current)
                 if show_deleted:
@@ -248,40 +237,6 @@ def posts_list():
                             ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC, created_at DESC
                             LIMIT 1
                         ) cwp ON TRUE
-                        WHERE p.status != 'deleted'
-                        ORDER BY p.updated_at DESC, p.id DESC
-                    """)
-            elif has_schedule_table:
-                # Use calendar_schedule table
-                if show_deleted:
-                    cursor.execute("""
-                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                               p.recipe_week_number, p.profile_category_id,
-                               cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
-                        FROM post p
-                        LEFT JOIN LATERAL (
-                            SELECT year, week_number, scheduled_date, updated_at
-                            FROM calendar_schedule
-                            WHERE post_id = p.id
-                            ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
-                            LIMIT 1
-                        ) cs ON TRUE
-                        WHERE p.status = 'deleted'
-                        ORDER BY p.created_at DESC
-                    """)
-                else:
-                    cursor.execute("""
-                        SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
-                               p.recipe_week_number, p.profile_category_id,
-                               cs.year AS sched_year, cs.week_number AS sched_week, cs.scheduled_date
-                        FROM post p
-                        LEFT JOIN LATERAL (
-                            SELECT year, week_number, scheduled_date, updated_at
-                            FROM calendar_schedule
-                            WHERE post_id = p.id
-                            ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
-                            LIMIT 1
-                        ) cs ON TRUE
                         WHERE p.status != 'deleted'
                         ORDER BY p.updated_at DESC, p.id DESC
                     """)

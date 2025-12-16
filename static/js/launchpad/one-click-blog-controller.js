@@ -133,6 +133,16 @@ class OneClickPublicationController {
             const year = urlParams.get('year');
             const week = urlParams.get('week');
             const outputChannel = urlParams.get('output') || this.pipelineManager.currentOutputChannel || 'blog';
+
+            if (window.updateOneClickActionRow) {
+                window.updateOneClickActionRow({
+                    postStatus: urlParams.get('status'),
+                    hasPost: !!urlPostId,
+                    postId: urlPostId,
+                    year,
+                    week
+                });
+            }
             
             // If we have calendar item context but no post_id, load the calendar item
             // We can load by itemId OR by category+year+week (which will resolve the item)
@@ -222,15 +232,19 @@ class OneClickPublicationController {
                     });
                     
                     const autoCreateKey = `${category}-${resolvedItemId || ''}-${year || ''}-${week || ''}-${normalizedOutputChannel}`;
-                    if (!this.autoCreateAttempts) {
-                        this.autoCreateAttempts = new Set();
-                    }
                     
-                    if (normalizedOutputChannel === 'blog' && !this.autoCreateAttempts.has(autoCreateKey)) {
+                    // Check persistent storage for previous attempts (with expiration)
+                    const hasAttempted = this.hasAutoCreateAttempted(autoCreateKey);
+                    
+                    if (normalizedOutputChannel === 'blog' && !hasAttempted) {
                         console.log('[One-Click Publication Controller] Auto-create conditions met, creating post...');
-                        this.autoCreateAttempts.add(autoCreateKey);
+                        // Mark attempt in persistent storage (5 minute expiration)
+                        this.markAutoCreateAttempted(autoCreateKey, 5 * 60 * 1000); // 5 minutes
                         const created = await this.autoCreatePostFromCalendarItem(category, resolvedItemId, year, week, normalizedOutputChannel, itemData);
-                        if (!created) {
+                        if (created) {
+                            // Clear attempt on successful creation (allows retry if needed)
+                            this.clearAutoCreateAttempt(autoCreateKey);
+                        } else {
                             console.log('[One-Click Publication Controller] Auto-create failed, showing manual button');
                             this.showCreatePostOption(itemData, category, resolvedItemId, year, week, normalizedOutputChannel);
                         }
@@ -238,7 +252,7 @@ class OneClickPublicationController {
                         console.log('[One-Click Publication Controller] Auto-create conditions not met, showing manual button', {
                             outputChannel: normalizedOutputChannel,
                             isBlog: normalizedOutputChannel === 'blog',
-                            alreadyAttempted: this.autoCreateAttempts.has(autoCreateKey)
+                            alreadyAttempted: hasAttempted
                         });
                         this.showCreatePostOption(itemData, category, resolvedItemId, year, week, normalizedOutputChannel);
                     }
@@ -284,7 +298,14 @@ class OneClickPublicationController {
             console.log('[One-Click Publication Controller] Auto-create response:', result);
             
             if (result.success && result.post_id) {
-                console.log('[One-Click Publication Controller] Post created successfully, reloading with post_id:', result.post_id);
+                if (result.existing) {
+                    console.log('[One-Click Publication Controller] Existing post found, reloading with post_id:', result.post_id);
+                } else {
+                    console.log('[One-Click Publication Controller] Post created successfully, reloading with post_id:', result.post_id);
+                }
+                // Clear attempt on successful response (whether new or existing)
+                const autoCreateKey = `${category}-${itemId || ''}-${year || ''}-${week || ''}-${outputChannel}`;
+                this.clearAutoCreateAttempt(autoCreateKey);
                 // Reload with post_id so pipeline can load immediately
                 const url = new URL(window.location.href);
                 url.searchParams.set('post_id', result.post_id);
@@ -300,6 +321,66 @@ class OneClickPublicationController {
         } catch (err) {
             console.error('[One-Click Publication Controller] Error auto-creating post:', err);
             return false;
+        }
+    }
+
+    /**
+     * Check if auto-create has been attempted for this key (with expiration)
+     * Uses sessionStorage for per-tab tracking
+     * @param {string} key - Unique key for the calendar item
+     * @returns {boolean} - True if attempt exists and hasn't expired
+     */
+    hasAutoCreateAttempted(key) {
+        try {
+            const storageKey = `autoCreate_${key}`;
+            const stored = sessionStorage.getItem(storageKey);
+            if (!stored) return false;
+            
+            const { timestamp, expiresAt } = JSON.parse(stored);
+            const now = Date.now();
+            
+            // Check if expired
+            if (now > expiresAt) {
+                sessionStorage.removeItem(storageKey);
+                return false;
+            }
+            
+            return true;
+        } catch (e) {
+            console.warn('[One-Click Publication Controller] Error checking auto-create attempt:', e);
+            return false;
+        }
+    }
+
+    /**
+     * Mark that auto-create has been attempted for this key
+     * @param {string} key - Unique key for the calendar item
+     * @param {number} expirationMs - Expiration time in milliseconds (default: 5 minutes)
+     */
+    markAutoCreateAttempted(key, expirationMs = 5 * 60 * 1000) {
+        try {
+            const storageKey = `autoCreate_${key}`;
+            const now = Date.now();
+            const data = {
+                timestamp: now,
+                expiresAt: now + expirationMs
+            };
+            sessionStorage.setItem(storageKey, JSON.stringify(data));
+        } catch (e) {
+            console.warn('[One-Click Publication Controller] Error marking auto-create attempt:', e);
+        }
+    }
+
+    /**
+     * Clear auto-create attempt for this key
+     * @param {string} key - Unique key for the calendar item
+     */
+    clearAutoCreateAttempt(key) {
+        try {
+            const storageKey = `autoCreate_${key}`;
+            sessionStorage.removeItem(storageKey);
+        } catch (e) {
+            console.warn('[One-Click Publication Controller] Error clearing auto-create attempt:', e);
         }
     }
 
@@ -354,6 +435,16 @@ class OneClickPublicationController {
             outputChannel,
             itemData
         };
+
+        if (window.updateOneClickActionRow) {
+            window.updateOneClickActionRow({
+                postStatus: itemData.post_status,
+                hasPost: !!itemData.post_id,
+                postId: itemData.post_id,
+                year,
+                week
+            });
+        }
     }
 
     showCreatePostOption(itemData, category, itemId, year, week, outputChannel) {

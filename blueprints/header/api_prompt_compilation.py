@@ -651,71 +651,50 @@ Return ONLY the image prompt text, no explanations, no markdown formatting, no c
                         theme_name = profile_data.get('title') or ''
                         expanded_idea = profile_data.get('subtitle') or ''
                 elif year and week:
-                    # For themed posts, get theme and expanded idea from week context
-                    from utils.week_post_resolver import resolve_post_for_week
-                    target_post_id = resolve_post_for_week(year, week)
-                    
-                    if target_post_id:
-                        # Check if calendar_week_selection table exists
-                        cursor.execute("""
-                            SELECT EXISTS (
-                                SELECT FROM information_schema.tables 
-                                WHERE table_schema = 'public' 
-                                AND table_name = 'calendar_week_selection'
-                            )
-                        """)
-                        has_new_table = cursor.fetchone()['exists']
-                        
-                        if has_new_table:
-                            # Get selected theme for this week (new table)
-                            cursor.execute("""
-                                SELECT ct.theme_title
-                                FROM calendar_week_selection cws
-                                JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
-                                WHERE cws.year = %s AND cws.week_number = %s
-                            """, (year, week))
-                        else:
-                            # Fallback to calendar_schedule (legacy table)
-                            cursor.execute("""
-                                SELECT ct.theme_title
-                                FROM calendar_schedule cs
-                                JOIN calendar_themes ct ON cs.theme_id = ct.id
-                                WHERE cs.year = %s AND cs.week_number = %s
-                                LIMIT 1
-                            """, (year, week))
-                        
-                        theme_result = cursor.fetchone()
-                        if theme_result:
-                            theme_name = theme_result.get('theme_title')
-                        
-                        # Get expanded idea from post_development
-                        cursor.execute("""
-                            SELECT expanded_idea
-                            FROM post_development
-                            WHERE post_id = %s
-                        """, (target_post_id,))
-                        idea_result = cursor.fetchone()
-                        if idea_result:
-                            expanded_idea = idea_result.get('expanded_idea')
-                else:
-                    # Fallback: get from post directly (if no week context)
+                    # For themed posts, get theme and expanded idea from V2 week-persistence.
+                    # Use calendar_week_selection_v2 view (or table alias) and post_development for expanded_idea.
                     cursor.execute("""
-                        SELECT pd.expanded_idea, ct.theme_title
-                        FROM post_development pd
-                        LEFT JOIN post p ON pd.post_id = p.id
-                        LEFT JOIN calendar_week_selection cws ON p.id = (
-                            SELECT cwp.post_id FROM calendar_week_posts cwp 
-                            WHERE cwp.post_id = p.id 
-                            ORDER BY cwp.created_at DESC LIMIT 1
-                        )
-                        LEFT JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
-                        WHERE pd.post_id = %s
+                        SELECT ct.theme_title
+                        FROM calendar_week_selection_v2 cws
+                        JOIN calendar_themes ct ON cws.selected_theme_id = ct.id
+                        WHERE cws.year = %s AND cws.week_number = %s
+                    """, (year, week))
+                    theme_result = cursor.fetchone()
+                    if theme_result:
+                        theme_name = theme_result.get('theme_title')
+
+                    # Get expanded idea for this post directly (do NOT resolve different post_id)
+                    cursor.execute("""
+                        SELECT expanded_idea
+                        FROM post_development
+                        WHERE post_id = %s
                     """, (post_id,))
-                    fallback_result = cursor.fetchone()
-                    if fallback_result:
-                        expanded_idea = fallback_result.get('expanded_idea')
-                        theme_name = fallback_result.get('theme_title')
+                    idea_result = cursor.fetchone()
+                    if idea_result:
+                        expanded_idea = idea_result.get('expanded_idea')
+                else:
+                    # No explicit week context: get expanded_idea directly for this post_id;
+                    # do NOT use any legacy calendar_schedule/calendar_week_posts fallbacks.
+                    cursor.execute("""
+                        SELECT expanded_idea
+                        FROM post_development
+                        WHERE post_id = %s
+                    """, (post_id,))
+                    idea_result = cursor.fetchone()
+                    if idea_result:
+                        expanded_idea = idea_result.get('expanded_idea')
                 
+                # Fail clearly if we still don't have the required inputs
+                if not theme_name or not expanded_idea:
+                    msg = "Theme and expanded idea data not available. Please ensure the Planning stage is complete."
+                    logger.error(f"[Prompt Assembly] {msg} (post_id={post_id}, post_type={post_type}, year={year}, week={week})")
+                    return jsonify({
+                        'success': False,
+                        'error': msg,
+                        'theme_name': theme_name,
+                        'expanded_idea': expanded_idea
+                    }), 400
+
                 return jsonify({
                     'success': True,
                     'system_prompt': prompt_result.get('system_prompt', ''),

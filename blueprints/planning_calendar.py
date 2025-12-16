@@ -179,10 +179,21 @@ def planning_calendar_ideas(post_id):
                               mode='post-based',
                               error=str(e))
 
-def planning_calendar_taxonomy(post_id):
+def planning_calendar_taxonomy(post_id, year=None, week=None):
     """Taxonomy assignment page"""
-    from flask import redirect, url_for
+    from flask import redirect, url_for, request
     from utils.taxonomy_helpers import get_post_type
+    from datetime import datetime
+    
+    # Get year/week from parameters or URL, or use current week
+    if not year or not week:
+        year = request.args.get('year', type=int)
+        week = request.args.get('week', type=int)
+    
+    if not year or not week:
+        now = datetime.now()
+        year = now.year
+        week = now.isocalendar()[1]
     
     # Check post type - redirect recipe posts away from Planning stages
     # Profile posts now have Planning stage (like themed posts)
@@ -200,6 +211,8 @@ def planning_calendar_taxonomy(post_id):
                 return render_template('planning/calendar/taxonomy.html', 
                                       post_id=post_id,
                                       post_type=post_type,
+                                      year=year,
+                                      week_number=week,
                                       blueprint_name='planning',
                                       error='Post not found')
             
@@ -269,11 +282,15 @@ def planning_calendar_taxonomy(post_id):
                                   post_created=post.get('created_at'),
                                   post_updated=post.get('updated_at'),
                                   content_type_name=content_type_name,
+                                  year=year,
+                                  week_number=week,
                                   blueprint_name='planning')
     except Exception as e:
         logger.error(f"Error in planning_calendar_taxonomy: {e}")
         return render_template('planning/calendar/taxonomy.html', 
                               post_id=post_id,
                               post_type=post_type,
+                              year=year,
+                              week_number=week,
                               blueprint_name='planning',
                               error=str(e))

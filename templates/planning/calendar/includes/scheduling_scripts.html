@@ -1,4 +1,5 @@
 {# Scheduling Scripts - extracted from scheduling.html #}
+<script src="{{ url_for('static', filename='js/planning/unified-item-card.js') }}"></script>
 <script>
 // Map category CSS classes to API category names
 const categoryMap = {
@@ -193,8 +194,6 @@ function createCategoryCell(items, categoryClass, year, week) {
     }
     
     items.forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = `item-card type-${categoryClass}`;
         let itemId = null;
         if (categoryClass === 'theme') {
             itemId = item.selected_theme_id || item.theme_id || item.id;
@@ -210,124 +209,110 @@ function createCategoryCell(items, categoryClass, year, week) {
             console.warn('No item ID found for item:', item, 'category:', categoryClass);
         }
         
-        card.dataset.itemId = itemId || '';
-        card.dataset.category = categoryClass;
-        card.dataset.year = year;
-        card.dataset.week = week;
-        card.dataset.position = item.position || '';
-        card.dataset.itemData = JSON.stringify(item);
-        
-        card.draggable = true;
-        card.addEventListener('dragstart', handleDragStart);
-        card.addEventListener('dragend', handleDragEnd);
-        
+        // Determine title and type name
         let title = '';
-        let tooltip = '';
-        let clickable = false;
-        
+        let typeName = '';
         if (categoryClass === 'theme') {
             title = item.theme_title || 'Theme';
-            tooltip = item.theme_description || title;
+            typeName = 'Theme';
         } else if (categoryClass === 'recipe') {
-            if (item.type === 'post' && item.post_title) {
-                title = item.post_title;
-                tooltip = `Status: ${item.post_status || 'unknown'}`;
-                clickable = !!item.post_id;
-            } else if (item.type === 'recipe' && item.recipe_title) {
-                title = item.recipe_title;
-                tooltip = item.recipe_description || title;
-                if (item._definition) {
-                    card.classList.add('definition');
-                }
-            } else {
-                title = item.recipe_title || item.post_title || 'Recipe';
-            }
-        } else if (categoryClass === 'profile-product' || categoryClass === 'profile-surname') {
+            title = item.post_title || item.recipe_title || 'Recipe';
+            typeName = 'Recipe';
+        } else if (categoryClass === 'profile-product') {
             title = item.post_title || `Profile #${item.post_id}`;
-            tooltip = `Status: ${item.post_status || 'unknown'}`;
-            clickable = !!item.post_id;
+            typeName = 'Product Profile';
+        } else if (categoryClass === 'profile-surname') {
+            title = item.post_title || `Profile #${item.post_id}`;
+            typeName = 'Surname Profile';
         } else if (categoryClass === 'word') {
             title = item.title || item.idea_title || 'Word';
-            tooltip = item.description || title;
+            typeName = 'Word';
         } else if (categoryClass === 'phrase') {
             title = item.title || item.idea_title || 'Phrase';
-            tooltip = item.description || title;
+            typeName = 'Phrase';
         } else if (categoryClass === 'insult') {
             title = item.title || item.idea_title || 'Insult';
-            tooltip = item.description || title;
+            typeName = 'Insult';
         }
         
-        // Build card body
-        const titleEl = document.createElement('div');
-        titleEl.className = 'item-title';
-        titleEl.textContent = title;
-        if (tooltip) titleEl.title = tooltip;
-        card.appendChild(titleEl);
+        // Map categoryClass to API category for unified component
+        const apiCategory = categoryMap[categoryClass] || categoryClass;
         
-        const actionRow = document.createElement('div');
-        actionRow.className = 'compact-action-row';
-        
-        const statusLine = document.createElement('div');
-        statusLine.className = 'status-line';
-        const statusBadge = document.createElement('span');
-        statusBadge.className = 'status-badge status-none';
-        statusBadge.textContent = 'Not created';
-        statusLine.appendChild(statusBadge);
-        actionRow.appendChild(statusLine);
-        
-        const actions = document.createElement('div');
-        actions.className = 'item-actions';
-        
-        // Play = open modal to create/update
-        const playBtn = document.createElement('button');
-        playBtn.className = 'icon-btn-compact btn-create';
-        playBtn.title = 'Create / edit';
-        playBtn.innerHTML = '<i class="fas fa-play"></i>';
-        playBtn.onclick = (e) => {
-            e.stopPropagation();
-            openItemModal(item, categoryClass, itemId, item.position, year, week);
-        };
-        actions.appendChild(playBtn);
-        
-        // Rocket = open week view in context
-        const rocketBtn = document.createElement('button');
-        rocketBtn.className = 'icon-btn-compact btn-work-on';
-        rocketBtn.title = 'Open 1‑click';
-        rocketBtn.innerHTML = '<i class="fas fa-rocket"></i>';
-        rocketBtn.onclick = (e) => {
-            e.stopPropagation();
-            window.location.href = `/planning/calendar?year=${year}&week=${week}&tab=week-view`;
-        };
-        actions.appendChild(rocketBtn);
-        
-        // Info = open modal (same as play for scheduling)
-        const infoBtn = document.createElement('button');
-        infoBtn.className = 'icon-btn-compact btn-info';
-        infoBtn.title = 'View details';
-        infoBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
-        infoBtn.onclick = (e) => {
-            e.stopPropagation();
-            openItemModal(item, categoryClass, itemId, item.position, year, week);
-        };
-        actions.appendChild(infoBtn);
-        
-        actionRow.appendChild(actions);
-        card.appendChild(actionRow);
-        
-        if (tooltip) {
-            card.title = tooltip;
-        }
-        
-        card.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openItemModal(item, categoryClass, itemId, item.position, year, week);
+        // Use unified item card component
+        const card = window.createUnifiedItemCard(item, {
+            type: categoryClass,
+            category: apiCategory,
+            typeName: typeName,
+            title: title,
+            description: item.description || item.theme_description || item.recipe_description || null,
+            year: year,
+            week: week,
+            dataset: {
+                itemId: itemId || '',
+                category: categoryClass,
+                position: item.position || '',
+                itemData: JSON.stringify(item)
+            },
+            draggable: true,
+            onDragStart: handleDragStart,
+            onDragEnd: handleDragEnd,
+            onCreate: (e, item, card) => {
+                openItemModal(item, categoryClass, itemId, item.position, year, week);
+            },
+            onWorkOn: (e, item, card) => {
+                window.location.href = `/planning/calendar?year=${year}&week=${week}&tab=week-view`;
+            },
+            onInfo: (e, item, card) => {
+                openItemModal(item, categoryClass, itemId, item.position, year, week);
+            },
+            onClick: (e, item, card) => {
+                openItemModal(item, categoryClass, itemId, item.position, year, week);
+            }
         });
         
-        if (clickable && item.post_id) {
-            card.ondblclick = (e) => {
+        // Scheduling-specific: Always show all buttons (override unified component behavior)
+        const actions = card.querySelector('.item-actions');
+        if (actions) {
+            // Remove existing buttons
+            actions.innerHTML = '';
+            
+            // Always show Play button
+            const playBtn = document.createElement('button');
+            playBtn.className = 'icon-btn-compact btn-create';
+            playBtn.title = 'Create / edit';
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playBtn.onclick = (e) => {
+                e.stopPropagation();
+                openItemModal(item, categoryClass, itemId, item.position, year, week);
+            };
+            actions.appendChild(playBtn);
+            
+            // Always show Rocket button
+            const rocketBtn = document.createElement('button');
+            rocketBtn.className = 'icon-btn-compact btn-work-on';
+            rocketBtn.title = 'Open 1‑click';
+            rocketBtn.innerHTML = '<i class="fas fa-rocket"></i>';
+            rocketBtn.onclick = (e) => {
                 e.stopPropagation();
                 window.location.href = `/planning/calendar?year=${year}&week=${week}&tab=week-view`;
             };
+            actions.appendChild(rocketBtn);
+            
+            // Always show Info button
+            const infoBtn = document.createElement('button');
+            infoBtn.className = 'icon-btn-compact btn-info';
+            infoBtn.title = 'View details';
+            infoBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
+            infoBtn.onclick = (e) => {
+                e.stopPropagation();
+                openItemModal(item, categoryClass, itemId, item.position, year, week);
+            };
+            actions.appendChild(infoBtn);
+        }
+        
+        // Add definition class for recipe definitions
+        if (categoryClass === 'recipe' && item._definition) {
+            card.classList.add('definition');
         }
         
         cell.appendChild(card);

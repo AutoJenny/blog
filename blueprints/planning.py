@@ -152,7 +152,10 @@ def planning_calendar_ideas(post_id):
 @bp.route('/posts/<int:post_id>/calendar/taxonomy')
 def planning_calendar_taxonomy(post_id):
     """Taxonomy assignment page"""
-    return taxonomy_func(post_id)
+    from flask import request
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    return taxonomy_func(post_id, year=year, week=week)
 
 
 @bp.route('/calendar/sequence-manager')

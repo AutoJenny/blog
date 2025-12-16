@@ -150,109 +150,32 @@ def get_next_up():
 
 @bp.route('/select-idea', methods=['POST'])
 def select_idea():
-    """Select an idea for the current week"""
-    try:
-        data = request.get_json()
-        idea_id = data.get('idea_id')
-        
-        if not idea_id:
-            return jsonify({'success': False, 'error': 'Idea ID is required'}), 400
-        
-        with db_manager.get_cursor() as cursor:
-            # Get current week
-            cursor.execute("""
-                SELECT week_number, year FROM calendar_weeks 
-                WHERE is_current_week = TRUE
-                ORDER BY year DESC, week_number DESC
-                LIMIT 1
-            """)
-            current_week = cursor.fetchone()
-            
-            if not current_week:
-                return jsonify({'success': False, 'error': 'No current week found'}), 404
-            
-            # Check if idea exists for this week
-            cursor.execute("""
-                SELECT id FROM calendar_ideas 
-                WHERE id = %s AND week_number = %s
-            """, (idea_id, current_week['week_number']))
-            
-            if not cursor.fetchone():
-                return jsonify({'success': False, 'error': 'Idea not found for current week'}), 404
-            
-            # Update or create schedule entry
-            cursor.execute("""
-                INSERT INTO calendar_schedule (year, week_number, idea_id, status, requires_approval, automation_enabled)
-                VALUES (%s, %s, %s, 'planned', true, true)
-                ON CONFLICT (year, week_number) 
-                DO UPDATE SET idea_id = %s, updated_at = NOW()
-                RETURNING idea_id
-            """, (current_week['year'], current_week['week_number'], idea_id, idea_id))
-            
-            result = cursor.fetchone()
-            
-            return jsonify({
-                'success': True,
-                'message': 'Idea selected successfully',
-                'idea_id': result['idea_id']
-            })
-            
-    except Exception as e:
-        logger.error(f"Error selecting idea: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+    """LEGACY ENDPOINT (DEPRECATED)
+    
+    This endpoint previously wrote to the legacy calendar_schedule table and relied on
+    calendar_weeks.is_current_week. The new system uses the cyclic calendar resolver
+    and week persistence V2 tables/views (calendar_week_items, calendar_week_selection_v2).
+    
+    To avoid silently writing to deprecated tables, this endpoint is now disabled.
+    """
+    return jsonify({
+        'success': False,
+        'error': 'Legacy automation calendar endpoint /select-idea is deprecated. '
+                 'Use the new week persistence V2 and cyclic calendar flows instead.'
+    }), 410
 
 @bp.route('/update-schedule', methods=['POST'])
 def update_schedule():
-    """Update the scheduled date and time for a post"""
-    try:
-        data = request.get_json()
-        scheduled_date = data.get('scheduled_date')
-        scheduled_time = data.get('scheduled_time')
-        
-        if not scheduled_date:
-            return jsonify({'success': False, 'error': 'Scheduled date is required'}), 400
-        
-        with db_manager.get_cursor() as cursor:
-            # Get current week
-            cursor.execute("""
-                SELECT week_number, year FROM calendar_weeks 
-                WHERE is_current_week = TRUE
-                ORDER BY year DESC, week_number DESC
-                LIMIT 1
-            """)
-            current_week = cursor.fetchone()
-            
-            if not current_week:
-                return jsonify({'success': False, 'error': 'No current week found'}), 404
-            
-            # Parse the scheduled date
-            try:
-                from datetime import datetime, date, timedelta
-                scheduled_datetime = datetime.fromisoformat(scheduled_date.replace('Z', '+00:00'))
-                scheduled_date_only = scheduled_datetime.date()
-            except ValueError:
-                return jsonify({'success': False, 'error': 'Invalid date format'}), 400
-            
-            # Update the schedule
-            cursor.execute("""
-                UPDATE calendar_schedule 
-                SET scheduled_date = %s, scheduled_time = %s, updated_at = NOW()
-                WHERE year = %s AND week_number = %s
-                RETURNING scheduled_date, scheduled_time
-            """, (scheduled_date_only, scheduled_time or '14:00:00', current_week['year'], current_week['week_number']))
-            
-            result = cursor.fetchone()
-            
-            if not result:
-                return jsonify({'success': False, 'error': 'Schedule not found'}), 404
-            
-            return jsonify({
-                'success': True,
-                'message': 'Schedule updated successfully',
-                'scheduled_date': result['scheduled_date'].strftime('%Y-%m-%d'),
-                'scheduled_time': str(result['scheduled_time'])
-            })
-            
-    except Exception as e:
-        logger.error(f"Error updating schedule: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+    """LEGACY ENDPOINT (DEPRECATED)
+    
+    This endpoint previously updated calendar_schedule using calendar_weeks.is_current_week.
+    The new scheduling system uses unified week persistence (calendar_week_items/calendar_week_posts_v2)
+    and per-channel publication configs instead.
+    
+    To prevent accidental writes to deprecated tables, this endpoint is now disabled.
+    """
+    return jsonify({
+        'success': False,
+        'error': 'Legacy automation calendar endpoint /update-schedule is deprecated. '
+                 'Use the new publication scheduling/dashboard flows instead.'
+    }), 410

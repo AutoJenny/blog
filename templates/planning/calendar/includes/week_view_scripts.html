@@ -4,6 +4,7 @@ window.postId = 0;  {# No post_id needed for unified calendar #}
 window.currentStage = 'calendar';
 window.currentSubstage = 'week-view';
 </script>
+<script src="{{ url_for('static', filename='js/planning/unified-item-card.js') }}"></script>
 <script type="module" src="/static/js/planning/calendar-week-view.js"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-renderers.js') }}"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-forms.js') }}"></script>

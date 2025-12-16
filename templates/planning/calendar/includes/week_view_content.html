@@ -178,33 +178,16 @@
         </div>
     </div>
 
-    <div class="legend legend-v2">
-        <div class="legend-section">
-            <div class="legend-title">Content Types</div>
-            <div class="legend-items">
-                <span class="legend-item legend-item-v2 theme" title="Week-defining themes">
-                    <i class="fas fa-star"></i> Theme
-                </span>
-                <span class="legend-item legend-item-v2 recipe" title="Recipe blog posts">
-                    <i class="fas fa-utensils"></i> Recipe
-                </span>
-                <span class="legend-item legend-item-v2 profile" title="Profile blog posts">
-                    <i class="fas fa-user"></i> Profile
-                </span>
-                <span class="legend-item legend-item-v2 event annual" title="Recurring annual events">
-                    <i class="fas fa-calendar-alt"></i> Annual Event
-                </span>
-                <span class="legend-item legend-item-v2 event special" title="One-off special events">
-                    <i class="fas fa-calendar-check"></i> Special Event
-                </span>
-                <span class="legend-item legend-item-v2 words-phrases" title="Weekly words and phrases">
-                    <i class="fas fa-book"></i> Words & Phrases
-                </span>
-                <span class="legend-item legend-item-v2 syndication" title="Social media syndication">
-                    <i class="fas fa-share-alt"></i> Syndication
-                </span>
-            </div>
-        </div>
+    <div class="schedule-legend">
+        <span class="legend-pill theme" title="Week theme"><i class="fas fa-star"></i> Theme</span>
+        <span class="legend-pill recipe" title="Recipe post"><i class="fas fa-utensils"></i> Recipe</span>
+        <span class="legend-pill profile" title="Profile post"><i class="fas fa-user"></i> Profile</span>
+        <span class="legend-pill word" title="Weekly word"><i class="fas fa-book"></i> Word</span>
+        <span class="legend-pill phrase" title="Weekly phrase"><i class="fas fa-comment-dots"></i> Phrase</span>
+        <span class="legend-pill insult" title="Weekly insult"><i class="fas fa-bolt"></i> Insult</span>
+        <span class="legend-pill annual" title="Annual event"><i class="fas fa-calendar-alt"></i> Annual</span>
+        <span class="legend-pill special" title="Special event"><i class="fas fa-calendar-check"></i> Special</span>
+        <span class="legend-pill syndication" title="Syndication tasks"><i class="fas fa-share-alt"></i> Syndication</span>
     </div>
     <div class="calendar-actions bottom-actions">
         <a href="{{ url_for('planning.categories_manage') }}" class="btn-secondary">

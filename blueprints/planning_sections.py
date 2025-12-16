@@ -607,6 +607,9 @@ CATEGORIES: {', '.join([c.get('name', '') for c in categories if c and isinstanc
                         # Check for either old format (id, title, purpose, topics) or new format (section_code, title, description)
                         if 'section_code' in section and 'title' in section and 'description' in section:
                             # New format - convert to old format for compatibility
+                            # Require non-empty title/description to avoid useless empty sections
+                            if not str(section.get('title', '')).strip() or not str(section.get('description', '')).strip():
+                                raise ValueError(f"Section {i} has empty title/description; LLM response invalid.")
                             section['id'] = section['section_code']
                             section['purpose'] = section['description']
                             section['topics'] = []  # Topics will be allocated later

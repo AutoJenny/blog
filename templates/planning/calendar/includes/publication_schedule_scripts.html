@@ -1,9 +1,21 @@
 {# Publication Schedule Scripts - extracted from publication/dashboard.html #}
+<script src="{{ url_for('static', filename='js/planning/unified-item-card.js') }}"></script>
 <script>
 // Schedule Management
 async function loadSchedule() {
     try {
-        const response = await fetch('/publication/api/dashboard/schedule');
+        // Get year/week from URL or use current week
+        const urlParams = new URLSearchParams(window.location.search);
+        const year = urlParams.get('year') || new Date().getFullYear();
+        const week = urlParams.get('week') || (() => {
+            const d = new Date();
+            const dayNum = d.getDay() || 7;
+            d.setDate(d.getDate() + 4 - dayNum);
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        })();
+        
+        const response = await fetch(`/publication/api/dashboard/schedule?year=${year}&week=${week}`);
         const data = await response.json();
         
         if (data.success) {
@@ -50,39 +62,38 @@ function renderSchedule(channels) {
                 emptyState.style.display = 'none';
             }
             
-            // Create item card
-            const itemCard = document.createElement('div');
-            itemCard.className = 'item-card';
-            itemCard.dataset.category = item.category;
-            itemCard.dataset.itemId = item.item_id;
-            itemCard.dataset.year = item.year;
-            itemCard.dataset.week = item.week;
-            itemCard.dataset.channel = item.channel;
-            itemCard.dataset.postId = item.post_id || '';
-            itemCard.dataset.contentFormat = item.content_format;
-            itemCard.dataset.typeName = item.type_name || '';
-            
-            // Build title (remove prefixes since we have type badge)
-            let title = item.title || 'Untitled';
-            
-            // Get type name
-            const typeName = getTypeName(item);
-            
             // Only skip if we have absolutely no data (no title, no item_id, no post_id)
-            if ((!title || title === 'Untitled') && !item.item_id && !item.post_id) {
+            if ((!item.title || item.title === 'Untitled') && !item.item_id && !item.post_id) {
                 return; // Skip this item
             }
             
-            // Determine if post exists and get status
-            const postExists = item.post_exists === true || (item.post_id !== null && item.post_id !== undefined);
-            const postStatus = item.post_status && item.post_status.trim() ? item.post_status.trim().toLowerCase() : null;
-            const description = item.description ? `${item.description.substring(0, 50)}${item.description.length > 50 ? '...' : ''}` : '';
-            setItemCardContent(itemCard, item, {
-                postExists,
-                typeName,
-                title,
-                description
+            // Use unified item card component
+            const itemCard = window.createUnifiedItemCard(item, {
+                category: item.category,
+                typeName: item.type_name,
+                title: item.title,
+                description: item.description,
+                year: item.year,
+                week: item.week,
+                channel: item.channel,
+                dataset: {
+                    contentFormat: item.content_format,
+                    typeName: item.type_name || ''
+                },
+                onCreate: (e, item, card) => {
+                    createPostFromItem(item, card);
+                },
+                onWorkOn: (e, item, card) => {
+                    navigateToOneClick(item);
+                },
+                onInfo: (e, item, card) => {
+                    openItemModal(item);
+                },
+                onClick: (e, item, card) => {
+                    openItemModal(item);
+                }
             });
+            
             dayColumn.appendChild(itemCard);
         });
     });
@@ -286,6 +297,13 @@ function openItemModal(item) {
                 return;
             }
         }
+    } else if (category === 'product') {
+        // Product posts: navigate to product post editing page
+        const queueId = item.queue_id || itemId;
+        if (queueId) {
+            window.location.href = `/launchpad/syndication/facebook/product_post?queue_id=${queueId}`;
+            return;
+        }
     }
     
     // Fallback: navigate to week-view
@@ -301,6 +319,15 @@ function openInCalendar(item) {
 }
 
 function navigateToOneClick(item) {
+    // Product posts go directly to product post editing page
+    if (item.category === 'product') {
+        const queueId = item.queue_id || item.item_id;
+        if (queueId) {
+            window.location.href = `/launchpad/syndication/facebook/product_post?queue_id=${queueId}`;
+            return;
+        }
+    }
+    
     let url = '/launchpad/one-click-publication?';
     const params = [];
     

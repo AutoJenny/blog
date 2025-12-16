@@ -10,6 +10,24 @@
     window.postId = {{ post_id }};
     window.currentStage = 'concept';  // Must match data-stage="concept" in header template
     window.currentSubstage = 'taxonomy';
+    
+    // Set WeekContext from template variables if provided
+    {% if year and week_number %}
+    if (window.WeekContext) {
+        // Check if URL has year/week, if not use template values
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlYear = urlParams.get('year');
+        const urlWeek = urlParams.get('week');
+        if (urlYear && urlWeek) {
+            // URL has params, WeekContext.getWeekContext() will read them
+            // But ensure WeekContext is initialized
+            window.WeekContext.setWeekContext(parseInt(urlYear), parseInt(urlWeek));
+        } else {
+            // URL doesn't have params, use template values
+            window.WeekContext.setWeekContext({{ year }}, {{ week_number }});
+        }
+    }
+    {% endif %}
     </script>
     {% include 'shared/blog_pipeline_header.html' %}
     

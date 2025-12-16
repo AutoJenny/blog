@@ -43,7 +43,7 @@ def api_generate_brainstorm_topics():
                     settings = post_result['extra_settings']
                     prompt_name = settings.get('brainstorm_prompt_name')
             
-            # LEGACY: If no selection exists, use default
+            # If no selection exists, use default prompt names (old/new)
             if not prompt_name:
                 prompt_name = 'brainstorm_topics'  # Try old name first
                 cursor.execute("""
@@ -52,7 +52,7 @@ def api_generate_brainstorm_topics():
                 if not cursor.fetchone():
                     prompt_name = 'Topic Brainstorming'  # Try new name
             
-            # Get the selected prompt - NO FALLBACKS
+            # Get the selected prompt - NO SILENT FALLBACKS
             cursor.execute("""
                 SELECT system_prompt, prompt_text
                 FROM llm_prompt 
@@ -73,22 +73,29 @@ def api_generate_brainstorm_topics():
             
             # Get theme name and description from week context (if year/week provided)
             if url_year and url_week:
-                # Check if new tables exist
+                # Use week persistence V2 selection view/table only; do not touch calendar_schedule
                 cursor.execute("""
-                    SELECT EXISTS (
-                        SELECT FROM information_schema.tables 
-                        WHERE table_schema = 'public' 
-                        AND table_name = 'calendar_week_selection'
-                    )
+                    SELECT 
+                        EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                              AND table_name = 'calendar_week_selection'
+                        ) AS has_selection_table,
+                        EXISTS (
+                            SELECT FROM information_schema.views 
+                            WHERE table_schema = 'public' 
+                              AND table_name = 'calendar_week_selection_v2'
+                        ) AS has_selection_view
                 """)
-                has_new_table = cursor.fetchone()['exists']
+                selection_check = cursor.fetchone()
+                has_selection = selection_check['has_selection_table'] or selection_check['has_selection_view']
                 
-                if has_new_table:
-                    # Use new V2 architecture
-                    cursor.execute("""
-                        SELECT cws.selected_theme_id
-                        FROM calendar_week_selection cws
-                        WHERE cws.year = %s AND cws.week_number = %s
+                if has_selection:
+                    selection_source = 'calendar_week_selection' if selection_check['has_selection_table'] else 'calendar_week_selection_v2'
+                    cursor.execute(f"""
+                        SELECT selected_theme_id
+                        FROM {selection_source}
+                        WHERE year = %s AND week_number = %s
                     """, (url_year, url_week))
                     week_selection = cursor.fetchone()
                     
@@ -105,30 +112,14 @@ def api_generate_brainstorm_topics():
                                 'title': theme_result.get('theme_title') or '',
                                 'description': theme_result.get('theme_description') or ''
                             }
-                else:
-                    # Fallback to old calendar_schedule table
-                    cursor.execute("""
-                        SELECT ct.theme_title, ct.theme_description
-                        FROM calendar_schedule cs
-                        LEFT JOIN calendar_themes ct ON cs.theme_id = ct.id
-                        WHERE cs.year = %s AND cs.week_number = %s
-                          AND cs.theme_id IS NOT NULL
-                        ORDER BY cs.created_at DESC
-                        LIMIT 1
-                    """, (url_year, url_week))
-                    theme_result = cursor.fetchone()
-                    if theme_result:
-                        theme_data = {
-                            'title': theme_result.get('theme_title') or '',
-                            'description': theme_result.get('theme_description') or ''
-                        }
         
         # Generate topics using LLM
         llm_service = LLMService()
         
         # Determine topic count based on brainstorm type
         if brainstorm_type == 'comprehensive':
-            topic_count = 50
+            # Use 30 topics instead of 50 to reduce LLM load and timeout risk
+            topic_count = 30
         elif brainstorm_type == 'focused':
             topic_count = 25
         elif brainstorm_type == 'creative' or brainstorm_type == 'practical':
@@ -178,10 +169,9 @@ def api_generate_brainstorm_topics():
         ]
         
         # Adjust max_tokens based on brainstorm type
-        # Comprehensive needs 50 topics with descriptions (~150 tokens each) = ~8000 tokens minimum
-        # Add overhead for JSON structure and model variance
+        # Comprehensive now targets ~30 topics to reduce token usage and timeouts
         if brainstorm_type == 'comprehensive':
-            max_tokens = 12000  # 50 topics × ~150 tokens + overhead
+            max_tokens = 6000   # 30 topics with descriptions + overhead
         elif brainstorm_type == 'focused':
             max_tokens = 5000   # 20-30 topics
         elif brainstorm_type == 'creative' or brainstorm_type == 'practical':
@@ -209,7 +199,11 @@ def api_generate_brainstorm_topics():
                 'topic_count': len(topics)
             })
         else:
-            return jsonify({'error': 'Failed to generate topics'}), 500
+            # Surface the actual LLM error if available
+            error_msg = response.get('error') if isinstance(response, dict) else None
+            if error_msg:
+                return jsonify({'error': f'LLM error: {error_msg}'}), 500
+            return jsonify({'error': 'Failed to generate topics (no content returned from LLM).'}), 500
             
     except Exception as e:
         logger.error(f"Error generating brainstorm topics: {e}")

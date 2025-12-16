@@ -159,9 +159,9 @@ def get_post_with_development(post_id):
     with get_db_connection() as conn:
         cur = conn.cursor(row_factory=psycopg.rows.dict_row)
         
-        # Get post data, alias post.id as post_id
-        # Include year and week_number for recipe posts to enable proper edit links
-        # Note: year comes from calendar_schedule, week_number comes from calendar_recipes (perpetual)
+        # Get post data, alias post.id as post_id.
+        # For preview we no longer depend on legacy calendar_schedule; year/week
+        # context is either not required or can be derived elsewhere if needed.
         cur.execute("""
             SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
                    p.clan_post_id, p.clan_uploaded_url, p.author_id,
@@ -172,12 +172,11 @@ def get_post_with_development(post_id):
                    p.cross_promotion_category_position, p.cross_promotion_product_position,
                    p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html,
                    p.profile_product_id, p.profile_category_id,
-                   cs.year, cr.week_number
+                   cr.week_number
             FROM post p
             LEFT JOIN author a ON p.author_id = a.id
             LEFT JOIN post_development pd ON pd.post_id = p.id
             LEFT JOIN calendar_recipes cr ON cr.id = p.recipe_id
-            LEFT JOIN calendar_schedule cs ON cs.post_id = p.id
             WHERE p.id = %s
         """, (post_id,))
         
@@ -321,6 +320,7 @@ def get_post_sections_with_images(post_id):
             
             # ONLY use optimized images - no fallbacks to raw
             image_path = None
+            # Caption priority: authoring-generated section image_captions FIRST, then DB image caption as fallback
             caption_text = section.get('image_captions') or ''
             alt_text = f"Image for {section.get('section_heading', 'section')}"
             
@@ -337,7 +337,8 @@ def get_post_sections_with_images(post_id):
             db_image = cur.fetchone()
             if db_image and db_image.get('path'):
                 image_path = db_image['path']
-                if db_image.get('caption'):
+                # Only fall back to image_archive.caption if authoring captions are missing
+                if not caption_text and db_image.get('caption'):
                     caption_text = db_image['caption']
                 if db_image.get('alt_text'):
                     alt_text = db_image['alt_text']

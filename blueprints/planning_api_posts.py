@@ -185,123 +185,83 @@ def confirm_calendar_idea():
                 """, (topic, slug))
                 post_id = cursor.fetchone()['id']
 
-            # Check if selected theme exists for this week (required)
+            # Check if selected theme exists for this week (required).
+            # Support both V2 table and V2 view for week selection.
             cursor.execute("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
-                    AND table_name = 'calendar_week_selection'
-                )
+                SELECT 
+                    EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                          AND table_name = 'calendar_week_selection'
+                    ) AS has_selection_table,
+                    EXISTS (
+                        SELECT FROM information_schema.views 
+                        WHERE table_schema = 'public' 
+                          AND table_name = 'calendar_week_selection_v2'
+                    ) AS has_selection_view
             """)
-            has_new_table = cursor.fetchone()['exists']
+            selection_check = cursor.fetchone()
+            has_selection = selection_check['has_selection_table'] or selection_check['has_selection_view']
             
-            if has_new_table:
-                # Check if selected theme exists (REQUIRED)
-                cursor.execute("""
-                    SELECT selected_theme_id
-                    FROM calendar_week_selection
-                    WHERE year = %s AND week_number = %s
-                """, (year, week_number))
-                theme_selection = cursor.fetchone()
-                
-                if not theme_selection:
-                    return jsonify({
-                        'success': False,
-                        'error': f'No theme selected for week {year}/{week_number}. Please select a theme first.'
-                    }), 400
-                
-                # Get default publication day for themed posts
-                from blueprints.post_type_config import get_publication_day_for_post_type
-                themed_config = get_publication_day_for_post_type('themed', cursor)
-                default_weekday = themed_config['day'] if themed_config else 3  # Fallback to Wednesday
-                
-                # Assign post to week using calendar_week_posts with default weekday
-                cursor.execute("""
-                    INSERT INTO calendar_week_posts (year, week_number, post_id, weekday, scheduled_date, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, NULL, NOW(), NOW())
-                    ON CONFLICT (year, week_number, post_id) DO UPDATE SET
-                        weekday = EXCLUDED.weekday,
-                        updated_at = NOW()
-                """, (year, week_number, post_id, default_weekday))
-                
-                # DUAL-WRITE: Also write to calendar_week_items (new unified table)
-                # Determine item_type based on post type
-                cursor.execute("""
-                    SELECT post_type, profile_type, recipe_id, recipe_week_number
-                    FROM post
-                    WHERE id = %s
-                """, (post_id,))
-                post_info = cursor.fetchone()
-                
-                if post_info:
-                    # Check if calendar_week_items table exists
-                    cursor.execute("""
-                        SELECT EXISTS (
-                            SELECT FROM information_schema.tables 
-                            WHERE table_schema = 'public' 
-                            AND table_name = 'calendar_week_items'
-                        )
-                    """)
-                    has_week_items = cursor.fetchone()['exists']
-                    
-                    if has_week_items:
-                        item_type = None
-                        metadata = {}
-                        
-                        if post_info.get('post_type') == 'recipe':
-                            item_type = 'recipe'
-                            if post_info.get('recipe_id'):
-                                metadata['recipe_definition_id'] = post_info['recipe_id']
-                            if post_info.get('recipe_week_number'):
-                                metadata['recipe_week_number'] = post_info['recipe_week_number']
-                        elif post_info.get('profile_type'):
-                            item_type = 'profile'
-                            metadata['profile_type'] = post_info['profile_type']
-                            # Add profile-specific IDs if available
-                            cursor.execute("""
-                                SELECT profile_product_id, profile_category_id
-                                FROM post
-                                WHERE id = %s
-                            """, (post_id,))
-                            profile_info = cursor.fetchone()
-                            if profile_info:
-                                if profile_info.get('profile_product_id'):
-                                    metadata['profile_product_id'] = profile_info['profile_product_id']
-                                if profile_info.get('profile_category_id'):
-                                    metadata['profile_category_id'] = profile_info['profile_category_id']
-                        
-                        # Only write if we determined an item_type
-                        if item_type:
-                            cursor.execute("""
-                                INSERT INTO calendar_week_items (
-                                    item_type, item_id, year, week_number, weekday, 
-                                    is_active, metadata, created_at, updated_at
-                                ) VALUES (
-                                    %s, %s, %s, %s, %s, TRUE, %s, NOW(), NOW()
-                                )
-                                ON CONFLICT (year, week_number, item_type, item_id)
-                                DO UPDATE SET
-                                    weekday = EXCLUDED.weekday,
-                                    metadata = EXCLUDED.metadata,
-                                    updated_at = NOW()
-                            """, (item_type, post_id, year, week_number, default_weekday, metadata))
-            else:
-                # Fallback to old calendar_schedule table during migration
-                cursor.execute("""
-                    INSERT INTO calendar_schedule (post_id, year, week_number, scheduled_date, created_at, updated_at)
-                    VALUES (%s, %s, %s, NULL, NOW(), NOW())
-                    ON CONFLICT (id) DO NOTHING
-                """, (post_id, year, week_number))
+            if not has_selection:
+                return jsonify({
+                    'success': False,
+                    'error': 'Week persistence V2 selection structure is required '
+                             '(calendar_week_selection or calendar_week_selection_v2).'
+                }), 500
 
-                # Ensure only one schedule row per post/year/week: cleanup duplicates if schema allows multiples
-                cursor.execute("""
-                    DELETE FROM calendar_schedule cs
-                    USING calendar_schedule cs2
-                    WHERE cs.id > cs2.id
-                      AND cs.post_id = cs2.post_id
-                      AND cs.year = cs2.year
-                      AND cs.week_number = cs2.week_number
-                """)
+            # Decide which selection source to use (table or view)
+            selection_source = 'calendar_week_selection' if selection_check['has_selection_table'] else 'calendar_week_selection_v2'
+
+            # Check if selected theme exists (REQUIRED)
+            cursor.execute(f"""
+                SELECT selected_theme_id
+                FROM {selection_source}
+                WHERE year = %s AND week_number = %s
+            """, (year, week_number))
+            theme_selection = cursor.fetchone()
+            
+            if not theme_selection:
+                return jsonify({
+                    'success': False,
+                    'error': f'No theme selected for week {year}/{week_number}. Please select a theme first.'
+                }), 400
+            
+            # Get default publication day for themed posts
+            from blueprints.post_type_config import get_publication_day_for_post_type
+            themed_config = get_publication_day_for_post_type('themed', cursor)
+            default_weekday = themed_config['day'] if themed_config else 3  # Fallback to Wednesday
+            
+            # Assign post to week using unified V2 table calendar_week_items with default weekday.
+            # Themes are week-level items, so weekday is NULL; weekday applies to posts (recipe/profile) in V2.
+            cursor.execute("""
+                INSERT INTO calendar_week_items (
+                    item_type, item_id, year, week_number, weekday, 
+                    scheduled_date, scheduled_at, is_active, is_selected, priority, metadata, created_at, updated_at
+                ) VALUES (
+                    'profile', %s, %s, %s, %s,
+                    NULL, NOW(), TRUE, FALSE, 'normal', '{}'::jsonb, NOW(), NOW()
+                )
+                ON CONFLICT (year, week_number, item_type, item_id) DO UPDATE SET
+                    weekday = EXCLUDED.weekday,
+                    updated_at = NOW()
+            """, (post_id, year, week_number, default_weekday))
+            
+            # Also ensure a theme selection row exists for this week in calendar_week_items
+            # (select-theme endpoint should normally handle this, but we keep this for robustness).
+            cursor.execute("""
+                INSERT INTO calendar_week_items (
+                    item_type, item_id, year, week_number, is_selected, is_active, created_at, updated_at
+                ) VALUES (
+                    'theme', %s, %s, %s, TRUE, TRUE, NOW(), NOW()
+                )
+                ON CONFLICT (year, week_number, item_type, item_id) DO UPDATE SET
+                    is_selected = TRUE,
+                    updated_at = NOW()
+            """, (theme_selection['selected_theme_id'], year, week_number))
+            
+            # DUAL-WRITE metadata for recipes/profiles is not needed for simple themed posts
+            # in this endpoint. More complex per-type metadata is handled elsewhere.
 
             # Upsert post_development.idea_seed
             cursor.execute("""

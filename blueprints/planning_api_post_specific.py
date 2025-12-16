@@ -1414,13 +1414,26 @@ def api_posts_expanded_idea(post_id):
                     week_selection = cursor.fetchone()
                     
                     if not week_selection or not week_selection.get('selected_theme_id'):
-                        # Fallback: Use cyclic system resolver to get theme (same as schedule API)
+                        # No entry in calendar_week_selection_v2 - use cyclic system resolver to get theme
                         try:
                             from utils.calendar_resolver import resolve_item_for_week
                             theme = resolve_item_for_week("theme", url_year, url_week)
                             if theme and theme.get('id'):
-                                theme_id = theme['id']
+                                # For themes, the 'id' field should be the theme ID from calendar_themes
+                                resolved_theme_id = theme['id']
+                                logger.info(f"Resolved theme from cyclic system: theme_id={resolved_theme_id}")
+                                
+                                # Insert into calendar_week_selection_v2 for future use
+                                cursor.execute("""
+                                    INSERT INTO calendar_week_selection_v2 (year, week_number, selected_theme_id, created_at, updated_at)
+                                    VALUES (%s, %s, %s, NOW(), NOW())
+                                    ON CONFLICT (year, week_number) DO UPDATE 
+                                    SET selected_theme_id = %s, updated_at = NOW()
+                                """, (url_year, url_week, resolved_theme_id, resolved_theme_id))
+                                
+                                theme_id = resolved_theme_id
                             else:
+                                logger.warning(f"No theme found from cyclic resolver for week {url_year}/{url_week}")
                                 return jsonify({
                                     'error': f'No theme selected for week {url_year}/{url_week}. Please select a theme in the calendar week view.'
                                 }), 400
@@ -1430,7 +1443,44 @@ def api_posts_expanded_idea(post_id):
                                 'error': f'No theme selected for week {url_year}/{url_week}. Please select a theme in the calendar week view.'
                             }), 400
                     else:
-                        theme_id = week_selection['selected_theme_id']
+                        stored_theme_id = week_selection['selected_theme_id']
+                        logger.info(f"Found theme from calendar_week_selection_v2: stored_theme_id={stored_theme_id}")
+                        
+                        # Validate that stored_theme_id is actually a theme ID by checking if it exists in calendar_themes
+                        cursor.execute("""
+                            SELECT id FROM calendar_themes WHERE id = %s
+                        """, (stored_theme_id,))
+                        theme_exists = cursor.fetchone()
+                        
+                        if not theme_exists:
+                            # stored_theme_id is not a valid theme ID (might be a post ID) - resolve from cyclic system
+                            logger.warning(f"stored_theme_id={stored_theme_id} is not a valid theme ID. Resolving from cyclic system instead.")
+                            try:
+                                from utils.calendar_resolver import resolve_item_for_week
+                                theme = resolve_item_for_week("theme", url_year, url_week)
+                                if theme and theme.get('id'):
+                                    corrected_theme_id = theme['id']
+                                    logger.info(f"Corrected theme_id from {stored_theme_id} to {corrected_theme_id}")
+                                    # Update the database entry with the correct theme ID
+                                    cursor.execute("""
+                                        UPDATE calendar_week_selection_v2
+                                        SET selected_theme_id = %s, updated_at = NOW()
+                                        WHERE year = %s AND week_number = %s
+                                    """, (corrected_theme_id, url_year, url_week))
+                                    theme_id = corrected_theme_id
+                                else:
+                                    logger.error(f"Could not resolve theme from cyclic system for week {url_year}/{url_week}")
+                                    return jsonify({
+                                        'error': f'Invalid theme ID {stored_theme_id} stored in database for week {url_year}/{url_week}, and could not resolve from cyclic system.'
+                                    }), 400
+                            except Exception as e:
+                                logger.error(f"Error correcting theme_id: {e}")
+                                return jsonify({
+                                    'error': f'Invalid theme ID {stored_theme_id} stored in database for week {url_year}/{url_week}, and error resolving from cyclic system: {str(e)}'
+                                }), 400
+                        else:
+                            # Valid theme ID
+                            theme_id = stored_theme_id
                     
                     # theme_id is now set from either calendar_week_selection_v2 or cyclic system resolver above
                     # No need to check schedule or assign post to week
@@ -1439,6 +1489,7 @@ def api_posts_expanded_idea(post_id):
                 
                 # Try to fetch from calendar_themes first (if theme_id exists)
                 if theme_id:
+                    logger.info(f"Fetching theme data for theme_id={theme_id}")
                     cursor.execute("""
                         SELECT ct.theme_title, ct.theme_description, ct.important_notes
                         FROM calendar_themes ct
@@ -1452,43 +1503,15 @@ def api_posts_expanded_idea(post_id):
                             'description': theme_data.get('theme_description') or '',
                             'important_notes': theme_data.get('important_notes') or []
                         }
+                        logger.info(f"Found theme: {selected_theme['title']}")
+                    else:
+                        logger.warning(f"Theme ID {theme_id} not found in calendar_themes table")
+                else:
+                    logger.warning(f"No theme_id resolved for week {url_year}/{url_week}")
                 
-                # Fallback to calendar_ideas if theme_id didn't work (backwards compatibility)
-                if not theme_data and idea_id:
-                    # Check if important_notes column exists
-                    cursor.execute("""
-                        SELECT column_name 
-                        FROM information_schema.columns 
-                        WHERE table_name = 'calendar_ideas' AND column_name = 'important_notes'
-                    """)
-                    has_important_notes = cursor.fetchone() is not None
-                    
-                    # Fetch full idea data (for backwards compatibility)
-                    important_notes_field = 'ci.important_notes' if has_important_notes else "'[]'::jsonb as important_notes"
-                    cursor.execute(f"""
-                        SELECT ci.idea_title, ci.idea_description, {important_notes_field}
-                        FROM calendar_ideas ci
-                        WHERE ci.id = %s
-                    """, (idea_id,))
-                    theme_data = cursor.fetchone()
-                    
-                    if theme_data:
-                        selected_theme = {
-                            'title': theme_data.get('idea_title') or '',
-                            'description': theme_data.get('idea_description') or '',
-                            'important_notes': []
-                        }
-                        
-                        if has_important_notes and theme_data.get('important_notes'):
-                            import json
-                            notes_data = theme_data['important_notes']
-                            if isinstance(notes_data, (list, dict)):
-                                selected_theme['important_notes'] = notes_data if isinstance(notes_data, list) else [notes_data]
-                            elif isinstance(notes_data, str):
-                                selected_theme['important_notes'] = json.loads(notes_data)
-                
+                # Ensure we have a theme
                 if not selected_theme:
-                    return jsonify({'error': 'Selected theme not found in database'}), 404
+                    return jsonify({'error': f'Selected theme not found in database (theme_id={theme_id}, year={url_year}, week={url_week})'}), 404
             
             # Generate expanded idea using LLM
             llm_service = LLMService()

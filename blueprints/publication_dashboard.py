@@ -499,6 +499,86 @@ def api_dashboard_schedule():
                         
                         channels[channel].append(item_data)
         
+        # Add product posts from posting_queue
+        # Calculate week start and end dates for the ISO week
+        from datetime import datetime, timedelta
+        jan4 = datetime(year, 1, 4)
+        week_start_date = (jan4 + timedelta(weeks=week-1, days=-jan4.weekday())).date()
+        week_end_date = week_start_date + timedelta(days=6)
+        
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Query posting_queue for product posts in this week
+                cursor.execute("""
+                    SELECT 
+                        pq.id as queue_id,
+                        pq.product_id,
+                        pq.scheduled_date,
+                        pq.scheduled_time,
+                        pq.status,
+                        pq.platform,
+                        pq.content_type,
+                        cp.name as product_name,
+                        pq.generated_content
+                    FROM posting_queue pq
+                    LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                    WHERE pq.content_type = 'product'
+                      AND pq.scheduled_date BETWEEN %s AND %s
+                      AND pq.status IN ('ready', 'pending')
+                    ORDER BY pq.scheduled_date, pq.scheduled_time
+                """, (week_start_date, week_end_date))
+                
+                product_posts = cursor.fetchall()
+                
+                for pq in product_posts:
+                    scheduled_date = pq.get('scheduled_date')
+                    if not scheduled_date:
+                        continue
+                    
+                    # Convert date to ISO weekday (1=Monday, 7=Sunday)
+                    scheduled_datetime = datetime.combine(scheduled_date, datetime.min.time())
+                    weekday = scheduled_datetime.isoweekday()
+                    
+                    # Get product name
+                    product_name = pq.get('product_name') or f"Product {pq.get('product_id')}"
+                    
+                    # Determine channel (default to facebook, but support others)
+                    platform = pq.get('platform', 'facebook')
+                    channel = 'facebook' if platform == 'facebook' else platform
+                    
+                    # Only add to channels that exist
+                    if channel not in channels:
+                        continue
+                    
+                    # Get scheduled time
+                    scheduled_time = pq.get('scheduled_time')
+                    time_display = ''
+                    if scheduled_time:
+                        time_display = scheduled_time.strftime('%H:%M')
+                    
+                    # Build item data in same format as calendar items
+                    item_data = {
+                        'category': 'product',
+                        'item_id': pq.get('product_id'),
+                        'queue_id': pq.get('queue_id'),
+                        'title': product_name,
+                        'description': pq.get('generated_content', '')[:100] if pq.get('generated_content') else '',
+                        'post_id': None,  # Product posts don't have post_id
+                        'post_exists': False,
+                        'post_status': pq.get('status', 'ready'),
+                        'year': year,
+                        'week': week,
+                        'channel': channel,
+                        'content_format': 'product_post',
+                        'is_primary': False,
+                        'day': weekday,
+                        'type_name': 'Product',
+                        'scheduled_time': time_display,
+                        'platform': platform
+                    }
+                    
+                    channels[channel].append(item_data)
+        
         # Sort items by day within each channel
         for channel in channels:
             channels[channel].sort(key=lambda x: x.get('day', 1))

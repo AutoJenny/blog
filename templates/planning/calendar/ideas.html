@@ -523,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 if (!year || !week) {
-                    displayExpandedIdeaError('Missing year and week parameters');
+                    llmModule.uiManager.displayError('Missing year and week parameters');
                     return;
                 }
                 
@@ -542,13 +542,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 
                 if (data.success) {
-                    displayExpandedIdea(data.expanded_idea);
+                    // Display raw LLM response if available
+                    if (data.raw_response) {
+                        llmModule.displayRawResponse(data.raw_response);
+                    }
+                    
+                    // Display results in the LLM results panel
+                    if (data.expanded_idea) {
+                        llmModule.uiManager.displayResults(data.expanded_idea, llmModule);
+                    } else {
+                        llmModule.uiManager.displayError('No expanded idea generated');
+                    }
+                    
+                    // Update the generate button to "Regenerate"
+                    generateBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerate';
                 } else {
-                    displayExpandedIdeaError(data.error);
+                    llmModule.uiManager.displayError(data.error || 'Failed to generate expanded idea.');
                 }
             } catch (error) {
                 console.error('Error generating expanded idea:', error);
-                displayExpandedIdeaError('Failed to generate expanded idea');
+                llmModule.uiManager.displayError('An error occurred during generation.');
             } finally {
                 // Reset button state
                 generateBtn.disabled = false;

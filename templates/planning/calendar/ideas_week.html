@@ -490,6 +490,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function loadThemesForWeek() {
+    let confirmBtn;
+    let originalText;
+    
     try {
         console.log('Loading themes for week', window.weekNumber);
         
@@ -713,10 +716,12 @@ async function confirmSelection() {
         console.log('Creating post for theme:', selectedTheme.theme_title);
         
         // Show loading state
-        const confirmBtn = document.getElementById('confirm-btn');
-        const originalText = confirmBtn.innerHTML;
-        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Post...';
-        confirmBtn.disabled = true;
+        confirmBtn = document.getElementById('confirm-btn');
+        if (confirmBtn) {
+            originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Post...';
+            confirmBtn.disabled = true;
+        }
         
         // Ensure theme is selected in calendar_week_selection before creating post
         // This is required by the confirm-idea endpoint
@@ -804,9 +809,11 @@ async function confirmSelection() {
         console.error('Error creating post:', error);
         
         // Reset button state
-        const confirmBtn = document.getElementById('confirm-btn');
-        confirmBtn.innerHTML = originalText;
-        confirmBtn.disabled = false;
+        const btn = document.getElementById('confirm-btn');
+        if (btn) {
+            btn.innerHTML = originalText || 'Create Post';
+            btn.disabled = false;
+        }
         
         // Show error
         const statusDisplay = document.getElementById('post-creation-status');

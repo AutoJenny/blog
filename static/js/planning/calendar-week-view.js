@@ -172,14 +172,13 @@ function renderItems(container, items, type, year, week) {
     item.year = item.year || itemYear;
     item.week = item.week || itemWeek;
     
-    const card = buildItemCard(item, {
+    const card = window.createUnifiedItemCard(item, {
       type,
+      category: type === 'idea' ? 'theme' : type,
       typeName,
       title,
-      postId,
-      postStatus,
-      postExists,
-      description,
+      year: itemYear,
+      week: itemWeek,
       onInfo: () => {
         // Item-specific info handling - open appropriate modal
         if (type === 'idea' || type === 'theme') {
@@ -236,16 +235,42 @@ function renderItems(container, items, type, year, week) {
         const w = item.week || itemWeek;
         window.location.href = `/planning/calendar?year=${y}&week=${w}&tab=week-view`;
       },
-      onCreate: async () => {
+      onCreate: async (e, item, card) => {
+        // Recipe: create post directly from calendar
         if (type === 'recipe' && typeof window.createRecipePostFromCalendar === 'function') {
           await window.createRecipePostFromCalendar(item.recipe_week_number);
           return;
         }
+
+        // Theme (week-view theme card): send user to Week Themes page for this week
+        if (type === 'theme') {
+          const y = item.year || itemYear;
+          const w = item.week || itemWeek;
+          window.location.href = `/planning/calendar/ideas/week/${w}?year=${y}&week=${w}`;
+          return;
+        }
+
+        // Legacy idea type: open theme in idea modal
         if (type === 'idea' && item.id) {
           const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
           if (ideaModal) {
             ideaModal.openTheme(item.id);
           }
+        }
+      },
+      onClick: (e, item, card) => {
+        // Item-specific click handlers
+        if (type === 'idea' && item.id) {
+          const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+          if (ideaModal) ideaModal.openTheme(item.id);
+        } else if (type === 'profile' && (item.post_id || item.id)) {
+          const profileModal = window.getProfileModal ? window.getProfileModal() : null;
+          if (profileModal) profileModal.open(item.post_id || item.id);
+        } else if (type === 'recipe' && item.id) {
+          // Recipe click handler
+        } else if (type === 'event' && (item.id || item._eventId)) {
+          const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
+          if (ideaModal) ideaModal.openEvent(item.id || item._eventId);
         }
       }
     });
@@ -254,25 +279,6 @@ function renderItems(container, items, type, year, week) {
     card.dataset.itemType = type;
     if (item.id) card.dataset.itemId = item.id;
     if (postId) card.dataset.postId = postId;
-    
-    // Add click handler for card (opens modal or navigates)
-    card.onclick = (e) => {
-      if (e.target.closest('.icon-btn-compact')) return; // Buttons handled separately
-      
-      // Item-specific click handlers
-      if (type === 'idea' && item.id) {
-        const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
-        if (ideaModal) ideaModal.openTheme(item.id);
-      } else if (type === 'profile' && (item.post_id || item.id)) {
-        const profileModal = window.getProfileModal ? window.getProfileModal() : null;
-        if (profileModal) profileModal.open(item.post_id || item.id);
-      } else if (type === 'recipe' && item.id) {
-        // Recipe click handler
-      } else if (type === 'event' && (item.id || item._eventId)) {
-        const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
-        if (ideaModal) ideaModal.openEvent(item.id || item._eventId);
-      }
-    };
     
     container.appendChild(card);
   });
@@ -581,6 +587,8 @@ async function loadWeek(year, weekNumber) {
         id: themeId,
         theme_title: themeEntry?.theme_title || 'Theme',
         theme_description: themeEntry?.theme_description,
+        post_id: themeEntry?.post_id || null,
+        post_status: themeEntry?.post_status || null,
         _selected: true,
         _fromSchedule: true,
         _from_cyclic_system: true
@@ -600,6 +608,8 @@ async function loadWeek(year, weekNumber) {
             id: themeId,
             theme_title: s.theme_title || 'Unknown Theme',
             theme_description: s.theme_description,
+            post_id: s.post_id || null,
+            post_status: s.post_status || null,
             _selected: true,
             _fromSchedule: true,
             _from_cyclic_system: s._from_cyclic_system || false
@@ -840,6 +850,8 @@ async function loadWeek(year, weekNumber) {
         const themeItem = {
           id: themeEntry.id,
           title: themeEntry.theme_title || 'Theme',
+          post_id: themeEntry.post_id || null,
+          post_status: themeEntry.post_status || null,
           _theme: true
         };
         renderItems(target, [themeItem], 'theme', year, weekNumber);
