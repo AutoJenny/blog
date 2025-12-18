@@ -5,7 +5,32 @@ window.currentStage = 'calendar';
 window.currentSubstage = 'week-view';
 </script>
 <script src="{{ url_for('static', filename='js/planning/unified-item-card.js') }}"></script>
-<script type="module" src="/static/js/planning/calendar-week-view.js"></script>
+<script type="module">
+// Wait for unified-item-card to be available and DOM to be ready
+(async function() {
+    // Wait for unified-item-card function
+    while (typeof window.createUnifiedItemCard !== 'function') {
+        await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        await new Promise(resolve => {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', resolve);
+            } else {
+                resolve();
+            }
+        });
+    }
+    
+    // Additional small delay to ensure all elements are in DOM
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Now import the module
+    await import('/static/js/planning/calendar-week-view.js');
+})();
+</script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-renderers.js') }}"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-forms.js') }}"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-api.js') }}"></script>

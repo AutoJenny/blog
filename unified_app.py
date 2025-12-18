@@ -169,6 +169,10 @@ def create_app(config_name=None):
     from blueprints.settings_api import bp as settings_api_bp
     app.register_blueprint(settings_api_bp)
     
+    # Register substage management blueprint
+    from blueprints.substage_management import bp as substage_management_bp
+    app.register_blueprint(substage_management_bp)
+    
     # TEMPORARY: Test route for Authoring template preview
     @app.route('/test-authoring/<int:post_id>')
     def test_authoring_preview(post_id):

@@ -55,7 +55,7 @@ def resolve_pipeline_for_output(post_id: int, output_channel: str = 'blog') -> D
         # Build pipeline definition
         if output_config.get('use_post_type_config'):
             # Use post_type_substages
-            from config.post_type_substages import get_substages_for_post_type
+            from utils.substage_config import get_substages_for_post_type
             stages_dict = get_substages_for_post_type(post_type)
             stages = list(stages_dict.keys())
             substages = stages_dict

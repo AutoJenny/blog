@@ -12,7 +12,7 @@ For example:
 - themed → facebook: Syndication pipeline (reuse blog content)
 """
 
-from config.post_type_substages import get_substages_for_post_type
+from utils.substage_config import get_substages_for_post_type
 
 # Output channel stage definitions
 # Format: (post_type, output_channel) -> {stages: [...], substages: {...}}

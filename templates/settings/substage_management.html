@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Substage Management - BlogForge</title>
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/static/css/settings/substage-management.css">
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    {% include 'shared/header.html' %}
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sitemap text-indigo-400"></i> Substage Management
+                </h1>
+                <button id="refresh-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            
+            <div class="mb-6 p-4 bg-indigo-950/30 border border-indigo-500/20 rounded-lg">
+                <p class="text-white mb-2">
+                    <strong>What is this?</strong> Configure which substages (individual steps) appear in your content pipeline for different post types and output channels.
+                </p>
+                <p class="text-dark-text text-sm">
+                    Changes are immediately reflected in the workflow navbar and one-click publication pipeline. Use <strong>Post Types</strong> to configure the main pipeline, and <strong>Output Channels</strong> to override for specific channels like Facebook or Instagram.
+                </p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="border-b-2 border-dark-border mb-6 bg-[#1e293b] rounded-t-lg p-2">
+                <nav class="flex space-x-2">
+                    <button class="tab-btn active" data-tab="post-types">
+                        <i class="fas fa-list"></i> Post Types
+                    </button>
+                    <button class="tab-btn" data-tab="output-channels">
+                        <i class="fas fa-broadcast-tower"></i> Output Channels
+                    </button>
+                    <button class="tab-btn" data-tab="substage-metadata">
+                        <i class="fas fa-info-circle"></i> Substage Metadata
+                    </button>
+                    <button class="tab-btn" data-tab="usage-overview">
+                        <i class="fas fa-chart-bar"></i> Usage Overview
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tab-content">
+                <!-- Post Types Tab -->
+                <div id="post-types-tab" class="tab-panel active">
+                    <div class="mb-4 p-4 bg-indigo-950/20 border border-indigo-500/20 rounded-lg">
+                        <h3 class="text-base font-semibold text-white mb-2">
+                            <i class="fas fa-list text-indigo-400 mr-2"></i>Post Types Configuration
+                        </h3>
+                        <p class="text-sm text-dark-text mb-2">
+                            <strong>What it does:</strong> Configure which substages (individual steps) are active and in what order for each post type (themed, recipe, profile, etc.). This is the main pipeline configuration that controls what appears in your workflow navbar and one-click publication page.
+                        </p>
+                        <p class="text-sm text-dark-text">
+                            <strong>How to use:</strong> Select a post type from the dropdown below, then use the checkboxes to enable/disable substages and drag-and-drop (or edit order numbers) to reorder them within each stage. Click "Save Changes" for each stage when done.
+                        </p>
+                    </div>
+                    <div class="mb-6 p-4 bg-[#23273a] rounded-lg border border-dark-border">
+                        <label class="block text-base font-semibold text-white mb-3">
+                            <i class="fas fa-filter text-indigo-400 mr-2"></i>Select Post Type:
+                        </label>
+                        <select id="post-type-selector" class="w-full max-w-md bg-dark-bg border-2 border-indigo-500/30 rounded-lg px-4 py-3 text-white text-base font-medium focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
+                            <option value="">Loading...</option>
+                        </select>
+                        {% if post_type %}
+                        <input type="hidden" id="initial-post-type" value="{{ post_type }}">
+                        {% endif %}
+                    </div>
+                    <div id="post-types-content" class="space-y-4">
+                        <p class="text-dark-text" id="post-types-loading">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Output Channels Tab -->
+                <div id="output-channels-tab" class="tab-panel">
+                    <div class="mb-4 p-4 bg-indigo-950/20 border border-indigo-500/20 rounded-lg">
+                        <h3 class="text-base font-semibold text-white mb-2">
+                            <i class="fas fa-broadcast-tower text-indigo-400 mr-2"></i>Output Channels Configuration
+                        </h3>
+                        <p class="text-sm text-dark-text mb-2">
+                            <strong>What it does:</strong> Override the default post type substages for specific output channels (blog, Facebook, Instagram, etc.). This lets you create different pipelines for the same content type depending on where it's being published. For example, Facebook posts might skip planning steps and go straight to syndication.
+                        </p>
+                        <p class="text-sm text-dark-text">
+                            <strong>How to use:</strong> Select a post type and output channel below. If "Use Post Type Configuration" is checked, it inherits from the Post Types tab. Otherwise, you can configure channel-specific substages. Changes only affect that specific (post_type, output_channel) combination.
+                        </p>
+                    </div>
+                    <div class="mb-6 p-4 bg-[#23273a] rounded-lg border border-dark-border">
+                        <h3 class="text-base font-semibold text-white mb-4">
+                            <i class="fas fa-broadcast-tower text-indigo-400 mr-2"></i>Configure Channel-Specific Substages
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4 max-w-2xl">
+                            <div>
+                                <label class="block text-sm font-semibold text-white mb-2">Post Type:</label>
+                                <select id="channel-post-type-selector" class="w-full bg-dark-bg border-2 border-indigo-500/30 rounded-lg px-4 py-3 text-white text-base font-medium focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
+                                    <option value="">Loading...</option>
+                                </select>
+                                {% if post_type %}
+                                <input type="hidden" id="initial-channel-post-type" value="{{ post_type }}">
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-white mb-2">Output Channel:</label>
+                                <select id="output-channel-selector" class="w-full bg-dark-bg border-2 border-indigo-500/30 rounded-lg px-4 py-3 text-white text-base font-medium focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
+                                    <option value="">Select Channel...</option>
+                                    <option value="blog" {% if output_channel == 'blog' %}selected{% endif %}>Blog</option>
+                                    <option value="facebook" {% if output_channel == 'facebook' %}selected{% endif %}>Facebook</option>
+                                    <option value="instagram" {% if output_channel == 'instagram' %}selected{% endif %}>Instagram</option>
+                                    <option value="twitter" {% if output_channel == 'twitter' %}selected{% endif %}>Twitter</option>
+                                    <option value="newsletter" {% if output_channel == 'newsletter' %}selected{% endif %}>Newsletter</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="output-channels-content" class="space-y-4">
+                        <div class="p-4 bg-[#23273a] rounded-lg border border-dark-border">
+                            <p class="text-dark-text">Select a post type and output channel above to view and configure channel-specific substages.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Substage Metadata Tab -->
+                <div id="substage-metadata-tab" class="tab-panel">
+                    <div class="mb-4 p-4 bg-indigo-950/20 border border-indigo-500/20 rounded-lg">
+                        <h3 class="text-base font-semibold text-white mb-2">
+                            <i class="fas fa-info-circle text-indigo-400 mr-2"></i>Substage Metadata
+                        </h3>
+                        <p class="text-sm text-dark-text mb-2">
+                            <strong>What it does:</strong> View and edit metadata for all available substages in the system. This includes the display label, route function (which page it links to), stage assignment, and display order. This is the master list of all substages that can be assigned to post types.
+                        </p>
+                        <p class="text-sm text-dark-text">
+                            <strong>How to use:</strong> Browse the table below to see all substages. Click "Edit" on any substage to modify its label, route function, stage, or order. Use "Add Substage" to create new substages (rarely needed as most are predefined). Changes here affect all post types that use this substage.
+                        </p>
+                    </div>
+                    <div class="mb-4 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-white">All Substages</h3>
+                        <button id="add-substage-btn" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
+                            <i class="fas fa-plus"></i> Add Substage
+                        </button>
+                    </div>
+                    <div id="substage-metadata-content">
+                        <p class="text-dark-text" id="substage-metadata-loading">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Usage Overview Tab -->
+                <div id="usage-overview-tab" class="tab-panel">
+                    <div class="mb-4 p-4 bg-indigo-950/20 border border-indigo-500/20 rounded-lg">
+                        <h3 class="text-base font-semibold text-white mb-2">
+                            <i class="fas fa-chart-bar text-indigo-400 mr-2"></i>Usage Overview
+                        </h3>
+                        <p class="text-sm text-dark-text mb-2">
+                            <strong>What it does:</strong> Provides a comprehensive matrix view showing which substages are used by which post types and output channels. This is useful for understanding the overall configuration and identifying unused or overused substages.
+                        </p>
+                        <p class="text-sm text-dark-text">
+                            <strong>How to use:</strong> Use the filters below to narrow down the view by stage or post type. The matrix shows which substages are active (✓) for each post type. This is a read-only overview - make changes in the Post Types or Output Channels tabs.
+                        </p>
+                    </div>
+                    <div class="mb-4 p-4 bg-[#23273a] rounded-lg border border-dark-border">
+                        <label class="block text-sm font-semibold text-white mb-3">Filters:</label>
+                        <div class="flex gap-4">
+                            <div>
+                                <label class="block text-xs text-dark-text mb-1">Stage:</label>
+                                <select id="overview-stage-filter" class="bg-dark-bg border-2 border-indigo-500/30 rounded-lg px-4 py-2 text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
+                                    <option value="">All Stages</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-dark-text mb-1">Post Type:</label>
+                                <select id="overview-post-type-filter" class="bg-dark-bg border-2 border-indigo-500/30 rounded-lg px-4 py-2 text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
+                                    <option value="">All Post Types</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="usage-overview-content">
+                        <p class="text-dark-text" id="usage-overview-loading">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    {% include 'shared/footer.html' %}
+
+    <script src="/static/js/settings/substage-management.js"></script>
+</body>
+</html>
+

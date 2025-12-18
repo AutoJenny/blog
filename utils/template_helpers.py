@@ -7,7 +7,7 @@ Provides helper functions for ensuring consistent template variables across rout
 from config.database import db_manager
 from utils.taxonomy_helpers import get_post_type
 from config.template_mappings import get_template_path
-from config.post_type_substages import get_substages_for_post_type, get_substage_metadata, get_substage_label
+from utils.substage_config import get_substages_for_post_type, get_substage_metadata, get_substage_label
 import logging
 
 logger = logging.getLogger(__name__)
@@ -129,7 +129,7 @@ def get_substages_for_navbar(post_type, stage):
     Returns:
         list: List of dicts with 'key', 'label', 'route_function', 'order'
     """
-    from config.post_type_substages import get_substages_with_metadata
+    from utils.substage_config import get_substages_with_metadata
     
     substages = get_substages_with_metadata(post_type, stage)
     return substages

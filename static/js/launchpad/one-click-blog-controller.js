@@ -67,6 +67,11 @@ class OneClickPublicationController {
         // Stub function for loadPipelineForPostType (if called from elsewhere)
         window.loadPipelineForPostType = async (postId, postType) => {
             console.log('[One-Click Publication Controller] loadPipelineForPostType called with:', postId, postType);
+            
+            // Update substage management link if function exists in template
+            if (typeof updateSubstageManagementLink === 'function') {
+                updateSubstageManagementLink();
+            }
             if (this.pipelineManager && postId) {
                 await this.pipelineManager.setPostId(postId);
             }
@@ -156,6 +161,11 @@ class OneClickPublicationController {
             if (!category && !itemId) {
                 await this.nextUpPanel.loadNextUp();
                 await this.scheduleManager.loadCurrentSchedule();
+            }
+            
+            // Update substage management link with initial context (if function exists)
+            if (typeof updateSubstageManagementLink === 'function') {
+                updateSubstageManagementLink();
             }
             
             // Initialize pipeline with post ID (prioritize URL parameter, then Next Up)

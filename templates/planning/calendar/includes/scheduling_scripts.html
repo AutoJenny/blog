@@ -238,6 +238,12 @@ function createCategoryCell(items, categoryClass, year, week) {
         // Map categoryClass to API category for unified component
         const apiCategory = categoryMap[categoryClass] || categoryClass;
         
+        // Check if unified-item-card is loaded
+        if (typeof window.createUnifiedItemCard !== 'function') {
+            console.error('window.createUnifiedItemCard is not available. Make sure unified-item-card.js is loaded.');
+            return null;
+        }
+        
         // Use unified item card component
         const card = window.createUnifiedItemCard(item, {
             type: categoryClass,
@@ -861,7 +867,18 @@ async function deleteItem() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadSchedulingRange(null, null, null);
+    // Wait for unified-item-card to be available
+    function waitForUnifiedCard(callback) {
+        if (typeof window.createUnifiedItemCard === 'function') {
+            callback();
+        } else {
+            console.warn('Waiting for unified-item-card.js to load...');
+            setTimeout(() => waitForUnifiedCard(callback), 100);
+        }
+    }
+    
+    waitForUnifiedCard(() => {
+        loadSchedulingRange(null, null, null);
     
     document.getElementById('nav-year-back').addEventListener('click', () => {
         if (viewStartYear !== null && viewStartWeek !== null) {
@@ -889,6 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newRange = shiftWeeks(viewStartYear, viewStartWeek, 52);
             loadSchedulingRange(newRange.year, newRange.week, DEFAULT_RANGE_WEEKS);
         }
+    });
     });
 });
 </script>

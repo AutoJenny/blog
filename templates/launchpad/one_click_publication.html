@@ -80,6 +80,14 @@
                         <i class="fas fa-arrow-left"></i>
                         Back to Dashboard
                     </a>
+                    <a href="/settings/substage-management" 
+                       id="substage-management-link"
+                       class="text-indigo-400 hover:text-indigo-300 hover:underline" 
+                       style="text-decoration:none; font-size:14px; display:flex; align-items:center; gap:6px;"
+                       target="_blank">
+                        <i class="fas fa-sitemap"></i>
+                        Manage Substages
+                    </a>
                 </div>
                 <h1><i class="fas fa-magic"></i> One-Click Publication</h1>
                 <p>Automated Multi-Channel Publication Creation (Blog, Facebook, Instagram, Twitter, Newsletter)</p>
@@ -1925,6 +1933,10 @@ function updateStepButtonState(stepId, state) {
                 postTypeSelector.addEventListener('change', async () => {
                     const selectedPostType = postTypeSelector.value;
                     const postId = getSelectedPostId();
+                    
+                    // Update substage management link
+                    updateSubstageManagementLink();
+                    
                     if (postId) {
                         // Update pipeline for the selected post type
                         await filterSubstagesByPostType(selectedPostType);
@@ -2312,6 +2324,29 @@ function updateStepButtonState(stepId, state) {
         return () => { console.warn(`No run function for step: ${stepId}`); };
     }
 
+    // Update substage management link with current context
+    function updateSubstageManagementLink() {
+        const link = document.getElementById('substage-management-link');
+        if (!link) return;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('post_id');
+        const output = urlParams.get('output') || 'blog';
+        const postType = getSelectedPostType();
+        
+        let url = '/settings/substage-management';
+        const params = [];
+        if (postId) params.push(`post_id=${postId}`);
+        if (postType) params.push(`post_type=${postType}`);
+        if (output) params.push(`output=${output}`);
+        
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+        
+        link.href = url;
+    }
+    
     // Load pipeline dynamically based on post type
     // Get currently selected post type from dropdown (or fallback to inferred)
     function getSelectedPostType(inferredType = 'themed') {
@@ -2389,6 +2424,9 @@ function updateStepButtonState(stepId, state) {
             if (postTypeSelector) {
                 postTypeSelector.value = postType;
             }
+            
+            // Update substage management link
+            updateSubstageManagementLink();
             
             // Filter and reorder substages based on post_type
             await filterSubstagesByPostType(postType);

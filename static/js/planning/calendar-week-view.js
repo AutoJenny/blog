@@ -147,6 +147,20 @@ function buildItemCard(item, options) {
 function renderItems(container, items, type, year, week) {
   if (!items || !Array.isArray(items) || items.length === 0) return;
   
+  // Check if unified-item-card is loaded
+  if (typeof window.createUnifiedItemCard !== 'function') {
+    console.error('window.createUnifiedItemCard is not available. Waiting for unified-item-card.js to load...');
+    // Wait a bit and retry
+    setTimeout(() => {
+      if (typeof window.createUnifiedItemCard === 'function') {
+        renderItems(container, items, type, year, week);
+      } else {
+        console.error('window.createUnifiedItemCard still not available after wait');
+      }
+    }, 100);
+    return;
+  }
+  
   // Use current week context if not provided
   const itemYear = year || window.currentYear || new Date().getFullYear();
   const itemWeek = week || window.currentWeek || getISOWeekInfo(new Date()).weekNumber;
@@ -280,7 +294,9 @@ function renderItems(container, items, type, year, week) {
     if (item.id) card.dataset.itemId = item.id;
     if (postId) card.dataset.postId = postId;
     
+    console.log('Appending card to container:', container.id || container.className, 'card type:', type, 'title:', title);
     container.appendChild(card);
+    console.log('Card appended, container now has', container.children.length, 'children');
   });
 }
 
@@ -411,9 +427,19 @@ function escapeHtml(text) {
 }
 
 async function loadWeek(year, weekNumber) {
-  document.getElementById('week-year').textContent = String(year);
+  console.log('loadWeek called with year:', year, 'week:', weekNumber);
+  console.log('window.createUnifiedItemCard available:', typeof window.createUnifiedItemCard);
   
-  document.getElementById('week-number').textContent = String(weekNumber);
+  const weekYearEl = document.getElementById('week-year');
+  const weekNumberEl = document.getElementById('week-number');
+  
+  if (!weekYearEl || !weekNumberEl) {
+    console.error('Week view elements not found, cannot load week');
+    return;
+  }
+  
+  weekYearEl.textContent = String(year);
+  weekNumberEl.textContent = String(weekNumber);
   
   // SINGLE SOURCE OF TRUTH: Update URL using WeekContext
   if (window.WeekContext) {
@@ -459,7 +485,10 @@ async function loadWeek(year, weekNumber) {
       header.innerHTML = `${label}<span class="day-num">${dayNum}</span>`;
     }
   }
-  document.getElementById('week-dates').textContent = `${formatDate(dates[0])} – ${formatDate(dates[6])}`;
+  const weekDatesEl = document.getElementById('week-dates');
+  if (weekDatesEl) {
+    weekDatesEl.textContent = `${formatDate(dates[0])} – ${formatDate(dates[6])}`;
+  }
 
   // Load data in parallel
   const ideasPromise = fetchJSON(`/planning/api/calendar/ideas/week/${weekNumber}`); // week-only
@@ -497,6 +526,13 @@ async function loadWeek(year, weekNumber) {
       schedule = Array.isArray(scheduleData) ? scheduleData : (scheduleData?.schedule || []);
       // Store full scheduleData for theme lookup (includes selected_theme_id at top level)
       window.currentScheduleData = scheduleData;
+      console.log('Schedule data loaded:', {
+        isArray: Array.isArray(scheduleData),
+        hasSchedule: !!scheduleData?.schedule,
+        scheduleLength: schedule.length,
+        selected_theme_id: scheduleData?.selected_theme_id,
+        scheduleDataKeys: scheduleData ? Object.keys(scheduleData) : []
+      });
     }
     // Combine product and blog_post syndication schedules
     const productSchedules = productSyndicationRes.status === 'fulfilled' ? (productSyndicationRes.value.schedules || []) : [];
@@ -532,11 +568,36 @@ async function loadWeek(year, weekNumber) {
     }
   } catch (e) {
     console.error('Error loading week data:', e);
+    console.error('Stack trace:', e.stack);
     // Ignore; page still usable
+  }
+  
+  // Check if we have the required row containers
+  const blogRow = document.getElementById('blog-row');
+  const wordsPhrasesRow = document.getElementById('words-phrases-row');
+  const annualEventsRow = document.getElementById('annual-events-row');
+  const specialEventsRow = document.getElementById('special-events-row');
+  const syndicationRow = document.getElementById('syndication-row');
+  
+  if (!blogRow || !wordsPhrasesRow || !annualEventsRow || !specialEventsRow || !syndicationRow) {
+    console.error('Required row containers not found:', {
+      blogRow: !!blogRow,
+      wordsPhrasesRow: !!wordsPhrasesRow,
+      annualEventsRow: !!annualEventsRow,
+      specialEventsRow: !!specialEventsRow,
+      syndicationRow: !!syndicationRow
+    });
+    return;
   }
 
   // Get filter toggles
-  const showBlog = document.getElementById('toggle-blog')?.checked !== false;
+  const toggleBlog = document.getElementById('toggle-blog');
+  const showBlog = toggleBlog?.checked !== false;
+  console.log('Filter toggles:', {
+    toggleBlog: !!toggleBlog,
+    showBlog,
+    toggleBlogChecked: toggleBlog?.checked
+  });
   const showAnnualEvents = document.getElementById('toggle-annual-events')?.checked !== false;
   const showSpecialEvents = document.getElementById('toggle-special-events')?.checked !== false;
   const showSyndication = document.getElementById('toggle-syndication')?.checked !== false;
@@ -545,7 +606,11 @@ async function loadWeek(year, weekNumber) {
   // Build row grids cells for rows container
   const ensureRowCells = (rowId) => {
     const row = document.getElementById(rowId);
-    if (!row) return null;
+    console.log(`ensureRowCells called for ${rowId}, row found:`, !!row);
+    if (!row) {
+      console.error(`Row ${rowId} not found!`);
+      return null;
+    }
     row.innerHTML = '';
     const cells = [];
     for (let i = 1; i <= 7; i++) {
@@ -555,10 +620,20 @@ async function loadWeek(year, weekNumber) {
       row.appendChild(cell);
       cells.push(cell);
     }
+    console.log(`Created ${cells.length} cells for ${rowId}`);
+    // Verify cells were created
+    for (let i = 1; i <= 7; i++) {
+      const checkCell = document.getElementById(`${rowId}-day-${i}`);
+      if (!checkCell) {
+        console.error(`Cell ${rowId}-day-${i} was not created!`);
+      }
+    }
     return cells;
   };
 
+  console.log('About to create row cells');
   const blogCells = ensureRowCells('blog-row');
+  console.log('blogCells created:', blogCells ? blogCells.length : 'null');
   const annualEventsCells = ensureRowCells('annual-events-row');
   const specialEventsCells = ensureRowCells('special-events-row');
   const syndicationCells = ensureRowCells('syndication-row');
@@ -572,16 +647,23 @@ async function loadWeek(year, weekNumber) {
   
   // Get scheduleData from window (set earlier in loadWeek)
   const scheduleData = window.currentScheduleData || {};
+  console.log('Building themes from scheduleData:', {
+    hasScheduleData: !!scheduleData,
+    selected_theme_id: scheduleData?.selected_theme_id,
+    scheduleLength: schedule?.length || 0
+  });
   
   // Check for selected_theme_id at top level (from new cyclic system)
   if (scheduleData && scheduleData.selected_theme_id) {
     const themeId = scheduleData.selected_theme_id;
+    console.log('Found selected_theme_id:', themeId);
     if (!scheduledThemeIds.has(themeId)) {
       scheduledThemeIds.add(themeId);
       // Find the theme entry in schedule array to get title
       const themeEntry = schedule && Array.isArray(schedule) 
         ? schedule.find(s => (s.theme_id === themeId || s.selected_theme_id === themeId) && s.type === 'theme_selection')
         : null;
+      console.log('Theme entry found in schedule:', themeEntry);
       
       themes.push({
         id: themeId,
@@ -593,6 +675,7 @@ async function loadWeek(year, weekNumber) {
         _fromSchedule: true,
         _from_cyclic_system: true
       });
+      console.log('Added theme to themes array, themes.length:', themes.length);
     }
   }
   
@@ -841,11 +924,14 @@ async function loadWeek(year, weekNumber) {
   }
   
   // Render consolidated Blog row: Theme (Mon), Recipe (Wed), Surname profile (Fri), Product profile (Sat)
+  console.log('Checking if should render blog row:', { showBlog, blogCells: !!blogCells, blogCellsLength: blogCells?.length });
   if (showBlog && blogCells) {
+    console.log('Rendering blog row, themes:', themes.length, 'schedule items:', schedule.length);
     // Theme for Monday
     const themeEntry = themes[0];
     if (themeEntry) {
       const target = document.getElementById('blog-row-day-1');
+      console.log('Theme entry found:', themeEntry, 'target element:', !!target);
       if (target) {
         const themeItem = {
           id: themeEntry.id,
@@ -854,8 +940,13 @@ async function loadWeek(year, weekNumber) {
           post_status: themeEntry.post_status || null,
           _theme: true
         };
+        console.log('Calling renderItems for theme');
         renderItems(target, [themeItem], 'theme', year, weekNumber);
+      } else {
+        console.error('blog-row-day-1 element not found!');
       }
+    } else {
+      console.log('No theme entry found, themes array:', themes);
     }
 
     // Recipe for Wednesday
@@ -914,7 +1005,46 @@ async function loadWeek(year, weekNumber) {
   renderSocialFocuses(socialFocuses);
 }
 
+// Module entry point - runs immediately when module loads
+console.log('calendar-week-view.js module loaded');
+
 (function init() {
+  console.log('init() function called');
+  
+  // Wait for unified-item-card to be available
+  if (typeof window.createUnifiedItemCard !== 'function') {
+    console.log('Waiting for createUnifiedItemCard, retrying in 100ms...');
+    setTimeout(init, 100);
+    return;
+  }
+  
+  // Check if week-view elements exist (only initialize if week-view tab is active)
+  const weekViewContainer = document.querySelector('.calendar-week-view');
+  if (!weekViewContainer) {
+    console.log('Week view container not found, skipping initialization');
+    return;
+  }
+  console.log('Week view container found');
+  
+  // Check for required elements - retry if not found (DOM might not be ready)
+  const prevWeekBtn = document.getElementById('prev-week');
+  const nextWeekBtn = document.getElementById('next-week');
+  const weekYearEl = document.getElementById('week-year');
+  const weekNumberEl = document.getElementById('week-number');
+  
+  if (!prevWeekBtn || !nextWeekBtn || !weekYearEl || !weekNumberEl) {
+    console.log('Week view elements not found, retrying in 100ms...', {
+      prevWeekBtn: !!prevWeekBtn,
+      nextWeekBtn: !!nextWeekBtn,
+      weekYearEl: !!weekYearEl,
+      weekNumberEl: !!weekNumberEl
+    });
+    setTimeout(init, 100);
+    return;
+  }
+  
+  console.log('Week view elements found, proceeding with initialization');
+  
   // SINGLE SOURCE OF TRUTH: Get week context from URL only
   let state;
   if (window.WeekContext) {
@@ -960,7 +1090,7 @@ async function loadWeek(year, weekNumber) {
     }
   }, 50);
 
-  document.getElementById('prev-week').addEventListener('click', () => {
+  prevWeekBtn.addEventListener('click', () => {
     // SINGLE SOURCE OF TRUTH: Get current week from WeekContext
     const currentWeek = window.WeekContext ? window.WeekContext.getWeekContextWithDefault() : { year: state.year, week: state.weekNumber };
     const start = getWeekStartDate(currentWeek.year, currentWeek.week);
@@ -969,7 +1099,7 @@ async function loadWeek(year, weekNumber) {
     loadWeek(info.year, info.weekNumber);
   });
 
-  document.getElementById('next-week').addEventListener('click', () => {
+  nextWeekBtn.addEventListener('click', () => {
     // SINGLE SOURCE OF TRUTH: Get current week from WeekContext
     const currentWeek = window.WeekContext ? window.WeekContext.getWeekContextWithDefault() : { year: state.year, week: state.weekNumber };
     const start = getWeekStartDate(currentWeek.year, currentWeek.week);
@@ -979,33 +1109,36 @@ async function loadWeek(year, weekNumber) {
   });
 
   // "This week" button - recalculate current week from today's date
-  document.getElementById('this-week-btn').addEventListener('click', () => {
-    // Use WeekContext's standard ISO week calculation if available
-    const now = new Date();
-    let currentWeekInfo;
-    if (window.WeekContext && window.WeekContext.getISOWeekInfo) {
-      currentWeekInfo = window.WeekContext.getISOWeekInfo(now);
-    } else {
-      currentWeekInfo = getISOWeekInfo(now);
-    }
-    
-    // Get current URL to check if we're already on this week
-    const currentUrl = new URL(window.location.href);
-    const currentYear = parseInt(currentUrl.searchParams.get('year') || '0');
-    const currentWeek = parseInt(currentUrl.searchParams.get('week') || '0');
-    
-    // Build new URL
-    const newUrl = `/planning/posts/${window.postId || 0}/calendar/week-view?year=${currentWeekInfo.year}&week=${currentWeekInfo.weekNumber}`;
-    
-    // If we're already on this week, force a reload by adding a timestamp
-    if (currentYear === currentWeekInfo.year && currentWeek === currentWeekInfo.weekNumber) {
-      // Force reload by calling loadWeek directly
-      loadWeek(currentWeekInfo.year, currentWeekInfo.weekNumber);
-    } else {
-      // Navigate to new week
-      window.location.href = newUrl;
-    }
-  });
+  const thisWeekBtn = document.getElementById('this-week-btn');
+  if (thisWeekBtn) {
+    thisWeekBtn.addEventListener('click', () => {
+      // Use WeekContext's standard ISO week calculation if available
+      const now = new Date();
+      let currentWeekInfo;
+      if (window.WeekContext && window.WeekContext.getISOWeekInfo) {
+        currentWeekInfo = window.WeekContext.getISOWeekInfo(now);
+      } else {
+        currentWeekInfo = getISOWeekInfo(now);
+      }
+      
+      // Get current URL to check if we're already on this week
+      const currentUrl = new URL(window.location.href);
+      const currentYear = parseInt(currentUrl.searchParams.get('year') || '0');
+      const currentWeek = parseInt(currentUrl.searchParams.get('week') || '0');
+      
+      // Build new URL - use unified calendar route
+      const newUrl = `/planning/calendar?year=${currentWeekInfo.year}&week=${currentWeekInfo.weekNumber}&tab=week-view`;
+      
+      // If we're already on this week, force a reload by calling loadWeek directly
+      if (currentYear === currentWeekInfo.year && currentWeek === currentWeekInfo.weekNumber) {
+        // Force reload by calling loadWeek directly
+        loadWeek(currentWeekInfo.year, currentWeekInfo.weekNumber);
+      } else {
+        // Navigate to new week
+        window.location.href = newUrl;
+      }
+    });
+  }
 
   // Week picker - month/week list interface
   const pickerBtn = document.getElementById('week-picker-btn');
@@ -1015,6 +1148,10 @@ async function loadWeek(year, weekNumber) {
   const pickerYearPrev = document.getElementById('picker-year-prev');
   const pickerYearNext = document.getElementById('picker-year-next');
   const pickerMonths = document.getElementById('week-picker-months');
+  
+  if (!pickerBtn || !pickerPopup || !pickerCancel || !pickerYear || !pickerYearPrev || !pickerYearNext || !pickerMonths) {
+    console.log('Week picker elements not found, skipping picker initialization');
+  } else {
   
   let selectedPickerYear = state.year;
 
@@ -1172,12 +1309,13 @@ async function loadWeek(year, weekNumber) {
     pickerPopup.style.display = 'none';
   });
 
-  // Close picker when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!pickerPopup.contains(e.target) && e.target !== pickerBtn) {
-      pickerPopup.style.display = 'none';
-    }
-  });
+    // Close picker when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!pickerPopup.contains(e.target) && e.target !== pickerBtn) {
+        pickerPopup.style.display = 'none';
+      }
+    });
+  }
 
   // Filter change handlers
   const attach = (id) => {
@@ -1231,7 +1369,10 @@ async function loadWeek(year, weekNumber) {
   updateFilterVisuals();
 
   // Load the saved week (or current week if none saved)
-  loadWeek(state.year, state.weekNumber);
+  console.log('Initializing week view with state:', state);
+  loadWeek(state.year, state.weekNumber).catch(err => {
+    console.error('Error in loadWeek:', err);
+  });
 })();
 
 // Social Focus Functions

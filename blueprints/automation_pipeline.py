@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request
 import json
 from datetime import datetime, timedelta, date
 from config.database import db_manager
-from config.post_type_substages import get_substages_for_post_type, is_substage_valid_for_post_type
+from utils.substage_config import get_substages_for_post_type, is_substage_valid_for_post_type
 from config.output_channel_stages import (
     get_stages_for_output,
     get_substages_for_output,
@@ -453,7 +453,7 @@ def get_pipeline_status(post_id):
 def get_substages_for_post_type_api(post_type):
     """Get substages configuration for a post type, optionally filtered by output channel"""
     try:
-        from config.post_type_substages import get_substages_with_metadata
+        from utils.substage_config import get_substages_with_metadata
         
         # Normalize post_type
         if post_type not in ['themed', 'profile', 'generated', 'recipe', 'weekly_word', 'weekly_phrase', 'weekly_insult']:
@@ -569,7 +569,7 @@ def get_pipeline_for_post(post_id):
         # Build pipeline definition
         if output_config.get('use_post_type_config'):
             # Use post_type_substages
-            from config.post_type_substages import get_substages_with_metadata
+            from utils.substage_config import get_substages_with_metadata
             stages_data = get_substages_with_metadata(post_type)
             
             pipeline_stages = []
