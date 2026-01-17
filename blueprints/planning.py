@@ -122,11 +122,15 @@ def planning_calendar_new():
     year = request.args.get('year', type=int)
     week = request.args.get('week', type=int)
     
+    # Calculate actual current week (for display purposes)
+    now = datetime.now()
+    actual_current_year = now.isocalendar()[0]
+    actual_current_week = now.isocalendar()[1]
+    
     # If not provided, use current week
     if not year or not week:
-        now = datetime.now()
-        year = year or now.year
-        week = week or now.isocalendar()[1]
+        year = year or actual_current_year
+        week = week or actual_current_week
     
     # Determine active tab from URL path or default to week-view
     active_tab = request.args.get('tab', 'week-view')
@@ -134,8 +138,8 @@ def planning_calendar_new():
     return render_template('planning/calendar/new_calendar.html',
                           year=year,
                           week=week,
-                          current_year=year,
-                          current_week=week,
+                          current_year=actual_current_year,
+                          current_week=actual_current_week,
                           active_tab=active_tab,
                           blueprint_name='planning')
 

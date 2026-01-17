@@ -9,6 +9,7 @@ import logging
 
 # JSON loader (expects calendar_json_loader.py)
 from utils.calendar_json_loader import load_category_year
+from utils.publication_status_resolver import resolve_post_for_calendar_item
 
 logger = logging.getLogger(__name__)
 
@@ -190,10 +191,32 @@ def scheduling_all():
 
             for cat in CATEGORIES:
                 entry = data[cat].get(y, {}).get(w)
-                if entry:
-                    item = build_schedule_item(cat, entry)
-                    if item:
-                        week_items.append(item)
+                if not entry:
+                    continue
+
+                item = build_schedule_item(cat, entry)
+                if not item:
+                    continue
+
+                # Enrich with post linkage/status via central resolver (ID-only).
+                category_for_resolver = cat
+                if category_for_resolver in ("profile_product", "profile_surname"):
+                    # Profiles use post.id as their schedule ID.
+                    item_id = entry.get("id") or entry.get("item_id")
+                elif category_for_resolver in ("theme", "recipe"):
+                    item_id = entry.get("id") or entry.get("item_id")
+                else:
+                    item_id = None  # Weekly content currently has no post linkage
+
+                if item_id:
+                    status_info = resolve_post_for_calendar_item(
+                        category_for_resolver, item_id, year=y, week=w
+                    )
+                    item["post_id"] = status_info.get("post_id")
+                    item["post_exists"] = bool(status_info.get("exists"))
+                    item["post_status"] = status_info.get("status")
+
+                week_items.append(item)
 
             row["schedule"] = week_items
             merged.append(row)

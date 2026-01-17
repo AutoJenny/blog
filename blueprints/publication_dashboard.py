@@ -10,6 +10,10 @@ from utils.channel_assignment import get_channels_for_post_type
 from config.calendar_settings import CATEGORIES
 from datetime import date
 import logging
+from utils.publication_status_resolver import (
+    resolve_post_for_calendar_item,
+    normalize_queue_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -324,7 +328,6 @@ def api_dashboard_schedule():
                         description = item.get('description') or item.get('theme_description') or item.get('idea_description')
                         
                         # For recipes, if we have item_id but no title, fetch from database
-                        # Also try resolver if JSON has null values
                         if category == 'recipe':
                             if item_id and not title:
                                 cursor.execute("""
@@ -336,14 +339,6 @@ def api_dashboard_schedule():
                                 if recipe_row:
                                     title = recipe_row.get('recipe_title') or title
                                     description = recipe_row.get('recipe_description') or description
-                            elif not item_id and not title:
-                                # JSON has null values, try resolver
-                                resolved = resolve_item_for_week(category, year, week)
-                                if resolved:
-                                    item_id = resolved.get('id')
-                                    title = resolved.get('recipe_title') or title
-                                    description = resolved.get('recipe_description') or description
-                                    post_id = resolved.get('post_id') or post_id
                         
                         # For profiles, fetch title from post if missing
                         if category in ('profile_product', 'profile_surname') and not title:
@@ -357,116 +352,19 @@ def api_dashboard_schedule():
                                 post_row = cursor.fetchone()
                                 if post_row:
                                     title = post_row.get('title') or title
-                        
-                        # Fetch post status if post_id exists, or try to find post if missing
-                        post_status = None
-                        post_exists = post_id is not None
-                        
-                        # If post_id is missing, try to find existing post for this item
-                        if not post_id:
-                            if category == 'theme':
-                                # For themes, first check calendar_week_posts_v2 for this week/year
-                                cursor.execute("""
-                                    SELECT p.id, p.status
-                                    FROM calendar_week_posts_v2 cwp
-                                    JOIN post p ON cwp.post_id = p.id
-                                    WHERE cwp.year = %s 
-                                      AND cwp.week_number = %s
-                                      AND p.recipe_id IS NULL
-                                      AND p.profile_category_id IS NULL
-                                      AND (p.generated_source_type IS NULL OR p.generated_source_type = '')
-                                      AND p.status != 'deleted'
-                                    ORDER BY p.created_at DESC
-                                    LIMIT 1
-                                """, (year, week))
-                                post_row = cursor.fetchone()
-                                if post_row:
-                                    post_id = post_row.get('id')
-                                    post_exists = True
-                                else:
-                                    # If not in calendar_week_posts_v2, try matching by title
-                                    # Themed posts have NULL recipe_id, profile_category_id, and generated_source_type
-                                    if title:
-                                        cursor.execute("""
-                                            SELECT id, status
-                                            FROM post
-                                            WHERE title = %s
-                                              AND recipe_id IS NULL
-                                              AND profile_category_id IS NULL
-                                              AND (generated_source_type IS NULL OR generated_source_type = '')
-                                              AND status != 'deleted'
-                                            ORDER BY created_at DESC
-                                            LIMIT 1
-                                        """, (title,))
-                                        post_row = cursor.fetchone()
-                                        if post_row:
-                                            post_id = post_row.get('id')
-                                            post_exists = True
-                            elif category == 'recipe':
-                                # For recipes, check by recipe_id
-                                if item_id:
-                                    cursor.execute("""
-                                        SELECT id, status
-                                        FROM post
-                                        WHERE recipe_id = %s
-                                          AND status != 'deleted'
-                                        ORDER BY created_at DESC
-                                        LIMIT 1
-                                    """, (item_id,))
-                                    post_row = cursor.fetchone()
-                                    if post_row:
-                                        post_id = post_row.get('id')
-                                        post_exists = True
-                            elif category in ('profile_product', 'profile_surname'):
-                                # For profiles, check by profile_category_id
-                                if item_id:
-                                    cursor.execute("""
-                                        SELECT id, status
-                                        FROM post
-                                        WHERE profile_category_id = %s
-                                          AND status != 'deleted'
-                                        ORDER BY created_at DESC
-                                        LIMIT 1
-                                    """, (item_id,))
-                                    post_row = cursor.fetchone()
-                                    if post_row:
-                                        post_id = post_row.get('id')
-                                        post_exists = True
-                            elif category in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
-                                # For weekly items, check calendar_week_posts_v2 and match by title
-                                # Weekly posts don't have recipe_id or profile_category_id
-                                if title:
-                                    cursor.execute("""
-                                        SELECT p.id, p.status
-                                        FROM calendar_week_posts_v2 cwp
-                                        JOIN post p ON cwp.post_id = p.id
-                                        WHERE cwp.year = %s 
-                                          AND cwp.week_number = %s
-                                          AND p.recipe_id IS NULL
-                                          AND p.profile_category_id IS NULL
-                                          AND p.title = %s
-                                          AND p.status != 'deleted'
-                                        ORDER BY p.created_at DESC
-                                        LIMIT 1
-                                    """, (year, week, title))
-                                    post_row = cursor.fetchone()
-                                    if post_row:
-                                        post_id = post_row.get('id')
-                                        post_exists = True
-                        
-                        # Fetch post status if post_id exists (either from JSON or from database lookup above)
-                        if post_id:
-                            cursor.execute("""
-                                SELECT status
-                                FROM post
-                                WHERE id = %s
-                            """, (post_id,))
-                            post_row = cursor.fetchone()
-                            if post_row:
-                                raw_status = post_row.get('status')
-                                # Normalize status using helper function
-                                from blueprints.posts import get_display_status
-                                post_status = get_display_status(raw_status)
+
+                        # Resolve post status using the central resolver (ID-only matching).
+                        if category in ('theme', 'recipe', 'profile_product', 'profile_surname') and item_id:
+                            status_info = resolve_post_for_calendar_item(
+                                category, item_id, year=year, week=week
+                            )
+                            post_id = status_info.get('post_id')
+                            post_exists = bool(status_info.get('exists'))
+                            post_status = status_info.get('status')
+                        else:
+                            post_id = None
+                            post_exists = False
+                            post_status = None
                         
                         # Determine display type name
                         type_names = {
@@ -499,83 +397,64 @@ def api_dashboard_schedule():
                         
                         channels[channel].append(item_data)
         
-        # Add product posts from posting_queue
-        # Calculate week start and end dates for the ISO week
-        from datetime import datetime, timedelta
-        jan4 = datetime(year, 1, 4)
-        week_start_date = (jan4 + timedelta(weeks=week-1, days=-jan4.weekday())).date()
-        week_end_date = week_start_date + timedelta(days=6)
+        # Add social outputs (products + weekly word/phrase/insult) from posting_queue
+        # Use unified SocialOutputView helper for consistent status and Content Item linkage
+        from utils.social_output_view import get_social_outputs_for_week
         
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
-                # Query posting_queue for product posts in this week
-                cursor.execute("""
-                    SELECT 
-                        pq.id as queue_id,
-                        pq.product_id,
-                        pq.scheduled_date,
-                        pq.scheduled_time,
-                        pq.status,
-                        pq.platform,
-                        pq.content_type,
-                        cp.name as product_name,
-                        pq.generated_content
-                    FROM posting_queue pq
-                    LEFT JOIN clan_products cp ON pq.product_id = cp.id
-                    WHERE pq.content_type = 'product'
-                      AND pq.scheduled_date BETWEEN %s AND %s
-                      AND pq.status IN ('ready', 'pending')
-                    ORDER BY pq.scheduled_date, pq.scheduled_time
-                """, (week_start_date, week_end_date))
+                # Get all social outputs for this week (products and weekly items)
+                social_outputs = get_social_outputs_for_week(year, week, cursor=cursor)
                 
-                product_posts = cursor.fetchall()
-                
-                for pq in product_posts:
-                    scheduled_date = pq.get('scheduled_date')
-                    if not scheduled_date:
-                        continue
+                for output in social_outputs:
+                    channel = output['channel']
                     
-                    # Convert date to ISO weekday (1=Monday, 7=Sunday)
-                    scheduled_datetime = datetime.combine(scheduled_date, datetime.min.time())
-                    weekday = scheduled_datetime.isoweekday()
-                    
-                    # Get product name
-                    product_name = pq.get('product_name') or f"Product {pq.get('product_id')}"
-                    
-                    # Determine channel (default to facebook, but support others)
-                    platform = pq.get('platform', 'facebook')
-                    channel = 'facebook' if platform == 'facebook' else platform
-                    
-                    # Only add to channels that exist
+                    # Only add to channels that exist in our channels dict
                     if channel not in channels:
                         continue
                     
-                    # Get scheduled time
-                    scheduled_time = pq.get('scheduled_time')
-                    time_display = ''
-                    if scheduled_time:
-                        time_display = scheduled_time.strftime('%H:%M')
+                    # Skip if no scheduled date (shouldn't happen, but be safe)
+                    if not output.get('scheduled_date'):
+                        continue
                     
                     # Build item data in same format as calendar items
                     item_data = {
-                        'category': 'product',
-                        'item_id': pq.get('product_id'),
-                        'queue_id': pq.get('queue_id'),
-                        'title': product_name,
-                        'description': pq.get('generated_content', '')[:100] if pq.get('generated_content') else '',
-                        'post_id': None,  # Product posts don't have post_id
+                        'category': output.get('content_type', 'product'),  # 'product', 'weekly_word', etc.
+                        'item_id': output.get('content_item_id'),
+                        'queue_id': output['output_id'],
+                        'title': '',  # Will be filled from product/idea lookup if needed
+                        'description': '',
+                        'post_id': None,  # Social posts don't have post_id
                         'post_exists': False,
-                        'post_status': pq.get('status', 'ready'),
+                        'post_status': output['status'],  # Already normalized
                         'year': year,
                         'week': week,
                         'channel': channel,
-                        'content_format': 'product_post',
+                        'content_format': output['content_format'],
                         'is_primary': False,
-                        'day': weekday,
-                        'type_name': 'Product',
-                        'scheduled_time': time_display,
-                        'platform': platform
+                        'day': output.get('day'),
+                        'type_name': 'Product' if output.get('content_type') == 'product' else output.get('content_type', 'Social').title(),
+                        'scheduled_time': output.get('scheduled_time', ''),
+                        'platform': channel
                     }
+                    
+                    # For products, fetch product name
+                    if output.get('content_type') == 'product' and output.get('content_item_id'):
+                        cursor.execute("""
+                            SELECT name FROM clan_products WHERE id = %s
+                        """, (output['content_item_id'],))
+                        product_row = cursor.fetchone()
+                        if product_row:
+                            item_data['title'] = product_row.get('name') or f"Product {output['content_item_id']}"
+                    
+                    # For weekly items, fetch idea title from calendar_ideas
+                    elif output.get('content_type') in ('weekly_word', 'weekly_phrase', 'weekly_insult') and output.get('content_item_id'):
+                        cursor.execute("""
+                            SELECT idea_title FROM calendar_ideas WHERE id = %s
+                        """, (output['content_item_id'],))
+                        idea_row = cursor.fetchone()
+                        if idea_row:
+                            item_data['title'] = idea_row.get('idea_title') or f"Weekly {output['content_type']}"
                     
                     channels[channel].append(item_data)
         

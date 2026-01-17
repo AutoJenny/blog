@@ -142,3 +142,4 @@ def chunk_text(text: str, chunk_size: int = 3000) -> List[str]:
     
     return chunks
 
+

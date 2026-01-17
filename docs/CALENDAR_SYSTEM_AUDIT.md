@@ -138,8 +138,18 @@
 ## 🔍 **ALIGNMENT CHECK**
 
 ### Database Tables
-- ✅ `calendar_week_overrides` - **USED** by new system
-- ⚠️ `calendar_week_items` - **NOT USED** by new system (old table)
+- ✅ `calendar_week_overrides` - **USED** by new system for week-specific overrides
+- ✅ `calendar_week_items` - **CANONICAL** table for week→output persistence (blog posts)
+- ✅ `calendar_week_posts_v2` - **VIEW** over `calendar_week_items` for blog outputs
+- ⚠️ `calendar_week_items_deprecated` - **LEGACY** table (being phased out)
+- ⚠️ `calendar_schedule` - **DEPRECATED** (removed from active code)
+
+### Status Resolution
+- ✅ `utils/publication_status_resolver.py` - **CANONICAL** status resolution module
+  - ID-only matching (no title heuristics)
+  - Uses `calendar_week_posts_v2` for theme→post resolution
+  - Normalizes status to unified enum (`published`, `draft`, `scheduled`, `error`, `deleted`)
+  - All calendar APIs use resolver for consistent status display
 
 ### JSON File Structure
 - ✅ **NEW FORMAT**: Array format `[{week: 1, item_id: ..., ...}, ...]`

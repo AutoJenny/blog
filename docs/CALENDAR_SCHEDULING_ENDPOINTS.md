@@ -9,6 +9,7 @@
 - **Response**: JSON with weeks array containing schedule items
 - **Handler**: `blueprints/planning_api_calendar_scheduling_cache.py::api_calendar_scheduling_all()`
 - **Route**: Defined in `blueprints/planning.py` line 291
+- **Status Enrichment**: Items are enriched with `post_id`, `post_exists`, `post_status` via `publication_status_resolver.resolve_post_for_calendar_item()` for consistent status display across all calendar views
 
 ### 2. POST `/planning/api/calendar/override/set`
 - **Purpose**: Set a manual override for a specific week

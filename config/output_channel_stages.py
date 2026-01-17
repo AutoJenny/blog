@@ -46,7 +46,7 @@ OUTPUT_CHANNEL_STAGES = {
     ('weekly_word', 'facebook'): {
         'stages': ['content', 'imaging', 'publish'],
         'substages': {
-            'content': ['format_for_facebook', 'add_hashtags'],
+            'content': ['format_for_facebook', 'generate_caption', 'add_hashtags'],
             'imaging': ['optimize_for_facebook'],
             'publish': ['publish_to_facebook']
         }
@@ -54,7 +54,7 @@ OUTPUT_CHANNEL_STAGES = {
     ('weekly_phrase', 'facebook'): {
         'stages': ['content', 'imaging', 'publish'],
         'substages': {
-            'content': ['format_for_facebook', 'add_translation', 'add_hashtags'],
+            'content': ['format_for_facebook', 'generate_caption', 'add_translation', 'add_hashtags'],
             'imaging': ['optimize_for_facebook'],
             'publish': ['publish_to_facebook']
         }
@@ -62,7 +62,7 @@ OUTPUT_CHANNEL_STAGES = {
     ('weekly_insult', 'facebook'): {
         'stages': ['content', 'imaging', 'publish'],
         'substages': {
-            'content': ['format_for_facebook', 'add_translation', 'add_hashtags'],
+            'content': ['format_for_facebook', 'generate_caption', 'add_translation', 'add_hashtags'],
             'imaging': ['optimize_for_facebook'],
             'publish': ['publish_to_facebook']
         }

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-12-15T17:55:30.453854",
+  "timestamp": "2026-01-17T19:47:42.724962",
   "call_type": "image_upload",
   "url": "https://clan.com/clan/blog_api/uploadImage",
   "data": {
@@ -9,18 +9,18 @@
   },
   "files_info": {
     "image": {
-      "filename": "section_705_7_1765821330.jpg",
-      "mime_type": "image/jpeg",
-      "file_size": 146875,
-      "file_path": "/Users/autojenny/Documents/projects/blog/static/content/posts/705/sections/873/optimized/873.jpg"
+      "filename": "weekly_content_1089_1768679262.png",
+      "mime_type": "image/png",
+      "file_size": 110978,
+      "file_path": "/Users/autojenny/Documents/projects/blog/static/content/weekly_posts/weekly_word/1089/square_image.png"
     }
   },
   "json_args_raw": null,
   "html_content_length": 0,
   "image_info": {
-    "original_path": "/Users/autojenny/Documents/projects/blog/static/content/posts/705/sections/873/optimized/873.jpg",
-    "filename": "section_705_7_1765821330.jpg",
-    "file_size": 146875,
-    "mime_type": "image/jpeg"
+    "original_path": "/Users/autojenny/Documents/projects/blog/static/content/weekly_posts/weekly_word/1089/square_image.png",
+    "filename": "weekly_content_1089_1768679262.png",
+    "file_size": 110978,
+    "mime_type": "image/png"
   }
 }

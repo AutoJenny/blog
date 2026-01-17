@@ -1,5 +1,130 @@
 # Changelog
 
+## 2026-01-17 - Weekly Content Image & Caption Generation System
+
+### Added
+- **Weekly Content Social Media Automation**: Complete system for automated Facebook posting of weekly word/phrase/insult content
+  - **Image Generation**: Square 1080×1080 images using ImageMagick with branded typography
+  - **Caption Generation**: Ollama-powered caption generation with 30 style variation prompts
+  - **Facebook Integration**: Posts to both Facebook pages (Scotweb CLAN and CLAN by Scotweb) using `/photos` endpoint
+- **Database Schema**: Extended `posting_queue` table with metadata columns:
+  - `generated_caption`, `pinned_comment`, `chosen_prompt_style_id`
+  - `image_path`, `ollama_model`, `generation_timestamp`
+- **Configuration Files**:
+  - `config/weekly_content_image_config.py` - Styling configuration (colors, fonts, layout, logo)
+  - `config/weekly_content_caption_prompts.py` - System prompt and 30 variation prompts
+- **Utility Modules**:
+  - `utils/weekly_content_data_extractor.py` - Extracts data from `calendar_ideas`
+  - `utils/weekly_content_caption_generator.py` - Generates captions using Ollama
+  - `utils/weekly_content_image_renderer.py` - Generates images using ImageMagick
+- **Substage Execution Functions** (in `blueprints/automation_execute.py`):
+  - `execute_format_for_facebook()` - Formats content for Facebook
+  - `execute_generate_caption()` - Generates caption with Ollama
+  - `execute_add_translation()` - Verifies translation
+  - `execute_add_hashtags()` - Adds hashtags to caption
+  - `execute_optimize_for_facebook()` - Generates square image
+  - `execute_publish_to_facebook()` - Posts to both Facebook pages
+- **Workflow Integration**: Updated `config/output_channel_stages.py` to include `generate_caption` in weekly content Facebook workflows
+- **Documentation**:
+  - `docs/WEEKLY_CONTENT_SYSTEM_TECHNICAL_REFERENCE.md` - Complete technical reference
+  - `docs/temp/WEEKLY_CONTENT_IMAGE_CAPTION_IMPLEMENTATION_PLAN.md` - Implementation plan
+  - `docs/temp/GO_LIVE_CHECKLIST.md` - Go-live checklist
+  - `docs/temp/TESTING_GUIDE.md` - Testing procedures
+
+### Changed
+- **ImageMagick Compatibility**: Updated to use `magick` command (v7 compatible)
+- **Logo Handling**: Improved error handling for missing logo files
+- **Font Configuration**: Updated to use system fonts (Arial, Baskerville) for compatibility
+- **Workflow Configuration**: Added `generate_caption` substage to weekly content Facebook pipelines
+
+### Technical Details
+- **Image Generation**: 1080×1080 square images with layered typography (header, main phrase, translation, footer, logo)
+- **Caption Rules**: Exactly 1 question, includes translation, max 1 hashtag, friendly Scots cultural tone
+- **Facebook Posting**: Uses same pattern as product posting - posts to both pages using `/photos` endpoint
+- **Image URLs**: Converts local file paths to public URLs for Facebook API
+- **Error Handling**: Graceful fallbacks for missing logo, Ollama failures, partial Facebook posting failures
+
+### Files Created
+- `config/weekly_content_image_config.py`
+- `config/weekly_content_caption_prompts.py`
+- `utils/weekly_content_data_extractor.py`
+- `utils/weekly_content_caption_generator.py`
+- `utils/weekly_content_image_renderer.py`
+- `migrations/20260117_add_weekly_content_metadata_to_posting_queue.sql`
+- `migrations/run_migration_weekly_content_metadata.py`
+- `scripts/test_weekly_content_system.py`
+- `docs/WEEKLY_CONTENT_SYSTEM_TECHNICAL_REFERENCE.md`
+
+### Files Modified
+- `blueprints/automation_execute.py` - Added 6 substage execution functions
+- `blueprints/automation_core.py` - Updated substage router
+- `utils/posting_queue_helpers.py` - Added `get_posting_queue_row()` helper
+- `config/output_channel_stages.py` - Added `generate_caption` to workflows
+
+### Migration
+- **Database**: `migrations/20260117_add_weekly_content_metadata_to_posting_queue.sql` - Adds 6 metadata columns and 2 indexes
+
+### Status
+✅ **Production Ready** - All components implemented and tested. Ready for end-to-end testing with real data.
+
+---
+
+## 2025-12-18 - Unified Output Framework: Completion Phase
+
+### Added
+- **Weekly Social Post Creation**: `automation_core.py::create_post_from_item()` now creates `posting_queue` rows for weekly content when social-only formats are detected, with proper `idea_id` linkage
+- **Documentation**: Created reference docs and updated core system documentation
+  - `docs/PUBLICATION_STATUS_RESOLVER_REFERENCE.md` - Complete API reference for status resolver
+  - `docs/WEEKLY_SOCIAL_POST_CREATION_AUDIT.md` - Audit of all creation points
+  - `docs/DOCUMENTATION_CLEANUP_AUDIT.md` - Documentation cleanup analysis
+  - `docs/STATUS_DISPLAY_VERIFICATION_REPORT.md` - Testing and verification results
+
+### Changed
+- **Documentation Updates**:
+  - `docs/CALENDAR_SYSTEM_AUDIT.md` - Updated to clarify `calendar_week_items` is canonical, added status resolver section
+  - `docs/CALENDAR_SCHEDULING_ENDPOINTS.md` - Documented status enrichment in scheduling API
+  - `docs/UNIFIED_OUTPUT_IMPLEMENTATION_LOG.md` - Documented Phase 1.2 completion
+
+### Verified
+- **Status Display Consistency**: All calendar views (week view, scheduling, publication schedule) show consistent status
+- **Triskelion Example**: Previously problematic theme now shows correct "published" status across all views
+- **Social Output Linkage**: `SocialOutputView` correctly handles both `idea_id=NULL` (legacy) and `idea_id IS NOT NULL` (new) cases
+
+### Technical Details
+- Weekly social posts are created automatically when `create_post_from_item` is called for weekly content with social-only formats
+- All weekly social posts created through this flow have `idea_id` properly populated
+- Status resolver ensures ID-only matching with no title heuristics
+- All documentation is now current and accurate
+
+## 2025-12-18 - Unified Output Framework: Social Outputs Integration
+
+### Added
+- **Social Output View Helper** (`utils/social_output_view.py`): Unified abstraction for social Outputs (posting_queue rows) that exposes them in the same conceptual framework as blog Outputs
+  - `get_social_outputs_for_week()` - returns all social Outputs for a week slot
+  - `get_social_outputs_for_content_item()` - returns social Outputs for a specific Content Item
+  - Normalizes channel, content_format, status, and Content Item linkage (ID-only)
+- **Posting Queue Helpers** (`utils/posting_queue_helpers.py`): Utility functions for creating weekly social posts with proper `idea_id` linkage
+  - `create_weekly_social_post()` - creates posting_queue row with idea_id for weekly Content Items
+  - `update_weekly_social_post_idea_id()` - backfill helper for existing rows
+- **Schema Migration**: Added `idea_id` column to `posting_queue` table for ID-only linkage to weekly Content Items (`calendar_ideas.id`)
+
+### Changed
+- **Publication Dashboard**: Refactored to use `SocialOutputView` helper instead of ad-hoc `posting_queue` queries
+  - All social Outputs (products + weekly items) now use unified abstraction
+  - Status normalization is consistent via `normalize_queue_status`
+  - Content Item linkage is explicit (ID-only, no text matching)
+- **Documentation**: Created/updated unified output framework docs
+  - `docs/SOCIAL_OUTPUT_VIEW.md` - design and API reference
+  - `docs/UNIFIED_OUTPUT_DATA_MODEL.md` - notes `idea_id` linkage for weekly items
+  - `docs/UNIFIED_OUTPUT_REFACTOR_PLAN.md` - added Phase 4 section
+  - `docs/UNIFIED_OUTPUT_IMPLEMENTATION_LOG.md` - tracks all changes
+
+### Technical Details
+- Migration `20251218_add_idea_id_to_posting_queue.sql` adds nullable `idea_id` column + index
+- `SocialOutputView` maps `product_id` → `content_type="product"` and `idea_id` → `content_type="weekly_word/phrase/insult"`
+- Weekly social posts created going forward should use `create_weekly_social_post()` helper to ensure `idea_id` is populated
+- Existing weekly social posts will have `idea_id=NULL` until recreated; `SocialOutputView` handles both cases gracefully
+
 ## 2025-12-15 - Preview Page Fixes & Calendar System Migration Completion
 
 ### Fixed

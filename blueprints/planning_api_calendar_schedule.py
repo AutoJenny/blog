@@ -13,6 +13,7 @@ from flask import request, jsonify
 from config.database import db_manager
 from blueprints.planning_api_calendar_utils import _safe_parse_json_request, _current_iso_week
 from utils.calendar_resolver import resolve_item_for_week
+from utils.publication_status_resolver import resolve_post_for_calendar_item
 import logging
 
 logger = logging.getLogger(__name__)
@@ -45,57 +46,10 @@ def api_calendar_schedule(year, week_number):
         # Theme
         if theme:
             theme_id = theme.get('id')
-            # Fetch post_id and post_status if theme has an associated post for this week
-            post_id = None
-            post_status = None
-            if theme_id:
-                try:
-                    with db_manager.get_cursor() as cursor:
-                        # First check calendar_week_posts_v2 for posts in this week
-                        cursor.execute("""
-                            SELECT p.id, p.status
-                            FROM calendar_week_posts_v2 cwp
-                            JOIN post p ON cwp.post_id = p.id
-                            WHERE cwp.year = %s 
-                            AND cwp.week_number = %s
-                            AND (p.theme_id = %s OR p.title ILIKE %s)
-                            AND p.status != 'deleted'
-                            ORDER BY p.updated_at DESC
-                            LIMIT 1
-                        """, (year, week_number, theme_id, f"%{theme.get('theme_title', '')}%"))
-                        post_row = cursor.fetchone()
-                        if post_row:
-                            post_id = post_row.get('id') if isinstance(post_row, dict) else post_row[0]
-                            post_status = post_row.get('status') if isinstance(post_row, dict) else post_row[1]
-                        else:
-                            # Fallback: check if there's any post with this theme_id
-                            cursor.execute("""
-                                SELECT id, status
-                                FROM post 
-                                WHERE theme_id = %s AND status != 'deleted'
-                                ORDER BY updated_at DESC
-                                LIMIT 1
-                            """, (theme_id,))
-                            post_row = cursor.fetchone()
-                            if post_row:
-                                post_id = post_row.get('id') if isinstance(post_row, dict) else post_row[0]
-                                post_status = post_row.get('status') if isinstance(post_row, dict) else post_row[1]
-                            else:
-                                # Fallback: match by title similarity even if theme_id is null
-                                cursor.execute("""
-                                    SELECT id, status
-                                    FROM post
-                                    WHERE title ILIKE %s
-                                    AND status != 'deleted'
-                                    ORDER BY updated_at DESC
-                                    LIMIT 1
-                                """, (f"%{theme.get('theme_title', '')}%",))
-                                post_row = cursor.fetchone()
-                                if post_row:
-                                    post_id = post_row.get('id') if isinstance(post_row, dict) else post_row[0]
-                                    post_status = post_row.get('status') if isinstance(post_row, dict) else post_row[1]
-                except Exception as e:
-                    logger.warning(f"Error fetching post_id/post_status for theme {theme_id}: {e}")
+            # Fetch post status using central resolver (ID-only matching)
+            status_info = resolve_post_for_calendar_item(
+                "theme", theme_id, year=year, week=week_number
+            ) if theme_id else {"post_id": None, "status": None, "exists": False, "raw_status": None}
             
             schedule.append({
                 'type': 'theme_selection',
@@ -104,8 +58,8 @@ def api_calendar_schedule(year, week_number):
                 'theme_title': theme.get('theme_title'),
                 'theme_description': theme.get('theme_description'),
                 'position': theme.get('position'),
-                'post_id': post_id,  # Include post_id if theme has a post
-                'post_status': post_status,  # Include post_status if theme has a post
+                'post_id': status_info.get('post_id'),         # Include post_id if theme has a post
+                'post_status': status_info.get('status'),      # Include normalized status
                 '_override': theme.get('_override', False),
                 '_from_cyclic_system': True  # Flag to indicate new system
             })
@@ -113,26 +67,15 @@ def api_calendar_schedule(year, week_number):
         # Recipe
         if recipe:
             recipe_id = recipe.get('id')
-            # Fetch post_id if recipe has an associated post
-            post_id = None
-            if recipe_id:
-                try:
-                    with db_manager.get_cursor() as cursor:
-                        cursor.execute("""
-                            SELECT id FROM post 
-                            WHERE recipe_id = %s AND status != 'deleted'
-                            LIMIT 1
-                        """, (recipe_id,))
-                        post_row = cursor.fetchone()
-                        if post_row:
-                            post_id = post_row.get('id') if isinstance(post_row, dict) else post_row[0]
-                except Exception as e:
-                    logger.warning(f"Error fetching post_id for recipe {recipe_id}: {e}")
+            status_info = resolve_post_for_calendar_item(
+                "recipe", recipe_id, year=year, week=week_number
+            ) if recipe_id else {"post_id": None, "status": None, "exists": False, "raw_status": None}
             
             schedule.append({
                 'type': 'recipe',
                 'recipe_id': recipe_id,
-                'post_id': post_id,  # Include post_id if recipe has a post
+                'post_id': status_info.get('post_id'),  # Include post_id if recipe has a post
+                'post_status': status_info.get('status'),
                 'recipe_title': recipe.get('recipe_title'),
                 'recipe_description': recipe.get('recipe_description'),
                 'position': recipe.get('position'),
@@ -141,48 +84,47 @@ def api_calendar_schedule(year, week_number):
         
         # Profiles - need to fetch title from post table
         if profile_product:
-            post_id = profile_product.get('post_id')
-            # Fetch post title if we have post_id
+            # profile_product comes from calendar_profile_sequence (id is post_id)
+            profile_post_id = profile_product.get('post_id')
             post_title = None
-            if post_id:
+            if profile_post_id:
                 try:
                     with db_manager.get_cursor() as cursor:
-                        cursor.execute("SELECT title FROM post WHERE id = %s", (post_id,))
+                        cursor.execute("SELECT title FROM post WHERE id = %s", (profile_post_id,))
                         post_row = cursor.fetchone()
                         if post_row:
                             post_title = post_row.get('title')
                 except Exception as e:
-                    logger.warning(f"Error fetching post title for profile {post_id}: {e}")
+                    logger.warning(f"Error fetching post title for profile %s: %s", profile_post_id, e)
             
             schedule.append({
                 'type': 'post',
                 'item_type': 'profile',
                 'profile_type': 'product',
-                'post_id': post_id,
+                'post_id': profile_post_id,
                 'post_title': post_title,
                 'position': profile_product.get('position'),
                 '_from_cyclic_system': True
             })
         
         if profile_surname:
-            post_id = profile_surname.get('post_id')
-            # Fetch post title if we have post_id
+            profile_post_id = profile_surname.get('post_id')
             post_title = None
-            if post_id:
+            if profile_post_id:
                 try:
                     with db_manager.get_cursor() as cursor:
-                        cursor.execute("SELECT title FROM post WHERE id = %s", (post_id,))
+                        cursor.execute("SELECT title FROM post WHERE id = %s", (profile_post_id,))
                         post_row = cursor.fetchone()
                         if post_row:
                             post_title = post_row.get('title')
                 except Exception as e:
-                    logger.warning(f"Error fetching post title for profile {post_id}: {e}")
+                    logger.warning(f"Error fetching post title for profile %s: %s", profile_post_id, e)
             
             schedule.append({
                 'type': 'post',
                 'item_type': 'profile',
                 'profile_type': 'surname',
-                'post_id': post_id,
+                'post_id': profile_post_id,
                 'post_title': post_title,
                 'position': profile_surname.get('position'),
                 '_from_cyclic_system': True
@@ -370,7 +312,7 @@ def api_calendar_idea_status(theme_id: int):
             return jsonify({'success': False, 'error': 'year and week_number are required'}), 400
 
         with db_manager.get_cursor() as cursor:
-            # Require week persistence V2 structures (tables or views); legacy calendar_schedule is not used.
+            # Require week-persistence selection structure (table or view).
             cursor.execute("""
                 SELECT 
                     EXISTS (
@@ -382,31 +324,17 @@ def api_calendar_idea_status(theme_id: int):
                         SELECT FROM information_schema.views 
                         WHERE table_schema = 'public' 
                           AND table_name = 'calendar_week_selection_v2'
-                    ) AS has_selection_view,
-                    EXISTS (
-                        SELECT FROM information_schema.tables 
-                        WHERE table_schema = 'public' 
-                          AND table_name = 'calendar_week_posts'
-                    ) AS has_posts_table,
-                    EXISTS (
-                        SELECT FROM information_schema.views 
-                        WHERE table_schema = 'public' 
-                          AND table_name = 'calendar_week_posts_v2'
-                    ) AS has_posts_view
+                    ) AS has_selection_view
             """)
             table_check = cursor.fetchone()
             has_selection = table_check['has_selection_table'] or table_check['has_selection_view']
-            has_posts = table_check['has_posts_table'] or table_check['has_posts_view']
 
-            if not (has_selection and has_posts):
+            if not has_selection:
                 return jsonify({
                     'success': False,
-                    'error': 'Week persistence V2 structures are required '
-                             '(calendar_week_selection or calendar_week_selection_v2, '
-                             'and calendar_week_posts or calendar_week_posts_v2).'
+                    'error': 'Week persistence selection structure is required '
+                             '(calendar_week_selection or calendar_week_selection_v2).'
                 }), 500
-
-            post = None
 
             # Decide which selection source to use (table or view)
             selection_source = 'calendar_week_selection' if table_check['has_selection_table'] else 'calendar_week_selection_v2'
@@ -418,42 +346,28 @@ def api_calendar_idea_status(theme_id: int):
                 WHERE year = %s AND week_number = %s
             """, (year, week_number))
             week_selection = cursor.fetchone()
-            
+
             # Only proceed if the week's selected theme matches (or if no theme selected yet)
-            if week_selection:
-                if week_selection['selected_theme_id'] != theme_id:
-                    # Theme mismatch - week has different theme selected
-                    return jsonify({
-                        'success': True, 
-                        'post': None,
-                        'message': 'Week has different theme selected'
-                    })
-            
-            # Decide which posts source to use (table or view)
-            posts_source = 'calendar_week_posts' if table_check['has_posts_table'] else 'calendar_week_posts_v2'
+            if week_selection and week_selection['selected_theme_id'] != theme_id:
+                # Theme mismatch - week has different theme selected
+                return jsonify({
+                    'success': True,
+                    'post': None,
+                    'message': 'Week has different theme selected'
+                })
 
-            # Get first post for this week (if multiple, return most recently created/assigned)
-            cursor.execute(f"""
-                SELECT p.id, p.title, p.status, cwp.scheduled_date
-                FROM {posts_source} cwp
-                LEFT JOIN post p ON cwp.post_id = p.id
-                WHERE cwp.year = %s AND cwp.week_number = %s
-                ORDER BY cwp.created_at DESC
-                LIMIT 1
-            """, (year, week_number))
-            post = cursor.fetchone()
+        # At this point, the requested theme is the selected theme for the week (or no selection),
+        # so resolve post status using the shared resolver.
+        status_info = resolve_post_for_calendar_item("theme", theme_id, year=year, week=week_number)
 
-        status = None
-        post_id = None
-        title = None
-        scheduled_date = None
-        if post:
-            post_id = post['id']
-            title = post['title']
-            status = post['status']
-            scheduled_date = post['scheduled_date'].isoformat() if post['scheduled_date'] else None
+        post_payload = {
+            'id': status_info.get('post_id'),
+            'title': None,  # Title can be fetched separately if needed
+            'status': status_info.get('status'),
+            'scheduled_date': None
+        }
 
-        return jsonify({'success': True, 'post': {'id': post_id, 'title': title, 'status': status, 'scheduled_date': scheduled_date}})
+        return jsonify({'success': True, 'post': post_payload})
     except Exception as e:
         logger.error(f"Error getting theme status: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

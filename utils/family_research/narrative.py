@@ -94,3 +94,4 @@ def generate_narrative(surname: str, surname_json: Dict,
         print(f"  Error during narrative generation: {e}")
         return None
 
+

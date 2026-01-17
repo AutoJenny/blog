@@ -94,8 +94,20 @@ def execute_substage(stage, substage):
                 return jsonify({"success": False, "error": f"Unknown authoring substage: {substage}"}), 400
         elif stage == 'content':
             # Channel-specific content formatting substages
-            if substage.startswith('format_for_') or substage.startswith('add_'):
-                # For now, return a placeholder - these will be implemented later
+            if substage == 'format_for_facebook':
+                from blueprints.automation_execute import execute_format_for_facebook
+                result = execute_format_for_facebook(post_id, data)
+            elif substage == 'add_translation':
+                from blueprints.automation_execute import execute_add_translation
+                result = execute_add_translation(post_id, data)
+            elif substage == 'add_hashtags':
+                from blueprints.automation_execute import execute_add_hashtags
+                result = execute_add_hashtags(post_id, data)
+            elif substage == 'generate_caption':
+                from blueprints.automation_execute import execute_generate_caption
+                result = execute_generate_caption(post_id, data)
+            elif substage.startswith('format_for_') or substage.startswith('add_'):
+                # For other channels, return a placeholder - these will be implemented later
                 return jsonify({
                     "success": False,
                     "error": f"Substage '{substage}' for stage '{stage}' is not yet implemented. This is a channel-specific substage that requires custom logic."
@@ -114,8 +126,11 @@ def execute_substage(stage, substage):
                 return jsonify({"success": False, "error": f"Unknown syndication substage: {substage}"}), 400
         elif stage == 'imaging':
             # Imaging substages (may have channel-specific variants)
-            if substage.startswith('optimize_for_') or substage.startswith('create_'):
-                # For now, return a placeholder - these will be implemented later
+            if substage == 'optimize_for_facebook':
+                from blueprints.automation_execute import execute_optimize_for_facebook
+                result = execute_optimize_for_facebook(post_id, data)
+            elif substage.startswith('optimize_for_') or substage.startswith('create_'):
+                # For other channels, return a placeholder - these will be implemented later
                 return jsonify({
                     "success": False,
                     "error": f"Substage '{substage}' for stage '{stage}' is not yet implemented. This is a channel-specific imaging substage."
@@ -124,8 +139,11 @@ def execute_substage(stage, substage):
                 return jsonify({"success": False, "error": f"Unknown imaging substage: {substage}"}), 400
         elif stage == 'publish':
             # Publish substages (publish_to_*)
-            if substage.startswith('publish_to_'):
-                # For now, return a placeholder - these will be implemented later
+            if substage == 'publish_to_facebook':
+                from blueprints.automation_execute import execute_publish_to_facebook
+                result = execute_publish_to_facebook(post_id, data)
+            elif substage.startswith('publish_to_'):
+                # For other channels, return a placeholder - these will be implemented later
                 return jsonify({
                     "success": False,
                     "error": f"Substage '{substage}' for stage '{stage}' is not yet implemented. This is a publication substage that requires custom logic."
@@ -570,43 +588,20 @@ def create_post_from_item():
                     existing_post_id = result['id']
                     existing_post_status = result['status']
             elif category == 'theme' and year and week:
-                # For themes, check calendar_week_posts_v2 for same year/week
-                # Also check post_development.idea_seed for theme title match
+                # For themes, check canonical week→post mapping (ID-only, no title matching).
                 cursor.execute("""
                     SELECT DISTINCT p.id, p.status
                     FROM calendar_week_posts_v2 cwp
                     JOIN post p ON cwp.post_id = p.id
-                    LEFT JOIN post_development pd ON p.id = pd.post_id
                     WHERE cwp.year = %s 
                       AND cwp.week_number = %s
                       AND p.recipe_id IS NULL
                       AND p.profile_category_id IS NULL
                       AND (p.generated_source_type IS NULL OR p.generated_source_type = '')
                       AND p.status != 'deleted'
-                      AND (pd.idea_seed ILIKE %s OR p.title ILIKE %s)
-                    ORDER BY p.created_at DESC
+                    ORDER BY cwp.created_at DESC
                     LIMIT 1
-                """, (year, week, f'%{title}%', f'%{title}%'))
-                result = cursor.fetchone()
-                if result:
-                    existing_post_id = result['id']
-                    existing_post_status = result['status']
-            elif category in ('weekly_word', 'weekly_phrase', 'weekly_insult') and year and week:
-                # For weekly content, check calendar_week_posts_v2 for same year/week + title match
-                cursor.execute("""
-                    SELECT DISTINCT p.id, p.status
-                    FROM calendar_week_posts_v2 cwp
-                    JOIN post p ON cwp.post_id = p.id
-                    LEFT JOIN post_development pd ON p.id = pd.post_id
-                    WHERE cwp.year = %s 
-                      AND cwp.week_number = %s
-                      AND p.recipe_id IS NULL
-                      AND p.profile_category_id IS NULL
-                      AND p.status != 'deleted'
-                      AND (pd.idea_seed ILIKE %s OR p.title ILIKE %s)
-                    ORDER BY p.created_at DESC
-                    LIMIT 1
-                """, (year, week, f'%{title}%', f'%{title}%'))
+                """, (year, week))
                 result = cursor.fetchone()
                 if result:
                     existing_post_id = result['id']
@@ -652,19 +647,59 @@ def create_post_from_item():
             if output_channel != 'blog':
                 if content_format and not requires_post(output_channel, content_format):
                     # This is a social media-only format (e.g., word_of_day on Facebook)
-                    # Don't create a blog post, just return success with channel info
-                    return jsonify({
-                        "success": True,
-                        "post_id": None,
-                        "message": f"Content ready for {output_channel} ({content_format} format). No blog post needed.",
-                        "channel": output_channel,
-                        "content_format": content_format,
-                        "requires_blog_post": False,
-                        "item_data": {
-                            "title": title,
-                            "description": item_dict.get('theme_description') or item_dict.get('idea_description') or item_dict.get('description', '')
-                        }
-                    })
+                    # For weekly content, create a posting_queue row with proper idea_id linkage
+                    if category in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                        from utils.posting_queue_helpers import create_weekly_social_post
+                        
+                        # Extract idea_id from item_id (for weekly content, item_id IS calendar_ideas.id)
+                        idea_id = int(item_id)
+                        
+                        # Extract platform from output_channel
+                        platform = output_channel.lower()  # e.g., 'facebook', 'instagram', 'twitter'
+                        
+                        # Generate basic content from item description
+                        description = item_dict.get('idea_description') or item_dict.get('description') or ''
+                        generated_content = f"{title}\n\n{description}".strip() if description else title
+                        
+                        # Create posting_queue row with idea_id
+                        queue_id = create_weekly_social_post(
+                            idea_id=idea_id,
+                            content_type=category,  # 'weekly_word', 'weekly_phrase', or 'weekly_insult'
+                            platform=platform,
+                            generated_content=generated_content,
+                            status='draft',
+                            cursor=cursor
+                        )
+                        
+                        logger.info(f"Created weekly social post: queue_id={queue_id}, idea_id={idea_id}, category={category}, platform={platform}")
+                        
+                        return jsonify({
+                            "success": True,
+                            "post_id": None,
+                            "queue_id": queue_id,
+                            "message": f"Weekly social post created for {output_channel} ({content_format} format). No blog post needed.",
+                            "channel": output_channel,
+                            "content_format": content_format,
+                            "requires_blog_post": False,
+                            "item_data": {
+                                "title": title,
+                                "description": description
+                            }
+                        })
+                    else:
+                        # Non-weekly social-only format (e.g., product posts handled elsewhere)
+                        return jsonify({
+                            "success": True,
+                            "post_id": None,
+                            "message": f"Content ready for {output_channel} ({content_format} format). No blog post needed.",
+                            "channel": output_channel,
+                            "content_format": content_format,
+                            "requires_blog_post": False,
+                            "item_data": {
+                                "title": title,
+                                "description": item_dict.get('theme_description') or item_dict.get('idea_description') or item_dict.get('description', '')
+                            }
+                        })
                 elif not content_format:
                     # No format found - this shouldn't happen, but handle gracefully
                     logger.warning(f"No content format found for {post_type}/{output_channel}")
@@ -730,41 +765,32 @@ def create_post_from_item():
                 VALUES (%s, %s)
             """, (post_id, idea_seed))
             
-            # Link post to week in calendar_week_items_deprecated if year and week provided
-            # calendar_week_posts_v2 is a view, so we insert into calendar_week_items_deprecated
-            if year and week:
+            # Link post to week in canonical week‑persistence table if year and week provided.
+            # For themed blog posts this mirrors confirm_calendar_idea, writing into calendar_week_items
+            # so that calendar_week_posts_v2 exposes the mapping.
+            if year and week and category == 'theme':
                 try:
-                    # Determine item_type based on post_type
-                    item_type = None
-                    if post_type == 'recipe':
-                        item_type = 'recipe'
-                    elif post_type == 'themed':
-                        item_type = 'theme'  # For themed posts, we use 'theme' type
-                    elif post_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
-                        item_type = post_type
-                    elif post_type in ('profile_product', 'profile_surname'):
-                        item_type = 'profile'
-                    
-                    if item_type:
-                        # For theme items, is_selected must be TRUE (constraint requirement)
-                        is_selected = (item_type == 'theme')
-                        cursor.execute("""
-                            INSERT INTO calendar_week_items_deprecated (
-                                item_type, item_id, year, week_number, is_active, is_selected, created_at, updated_at
-                            )
-                            SELECT %s, %s, %s, %s, TRUE, %s, NOW(), NOW()
-                            WHERE NOT EXISTS (
-                                SELECT 1 FROM calendar_week_items_deprecated 
-                                WHERE item_type = %s 
-                                  AND item_id = %s 
-                                  AND year = %s 
-                                  AND week_number = %s
-                            )
-                        """, (item_type, post_id, year, week, is_selected, item_type, post_id, year, week))
-                        db_manager.conn.commit()
-                        logger.info(f"Linked post {post_id} to week {year}/{week} as {item_type}")
+                    from blueprints.post_type_config import get_publication_day_for_post_type
+                    themed_config = get_publication_day_for_post_type('themed', cursor)
+                    default_weekday = themed_config['day'] if themed_config else 3  # Wednesday fallback
+
+                    cursor.execute("""
+                        INSERT INTO calendar_week_items (
+                            item_type, item_id, year, week_number, weekday, 
+                            scheduled_date, scheduled_at, is_active, is_selected, priority, metadata, created_at, updated_at
+                        )
+                        VALUES (
+                            'profile', %s, %s, %s, %s,
+                            NULL, NOW(), TRUE, FALSE, 'normal', '{}'::jsonb, NOW(), NOW()
+                        )
+                        ON CONFLICT (year, week_number, item_type, item_id) DO UPDATE SET
+                            weekday = EXCLUDED.weekday,
+                            updated_at = NOW()
+                    """, (post_id, year, week, default_weekday))
+                    db_manager.conn.commit()
+                    logger.info(f"Linked themed post {post_id} to week {year}/{week} in calendar_week_items")
                 except Exception as e:
-                    logger.warning(f"Could not link post {post_id} to week {year}/{week}: {e}")
+                    logger.warning(f"Could not link themed post {post_id} to week {year}/{week}: {e}")
                     # Don't fail the whole operation if calendar linking fails
             
             # Return response with format information

@@ -131,3 +131,4 @@ Create a database view that pre-computes the schedule for all weeks.
 - Frontend calls endpoint on page load (line 243)
 - Frontend uses cache-busting parameter `?_t={timestamp}` which doesn't affect backend cache
 
+

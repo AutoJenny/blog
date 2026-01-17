@@ -7,6 +7,7 @@ Single-purpose module for post listing and status management.
 from flask import Blueprint, render_template, jsonify, request
 from datetime import datetime, date, timedelta
 from config.database import db_manager
+from utils.publication_status_resolver import normalize_post_status
 import logging
 
 bp = Blueprint('posts', __name__)
@@ -41,18 +42,8 @@ def get_display_status(status):
     Convert database status to display-friendly status.
     Maps various statuses to standard display values.
     """
-    status_lower = (status or '').lower()
-    
-    if status_lower in ['published', 'live']:
-        return 'published'
-    elif status_lower == 'error':
-        return 'error'
-    elif status_lower == 'publishing':
-        return 'publishing'
-    elif status_lower == 'deleted':
-        return 'deleted'
-    else:
-        return status_lower or 'draft'
+    # Delegate to the shared resolver so all modules share one mapping.
+    return normalize_post_status(status)
 
 
 def get_week_start_end(year: int, week_number: int):
@@ -384,7 +375,7 @@ def api_posts():
                     LEFT JOIN post_development pd ON p.id = pd.post_id
                     LEFT JOIN LATERAL (
                         SELECT year, week_number, scheduled_date, updated_at
-                        FROM calendar_schedule
+                        FROM calendar_week_posts_v2
                         WHERE post_id = p.id
                         ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
                         LIMIT 1
@@ -402,7 +393,7 @@ def api_posts():
                     LEFT JOIN post_development pd ON p.id = pd.post_id
                     LEFT JOIN LATERAL (
                         SELECT year, week_number, scheduled_date, updated_at
-                        FROM calendar_schedule
+                        FROM calendar_week_posts_v2
                         WHERE post_id = p.id
                         ORDER BY scheduled_date DESC NULLS LAST, updated_at DESC
                         LIMIT 1
