@@ -46,6 +46,18 @@
                 <a href="/settings" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
                     Settings
                 </a>
+                <!-- Monitoring Module -->
+                <div class="relative" id="monitoring-container">
+                    <div class="monitoring-module flex items-center gap-2 px-3 py-2 rounded-md transition">
+                        <a href="/monitoring/report" class="flex items-center gap-2 text-dark-text hover:text-dark-accent transition" title="View monitoring report">
+                            <i class="fa-solid fa-circle" id="monitoring-status-icon" style="font-size: 12px; color: #ef4444;"></i>
+                            <span class="text-sm font-medium">Monitor</span>
+                        </a>
+                        <button id="monitoring-start-btn" class="monitoring-btn hidden text-xs px-2 py-1 rounded bg-green-600 hover:bg-green-700 text-white transition" title="Start monitoring">
+                            Start
+                        </button>
+                    </div>
+                </div>
                 <div class="relative" id="alert-container">
                     <button class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 relative" id="alert-bell" onclick="toggleAlertDropdown()">
                         <i class="fas fa-bell"></i>
@@ -309,7 +321,32 @@
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.1); }
     }
+    
+    /* Monitoring Module Styles */
+    .monitoring-module {
+        background: transparent;
+    }
+    
+    .monitoring-module #monitoring-status-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    .monitoring-module #monitoring-status-icon.status-running {
+        color: #10b981 !important; /* Bright green */
+        animation: none;
+    }
+    
+    .monitoring-module #monitoring-status-icon.status-stopped {
+        color: #ef4444 !important; /* Red */
+        animation: pulse 2s infinite;
+    }
+    
+    .monitoring-btn {
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
 </style>
 
 <script src="{{ url_for('static', filename='js/shared/site-header.js') }}"></script>
+<script src="{{ url_for('static', filename='js/shared/monitoring-module.js') }}"></script>
 </header>
