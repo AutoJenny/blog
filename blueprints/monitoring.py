@@ -156,17 +156,25 @@ def monitoring_report():
 def monitoring_events():
     """Get automation events from logs"""
     try:
+        # Get filter parameter
+        event_type = request.args.get('type', 'all')  # 'all', 'posting', 'admin'
+        
         events = []
         
-        # Read from individual log files
+        # Define log files with their categories
         log_files = [
-            ('automated_weekly_content_creator', 'logs/automated_weekly_content_creator.log'),
-            ('automated_weekly_content_workflow', 'logs/automated_weekly_content_workflow.log'),
-            ('posting_executor', 'logs/posting_executor.log'),
-            ('automated_posting', 'logs/automated_posting.log'),
+            # Automated posting processes (actual social media posts)
+            ('automated_weekly_content_creator', 'logs/automated_weekly_content_creator.log', 'posting'),
+            ('automated_weekly_content_workflow', 'logs/automated_weekly_content_workflow.log', 'posting'),
+            ('posting_executor', 'logs/posting_executor.log', 'posting'),
+            ('automated_posting', 'logs/automated_posting.log', 'posting'),
         ]
         
-        for script_name, log_path in log_files:
+        for script_name, log_path, category in log_files:
+            # Apply filter
+            if event_type != 'all' and category != event_type:
+                continue
+                
             full_path = os.path.join(SCRIPT_DIR, log_path)
             if os.path.exists(full_path):
                 try:
@@ -209,7 +217,8 @@ def monitoring_events():
                                             'script': script_name,
                                             'level': level,
                                             'message': message,
-                                            'result': result_icon
+                                            'result': result_icon,
+                                            'category': category
                                         })
                                     except ValueError:
                                         continue
@@ -226,7 +235,8 @@ def monitoring_events():
         return jsonify({
             'success': True,
             'events': events,
-            'total': len(events)
+            'total': len(events),
+            'filter': event_type
         })
         
     except Exception as e:

@@ -174,6 +174,39 @@ class PostingExecutor:
             }
         
         return result
+    
+    def post_to_instagram(self, post: Dict) -> Dict:
+        """
+        Post content to Instagram
+        Currently not implemented - returns error
+        """
+        logger.warning(f"Instagram posting not yet implemented for post {post['id']}")
+        return {
+            'success': False,
+            'error': 'Instagram posting is not yet implemented'
+        }
+    
+    def post_to_twitter(self, post: Dict) -> Dict:
+        """
+        Post content to Twitter
+        Currently not implemented - returns error
+        """
+        logger.warning(f"Twitter posting not yet implemented for post {post['id']}")
+        return {
+            'success': False,
+            'error': 'Twitter posting is not yet implemented'
+        }
+    
+    def post_to_linkedin(self, post: Dict) -> Dict:
+        """
+        Post content to LinkedIn
+        Currently not implemented - returns error
+        """
+        logger.warning(f"LinkedIn posting not yet implemented for post {post['id']}")
+        return {
+            'success': False,
+            'error': 'LinkedIn posting is not yet implemented'
+        }
         
     def process_pending_posts(self) -> Dict[str, int]:
         """

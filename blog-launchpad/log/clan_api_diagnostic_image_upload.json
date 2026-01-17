@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-17T20:09:45.827490",
+  "timestamp": "2026-01-17T20:29:23.577639",
   "call_type": "image_upload",
   "url": "https://clan.com/clan/blog_api/uploadImage",
   "data": {
@@ -9,7 +9,7 @@
   },
   "files_info": {
     "image": {
-      "filename": "weekly_content_1294_1768680585.png",
+      "filename": "weekly_content_1294_1768681763.png",
       "mime_type": "image/png",
       "file_size": 132690,
       "file_path": "/Users/autojenny/Documents/projects/blog/static/content/weekly_posts/weekly_insult/1294/square_image.png"
@@ -19,7 +19,7 @@
   "html_content_length": 0,
   "image_info": {
     "original_path": "/Users/autojenny/Documents/projects/blog/static/content/weekly_posts/weekly_insult/1294/square_image.png",
-    "filename": "weekly_content_1294_1768680585.png",
+    "filename": "weekly_content_1294_1768681763.png",
     "file_size": 132690,
     "mime_type": "image/png"
   }

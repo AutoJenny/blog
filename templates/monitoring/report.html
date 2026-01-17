@@ -185,6 +185,37 @@
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
     }
+    
+    /* Filter Tabs */
+    .filter-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #334155;
+        padding-bottom: 0.5rem;
+    }
+    
+    .filter-tab {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #94a3b8;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+    
+    .filter-tab:hover {
+        color: #e2e8f0;
+        background: #1e293b;
+    }
+    
+    .filter-tab.active {
+        color: #a5b4fc;
+        border-bottom-color: #a5b4fc;
+    }
 </style>
 {% endblock %}
 
@@ -200,6 +231,13 @@
             <button class="control-btn start hidden" id="start-btn">Start Monitor</button>
             <button class="control-btn stop hidden" id="stop-btn">Stop Monitor</button>
         </div>
+    </div>
+    
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All Events</button>
+        <button class="filter-tab" data-filter="posting">Automated Postings</button>
+        <button class="filter-tab" data-filter="admin">Administrative</button>
     </div>
     
     <div class="events-table">
@@ -228,6 +266,7 @@
     const EVENTS_CONTAINER = document.getElementById('events-container');
     
     let eventsRefreshInterval = null;
+    let currentFilter = 'all';
     
     /**
      * Update monitoring status
@@ -258,8 +297,9 @@
     /**
      * Load events
      */
-    function loadEvents() {
-        fetch('/monitoring/api/events')
+    function loadEvents(filter = 'all') {
+        const url = `/monitoring/api/events${filter !== 'all' ? '?type=' + filter : ''}`;
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.events && data.events.length > 0) {
@@ -268,7 +308,7 @@
                     EVENTS_CONTAINER.innerHTML = `
                         <div class="empty-state">
                             <i class="fa-solid fa-inbox"></i>
-                            <p>No events found</p>
+                            <p>No events found${filter !== 'all' ? ' for this filter' : ''}</p>
                         </div>
                     `;
                 }
@@ -282,6 +322,24 @@
                     </div>
                 `;
             });
+    }
+    
+    /**
+     * Handle filter tab clicks
+     */
+    function setupFilterTabs() {
+        const tabs = document.querySelectorAll('.filter-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update active state
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update filter and reload events
+                currentFilter = tab.dataset.filter;
+                loadEvents(currentFilter);
+            });
+        });
     }
     
     /**
@@ -400,13 +458,14 @@
     
     // Initialize
     updateStatus();
-    loadEvents();
+    loadEvents(currentFilter);
+    setupFilterTabs();
     
     // Refresh status every 30 seconds
     setInterval(updateStatus, 30000);
     
     // Refresh events every 60 seconds
-    eventsRefreshInterval = setInterval(loadEvents, 60000);
+    eventsRefreshInterval = setInterval(() => loadEvents(currentFilter), 60000);
     
     // Button handlers
     START_BTN.addEventListener('click', startMonitoring);
