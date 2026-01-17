@@ -234,12 +234,56 @@ def monitoring_events():
                             
                             # Standard parsing for posting scripts (Python logging format)
                             # Format: 2026-01-17 20:01:19,484 - INFO - ...
+                            # For posting category, only show ACTUAL publication events, not internal processing
                             if ' - ' in line:
                                 parts = line.split(' - ', 2)
                                 if len(parts) >= 3:
                                     timestamp_str = parts[0]
                                     level = parts[1]
                                     message = parts[2]
+                                    
+                                    # For posting category, filter to only actual publication events
+                                    if category == 'posting':
+                                        # Only include messages that indicate actual posting/publication
+                                        # Exclude all internal processing, debug, and status messages
+                                        is_publication_event = False
+                                        
+                                        # Actual publication success messages
+                                        if any(phrase in message for phrase in [
+                                            'Successfully posted to',
+                                            'Posted to',
+                                            'publish_to_facebook completed',
+                                            'Facebook API response - Status: 200',
+                                            'Posting execution complete:',
+                                            'Published successfully'
+                                        ]):
+                                            is_publication_event = True
+                                        
+                                        # Actual publication attempts (when a post is being executed to a platform)
+                                        # Format: "Executing post X to platform"
+                                        if 'Executing post' in message and ' to ' in message:
+                                            is_publication_event = True
+                                        
+                                        # Show completion stats only if there were actual publications
+                                        if 'Posting execution complete:' in message:
+                                            # Only show if it mentions successful publications or failures
+                                            if 'successfully_published' in message or 'failed' in message.lower():
+                                                is_publication_event = True
+                                        
+                                        # Publication failures
+                                        if any(phrase in message.lower() for phrase in [
+                                            'failed to post',
+                                            'posting failed',
+                                            'facebook api error',
+                                            'error posting to',
+                                            'publish_to_facebook failed',
+                                            'failed on'
+                                        ]):
+                                            is_publication_event = True
+                                        
+                                        # Skip all other messages (debug, info about processing, etc.)
+                                        if not is_publication_event:
+                                            continue
                                     
                                     # Parse timestamp
                                     try:
@@ -254,7 +298,7 @@ def monitoring_events():
                                             result_icon = 'error'
                                         elif 'WARNING' in level or 'warning' in message.lower():
                                             result_icon = 'warning'
-                                        elif '✅' in message or 'success' in message.lower() or 'completed' in message.lower():
+                                        elif '✅' in message or 'success' in message.lower() or 'completed' in message.lower() or '200' in message:
                                             result_icon = 'success'
                                         
                                         events.append({
