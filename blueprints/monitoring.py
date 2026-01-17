@@ -249,15 +249,20 @@ def monitoring_events():
                                         is_publication_event = False
                                         
                                         # Actual publication success messages
+                                        # Exclude intermediate "Facebook API response" messages (too granular, shows per-page)
+                                        # Only show final completion messages
                                         if any(phrase in message for phrase in [
                                             'Successfully posted to',
                                             'Posted to',
                                             'publish_to_facebook completed',
-                                            'Facebook API response - Status: 200',
                                             'Posting execution complete:',
                                             'Published successfully'
                                         ]):
                                             is_publication_event = True
+                                        
+                                        # Explicitly exclude intermediate API response messages
+                                        if 'Facebook API response - Status:' in message:
+                                            is_publication_event = False
                                         
                                         # Actual publication attempts (when a post is being executed to a platform)
                                         # Format: "Executing post X to platform"
