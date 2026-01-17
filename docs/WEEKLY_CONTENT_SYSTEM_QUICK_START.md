@@ -1,20 +1,37 @@
 # Weekly Content System - Quick Start Guide
 
 **Date:** 2026-01-17  
-**Purpose:** Quick reference guide for using the weekly content image and caption generation system
+**Purpose:** Quick reference guide for the fully automated weekly content system
 
 ---
 
 ## Overview
 
-Automated system for creating Facebook posts for weekly Scots language content (word/phrase/insult) with:
+**Fully automated system** for creating Facebook posts for weekly Scots language content (word/phrase/insult) with:
 - Square 1080×1080 images (ImageMagick)
 - AI-generated captions (Ollama)
 - Automatic posting to both Facebook pages
+- **Zero manual intervention required** - publishes automatically based on schedule
+
+**Automation Status:** ✅ **FULLY AUTOMATED** - System runs automatically via background monitor
 
 ---
 
-## Quick Start
+## Automation (Default - No Action Required)
+
+**The system is fully automated.** Weekly content posts are:
+- ✅ **Created automatically** 1 week in advance
+- ✅ **Processed automatically** (images and captions generated)
+- ✅ **Published automatically** at scheduled time
+
+**No manual steps required** - just ensure the background monitor is running:
+```bash
+./scripts/background_posting_monitor.sh
+```
+
+---
+
+## Manual Usage (If Needed)
 
 ### 1. Create a Weekly Content Post
 
@@ -30,7 +47,7 @@ queue_id = create_weekly_social_post(
 )
 ```
 
-### 2. Execute Workflow
+### 2. Execute Workflow (Manual)
 
 **Option A: Via Automation API**
 ```bash
@@ -147,12 +164,26 @@ python3 scripts/test_weekly_content_system.py
 
 ---
 
+## Automation Details
+
+**See:** `docs/WEEKLY_CONTENT_AUTOMATION_COMPLETE.md` for complete automation documentation
+
+**Key Scripts:**
+- `scripts/automated_weekly_content_creator.py` - Creates posts automatically
+- `scripts/automated_weekly_content_workflow.py` - Executes workflows automatically
+- `scripts/posting_executor.py` - Publishes automatically
+- `scripts/background_posting_monitor.sh` - Runs all automation every 5 minutes
+
+---
+
 ## Related Documentation
 
 - `docs/WEEKLY_CONTENT_SYSTEM_TECHNICAL_REFERENCE.md` - Complete technical details
+- `docs/WEEKLY_CONTENT_AUTOMATION_COMPLETE.md` - Automation guide
 - `docs/temp/WEEKLY_CONTENT_IMAGE_CAPTION_IMPLEMENTATION_PLAN.md` - Implementation plan
 - `docs/temp/GO_LIVE_CHECKLIST.md` - Go-live checklist
 
 ---
 
-**Last Updated:** 2026-01-17
+**Last Updated:** 2026-01-17  
+**Automation Status:** ✅ Fully Automated

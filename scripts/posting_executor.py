@@ -46,16 +46,20 @@ class PostingExecutor:
                     SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
                            pq.generated_content, pq.status, pq.product_id, pq.section_id,
                            pq.scheduled_timestamp, pq.schedule_name, pq.timezone,
+                           pq.scheduled_date, pq.scheduled_time,
                            cp.name as product_name, cp.sku, cp.image_url as product_image,
                            ps.section_heading as section_title
                     FROM posting_queue pq
                     LEFT JOIN clan_products cp ON pq.product_id = cp.id
                     LEFT JOIN post_section ps ON pq.section_id = ps.id
-                    WHERE pq.status = 'pending'
-                    AND pq.scheduled_timestamp IS NOT NULL
-                    AND pq.scheduled_timestamp <= %s
-                    ORDER BY pq.scheduled_timestamp ASC
-                """, (now,))
+                    WHERE pq.status IN ('pending', 'ready')
+                    AND (
+                        (pq.scheduled_timestamp IS NOT NULL AND pq.scheduled_timestamp <= %s)
+                        OR (pq.scheduled_date IS NOT NULL AND pq.scheduled_time IS NOT NULL
+                            AND (pq.scheduled_date::date + pq.scheduled_time::time)::timestamp <= %s)
+                    )
+                    ORDER BY COALESCE(pq.scheduled_timestamp, (pq.scheduled_date::date + pq.scheduled_time::time)::timestamp) ASC
+                """, (now, now))
                 
                 posts = cursor.fetchall()
                 logger.info(f"Found {len(posts)} pending posts ready for publishing")
@@ -86,29 +90,64 @@ class PostingExecutor:
     
     def post_to_facebook(self, post: Dict) -> Dict:
         """
-        Post content to Facebook using the shared posting function
+        Post content to Facebook using the appropriate posting function
+        Handles both product posts and weekly content posts
         """
         try:
-            # Import the shared posting function
-            from blueprints.launchpad import execute_facebook_post
+            content_type = post.get('content_type', '').lower()
+            queue_id = post['id']
             
-            # Use the shared function which handles both pages and proper image URLs
-            result = execute_facebook_post(post['id'])
-            
-            if result['success']:
-                return {
-                    'success': True,
-                    'platform_post_id': result.get('platform_post_ids', [None])[0] if result.get('platform_post_ids') else None,
-                    'message': result['message']
-                }
+            # Check if this is weekly content
+            if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                # Use weekly content workflow
+                logger.info(f"Using weekly content workflow for {content_type}")
+                from blueprints.automation_execute import execute_publish_to_facebook
+                
+                result = execute_publish_to_facebook(queue_id, {})
+                
+                # Handle tuple return (result, status_code) or dict return
+                if isinstance(result, tuple):
+                    result_dict, status_code = result
+                else:
+                    result_dict = result
+                    status_code = 200 if result_dict.get('success') else 500
+                
+                if status_code == 200 and result_dict.get('success'):
+                    # Extract platform_post_id from results
+                    platform_post_ids = result_dict.get('platform_post_ids', [])
+                    platform_post_id = platform_post_ids[0] if platform_post_ids else None
+                    
+                    return {
+                        'success': True,
+                        'platform_post_id': platform_post_id,
+                        'message': result_dict.get('message', 'Published successfully')
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': result_dict.get('error', 'Unknown error')
+                    }
             else:
-                return {
-                    'success': False,
-                    'error': result['message']
-                }
+                # Use product post workflow (existing logic)
+                from blueprints.launchpad import execute_facebook_post
+                
+                result = execute_facebook_post(queue_id)
+                
+                if result['success']:
+                    return {
+                        'success': True,
+                        'platform_post_id': result.get('platform_post_ids', [None])[0] if result.get('platform_post_ids') else None,
+                        'message': result['message']
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': result['message']
+                    }
                 
         except Exception as e:
             logger.error(f"Error posting to Facebook: {e}")
+            logger.exception("Full exception details:")
             return {'success': False, 'error': str(e)}
     def execute_post(self, post: Dict) -> Dict:
         """
@@ -134,6 +173,8 @@ class PostingExecutor:
                 'error': f'Unknown platform: {platform}'
             }
         
+        return result
+        
     def process_pending_posts(self) -> Dict[str, int]:
         """
         Process all pending posts that are due for publishing
@@ -157,21 +198,59 @@ class PostingExecutor:
             # Process each post
             for post in pending_posts:
                 try:
-                    # Check if post is still pending
-                    if post['status'] != 'pending':
+                    # Check if post is still pending or ready
+                    if post['status'] not in ('pending', 'ready'):
                         stats['skipped'] += 1
                         continue
+                    
+                    # For weekly content, ensure workflow has been run
+                    content_type = post.get('content_type', '').lower()
+                    if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                        # Check if image and caption exist
+                        with self.db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                SELECT image_path, generated_caption
+                                FROM posting_queue
+                                WHERE id = %s
+                            """, (post['id'],))
+                            row = cursor.fetchone()
+                            
+                            if not row or not row.get('image_path') or not row.get('generated_caption'):
+                                logger.warning(f"Weekly content post {post['id']} missing image or caption, skipping")
+                                stats['skipped'] += 1
+                                continue
                     
                     # Execute the post
                     result = self.execute_post(post)
                     
                     if result['success']:
                         stats['successfully_published'] += 1
+                        
+                        # Update status to 'published'
+                        with self.db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                UPDATE posting_queue
+                                SET status = 'published',
+                                    platform_post_id = %s,
+                                    updated_at = NOW()
+                                WHERE id = %s
+                            """, (result.get('platform_post_id'), post['id']))
                     else:
                         stats['failed'] += 1
                         
+                        # Update status to 'failed' with error message
+                        with self.db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                UPDATE posting_queue
+                                SET status = 'failed',
+                                    error_message = %s,
+                                    updated_at = NOW()
+                                WHERE id = %s
+                            """, (result.get('error', 'Unknown error'), post['id']))
+                        
                 except Exception as e:
                     logger.error(f"Error processing post {post.get('id', 'unknown')}: {e}")
+                    logger.exception("Full exception details:")
                     stats['failed'] += 1
             
             logger.info(f"Posting execution complete: {stats}")

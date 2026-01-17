@@ -46,11 +46,19 @@ main() {
         # Run the posting system
         cd "$SCRIPT_DIR"
         
-        # Step 1: Run the automated posting scheduler
+        # Step 1: Create weekly content posts (1 week in advance)
+        log "Creating weekly content posts..."
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_weekly_content_creator.py" >> "$LOG_FILE" 2>&1
+        
+        # Step 2: Execute workflow for draft weekly content posts
+        log "Executing weekly content workflows..."
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_weekly_content_workflow.py" >> "$LOG_FILE" 2>&1
+        
+        # Step 3: Run the automated posting scheduler (for product posts)
         log "Running automated posting scheduler..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_posting.py" >> "$LOG_FILE" 2>&1
         
-        # Step 2: Run the posting executor
+        # Step 4: Run the posting executor (handles both product and weekly content)
         log "Running posting executor..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/posting_executor.py" >> "$LOG_FILE" 2>&1
         

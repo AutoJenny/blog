@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-01-17 - Weekly Content Full Automation System
+
+### Added
+- **Full Automation Pipeline**: Weekly content now publishes automatically with zero manual intervention
+  - **Automatic Creation**: `scripts/automated_weekly_content_creator.py` - Creates posting_queue entries 1 week in advance based on calendar schedule
+  - **Automatic Workflow**: `scripts/automated_weekly_content_workflow.py` - Executes all workflow stages automatically (format → caption → image → publish)
+  - **Automatic Publishing**: Updated `scripts/posting_executor.py` to handle weekly content posts using weekly content workflow
+- **Background Monitor Integration**: Updated `scripts/background_posting_monitor.sh` to include weekly content automation steps
+- **Documentation**: 
+  - `docs/WEEKLY_CONTENT_AUTOMATION_COMPLETE.md` - Complete automation guide
+  - Updated technical reference with automation details
+
+### Changed
+- **Posting Executor**: Now detects weekly content posts and uses appropriate workflow (`execute_publish_to_facebook` for weekly content, `execute_facebook_post` for products)
+- **Background Monitor**: Added weekly content creation and workflow execution steps
+
+### Technical Details
+- **Creation**: Checks upcoming 7 days, resolves items from calendar schedule, creates draft posts with scheduled_date/time
+- **Workflow**: Processes up to 10 draft posts per run, executes all stages, publishes if due or sets to 'ready'
+- **Publishing**: Handles both `status='ready'` and `status='pending'`, checks scheduled_date/time, publishes at correct time
+- **Monitoring**: All scripts log to dedicated log files for troubleshooting
+
+### Test Results
+✅ Created 6 posts for 2 upcoming weeks automatically  
+✅ Generated images and captions for all posts  
+✅ Published posts that were due (scheduled date in past)  
+✅ Set future posts to 'ready' status  
+✅ All posts published to both Facebook pages successfully
+
+### Status
+✅ **FULLY AUTOMATED** - System requires zero manual intervention. Weekly content publishes automatically on schedule.
+
+---
+
 ## 2026-01-17 - Weekly Content Image & Caption Generation System
 
 ### Added

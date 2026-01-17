@@ -1,8 +1,10 @@
 # Weekly Content Image & Caption Generation System - Technical Reference
 
 **Date:** 2026-01-17  
-**Status:** ✅ **PRODUCTION READY**  
+**Status:** ✅ **FULLY AUTOMATED - PRODUCTION READY**  
 **Purpose:** Complete technical documentation for the automated weekly content (word/phrase/insult) social media post generation system
+
+**Automation Status:** ✅ **COMPLETE** - System automatically creates, processes, and publishes weekly content with zero manual intervention
 
 ---
 
@@ -544,6 +546,32 @@ result = render_weekly_content_image(
 
 ---
 
+## Automation
+
+### Fully Automated Workflow
+
+The system is **fully automated** and requires no manual intervention:
+
+1. **Automatic Creation** (`scripts/automated_weekly_content_creator.py`):
+   - Runs daily via background monitor
+   - Creates `posting_queue` entries 1 week in advance
+   - Based on calendar schedule (`resolve_item_for_week()`)
+
+2. **Automatic Workflow Execution** (`scripts/automated_weekly_content_workflow.py`):
+   - Processes draft posts automatically
+   - Executes all workflow stages (format → caption → image → publish)
+   - Publishes immediately if scheduled time has passed
+
+3. **Automatic Publishing** (`scripts/posting_executor.py`):
+   - Publishes 'ready' posts at scheduled time
+   - Handles both product posts and weekly content
+
+**Background Monitor:** `scripts/background_posting_monitor.sh` runs every 5 minutes
+
+**See:** `docs/WEEKLY_CONTENT_AUTOMATION_COMPLETE.md` for full automation details
+
+---
+
 ## Future Enhancements
 
 ### Planned
@@ -556,7 +584,6 @@ result = render_weekly_content_image(
 ### Potential Improvements
 - Image caching to avoid regeneration
 - Batch processing for multiple weekly posts
-- Scheduled posting integration
 - Analytics on prompt style performance
 
 ---
