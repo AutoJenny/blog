@@ -168,6 +168,8 @@ def monitoring_events():
             ('automated_weekly_content_workflow', 'logs/automated_weekly_content_workflow.log', 'posting'),
             ('posting_executor', 'logs/posting_executor.log', 'posting'),
             ('automated_posting', 'logs/automated_posting.log', 'posting'),
+            # Administrative processes (infrastructure, monitoring, maintenance)
+            ('background_posting_monitor', 'logs/background_posting.log', 'admin'),
         ]
         
         for script_name, log_path, category in log_files:
@@ -187,7 +189,50 @@ def monitoring_events():
                             if not line:
                                 continue
                             
-                            # Parse timestamp and message
+                            # Special handling for background_posting.log (admin category)
+                            # It contains both monitor messages and script outputs
+                            # Only show monitor's own messages (format: "YYYY-MM-DD HH:MM:SS - message")
+                            # Skip Python logging format (has comma and log level like "INFO", "DEBUG")
+                            if category == 'admin' and script_name == 'background_posting_monitor':
+                                # Only parse lines that match monitor's own format (no comma in timestamp, no log level)
+                                if ' - ' in line:
+                                    # Check if it's monitor format (no comma in timestamp part)
+                                    first_part = line.split(' - ')[0]
+                                    if ',' not in first_part and len(first_part.split()) == 2:
+                                        parts = line.split(' - ', 1)
+                                        if len(parts) == 2:
+                                            timestamp_str = parts[0].strip()
+                                            message = parts[1].strip()
+                                            
+                                            # Skip if it looks like Python logging output (has log level keywords at start)
+                                            # Monitor messages are simple like "Starting background posting monitor"
+                                            # Script outputs start with "INFO -", "DEBUG -", etc.
+                                            if message.startswith(('INFO', 'DEBUG', 'ERROR', 'WARNING')):
+                                                continue
+                                            
+                                            try:
+                                                timestamp = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
+                                                
+                                                # Determine result icon
+                                                result_icon = 'success'
+                                                if 'error' in message.lower() or 'failed' in message.lower() or 'stopped' in message.lower():
+                                                    result_icon = 'error'
+                                                elif 'warning' in message.lower():
+                                                    result_icon = 'warning'
+                                                
+                                                events.append({
+                                                    'timestamp': timestamp.isoformat(),
+                                                    'script': script_name,
+                                                    'level': 'INFO',
+                                                    'message': message,
+                                                    'result': result_icon,
+                                                    'category': category
+                                                })
+                                            except ValueError:
+                                                continue
+                                continue
+                            
+                            # Standard parsing for posting scripts (Python logging format)
                             # Format: 2026-01-17 20:01:19,484 - INFO - ...
                             if ' - ' in line:
                                 parts = line.split(' - ', 2)
