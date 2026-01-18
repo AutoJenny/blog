@@ -1,0 +1,17 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Page Not Found</h1>
+    
+    <p>The requested Knowledge Base page could not be found.</p>
+    
+    <div class="kb-related">
+        <h4>Navigate To</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.index') }}">Knowledge Base Home</a></li>
+            <li><a href="{{ url_for('knowledge_base.search') }}">Search</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

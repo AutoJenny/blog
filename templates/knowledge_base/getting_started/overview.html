@@ -1,0 +1,77 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>System Overview</h1>
+    
+    <p class="kb-intro">
+        The blog application is a comprehensive content management and publication system for creating
+        and publishing various types of content across multiple channels.
+    </p>
+    
+    <h2>Core Concepts</h2>
+    
+    <h3>Content Types (Post Types)</h3>
+    <p>The system supports multiple content types, each with its own workflow:</p>
+    <ul>
+        <li><strong>Themed Posts</strong> - Regular blog posts with full planning and research workflow</li>
+        <li><strong>Recipe Posts</strong> - Recipe content with specialized workflow</li>
+        <li><strong>Profile Posts</strong> - Product or surname profile content</li>
+        <li><strong>Weekly Content</strong> - Automated weekly word/phrase/insult posts (Word, Phrase, Insult)</li>
+        <li><strong>Generated Posts</strong> - AI-generated content posts</li>
+    </ul>
+    
+    <h3>Output Channels</h3>
+    <p>Content can be published to multiple channels:</p>
+    <ul>
+        <li><strong>Blog</strong> - Main website blog</li>
+        <li><strong>Facebook</strong> - Social media posts (fully automated for weekly content)</li>
+        <li><strong>Instagram</strong> - Image-based social media (in development)</li>
+        <li><strong>Twitter</strong> - Short-form social media (planned)</li>
+        <li><strong>Newsletter</strong> - Email newsletter system</li>
+    </ul>
+    
+    <h3>Workflow Stages</h3>
+    <p>Content goes through defined stages:</p>
+    <ul>
+        <li><strong>Calendar</strong> - Scheduling and week planning</li>
+        <li><strong>Planning</strong> - Content planning and structure</li>
+        <li><strong>Research</strong> - Research and source gathering (themed posts)</li>
+        <li><strong>Authoring</strong> - Content creation and drafting</li>
+        <li><strong>Imaging</strong> - Image generation and optimization</li>
+        <li><strong>Header</strong> - Title, summary, SEO, and final review</li>
+    </ul>
+    
+    <h2>Key Systems</h2>
+    
+    <h3>Automation</h3>
+    <p>The system includes extensive automation:</p>
+    <ul>
+        <li><strong>Weekly Content Automation</strong> - Fully automated creation, processing, and publishing</li>
+        <li><strong>Product Post Automation</strong> - Automated product post scheduling</li>
+        <li><strong>Background Monitor</strong> - Orchestrates all automated processes</li>
+    </ul>
+    
+    <h3>Management Interfaces</h3>
+    <p>Various interfaces for managing content:</p>
+    <ul>
+        <li><strong>Planning Interface</strong> - Calendar, ideas, taxonomy, structure</li>
+        <li><strong>Authoring Interface</strong> - Drafting, image concepts, prompts, captions</li>
+        <li><strong>Imaging Interface</strong> - Image generation and optimization</li>
+        <li><strong>Header Interface</strong> - Title, summary, SEO, final review</li>
+        <li><strong>Publication Dashboard</strong> - Overview of publication status</li>
+        <li><strong>Monitoring System</strong> - Real-time automation monitoring</li>
+        <li><strong>Launchpad</strong> - One-click publication and syndication tools</li>
+    </ul>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='overview') }}">Content Types Overview</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='overview') }}">Output Channels Overview</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='overview') }}">Workflow System</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='getting_started', page='status') }}">Development Status</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

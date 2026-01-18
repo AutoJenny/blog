@@ -1,0 +1,105 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Weekly Content</h1>
+    
+    {{ get_status_badge('complete')|safe }}
+    
+    <p class="kb-intro">
+        Weekly content is a fully automated system for creating and publishing weekly Scots language
+        content (words, phrases, and insults) to Facebook. The system handles everything from
+        content creation to image generation to publishing.
+    </p>
+    
+    <h2>Content Types</h2>
+    <p>Three types of weekly content are supported:</p>
+    <ul>
+        <li><strong>Weekly Words</strong> - Single Scots words with translation, usage examples, and provenance</li>
+        <li><strong>Weekly Phrases</strong> - Scots phrases with translation and provenance</li>
+        <li><strong>Weekly Insults</strong> - Scots insults with translation and provenance</li>
+    </ul>
+    
+    <h2>How It Works</h2>
+    
+    <h3>1. Content Creation</h3>
+    <p>Content is stored in the <code>calendar_ideas</code> table and scheduled via the calendar system.</p>
+    <ul>
+        <li>Words include: Scots text, translation, two usage examples, and provenance</li>
+        <li>Phrases and insults include: Scots text, translation, and provenance</li>
+    </ul>
+    
+    <h3>2. Automated Workflow</h3>
+    <p>The system automatically:</p>
+    <ol>
+        <li><strong>Creates posts</strong> - 1 week in advance based on calendar schedule</li>
+        <li><strong>Formats content</strong> - Extracts and formats data for social media</li>
+        <li><strong>Generates captions</strong> - Uses Ollama with 30 style variations</li>
+        <li><strong>Adds hashtags</strong> - Adds appropriate hashtags</li>
+        <li><strong>Generates images</strong> - Creates 1080×1080 square images with ImageMagick</li>
+        <li><strong>Publishes</strong> - Posts to both Facebook pages at scheduled time</li>
+    </ol>
+    
+    <h3>3. Image Generation</h3>
+    <p>Images are generated with:</p>
+    <ul>
+        <li>96pt italic Baskerville font for main Scots text</li>
+        <li>Automatic text wrapping for long phrases/insults</li>
+        <li>Usage examples in cream italics (words only)</li>
+        <li>Provenance in grey text</li>
+        <li>Branded logo in corner</li>
+    </ul>
+    
+    <h2>UI Access</h2>
+    <p>Weekly content can be managed through:</p>
+    <ul>
+        <li><a href="/planning/posts/{post_id}/calendar/view" class="kb-ui-link">Calendar View</a> - View and manage calendar schedule</li>
+        <li><a href="/monitoring/report" class="kb-ui-link">Monitoring Dashboard</a> - Monitor automation status</li>
+    </ul>
+    
+    <h2>Configuration</h2>
+    <p>Weekly content uses the following configuration:</p>
+    <ul>
+        <li><strong>Workflow:</strong> <code>config/output_channel_stages.py</code> - Defines stages for weekly content → Facebook</li>
+        <li><strong>Image Styling:</strong> <code>config/weekly_content_image_config.py</code> - Colors, fonts, layout</li>
+        <li><strong>Caption Prompts:</strong> <code>config/weekly_content_caption_prompts.py</code> - 30 style variations</li>
+    </ul>
+    
+    <h2>Development Status</h2>
+    <div class="kb-status-section">
+        <h3>✅ Complete</h3>
+        <ul>
+            <li>Content creation and scheduling</li>
+            <li>Automated workflow execution</li>
+            <li>Image generation with text wrapping</li>
+            <li>Caption generation with Ollama</li>
+            <li>Facebook posting to both pages</li>
+            <li>Monitoring system integration</li>
+        </ul>
+        
+        <h3>🔴 Planned</h3>
+        <ul>
+            <li>Instagram posting</li>
+            <li>Twitter posting</li>
+        </ul>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='facebook') }}">Facebook Channel</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='weekly_automation') }}">Weekly Content Automation</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='monitoring') }}">Monitoring System</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='planning') }}">Planning Interface</a></li>
+        </ul>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Technical Documentation</h4>
+        <ul>
+            <li><a href="/docs/WEEKLY_CONTENT_SYSTEM_TECHNICAL_REFERENCE.md" target="_blank">Technical Reference</a></li>
+            <li><a href="/docs/WEEKLY_CONTENT_AUTOMATION_COMPLETE.md" target="_blank">Automation Guide</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

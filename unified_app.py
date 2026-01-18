@@ -58,6 +58,10 @@ def create_app(config_name=None):
     from blueprints.monitoring import bp as monitoring_bp
     app.register_blueprint(monitoring_bp)
     
+    # Register knowledge base blueprint
+    from blueprints.knowledge_base import bp as knowledge_base_bp
+    app.register_blueprint(knowledge_base_bp)
+    
     from blueprints.launchpad_scheduling import bp as launchpad_scheduling_bp
     app.register_blueprint(launchpad_scheduling_bp, url_prefix='/launchpad')
     

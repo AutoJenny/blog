@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Knowledge Base{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared/site-header.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% include 'shared/header.html' %}
+
+{% block title %}Knowledge Base - {{ page_data.title if page_data else 'Home' }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="kb-container">
+    <!-- Left Sidebar Navigation -->
+    <aside class="kb-sidebar">
+        <div class="kb-sidebar-header">
+            <h2>📚 Knowledge Base</h2>
+            <a href="{{ url_for('knowledge_base.index') }}" class="kb-home-link">Home</a>
+        </div>
+        
+        <nav class="kb-nav">
+            {% for section_key, section_data in structure.items() %}
+            <div class="kb-nav-section">
+                <div class="kb-nav-section-header" data-section="{{ section_key }}">
+                    <span class="kb-nav-icon">{{ section_data.icon }}</span>
+                    <span class="kb-nav-title">{{ section_data.title }}</span>
+                    <span class="kb-nav-toggle">▼</span>
+                </div>
+                
+                <ul class="kb-nav-pages" data-section="{{ section_key }}">
+                    {% for page_key, page_info in section_data.pages.items() %}
+                    <li class="kb-nav-page {% if section == section_key and page == page_key %}active{% endif %}">
+                        <a href="{{ url_for('knowledge_base.page', section=section_key, page=page_key) }}">
+                            {{ page_info.title }}
+                            {% if page_info.get('status') %}
+                                {{ get_status_badge(page_info.status)|safe }}
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </nav>
+        
+        <div class="kb-sidebar-footer">
+            <a href="{{ url_for('knowledge_base.search') }}" class="kb-search-link">🔍 Search</a>
+        </div>
+    </aside>
+    
+    <!-- Main Content Area -->
+    <main class="kb-content">
+        {% if section and page %}
+        <nav class="kb-breadcrumbs">
+            <a href="{{ url_for('knowledge_base.index') }}">Home</a>
+            <span class="kb-breadcrumb-sep">›</span>
+            <a href="#">{{ structure[section].title }}</a>
+            <span class="kb-breadcrumb-sep">›</span>
+            <span>{{ page_data.title }}</span>
+        </nav>
+        {% endif %}
+        
+        {% block kb_content %}{% endblock %}
+    </main>
+</div>
+    </main>
+</div>
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/knowledge_base.js') }}"></script>
+{% endblock %}
+</body>
+</html>

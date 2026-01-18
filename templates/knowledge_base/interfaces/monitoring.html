@@ -1,0 +1,102 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Monitoring System</h1>
+    
+    {{ get_status_badge('complete')|safe }}
+    
+    <p class="kb-intro">
+        The monitoring system provides real-time visibility into automation processes, specifically
+        focusing on automated social media postings. It includes a status indicator in the header
+        and a detailed reporting page.
+    </p>
+    
+    <h2>Features</h2>
+    
+    <h3>Status Indicator</h3>
+    <p>A traffic light icon in the top-right header shows:</p>
+    <ul>
+        <li>🟢 <strong>Green</strong> - Monitoring is running</li>
+        <li>🔴 <strong>Red</strong> - Monitoring is stopped</li>
+    </ul>
+    <p>The indicator auto-updates every 30 seconds.</p>
+    
+    <h3>Monitoring Report</h3>
+    <p>The report page shows all automation events with filtering:</p>
+    <ul>
+        <li><strong>All Events</strong> - Everything</li>
+        <li><strong>Automated Postings</strong> - Only actual publication events</li>
+        <li><strong>Administrative</strong> - Infrastructure/monitoring messages</li>
+    </ul>
+    
+    <h3>Event Display</h3>
+    <p>Each event shows:</p>
+    <ul>
+        <li>Timestamp (most recent first)</li>
+        <li>Script name</li>
+        <li>Message with full context</li>
+        <li>Result icon (✅ success, ❌ error, ⚠️ warning)</li>
+    </ul>
+    
+    <h2>UI Access</h2>
+    <p>Access the monitoring system:</p>
+    <ul>
+        <li><a href="/monitoring/report" class="kb-ui-link">Monitoring Report</a> - Full event view</li>
+        <li><strong>Header Indicator</strong> - Click the status icon in the top-right of any page</li>
+    </ul>
+    
+    <h2>What's Monitored</h2>
+    
+    <h3>Automated Postings</h3>
+    <p>These scripts are monitored for actual publication events:</p>
+    <ul>
+        <li><code>automated_weekly_content_creator.log</code> - Weekly content creation</li>
+        <li><code>automated_weekly_content_workflow.log</code> - Weekly content workflow</li>
+        <li><code>posting_executor.log</code> - Post execution</li>
+        <li><code>automated_posting.log</code> - Product posting</li>
+    </ul>
+    
+    <h3>Administrative</h3>
+    <p>Infrastructure messages from:</p>
+    <ul>
+        <li><code>background_posting.log</code> - Background monitor status</li>
+    </ul>
+    
+    <h2>API Endpoints</h2>
+    <ul>
+        <li><code>GET /monitoring/status</code> - Get monitoring status</li>
+        <li><code>POST /monitoring/start</code> - Start monitoring</li>
+        <li><code>POST /monitoring/stop</code> - Stop monitoring</li>
+        <li><code>GET /monitoring/api/events</code> - Get events (with filtering)</li>
+    </ul>
+    
+    <h2>Development Status</h2>
+    <div class="kb-status-section">
+        <h3>✅ Complete</h3>
+        <ul>
+            <li>Status indicator in header</li>
+            <li>Monitoring report page</li>
+            <li>Event filtering (postings vs. administrative)</li>
+            <li>Start/Stop controls</li>
+            <li>Auto-refresh functionality</li>
+        </ul>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='weekly_automation') }}">Weekly Content Automation</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='product_automation') }}">Product Post Automation</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_content') }}">Weekly Content</a></li>
+        </ul>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Technical Documentation</h4>
+        <ul>
+            <li><a href="/docs/MONITORING_SYSTEM_REFERENCE.md" target="_blank">Monitoring System Reference</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

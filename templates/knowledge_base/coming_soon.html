@@ -1,0 +1,22 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>{{ page_data.title }}</h1>
+    
+    <div class="kb-status-section">
+        <p><strong>This page is coming soon.</strong></p>
+        <p>Content for this section is being developed. Check back soon or see related sections below.</p>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.index') }}">Knowledge Base Home</a></li>
+            {% if section %}
+            <li><a href="{{ url_for('knowledge_base.page', section=section, page='overview') }}">{{ structure[section].title }} Overview</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

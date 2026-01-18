@@ -1,0 +1,83 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Facebook Channel</h1>
+    
+    {{ get_status_badge('complete')|safe }}
+    
+    <p class="kb-intro">
+        Facebook is the primary social media channel for automated content publishing. The system
+        supports posting to multiple Facebook pages and includes full automation for weekly content.
+    </p>
+    
+    <h2>How It Works</h2>
+    
+    <h3>Posting Process</h3>
+    <p>Content is posted to Facebook using the Facebook Graph API:</p>
+    <ol>
+        <li>Content is prepared (image, caption, metadata)</li>
+        <li>Image is uploaded or made publicly accessible</li>
+        <li>Post is created via <code>/photos</code> endpoint</li>
+        <li>Post ID is stored in <code>posting_queue.platform_post_id</code></li>
+    </ol>
+    
+    <h3>Multiple Pages</h3>
+    <p>The system posts to both Facebook pages:</p>
+    <ul>
+        <li><strong>Scotweb CLAN</strong> - Primary page</li>
+        <li><strong>CLAN by Scotweb</strong> - Secondary page</li>
+    </ul>
+    <p>Both pages are posted to simultaneously, with independent success/failure tracking.</p>
+    
+    <h3>Content Types</h3>
+    <p>Facebook supports:</p>
+    <ul>
+        <li><strong>Weekly Content</strong> - Fully automated (words, phrases, insults)</li>
+        <li><strong>Product Posts</strong> - Automated product promotions</li>
+        <li><strong>Blog Syndication</strong> - Blog post links (planned)</li>
+    </ul>
+    
+    <h2>UI Access</h2>
+    <p>Facebook content can be managed through:</p>
+    <ul>
+        <li><a href="/monitoring/report" class="kb-ui-link">Monitoring Dashboard</a> - View posting status</li>
+        <li><a href="/dashboard" class="kb-ui-link">Publication Dashboard</a> - Overall publication status</li>
+    </ul>
+    
+    <h2>Configuration</h2>
+    <p>Facebook credentials are stored in the <code>platform_credentials</code> table:</p>
+    <ul>
+        <li><code>page_id</code> - Primary page ID</li>
+        <li><code>page_access_token</code> - Primary page access token</li>
+        <li><code>page_id_2</code> - Secondary page ID</li>
+        <li><code>page_access_token_2</code> - Secondary page access token</li>
+    </ul>
+    
+    <h2>Development Status</h2>
+    <div class="kb-status-section">
+        <h3>✅ Complete</h3>
+        <ul>
+            <li>Weekly content posting (fully automated)</li>
+            <li>Product post posting</li>
+            <li>Multiple page support</li>
+            <li>Error handling and retry logic</li>
+        </ul>
+        
+        <h3>🔴 Planned</h3>
+        <ul>
+            <li>Blog post syndication</li>
+            <li>Engagement tracking</li>
+        </ul>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_content') }}">Weekly Content</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='weekly_automation') }}">Weekly Automation</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='monitoring') }}">Monitoring System</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

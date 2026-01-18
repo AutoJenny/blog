@@ -1,0 +1,44 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Search Knowledge Base</h1>
+    
+    <form method="GET" action="{{ url_for('knowledge_base.search') }}" class="kb-search-form">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search..." class="kb-search-input" autofocus>
+        <button type="submit" class="kb-search-button">Search</button>
+    </form>
+    
+    {% if query %}
+    <div class="kb-search-results">
+        <h2>Search Results for "{{ query }}"</h2>
+        
+        {% if results %}
+        <ul class="kb-results-list">
+            {% for result in results %}
+            <li class="kb-result-item">
+                <a href="{{ result.url }}">
+                    <h3>{{ result.title }}</h3>
+                    <p>{{ result.snippet }}</p>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No results found. Try different search terms.</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="kb-search-help">
+        <h2>Search Tips</h2>
+        <ul>
+            <li>Search across all Knowledge Base pages</li>
+            <li>Full-text search - searches page titles and content</li>
+            <li>Use specific terms for better results</li>
+        </ul>
+        
+        <p><em>Note: Full-text search is coming soon. For now, use the navigation sidebar to browse.</em></p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page kb-home">
+    <h1>Knowledge Base Operations Manual</h1>
+    
+    <p class="kb-intro">
+        Welcome to the Knowledge Base. This is your guide to understanding how the blog application system works,
+        how different components connect, and where we are in development.
+    </p>
+    
+    <div class="kb-quick-links">
+        <h2>Quick Links</h2>
+        <div class="kb-quick-links-grid">
+            <a href="{{ url_for('knowledge_base.page', section='getting_started', page='overview') }}" class="kb-quick-link">
+                <span class="kb-quick-link-icon">🏠</span>
+                <span class="kb-quick-link-title">System Overview</span>
+                <span class="kb-quick-link-desc">Understand the big picture</span>
+            </a>
+            
+            <a href="{{ url_for('knowledge_base.page', section='content_types', page='overview') }}" class="kb-quick-link">
+                <span class="kb-quick-link-icon">📝</span>
+                <span class="kb-quick-link-title">Content Types</span>
+                <span class="kb-quick-link-desc">All post types explained</span>
+            </a>
+            
+            <a href="{{ url_for('knowledge_base.page', section='channels', page='overview') }}" class="kb-quick-link">
+                <span class="kb-quick-link-icon">📤</span>
+                <span class="kb-quick-link-title">Output Channels</span>
+                <span class="kb-quick-link-desc">Where content is published</span>
+            </a>
+            
+            <a href="{{ url_for('knowledge_base.page', section='interfaces', page='overview') }}" class="kb-quick-link">
+                <span class="kb-quick-link-icon">🎯</span>
+                <span class="kb-quick-link-title">Management Interfaces</span>
+                <span class="kb-quick-link-desc">UI tools and dashboards</span>
+            </a>
+            
+            <a href="{{ url_for('knowledge_base.page', section='getting_started', page='status') }}" class="kb-quick-link">
+                <span class="kb-quick-link-icon">📊</span>
+                <span class="kb-quick-link-title">Development Status</span>
+                <span class="kb-quick-link-desc">What's complete and what's planned</span>
+            </a>
+            
+            <a href="{{ url_for('knowledge_base.search') }}" class="kb-quick-link">
+                <span class="kb-quick-link-icon">🔍</span>
+                <span class="kb-quick-link-title">Search</span>
+                <span class="kb-quick-link-desc">Find anything quickly</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="kb-sections">
+        <h2>Browse by Section</h2>
+        
+        {% for section_key, section_data in structure.items() %}
+        <div class="kb-section-card">
+            <div class="kb-section-card-header">
+                <span class="kb-section-icon">{{ section_data.icon }}</span>
+                <h3>{{ section_data.title }}</h3>
+            </div>
+            <ul class="kb-section-pages">
+                {% for page_key, page_info in section_data.pages.items() %}
+                <li>
+                    <a href="{{ url_for('knowledge_base.page', section=section_key, page=page_key) }}">
+                        {{ page_info.title }}
+                        {% if page_info.get('status') %}
+                            {{ get_status_badge(page_info.status)|safe }}
+                        {% endif %}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
