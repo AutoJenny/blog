@@ -1117,7 +1117,9 @@ def execute_optimize_for_facebook(post_id, data):
             translation=formatted_data['translation'],
             series_footer=formatted_data['series_footer'],
             logo_path=formatted_data['logo_path'],
-            output_path=formatted_data['output_path']
+            output_path=formatted_data['output_path'],
+            usage_examples=formatted_data.get('usage_examples', []),
+            notes=formatted_data.get('notes', '')
         )
         
         if not result['success']:

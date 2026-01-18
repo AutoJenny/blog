@@ -11,6 +11,8 @@ CANVAS_SIZE = 1080  # Square 1080×1080
 # Colors
 BG_COLOR = "#1e3a5f"  # Deep blue (example - adjust to match brand)
 TEXT_COLOR = "#f5f1e8"  # Warm ivory for main content (Scots phrase and translation)
+USAGE_COLOR = "#e8e0d0"  # Cream color for usage examples (slightly muted from main text)
+PROVENANCE_COLOR = "#9ca3af"  # Medium grey for provenance/notes (subtle metadata)
 HEADER_FOOTER_COLOR = "#8fa8c4"  # Pale blue for header and footer (recedes, makes main content stand out)
 
 # Typography
@@ -40,6 +42,12 @@ SAFE_MARGIN = 90  # pixels (all text within this inset)
 PHRASE_MAX_WIDTH = 800  # pixels (wraps if longer)
 LINE_SPACING = 1.2  # line height multiplier
 TEXTURE_STRENGTH = 0.05  # 0-1, subtle noise/texture
+
+# Spacing for additional content
+USAGE_SPACING = 50  # pixels between translation and usage examples
+USAGE_LINE_SPACING = 35  # pixels between usage example lines
+PROVENANCE_SPACING = 45  # pixels between usage examples and provenance (or translation if no usage)
+PROVENANCE_FONT_SIZE = 32  # slightly smaller than translation for hierarchy
 
 # Series Footer Text
 SERIES_FOOTER_TEXT = "Scots Language Series"  # or your brand series name

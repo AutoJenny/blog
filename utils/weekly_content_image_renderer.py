@@ -9,10 +9,12 @@ import logging
 from typing import Dict
 from config.weekly_content_image_config import (
     CANVAS_SIZE, BG_COLOR, TEXT_COLOR, HEADER_FOOTER_COLOR,
+    USAGE_COLOR, PROVENANCE_COLOR,
     HEADER_FONT, BODY_FONT, ACCENT_FONT,
     LOGO_PATH, LOGO_CORNER, LOGO_SCALE, LOGO_PADDING,
     TOP_MARGIN, BOTTOM_MARGIN, SAFE_MARGIN,
-    PHRASE_MAX_WIDTH, LINE_SPACING, TEXTURE_STRENGTH
+    PHRASE_MAX_WIDTH, LINE_SPACING, TEXTURE_STRENGTH,
+    USAGE_SPACING, USAGE_LINE_SPACING, PROVENANCE_SPACING, PROVENANCE_FONT_SIZE
 )
 
 logger = logging.getLogger(__name__)
@@ -25,7 +27,9 @@ def _build_imagemagick_command(
     translation: str,
     series_footer: str,
     logo_path: str,
-    output_path: str
+    output_path: str,
+    usage_examples: list = None,
+    notes: str = None
 ) -> list:
     """
     Build complete ImageMagick command for square image generation.
@@ -55,8 +59,15 @@ def _build_imagemagick_command(
         '-annotate', f'+0+{TOP_MARGIN}', title
     ])
     
-    # Step 3: Main Scots phrase (centered, larger) - increased size
-    phrase_y_offset = -100
+    # Step 3: Main Scots phrase (centered, larger)
+    # Adjust vertical position based on whether we have usage examples (words need more space below)
+    if usage_examples and len(usage_examples) > 0:
+        # For words with usage examples, position slightly higher to accommodate extra content
+        phrase_y_offset = -120
+    else:
+        # For phrases/insults, keep original position
+        phrase_y_offset = -100
+    
     cmd.extend([
         '-gravity', 'center',
         '-pointsize', '96',  # Increased from 72 to 96
@@ -75,6 +86,47 @@ def _build_imagemagick_command(
         '-fill', TEXT_COLOR,
         '-annotate', f'+0+{translation_y_offset}', translation_text
     ])
+    
+    # Step 4.5: Usage examples (if provided - for weekly_word only)
+    # Positioned below translation, in cream italics with quotation marks
+    if usage_examples and len(usage_examples) > 0:
+        current_y = translation_y_offset + USAGE_SPACING
+        for i, usage in enumerate(usage_examples):
+            if usage.strip():
+                # Format with quotation marks and italic styling for visual distinction
+                # Use a serif italic font for more elegant example styling
+                # Add subtle leading/trailing spacing in quotes for visual breathing room
+                usage_text = f'"{usage.strip()}"'
+                cmd.extend([
+                    '-gravity', 'center',
+                    '-pointsize', '40',  # Same size as translation
+                    '-font', 'Baskerville-Italic',  # Serif italic for elegant examples
+                    '-fill', USAGE_COLOR,  # Cream color (slightly muted from main text)
+                    '-annotate', f'+0+{current_y}', usage_text
+                ])
+                current_y += USAGE_LINE_SPACING
+    
+    # Step 4.6: Provenance/Notes (if provided)
+    # Positioned below usage examples (or translation if no usage), in grey
+    # Subtle metadata styling to recede into background
+    if notes and notes.strip():
+        # Calculate Y offset based on whether usage examples exist
+        if usage_examples and len(usage_examples) > 0:
+            # Start after all usage examples
+            provenance_y = translation_y_offset + USAGE_SPACING + (len(usage_examples) * USAGE_LINE_SPACING) + PROVENANCE_SPACING
+        else:
+            # Start after translation
+            provenance_y = translation_y_offset + PROVENANCE_SPACING
+        
+        # Format provenance with subtle styling (smaller, grey, clean sans)
+        provenance_text = notes.strip()
+        cmd.extend([
+            '-gravity', 'center',
+            '-pointsize', str(PROVENANCE_FONT_SIZE),  # Slightly smaller for hierarchy
+            '-font', ACCENT_FONT,  # Clean sans for metadata
+            '-fill', PROVENANCE_COLOR,  # Medium grey (subtle, recedes)
+            '-annotate', f'+0+{provenance_y}', provenance_text
+        ])
     
     # Step 5: Footer (bottom) - pale blue to recede
     # Use -annotate with gravity south and positive offset from bottom
@@ -120,7 +172,9 @@ def render_weekly_content_image(
     translation: str,
     series_footer: str,
     logo_path: str = None,
-    output_path: str = None
+    output_path: str = None,
+    usage_examples: list = None,
+    notes: str = None
 ) -> Dict:
     """
     Render square 1080×1080 image using ImageMagick.
@@ -168,7 +222,9 @@ def render_weekly_content_image(
             translation=translation,
             series_footer=series_footer,
             logo_path=logo_path,
-            output_path=output_path
+            output_path=output_path,
+            usage_examples=usage_examples or [],
+            notes=notes
         )
         
         logger.info(f"Executing ImageMagick command: {' '.join(cmd)}")
