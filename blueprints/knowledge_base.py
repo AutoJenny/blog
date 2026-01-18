@@ -22,7 +22,8 @@ KB_STRUCTURE = {
             },
             'navigation': {
                 'title': 'Quick Navigation Guide',
-                'template': 'knowledge_base/getting_started/navigation.html'
+                'template': 'knowledge_base/getting_started/navigation.html',
+                'status': 'planned'
             },
             'status': {
                 'title': 'Development Status Dashboard',
@@ -30,7 +31,8 @@ KB_STRUCTURE = {
             },
             'common_tasks': {
                 'title': 'Common Tasks',
-                'template': 'knowledge_base/getting_started/common_tasks.html'
+                'template': 'knowledge_base/getting_started/common_tasks.html',
+                'status': 'planned'
             }
         }
     },
@@ -97,7 +99,8 @@ KB_STRUCTURE = {
         'pages': {
             'overview': {
                 'title': 'Channels Overview',
-                'template': 'knowledge_base/channels/overview.html'
+                'template': 'knowledge_base/channels/overview.html',
+                'status': 'planned'
             },
             'facebook': {
                 'title': 'Facebook',
@@ -132,27 +135,33 @@ KB_STRUCTURE = {
         'pages': {
             'overview': {
                 'title': 'Interfaces Overview',
-                'template': 'knowledge_base/interfaces/overview.html'
+                'template': 'knowledge_base/interfaces/overview.html',
+                'status': 'planned'
             },
             'planning': {
                 'title': 'Planning Interface',
-                'template': 'knowledge_base/interfaces/planning.html'
+                'template': 'knowledge_base/interfaces/planning.html',
+                'status': 'planned'
             },
             'authoring': {
                 'title': 'Authoring Interface',
-                'template': 'knowledge_base/interfaces/authoring.html'
+                'template': 'knowledge_base/interfaces/authoring.html',
+                'status': 'planned'
             },
             'imaging': {
                 'title': 'Imaging Interface',
-                'template': 'knowledge_base/interfaces/imaging.html'
+                'template': 'knowledge_base/interfaces/imaging.html',
+                'status': 'planned'
             },
             'header': {
                 'title': 'Header Interface',
-                'template': 'knowledge_base/interfaces/header.html'
+                'template': 'knowledge_base/interfaces/header.html',
+                'status': 'planned'
             },
             'publication_dashboard': {
                 'title': 'Publication Dashboard',
-                'template': 'knowledge_base/interfaces/publication_dashboard.html'
+                'template': 'knowledge_base/interfaces/publication_dashboard.html',
+                'status': 'planned'
             },
             'monitoring': {
                 'title': 'Monitoring System',
@@ -160,7 +169,8 @@ KB_STRUCTURE = {
             },
             'launchpad': {
                 'title': 'Launchpad',
-                'template': 'knowledge_base/interfaces/launchpad.html'
+                'template': 'knowledge_base/interfaces/launchpad.html',
+                'status': 'planned'
             }
         }
     },
@@ -170,23 +180,28 @@ KB_STRUCTURE = {
         'pages': {
             'overview': {
                 'title': 'Workflow Overview',
-                'template': 'knowledge_base/workflows/overview.html'
+                'template': 'knowledge_base/workflows/overview.html',
+                'status': 'planned'
             },
             'stages': {
                 'title': 'Stage System',
-                'template': 'knowledge_base/workflows/stages.html'
+                'template': 'knowledge_base/workflows/stages.html',
+                'status': 'planned'
             },
             'weekly_automation': {
                 'title': 'Weekly Content Automation',
-                'template': 'knowledge_base/workflows/weekly_automation.html'
+                'template': 'knowledge_base/workflows/weekly_automation.html',
+                'status': 'planned'
             },
             'product_automation': {
                 'title': 'Product Post Automation',
-                'template': 'knowledge_base/workflows/product_automation.html'
+                'template': 'knowledge_base/workflows/product_automation.html',
+                'status': 'planned'
             },
             'posting_queue': {
                 'title': 'Posting Queue System',
-                'template': 'knowledge_base/workflows/posting_queue.html'
+                'template': 'knowledge_base/workflows/posting_queue.html',
+                'status': 'planned'
             }
         }
     },
@@ -196,19 +211,23 @@ KB_STRUCTURE = {
         'pages': {
             'overview': {
                 'title': 'Backend Overview',
-                'template': 'knowledge_base/backend/overview.html'
+                'template': 'knowledge_base/backend/overview.html',
+                'status': 'planned'
             },
             'database': {
                 'title': 'Database Architecture',
-                'template': 'knowledge_base/backend/database.html'
+                'template': 'knowledge_base/backend/database.html',
+                'status': 'planned'
             },
             'apis': {
                 'title': 'API Endpoints',
-                'template': 'knowledge_base/backend/apis.html'
+                'template': 'knowledge_base/backend/apis.html',
+                'status': 'planned'
             },
             'services': {
                 'title': 'Services & Utilities',
-                'template': 'knowledge_base/backend/services.html'
+                'template': 'knowledge_base/backend/services.html',
+                'status': 'planned'
             }
         }
     },
@@ -218,15 +237,18 @@ KB_STRUCTURE = {
         'pages': {
             'overview': {
                 'title': 'Technical Overview',
-                'template': 'knowledge_base/technical/overview.html'
+                'template': 'knowledge_base/technical/overview.html',
+                'status': 'planned'
             },
             'file_structure': {
                 'title': 'File Structure',
-                'template': 'knowledge_base/technical/file_structure.html'
+                'template': 'knowledge_base/technical/file_structure.html',
+                'status': 'planned'
             },
             'blueprints': {
                 'title': 'Blueprint Organization',
-                'template': 'knowledge_base/technical/blueprints.html'
+                'template': 'knowledge_base/technical/blueprints.html',
+                'status': 'planned'
             }
         }
     }
