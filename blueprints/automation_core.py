@@ -140,6 +140,12 @@ def execute_substage(stage, substage):
         elif stage == 'publish':
             # Publish substages (publish_to_*)
             if substage == 'publish_to_facebook':
+                # ⚠️ FACEBOOK POSTING DISABLED
+                logger.error(f"BLOCKED: publish_to_facebook substage called for post_id={post_id} - Facebook posting is DISABLED")
+                return jsonify({
+                    "success": False,
+                    "error": "Facebook posting has been disabled"
+                }), 403
                 from blueprints.automation_execute import execute_publish_to_facebook
                 result = execute_publish_to_facebook(post_id, data)
             elif substage.startswith('publish_to_'):

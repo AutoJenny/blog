@@ -622,7 +622,16 @@ def get_blog_content(post_id):
 
 @bp.route('/api/syndication/post-now', methods=['POST'])
 def post_now():
-    """Post blog post content to Facebook immediately."""
+    """
+    Post blog post content to Facebook immediately.
+    
+    ⚠️ DISABLED - Facebook posting has been disabled to prevent unwanted posts.
+    """
+    logger.error(f"BLOCKED: post_now API endpoint called - Facebook posting is DISABLED")
+    return jsonify({
+        'success': False,
+        'error': 'Facebook posting has been disabled'
+    }), 403
     try:
         data = request.get_json()
         item_id = data.get('item_id')
