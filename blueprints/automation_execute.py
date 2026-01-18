@@ -1495,53 +1495,20 @@ def execute_generate_caption(post_id, data):
             
             formatted_data = json.loads(formatted_data_json)
             
-            # Get LLM prompt template
-            with db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    SELECT prompt_text
-                    FROM llm_prompt
-                    WHERE name = 'Social Media Syndication'
-                    LIMIT 1
-                """)
-                prompt_config = cursor.fetchone()
-                
-                if not prompt_config:
-                    return {"success": False, "error": "No LLM prompt configuration found"}, 404
+            # Generate caption using standardized product caption generator
+            from utils.product_post_caption_generator import generate_product_post_caption
             
-            # Format prompt with product details
-            prompt_template = prompt_config['prompt_text']
-            formatted_prompt = prompt_template.format(
-                platform='Facebook',
-                channel_type='product',
-                requirements=f"""Create an engaging product promotion post for:
-Product Name: {formatted_data['product_name']}
-Description: {formatted_data['product_description']}
-Product URL: {formatted_data['product_url']}
-
-Write a compelling social media post that highlights the product's key features and benefits. Use an engaging tone with appropriate emojis. Include a clear call-to-action directing people to the product URL. Do NOT include the price in the post. Keep it concise but informative."""
+            caption_result = generate_product_post_caption(
+                product_name=formatted_data['product_name'],
+                product_description=formatted_data.get('product_description', ''),
+                product_url=formatted_data.get('product_url', ''),
+                model='mistral'
             )
             
-            # Generate caption using LLMService with intercept_context
-            llm_service = LLMService()
-            messages = [
-                {"role": "system", "content": "You are a social media marketing expert."},
-                {"role": "user", "content": formatted_prompt}
-            ]
-            
-            # Execute LLM request (intercept_context logging handled separately if needed)
-            response = llm_service.execute_llm_request(
-                provider='ollama',
-                model='mistral',
-                messages=messages
-            )
+            caption = caption_result.get('caption', '')
             
             # Log the request for tracking (similar to weekly content)
-            logger.info(f"Generated caption for product post queue_id={post_id}, product_id={formatted_data['product_id']}")
-            
-            if response and 'content' in response:
-                caption = response['content'].strip()
-            else:
-                return {"success": False, "error": "Failed to generate caption"}, 500
+            logger.info(f"Generated caption for product post queue_id={post_id}, product_id={formatted_data['product_id']}, style_id={caption_result.get('chosen_prompt_style_id')}")
         
         else:
             return {"success": False, "error": f"Unsupported content type: {content_type}"}, 400
@@ -1567,19 +1534,33 @@ Write a compelling social media post that highlights the product's key features 
                     caption_result['ollama_model'],
                     post_id
                 ))
-            else:
-                # Product posts - simple caption string
+            elif content_type == 'product':
+                # Product posts - store caption with metadata
                 cursor.execute("""
                     UPDATE posting_queue
                     SET 
                         generated_caption = %s,
+                        chosen_prompt_style_id = %s,
+                        ollama_model = %s,
                         generation_timestamp = NOW(),
                         updated_at = NOW()
                     WHERE id = %s
-                """, (caption, post_id))
+                """, (
+                    caption_result['caption'],
+                    caption_result.get('chosen_prompt_style_id'),
+                    caption_result.get('model', 'mistral'),
+                    post_id
+                ))
         
         # Return appropriate response based on content type
         if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            return {
+                "success": True,
+                "caption": caption_result['caption'],
+                "caption_result": caption_result,
+                "message": "Caption generated successfully"
+            }
+        elif content_type == 'product':
             return {
                 "success": True,
                 "caption": caption_result['caption'],
