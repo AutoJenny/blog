@@ -7,12 +7,12 @@
     {{ get_status_badge('in_progress')|safe }}
     
     <p class="kb-intro">
-        Generated Posts are blog posts that are automatically created using LLM (Large Language Model)
-        technology. These posts are generated from product or category data stored in the system.
+        <strong>Generated Posts are blog articles</strong> (not social media posts) that are automatically created using LLM (Large Language Model)
+        technology. These are full-length blog articles generated from product or category data stored in the system.
     </p>
     
     <h2>What Are Generated Posts?</h2>
-    <p>Generated Posts are blog articles that are automatically created by the system using:</p>
+    <p><strong>Generated Posts create blog articles</strong> - longer-form content for the blog website. They are automatically created by the system using:</p>
     <ul>
         <li><strong>Source Data:</strong> Product information or category data from the database</li>
         <li><strong>LLM Generation:</strong> Content is generated using Ollama/LLM models</li>
@@ -47,14 +47,19 @@
         </ul>
     </div>
     
+    <h2>Difference from Product Posts</h2>
+    <p><strong>Generated Posts</strong> (this page) create <em>blog articles</em> - full-length articles published on the blog website.</p>
+    <p><strong>Product Posts</strong> (under Social Posts) create <em>social media posts</em> - short posts for Facebook/Instagram about products.</p>
+    <p><em>Both use products as source material, but create different types of content for different channels.</em></p>
+    
     <h2>How It Works (Current Implementation)</h2>
     <ol>
         <li>User selects a product or category as the source</li>
         <li>System retrieves context from vector index</li>
         <li>LLM generates headline, standfirst, and post structure</li>
         <li>LLM generates content for each section</li>
-        <li>Post record is created in draft status</li>
-        <li>User can review and edit before publication</li>
+        <li>Blog post record is created in draft status</li>
+        <li>User can review and edit before publication to the blog website</li>
     </ol>
     
     <h2>UI Access</h2>

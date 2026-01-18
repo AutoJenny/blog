@@ -1,0 +1,38 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Blog Posts</h1>
+    
+    <p class="kb-intro">
+        Blog Posts are longer-form articles published on the blog website. These are different from
+        social media posts - they appear on the main blog and can be shared to social media.
+    </p>
+    
+    <h2>Blog Post Types</h2>
+    <ul>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='themed') }}">Themed Posts</a> - Posts organized around specific themes or topics</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='recipe') }}">Recipe Posts</a> - Recipe and cooking content</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='profile') }}">Profile Posts</a> - Profiles of people, businesses, or organizations</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='generated') }}">Generated Posts</a> - LLM-generated blog articles created automatically from product or category data</li>
+    </ul>
+    
+    <h2>What Are Generated Posts?</h2>
+    <p><strong>Generated Posts</strong> are blog articles (not social media posts) that are automatically created using LLM technology. The system:</p>
+    <ul>
+        <li>Takes product or category data as source material</li>
+        <li>Uses LLM (Ollama) to generate a full blog article with title, standfirst, and multiple sections</li>
+        <li>Creates a draft blog post that can be reviewed and edited before publication</li>
+        <li>Once published, these appear on the blog website like any other blog post</li>
+    </ul>
+    <p><em>Note: Generated Posts create blog articles, not social media posts. For social media posts about products, see <a href="{{ url_for('knowledge_base.page', section='content_types', page='product_posts') }}">Product Posts</a>.</em></p>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='social_posts') }}">Social Posts</a> - Social media content types</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='blog') }}">Blog Channel</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

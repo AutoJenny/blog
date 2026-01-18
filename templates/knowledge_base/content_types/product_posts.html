@@ -1,0 +1,39 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Product Posts</h1>
+    
+    {{ get_status_badge('planned')|safe }}
+    
+    <p class="kb-intro">
+        Product Posts are social media posts that feature products from the catalog. These are short-form
+        social media posts (not blog articles) designed for platforms like Facebook and Instagram.
+    </p>
+    
+    <h2>What Are Product Posts?</h2>
+    <p>Product Posts are social media content that:</p>
+    <ul>
+        <li><strong>Feature Products:</strong> Showcase products from the Clan.com catalog</li>
+        <li><strong>Social Media Format:</strong> Short captions, product images, hashtags</li>
+        <li><strong>Automated Generation:</strong> Use LLM to generate engaging product descriptions</li>
+        <li><strong>Direct Posting:</strong> Posted directly to social platforms (Facebook, Instagram, etc.)</li>
+    </ul>
+    
+    <h2>Difference from Generated Posts</h2>
+    <p><strong>Product Posts</strong> (this page) are <em>social media posts</em> about products - short posts for Facebook/Instagram.</p>
+    <p><strong>Generated Posts</strong> (under Blog Posts) are <em>blog articles</em> generated from products - full-length articles for the blog website.</p>
+    
+    <h2>Status</h2>
+    <p>Product Posts are currently in the planning phase. The system infrastructure exists but is not yet fully implemented.</p>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - The completed social post system</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='generated') }}">Generated Posts</a> - Blog articles generated from products (different from Product Posts)</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='facebook') }}">Facebook Channel</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

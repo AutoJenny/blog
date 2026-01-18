@@ -1,0 +1,34 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Social Posts</h1>
+    
+    <p class="kb-intro">
+        Social Posts are content created specifically for social media platforms (Facebook, Instagram, Twitter, etc.).
+        These are shorter-form posts designed for social engagement, different from longer blog articles.
+    </p>
+    
+    <h2>Social Post Types</h2>
+    <ul>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - ✅ Complete - Automated Scots language content (words, phrases, insults) posted to Facebook</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='product_posts') }}">Product Posts</a> - 🔴 Planned - Social media posts featuring products from the catalog</li>
+    </ul>
+    
+    <h2>Key Differences from Blog Posts</h2>
+    <ul>
+        <li><strong>Length:</strong> Social posts are shorter, optimized for quick engagement</li>
+        <li><strong>Format:</strong> Designed for social media platforms (square images, captions, hashtags)</li>
+        <li><strong>Purpose:</strong> Direct social engagement rather than in-depth articles</li>
+        <li><strong>Distribution:</strong> Posted directly to social platforms, not to the blog website</li>
+    </ul>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='blog_posts') }}">Blog Posts</a> - Longer-form blog articles</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='facebook') }}">Facebook Channel</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -44,52 +44,66 @@ KB_STRUCTURE = {
                 'title': 'Post Types Overview',
                 'template': 'knowledge_base/content_types/overview.html'
             },
-            'weekly_words_phrases': {
-                'title': 'Weekly Words & Phrases',
-                'template': 'knowledge_base/content_types/weekly_words_phrases.html',
-                'status': 'complete',
+            'blog_posts': {
+                'title': 'Blog Posts',
+                'template': 'knowledge_base/content_types/blog_posts.html',
+                'status': 'planned',
                 'subpages': {
-                    'words': {
-                        'title': 'Weekly Words',
-                        'template': 'knowledge_base/content_types/weekly_words.html',
-                        'status': 'complete'
+                    'themed': {
+                        'title': 'Themed Posts',
+                        'template': 'knowledge_base/content_types/themed.html',
+                        'status': 'planned'
                     },
-                    'phrases': {
-                        'title': 'Weekly Phrases',
-                        'template': 'knowledge_base/content_types/weekly_phrases.html',
-                        'status': 'complete'
+                    'recipe': {
+                        'title': 'Recipe Posts',
+                        'template': 'knowledge_base/content_types/recipe.html',
+                        'status': 'planned'
                     },
-                    'insults': {
-                        'title': 'Weekly Insults',
-                        'template': 'knowledge_base/content_types/weekly_insults.html',
-                        'status': 'complete'
+                    'profile': {
+                        'title': 'Profile Posts',
+                        'template': 'knowledge_base/content_types/profile.html',
+                        'status': 'planned'
+                    },
+                    'generated': {
+                        'title': 'Generated Posts',
+                        'template': 'knowledge_base/content_types/generated.html',
+                        'status': 'in_progress'
                     }
                 }
             },
-            'weekly_blog_entries': {
-                'title': 'Weekly Blog Entries',
-                'template': 'knowledge_base/content_types/weekly_blog_entries.html',
-                'status': 'planned'
-            },
-            'themed': {
-                'title': 'Themed Posts',
-                'template': 'knowledge_base/content_types/themed.html',
-                'status': 'planned'
-            },
-            'recipe': {
-                'title': 'Recipe Posts',
-                'template': 'knowledge_base/content_types/recipe.html',
-                'status': 'planned'
-            },
-            'profile': {
-                'title': 'Profile Posts',
-                'template': 'knowledge_base/content_types/profile.html',
-                'status': 'planned'
-            },
-            'generated': {
-                'title': 'Generated Posts',
-                'template': 'knowledge_base/content_types/generated.html',
-                'status': 'in_progress'
+            'social_posts': {
+                'title': 'Social Posts',
+                'template': 'knowledge_base/content_types/social_posts.html',
+                'status': 'planned',
+                'subpages': {
+                    'weekly_words_phrases': {
+                        'title': 'Weekly Words & Phrases',
+                        'template': 'knowledge_base/content_types/weekly_words_phrases.html',
+                        'status': 'complete',
+                        'subpages': {
+                            'words': {
+                                'title': 'Weekly Words',
+                                'template': 'knowledge_base/content_types/weekly_words.html',
+                                'status': 'complete'
+                            },
+                            'phrases': {
+                                'title': 'Weekly Phrases',
+                                'template': 'knowledge_base/content_types/weekly_phrases.html',
+                                'status': 'complete'
+                            },
+                            'insults': {
+                                'title': 'Weekly Insults',
+                                'template': 'knowledge_base/content_types/weekly_insults.html',
+                                'status': 'complete'
+                            }
+                        }
+                    },
+                    'product_posts': {
+                        'title': 'Product Posts',
+                        'template': 'knowledge_base/content_types/product_posts.html',
+                        'status': 'planned'
+                    }
+                }
             }
         }
     },

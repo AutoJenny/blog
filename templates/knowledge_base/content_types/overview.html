@@ -5,8 +5,29 @@
     <h1>Content Types Overview</h1>
     
     <p class="kb-intro">
-        This page provides an overview of all content types in the system.
+        Content types are organized into two main categories: <strong>Blog Posts</strong> (for the blog website)
+        and <strong>Social Posts</strong> (for social media platforms).
     </p>
+    
+    <h2>Blog Posts</h2>
+    <p>Longer-form articles published on the blog website:</p>
+    <ul>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='themed') }}">Themed Posts</a> - Posts organized around specific themes</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='recipe') }}">Recipe Posts</a> - Recipe and cooking content</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='profile') }}">Profile Posts</a> - Profiles of people, businesses, or organizations</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='generated') }}">Generated Posts</a> - 🟡 In Progress - LLM-generated blog articles from products/categories</li>
+    </ul>
+    
+    <h2>Social Posts</h2>
+    <p>Short-form content for social media platforms:</p>
+    <ul>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - ✅ Complete - Automated Scots language content</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='product_posts') }}">Product Posts</a> - 🔴 Planned - Social media posts featuring products</li>
+    </ul>
+    
+    <h2>Key Distinction</h2>
+    <p><strong>Blog Posts</strong> = Full-length articles for the blog website</p>
+    <p><strong>Social Posts</strong> = Short posts for social media platforms (Facebook, Instagram, etc.)</p>
     
     <h2>Content Types</h2>
     
