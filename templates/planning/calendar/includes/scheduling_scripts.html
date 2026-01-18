@@ -178,12 +178,26 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             const productPostCell = createCategoryCell(productPostItems, 'product-post', year, week);
             
             // TEMPORARY: Add a visible test element to verify cell is rendered
+            // Add multiple test elements to ensure visibility
             if (productPostItems.length > 0) {
+                // Test 1: Simple text node
+                productPostCell.appendChild(document.createTextNode(`TEXT: ${productPostItems.length} products `));
+                
+                // Test 2: Simple div with inline styles
                 const testDiv = document.createElement('div');
-                testDiv.style.cssText = 'background: red !important; color: white !important; padding: 10px !important; margin: 5px !important; border: 2px solid yellow !important; display: block !important; visibility: visible !important;';
-                testDiv.textContent = `TEST: ${productPostItems.length} products`;
-                productPostCell.insertBefore(testDiv, productPostCell.firstChild);
-                console.log('TEST DIV ADDED to product post cell');
+                testDiv.style.cssText = 'background: red !important; color: white !important; padding: 10px !important; margin: 5px !important; border: 2px solid yellow !important; display: block !important; visibility: visible !important; z-index: 9999 !important; position: relative !important;';
+                testDiv.textContent = `TEST DIV: ${productPostItems.length} products`;
+                productPostCell.appendChild(testDiv);
+                
+                // Test 3: Set cell background to verify it exists
+                productPostCell.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+                productPostCell.style.minHeight = '100px';
+                
+                console.log('TEST ELEMENTS ADDED to product post cell', {
+                    cell: productPostCell,
+                    cellHTML: productPostCell.outerHTML.substring(0, 200),
+                    cellStyle: productPostCell.style.cssText
+                });
             }
             
             console.log(`Product post cell created for week ${year}-W${week}:`, {
