@@ -335,9 +335,23 @@ function createCategoryCell(items, categoryClass, year, week) {
             console.error('Failed to create card for item:', item, 'categoryClass:', categoryClass);
             const fallbackCard = document.createElement('div');
             fallbackCard.className = 'scheduling-item';
+            if (categoryClass === 'product-post') {
+                fallbackCard.classList.add('product-post');
+            }
             fallbackCard.textContent = title || 'Item';
+            fallbackCard.style.display = 'block';
+            fallbackCard.style.visibility = 'visible';
             cell.appendChild(fallbackCard);
             return cell;
+        }
+        
+        // For product posts, ensure card is visible
+        if (categoryClass === 'product-post' && card) {
+            // Double-check card has content
+            if (!card.textContent && !card.innerHTML) {
+                console.warn('Product post card appears empty, adding fallback content');
+                card.textContent = title || 'Product Post';
+            }
         }
         
         if (isProductPost) {
