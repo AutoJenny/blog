@@ -68,6 +68,16 @@ OUTPUT_CHANNEL_STAGES = {
         }
     },
     
+    # Facebook outputs - product posts
+    ('product', 'facebook'): {
+        'stages': ['content', 'imaging', 'publish'],
+        'substages': {
+            'content': ['format_for_facebook', 'generate_caption', 'add_hashtags'],
+            'imaging': ['optimize_for_facebook'],  # Uses product image
+            'publish': ['publish_to_facebook']
+        }
+    },
+    
     # Facebook outputs - syndication for blog posts
     ('themed', 'facebook'): {
         'stages': ['syndication'],

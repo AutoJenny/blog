@@ -953,10 +953,11 @@ def execute_image_captions(post_id, data):
 
 def execute_format_for_facebook(post_id, data):
     """
-    Format weekly content for Facebook.
+    Format content for Facebook.
     
-    For posting_queue rows (weekly content):
-    - Extract data from calendar_ideas via idea_id
+    For posting_queue rows:
+    - Weekly content: Extract data from calendar_ideas via idea_id
+    - Product posts: Extract data from clan_products via product_id
     - Prepare data structure for caption/image generation
     - Store formatted data in posting_queue.generated_content
     """
@@ -971,15 +972,50 @@ def execute_format_for_facebook(post_id, data):
         if not queue_row:
             return {"success": False, "error": "Posting queue row not found"}, 404
         
-        # Extract data from calendar_ideas
-        idea_id = queue_row.get('idea_id')
         content_type = queue_row.get('content_type')
         
-        if not idea_id or content_type not in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
-            return {"success": False, "error": "Not a weekly content post"}, 400
+        # Handle weekly content
+        if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            idea_id = queue_row.get('idea_id')
+            if not idea_id:
+                return {"success": False, "error": "No idea_id for weekly content post"}, 400
+            
+            # Extract formatted data
+            formatted_data = extract_weekly_content_data(idea_id, content_type)
         
-        # Extract formatted data
-        formatted_data = extract_weekly_content_data(idea_id, content_type)
+        # Handle product posts
+        elif content_type == 'product':
+            product_id = queue_row.get('product_id')
+            if not product_id:
+                return {"success": False, "error": "No product_id for product post"}, 400
+            
+            # Get product data
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, name, sku, price, description, image_url, url
+                    FROM clan_products
+                    WHERE id = %s
+                """, (product_id,))
+                product = cursor.fetchone()
+                
+                if not product:
+                    return {"success": False, "error": f"Product {product_id} not found"}, 404
+            
+            # Format product data for Facebook
+            formatted_data = {
+                'category': 'product',
+                'product_id': product['id'],
+                'product_name': product['name'],
+                'product_sku': product['sku'],
+                'product_description': product['description'] or '',
+                'product_image_url': product['image_url'] or '',
+                'product_url': product['url'] or '',
+                'product_price': str(product['price']) if product['price'] else None,
+                'content_type': 'product'
+            }
+        
+        else:
+            return {"success": False, "error": f"Unsupported content type: {content_type}"}, 400
         
         # Store in generated_content (JSON)
         with db_manager.get_cursor() as cursor:
@@ -1082,9 +1118,10 @@ def execute_add_hashtags(post_id, data):
 
 def execute_optimize_for_facebook(post_id, data):
     """
-    Generate square 1080×1080 image using ImageMagick.
+    Optimize image for Facebook posting.
     
-    This is the core image generation step.
+    For weekly content: Generates square 1080×1080 image using ImageMagick
+    For product posts: Uses product image URL directly (no generation needed)
     """
     try:
         from utils.posting_queue_helpers import get_posting_queue_row
@@ -1097,33 +1134,59 @@ def execute_optimize_for_facebook(post_id, data):
         if not queue_row:
             return {"success": False, "error": "Posting queue row not found"}, 404
         
-        # Get formatted data (from previous substage)
-        formatted_data_json = queue_row.get('generated_content')
-        if not formatted_data_json:
-            # Extract fresh if not formatted yet
-            idea_id = queue_row.get('idea_id')
-            content_type = queue_row.get('content_type')
-            if not idea_id or content_type not in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
-                return {"success": False, "error": "Not a weekly content post"}, 400
-            formatted_data = extract_weekly_content_data(idea_id, content_type)
-        else:
+        content_type = queue_row.get('content_type')
+        
+        # Handle weekly content - generate image
+        if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            # Get formatted data (from previous substage)
+            formatted_data_json = queue_row.get('generated_content')
+            if not formatted_data_json:
+                # Extract fresh if not formatted yet
+                idea_id = queue_row.get('idea_id')
+                if not idea_id:
+                    return {"success": False, "error": "No idea_id for weekly content post"}, 400
+                formatted_data = extract_weekly_content_data(idea_id, content_type)
+            else:
+                formatted_data = json.loads(formatted_data_json)
+            
+            # Render image
+            result = render_weekly_content_image(
+                category=formatted_data['category'],
+                title=formatted_data['title'],
+                scots_text=formatted_data['scots_text'],
+                translation=formatted_data['translation'],
+                series_footer=formatted_data['series_footer'],
+                logo_path=formatted_data['logo_path'],
+                output_path=formatted_data['output_path'],
+                usage_examples=formatted_data.get('usage_examples', []),
+                notes=formatted_data.get('notes', '')
+            )
+            
+            if not result['success']:
+                return {"success": False, "error": result['error']}, 500
+            
+            image_path = result['output_path']
+        
+        # Handle product posts - use product image URL
+        elif content_type == 'product':
+            # Get formatted data (from format_for_facebook substage)
+            formatted_data_json = queue_row.get('generated_content')
+            if not formatted_data_json:
+                return {"success": False, "error": "Product data not formatted. Run format_for_facebook first."}, 400
+            
             formatted_data = json.loads(formatted_data_json)
+            product_image_url = formatted_data.get('product_image_url', '')
+            
+            if not product_image_url:
+                return {"success": False, "error": "Product has no image URL"}, 400
+            
+            # For product posts, we use the product image URL directly
+            # Store it as image_path (will be converted to public URL in publish step)
+            # If it's already a full URL, use it; otherwise it might be a relative path
+            image_path = product_image_url
         
-        # Render image
-        result = render_weekly_content_image(
-            category=formatted_data['category'],
-            title=formatted_data['title'],
-            scots_text=formatted_data['scots_text'],
-            translation=formatted_data['translation'],
-            series_footer=formatted_data['series_footer'],
-            logo_path=formatted_data['logo_path'],
-            output_path=formatted_data['output_path'],
-            usage_examples=formatted_data.get('usage_examples', []),
-            notes=formatted_data.get('notes', '')
-        )
-        
-        if not result['success']:
-            return {"success": False, "error": result['error']}, 500
+        else:
+            return {"success": False, "error": f"Unsupported content type: {content_type}"}, 400
         
         # Store image path in posting_queue
         with db_manager.get_cursor() as cursor:
@@ -1131,12 +1194,12 @@ def execute_optimize_for_facebook(post_id, data):
                 UPDATE posting_queue
                 SET image_path = %s, updated_at = NOW()
                 WHERE id = %s
-            """, (result['output_path'], post_id))
+            """, (image_path, post_id))
         
         return {
             "success": True,
-            "image_path": result['output_path'],
-            "message": "Square image generated successfully"
+            "image_path": image_path,
+            "message": "Image optimized for Facebook" if content_type == 'product' else "Square image generated successfully"
         }
         
     except Exception as e:
@@ -1146,10 +1209,11 @@ def execute_optimize_for_facebook(post_id, data):
 
 def execute_publish_to_facebook(queue_id, data):
     """
-    Publish weekly content post to Facebook (both pages).
+    Publish post to Facebook (both pages).
     
-    Uses generated image and caption from previous substages.
-    Posts to both Facebook pages using the /photos endpoint for image posts.
+    Supports:
+    - Weekly content: Uses generated image and caption, posts via /photos endpoint
+    - Product posts: Uses product image URL and caption, posts via /photos endpoint
     
     ⚠️ DISABLED - Facebook posting has been disabled to prevent unwanted posts.
     """
@@ -1159,11 +1223,14 @@ def execute_publish_to_facebook(queue_id, data):
         import requests
         import os
         from utils.posting_queue_helpers import get_posting_queue_row
+        import json
         
         # Get posting_queue row
         queue_row = get_posting_queue_row(queue_id)
         if not queue_row:
             return {"success": False, "error": "Posting queue row not found"}, 404
+        
+        content_type = queue_row.get('content_type')
         
         # Get generated image and caption
         image_path = queue_row.get('image_path')
@@ -1172,48 +1239,64 @@ def execute_publish_to_facebook(queue_id, data):
         if not image_path or not caption:
             return {"success": False, "error": "Image or caption not generated"}, 400
         
-        # Upload image to clan.com CDN using ClanPublisher (same as blog posts)
-        # This ensures the image is publicly accessible for Facebook
-        try:
-            import sys
-            import os
-            # Add blog-launchpad to path if needed
-            blog_launchpad_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-launchpad')
-            if blog_launchpad_path not in sys.path:
-                sys.path.insert(0, blog_launchpad_path)
-            from clan_publisher import ClanPublisher
-            publisher = ClanPublisher()
-            
-            # Generate a unique filename for the weekly content image
-            import time
-            filename = f"weekly_content_{queue_row.get('idea_id', 'unknown')}_{int(time.time())}.png"
-            
-            logger.info(f"Uploading weekly content image to clan.com: {image_path}")
-            uploaded_url = publisher.upload_image(image_path, filename)
-            
-            if not uploaded_url:
-                return {"success": False, "error": "Failed to upload image to clan.com CDN"}, 500
-            
-            logger.info(f"Image uploaded successfully to: {uploaded_url}")
-            image_url = uploaded_url
-            
-        except ImportError:
-            # Fallback: try to use static URL if ClanPublisher not available
-            logger.warning("ClanPublisher not available, falling back to static URL")
-            if os.path.exists(image_path):
-                # Extract relative path from static/
-                if 'static/' in image_path:
-                    relative_path = image_path.split('static/', 1)[1]
-                    # Use production domain
-                    base_url = 'https://clan.com'
-                    image_url = f"{base_url}/static/{relative_path}"
-                else:
-                    return {"success": False, "error": f"Cannot convert image path to URL: {image_path}"}, 400
+        # Handle image URL conversion based on content type
+        if content_type == 'product':
+            # Product posts: image_path is already a URL (product_image_url)
+            # Check if it's a full URL or needs conversion
+            if image_path.startswith('http://') or image_path.startswith('https://'):
+                image_url = image_path
             else:
-                return {"success": False, "error": f"Image file not found: {image_path}"}, 400
-        except Exception as e:
-            logger.error(f"Error uploading image to clan.com: {e}")
-            return {"success": False, "error": f"Failed to upload image: {str(e)}"}, 500
+                # Might be a relative path, try to construct full URL
+                # Product images are typically on clan.com CDN already
+                if 'clan.com' in image_path or 'clan-products' in image_path:
+                    image_url = image_path if image_path.startswith('http') else f"https://{image_path}"
+                else:
+                    # Fallback: assume it's a clan.com product image
+                    image_url = f"https://clan.com{image_path}" if image_path.startswith('/') else f"https://clan.com/{image_path}"
+            
+            logger.info(f"Using product image URL: {image_url}")
+        
+        else:
+            # Weekly content: Upload image to clan.com CDN
+            try:
+                import sys
+                # Add blog-launchpad to path if needed
+                blog_launchpad_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-launchpad')
+                if blog_launchpad_path not in sys.path:
+                    sys.path.insert(0, blog_launchpad_path)
+                from clan_publisher import ClanPublisher
+                publisher = ClanPublisher()
+                
+                # Generate a unique filename for the weekly content image
+                import time
+                filename = f"weekly_content_{queue_row.get('idea_id', 'unknown')}_{int(time.time())}.png"
+                
+                logger.info(f"Uploading weekly content image to clan.com: {image_path}")
+                uploaded_url = publisher.upload_image(image_path, filename)
+                
+                if not uploaded_url:
+                    return {"success": False, "error": "Failed to upload image to clan.com CDN"}, 500
+                
+                logger.info(f"Image uploaded successfully to: {uploaded_url}")
+                image_url = uploaded_url
+                
+            except ImportError:
+                # Fallback: try to use static URL if ClanPublisher not available
+                logger.warning("ClanPublisher not available, falling back to static URL")
+                if os.path.exists(image_path):
+                    # Extract relative path from static/
+                    if 'static/' in image_path:
+                        relative_path = image_path.split('static/', 1)[1]
+                        # Use production domain
+                        base_url = 'https://clan.com'
+                        image_url = f"{base_url}/static/{relative_path}"
+                    else:
+                        return {"success": False, "error": f"Cannot convert image path to URL: {image_path}"}, 400
+                else:
+                    return {"success": False, "error": f"Image file not found: {image_path}"}, 400
+            except Exception as e:
+                logger.error(f"Error uploading image to clan.com: {e}")
+                return {"success": False, "error": f"Failed to upload image: {str(e)}"}, 500
         
         # Get Facebook credentials for both pages
         with db_manager.get_cursor() as cursor:
@@ -1360,14 +1443,17 @@ def execute_publish_to_facebook(queue_id, data):
 
 def execute_generate_caption(post_id, data):
     """
-    Generate caption using Ollama for weekly content.
+    Generate caption using Ollama.
     
-    This may be part of format_for_facebook or a separate substage.
+    Supports:
+    - Weekly content: Uses weekly_content_caption_generator
+    - Product posts: Uses LLMService with product data
     """
     try:
         from utils.posting_queue_helpers import get_posting_queue_row
         from utils.weekly_content_data_extractor import extract_weekly_content_data
         from utils.weekly_content_caption_generator import generate_weekly_content_caption
+        from blueprints.llm_actions import LLMService
         import json
         
         # Get posting_queue row
@@ -1375,47 +1461,124 @@ def execute_generate_caption(post_id, data):
         if not queue_row:
             return {"success": False, "error": "Posting queue row not found"}, 404
         
-        # Extract data
-        idea_id = queue_row.get('idea_id')
         content_type = queue_row.get('content_type')
         
-        if not idea_id or content_type not in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
-            return {"success": False, "error": "Not a weekly content post"}, 400
+        # Handle weekly content
+        if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            idea_id = queue_row.get('idea_id')
+            if not idea_id:
+                return {"success": False, "error": "No idea_id for weekly content post"}, 400
+            
+            # Get formatted data (or extract fresh)
+            formatted_data_json = queue_row.get('generated_content')
+            if formatted_data_json:
+                formatted_data = json.loads(formatted_data_json)
+            else:
+                formatted_data = extract_weekly_content_data(idea_id, content_type)
+            
+            # Generate caption
+            caption_result = generate_weekly_content_caption(
+                category=formatted_data['category'],
+                scots_text=formatted_data['scots_text'],
+                translation=formatted_data['translation'],
+                notes=formatted_data.get('notes')
+            )
+            
+            caption = caption_result.get('caption', '')
         
-        # Get formatted data (or extract fresh)
-        formatted_data_json = queue_row.get('generated_content')
-        if formatted_data_json:
+        # Handle product posts
+        elif content_type == 'product':
+            # Get formatted data (from format_for_facebook substage)
+            formatted_data_json = queue_row.get('generated_content')
+            if not formatted_data_json:
+                return {"success": False, "error": "Product data not formatted. Run format_for_facebook first."}, 400
+            
             formatted_data = json.loads(formatted_data_json)
-        else:
-            formatted_data = extract_weekly_content_data(idea_id, content_type)
+            
+            # Get LLM prompt template
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT prompt_text
+                    FROM llm_prompt
+                    WHERE name = 'Social Media Syndication'
+                    LIMIT 1
+                """)
+                prompt_config = cursor.fetchone()
+                
+                if not prompt_config:
+                    return {"success": False, "error": "No LLM prompt configuration found"}, 404
+            
+            # Format prompt with product details
+            prompt_template = prompt_config['prompt_text']
+            formatted_prompt = prompt_template.format(
+                platform='Facebook',
+                channel_type='product',
+                requirements=f"""Create an engaging product promotion post for:
+Product Name: {formatted_data['product_name']}
+Description: {formatted_data['product_description']}
+Product URL: {formatted_data['product_url']}
+
+Write a compelling social media post that highlights the product's key features and benefits. Use an engaging tone with appropriate emojis. Include a clear call-to-action directing people to the product URL. Do NOT include the price in the post. Keep it concise but informative."""
+            )
+            
+            # Generate caption using LLMService with intercept_context
+            llm_service = LLMService()
+            messages = [
+                {"role": "system", "content": "You are a social media marketing expert."},
+                {"role": "user", "content": formatted_prompt}
+            ]
+            
+            response = llm_service.execute_llm_request(
+                provider='ollama',
+                model='mistral',
+                messages=messages,
+                intercept_context={
+                    'queue_id': post_id,
+                    'product_id': formatted_data['product_id'],
+                    'content_type': 'product',
+                    'substage': 'generate_caption'
+                }
+            )
+            
+            if response and 'content' in response:
+                caption = response['content'].strip()
+            else:
+                return {"success": False, "error": "Failed to generate caption"}, 500
         
-        # Generate caption
-        caption_result = generate_weekly_content_caption(
-            category=formatted_data['category'],
-            scots_text=formatted_data['scots_text'],
-            translation=formatted_data['translation'],
-            notes=formatted_data.get('notes')
-        )
+        else:
+            return {"success": False, "error": f"Unsupported content type: {content_type}"}, 400
         
         # Store in posting_queue
         with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                UPDATE posting_queue
-                SET 
-                    generated_caption = %s,
-                    pinned_comment = %s,
-                    chosen_prompt_style_id = %s,
-                    ollama_model = %s,
-                    generation_timestamp = NOW(),
-                    updated_at = NOW()
-                WHERE id = %s
-            """, (
-                caption_result['caption'],
-                caption_result.get('pinned_comment'),
-                caption_result['chosen_prompt_style_id'],
-                caption_result['ollama_model'],
-                post_id
-            ))
+            if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                # Weekly content has structured caption result
+                cursor.execute("""
+                    UPDATE posting_queue
+                    SET 
+                        generated_caption = %s,
+                        pinned_comment = %s,
+                        chosen_prompt_style_id = %s,
+                        ollama_model = %s,
+                        generation_timestamp = NOW(),
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (
+                    caption_result['caption'],
+                    caption_result.get('pinned_comment'),
+                    caption_result['chosen_prompt_style_id'],
+                    caption_result['ollama_model'],
+                    post_id
+                ))
+            else:
+                # Product posts - simple caption string
+                cursor.execute("""
+                    UPDATE posting_queue
+                    SET 
+                        generated_caption = %s,
+                        generation_timestamp = NOW(),
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (caption, post_id))
         
         return {
             "success": True,
