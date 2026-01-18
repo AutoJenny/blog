@@ -1,0 +1,76 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Generated Posts</h1>
+    
+    {{ get_status_badge('in_progress')|safe }}
+    
+    <p class="kb-intro">
+        Generated Posts are blog posts that are automatically created using LLM (Large Language Model)
+        technology. These posts are generated from product or category data stored in the system.
+    </p>
+    
+    <h2>What Are Generated Posts?</h2>
+    <p>Generated Posts are blog articles that are automatically created by the system using:</p>
+    <ul>
+        <li><strong>Source Data:</strong> Product information or category data from the database</li>
+        <li><strong>LLM Generation:</strong> Content is generated using Ollama/LLM models</li>
+        <li><strong>Vector Search:</strong> Related content is retrieved from the vector index for context</li>
+        <li><strong>Structured Output:</strong> Posts include title, standfirst, and multiple sections</li>
+    </ul>
+    
+    <h2>Generation Types</h2>
+    <p>The system supports different types of generated content:</p>
+    <ul>
+        <li><strong>Deep Dive:</strong> Comprehensive article about a product or category</li>
+        <li><strong>Feature:</strong> Focused article highlighting specific features</li>
+        <li><strong>Comparison:</strong> Comparative analysis between products</li>
+    </ul>
+    
+    <h2>Current Status</h2>
+    <div class="kb-status-section">
+        <h3>🟡 In Progress</h3>
+        <ul>
+            <li>Content generation API exists</li>
+            <li>LLM integration for post generation</li>
+            <li>Vector search for context retrieval</li>
+            <li>Post creation from generated content</li>
+        </ul>
+        
+        <h3>🔴 Planned / Not Complete</h3>
+        <ul>
+            <li>Full automation workflow</li>
+            <li>Quality validation and review process</li>
+            <li>Integration with publication system</li>
+            <li>Social media posting for generated posts</li>
+        </ul>
+    </div>
+    
+    <h2>How It Works (Current Implementation)</h2>
+    <ol>
+        <li>User selects a product or category as the source</li>
+        <li>System retrieves context from vector index</li>
+        <li>LLM generates headline, standfirst, and post structure</li>
+        <li>LLM generates content for each section</li>
+        <li>Post record is created in draft status</li>
+        <li>User can review and edit before publication</li>
+    </ol>
+    
+    <h2>UI Access</h2>
+    <p>Generated posts can be created through:</p>
+    <ul>
+        <li><a href="/content/generation" class="kb-ui-link">Content Generation Interface</a> - Generate posts from products/categories</li>
+        <li><a href="/authoring/posts" class="kb-ui-link">Authoring Interface</a> - Review and edit generated posts</li>
+    </ul>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='blog') }}">Blog Channel</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='authoring') }}">Authoring Interface</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='backend', page='apis') }}">API Endpoints</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

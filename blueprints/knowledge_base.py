@@ -42,44 +42,52 @@ KB_STRUCTURE = {
                 'title': 'Post Types Overview',
                 'template': 'knowledge_base/content_types/overview.html'
             },
-            'themed': {
-                'title': 'Themed Posts',
-                'template': 'knowledge_base/content_types/themed.html',
-                'status': 'complete'
-            },
-            'recipe': {
-                'title': 'Recipe Posts',
-                'template': 'knowledge_base/content_types/recipe.html',
-                'status': 'complete'
-            },
-            'profile': {
-                'title': 'Profile Posts',
-                'template': 'knowledge_base/content_types/profile.html',
-                'status': 'complete'
-            },
-            'weekly_content': {
-                'title': 'Weekly Content',
-                'template': 'knowledge_base/content_types/weekly_content.html',
+            'weekly_words_phrases': {
+                'title': 'Weekly Words & Phrases',
+                'template': 'knowledge_base/content_types/weekly_words_phrases.html',
                 'status': 'complete',
                 'subpages': {
                     'words': {
                         'title': 'Weekly Words',
-                        'template': 'knowledge_base/content_types/weekly_words.html'
+                        'template': 'knowledge_base/content_types/weekly_words.html',
+                        'status': 'complete'
                     },
                     'phrases': {
                         'title': 'Weekly Phrases',
-                        'template': 'knowledge_base/content_types/weekly_phrases.html'
+                        'template': 'knowledge_base/content_types/weekly_phrases.html',
+                        'status': 'complete'
                     },
                     'insults': {
                         'title': 'Weekly Insults',
-                        'template': 'knowledge_base/content_types/weekly_insults.html'
+                        'template': 'knowledge_base/content_types/weekly_insults.html',
+                        'status': 'complete'
                     }
                 }
+            },
+            'weekly_blog_entries': {
+                'title': 'Weekly Blog Entries',
+                'template': 'knowledge_base/content_types/weekly_blog_entries.html',
+                'status': 'planned'
+            },
+            'themed': {
+                'title': 'Themed Posts',
+                'template': 'knowledge_base/content_types/themed.html',
+                'status': 'planned'
+            },
+            'recipe': {
+                'title': 'Recipe Posts',
+                'template': 'knowledge_base/content_types/recipe.html',
+                'status': 'planned'
+            },
+            'profile': {
+                'title': 'Profile Posts',
+                'template': 'knowledge_base/content_types/profile.html',
+                'status': 'planned'
             },
             'generated': {
                 'title': 'Generated Posts',
                 'template': 'knowledge_base/content_types/generated.html',
-                'status': 'complete'
+                'status': 'in_progress'
             }
         }
     },
@@ -91,20 +99,20 @@ KB_STRUCTURE = {
                 'title': 'Channels Overview',
                 'template': 'knowledge_base/channels/overview.html'
             },
-            'blog': {
-                'title': 'Blog',
-                'template': 'knowledge_base/channels/blog.html',
-                'status': 'complete'
-            },
             'facebook': {
                 'title': 'Facebook',
                 'template': 'knowledge_base/channels/facebook.html',
                 'status': 'complete'
             },
+            'blog': {
+                'title': 'Blog',
+                'template': 'knowledge_base/channels/blog.html',
+                'status': 'in_progress'
+            },
             'instagram': {
                 'title': 'Instagram',
                 'template': 'knowledge_base/channels/instagram.html',
-                'status': 'in_progress'
+                'status': 'planned'
             },
             'twitter': {
                 'title': 'Twitter',
@@ -114,7 +122,7 @@ KB_STRUCTURE = {
             'newsletter': {
                 'title': 'Newsletter',
                 'template': 'knowledge_base/channels/newsletter.html',
-                'status': 'complete'
+                'status': 'in_progress'
             }
         }
     },

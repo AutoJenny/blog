@@ -5,14 +5,34 @@
     <h1>Content Types Overview</h1>
     
     <p class="kb-intro">
-        This page provides an overview of content types overview. Detailed information is available in the individual pages below.
+        This page provides an overview of all content types in the system. Only Weekly Words & Phrases
+        is currently complete and in production.
     </p>
     
-    <p><em>Content coming soon...</em></p>
+    <h2>Content Types</h2>
+    
+    <h3>✅ Complete</h3>
+    <ul>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - Fully automated Scots language content (words, phrases, insults) posted to Facebook</li>
+    </ul>
+    
+    <h3>🟡 In Progress</h3>
+    <ul>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='generated') }}">Generated Posts</a> - LLM-generated blog posts from products/categories (partial implementation)</li>
+    </ul>
+    
+    <h3>🔴 Planned</h3>
+    <ul>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_blog_entries') }}">Weekly Blog Entries</a> - Longer-form weekly blog posts</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='themed') }}">Themed Posts</a> - Posts organized around specific themes</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='recipe') }}">Recipe Posts</a> - Recipe and cooking content</li>
+        <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='profile') }}">Profile Posts</a> - Profiles of people, businesses, or organizations</li>
+    </ul>
     
     <div class="kb-related">
         <h4>Related Sections</h4>
         <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='overview') }}">Output Channels</a></li>
             <li><a href="{{ url_for('knowledge_base.index') }}">Knowledge Base Home</a></li>
         </ul>
     </div>

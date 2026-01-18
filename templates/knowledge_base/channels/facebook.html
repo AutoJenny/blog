@@ -31,11 +31,10 @@
     <p>Both pages are posted to simultaneously, with independent success/failure tracking.</p>
     
     <h3>Content Types</h3>
-    <p>Facebook supports:</p>
+    <p>Facebook currently supports:</p>
     <ul>
-        <li><strong>Weekly Content</strong> - Fully automated (words, phrases, insults)</li>
-        <li><strong>Product Posts</strong> - Automated product promotions</li>
-        <li><strong>Blog Syndication</strong> - Blog post links (planned)</li>
+        <li><strong>Weekly Words & Phrases</strong> - ✅ Fully automated (words, phrases, insults)</li>
+        <li><strong>Other Content Types</strong> - 🔴 Not yet implemented</li>
     </ul>
     
     <h2>UI Access</h2>
@@ -58,15 +57,22 @@
     <div class="kb-status-section">
         <h3>✅ Complete</h3>
         <ul>
-            <li>Weekly content posting (fully automated)</li>
-            <li>Product post posting</li>
-            <li>Multiple page support</li>
+            <li>Weekly Words & Phrases posting - Fully automated</li>
+            <li>API integration with Facebook Graph API</li>
+            <li>Multi-page posting support (both pages)</li>
+            <li>Image upload and posting</li>
+            <li>Caption formatting with hashtags</li>
             <li>Error handling and retry logic</li>
+            <li>Posting queue integration</li>
         </ul>
         
-        <h3>🔴 Planned</h3>
+        <h3>🔴 Planned / Not Implemented</h3>
         <ul>
+            <li>Other content types (themed, recipe, profile, generated posts, etc.)</li>
             <li>Blog post syndication</li>
+            <li>Video posting</li>
+            <li>Story posting</li>
+            <li>Reel posting</li>
             <li>Engagement tracking</li>
         </ul>
     </div>
@@ -74,7 +80,7 @@
     <div class="kb-related">
         <h4>Related Sections</h4>
         <ul>
-            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_content') }}">Weekly Content</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a></li>
             <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='weekly_automation') }}">Weekly Automation</a></li>
             <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='monitoring') }}">Monitoring System</a></li>
         </ul>

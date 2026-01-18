@@ -1,0 +1,24 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Themed Posts</h1>
+    
+    {{ get_status_badge('planned')|safe }}
+    
+    <p class="kb-intro">
+        Themed Posts are content posts organized around specific themes or topics.
+        This content type is planned but not yet implemented.
+    </p>
+    
+    <h2>Status</h2>
+    <p>This content type is currently in the planning phase. No implementation has begun.</p>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - The completed weekly content system</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
