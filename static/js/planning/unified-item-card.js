@@ -149,6 +149,13 @@ function getItemTitle(item, fallbackTitle) {
  * @returns {string|null} Description (truncated to 50 chars if provided)
  */
 function getItemDescription(item, fallbackDescription) {
+    // For language items (weekly-word, weekly-phrase, weekly-insult), don't show description at all
+    // Translation and Usage are redundant (shown in images)
+    if (item.type === 'weekly_word' || item.type === 'weekly_phrase' || item.type === 'weekly_insult' ||
+        item.category === 'weekly_word' || item.category === 'weekly_phrase' || item.category === 'weekly_insult') {
+        return null;
+    }
+    
     const desc = fallbackDescription ||
                  item.description ||
                  item.theme_description ||
@@ -158,21 +165,8 @@ function getItemDescription(item, fallbackDescription) {
     
     if (!desc) return null;
     
-    // For language items (weekly-word, weekly-phrase, weekly-insult), remove translation from description
-    // Description format: "Translation: ... | Usage: ... | Provenance: ..."
-    let processedDesc = desc;
-    if (item.type === 'weekly_word' || item.type === 'weekly_phrase' || item.type === 'weekly_insult' ||
-        item.category === 'weekly_word' || item.category === 'weekly_phrase' || item.category === 'weekly_insult') {
-        // Remove "Translation: ..." part
-        if (processedDesc.includes('Translation:')) {
-            const parts = processedDesc.split('|');
-            const filteredParts = parts.filter(part => !part.trim().startsWith('Translation:'));
-            processedDesc = filteredParts.join('|').trim();
-        }
-    }
-    
     // Truncate to 50 characters
-    return processedDesc.length > 50 ? processedDesc.substring(0, 50) + '...' : processedDesc;
+    return desc.length > 50 ? desc.substring(0, 50) + '...' : desc;
 }
 
 /**
