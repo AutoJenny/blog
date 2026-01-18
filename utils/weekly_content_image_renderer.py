@@ -266,9 +266,10 @@ def render_weekly_content_image(
         import tempfile
         magick_cmd = 'magick' if shutil.which('magick') else 'convert'
         
-        # Calculate if text needs wrapping and adjust font size
-        estimated_width = len(scots_text) * 6  # Rough pixels per character at 96pt
-        needs_wrapping = estimated_width > PHRASE_MAX_WIDTH
+        # Always use label: for main Scots text to ensure proper wrapping
+        # -annotate doesn't respect boundaries and can truncate text
+        # label: automatically wraps at word boundaries within the specified width
+        estimated_width = len(scots_text) * 12  # More accurate pixels per character at 96pt italic
         
         # Adjust vertical position
         if usage_examples and len(usage_examples) > 0:
@@ -276,10 +277,11 @@ def render_weekly_content_image(
         else:
             phrase_y_offset = -100
         
-        if needs_wrapping:
-            try:
-                # Calculate optimal font size for wrapping
-                chars_per_line = PHRASE_MAX_WIDTH / 6  # Rough estimate
+        # Always use wrapping for main text to prevent truncation
+        try:
+            # Calculate optimal font size for wrapping
+                # Use 12px per character for 96pt font (more accurate for italic serif)
+                chars_per_line = PHRASE_MAX_WIDTH / 12  # More accurate estimate
                 estimated_lines = max(2, (len(scots_text) / chars_per_line))
                 if estimated_lines > 2:
                     phrase_pointsize = max(72, int(96 * (2 / estimated_lines)))
@@ -292,18 +294,23 @@ def render_weekly_content_image(
                 temp_label.close()
                 
                 # Create label with automatic wrapping (ImageMagick wraps at word boundaries)
+                # Escape quotes in text for shell safety
+                escaped_text = scots_text.replace('"', '\\"').replace("'", "\\'")
                 label_cmd = [
                     magick_cmd,
                     '-background', 'transparent',
-                    '-size', f'{PHRASE_MAX_WIDTH}x',
+                    '-size', f'{PHRASE_MAX_WIDTH}x',  # Width constraint for wrapping
                     '-gravity', 'center',
                     '-pointsize', str(phrase_pointsize),
                     '-font', BODY_FONT,
                     '-fill', TEXT_COLOR,
-                    f'label:{scots_text}',
+                    f'label:{escaped_text}',
                     temp_label_path
                 ]
-                subprocess.run(label_cmd, capture_output=True, text=True, check=True)
+                result = subprocess.run(label_cmd, capture_output=True, text=True, check=True)
+                logger.debug(f"Label command output: {result.stdout}")
+                if result.stderr:
+                    logger.debug(f"Label command stderr: {result.stderr}")
                 
                 # Composite the wrapped text label onto the base image
                 composite_cmd = [
@@ -315,7 +322,10 @@ def render_weekly_content_image(
                     '-composite',
                     output_path
                 ]
-                subprocess.run(composite_cmd, capture_output=True, text=True, check=True)
+                result2 = subprocess.run(composite_cmd, capture_output=True, text=True, check=True)
+                logger.debug(f"Composite command output: {result2.stdout}")
+                if result2.stderr:
+                    logger.debug(f"Composite command stderr: {result2.stderr}")
                 
                 # Clean up temp file
                 try:
@@ -323,10 +333,12 @@ def render_weekly_content_image(
                 except:
                     pass
                 
-                logger.info(f"Applied text wrapping for long text ({len(scots_text)} chars, {phrase_pointsize}pt)")
-            except Exception as e:
-                logger.warning(f"Text wrapping failed, using simple annotate: {e}")
-                # Fallback to simple annotate
+                logger.info(f"Applied text wrapping ({len(scots_text)} chars, {phrase_pointsize}pt)")
+        except Exception as e:
+            logger.error(f"Text wrapping failed: {e}")
+            # If wrapping fails, we still need to add the text somehow
+            # Use annotate as last resort, but log the error
+            try:
                 add_text_cmd = [
                     magick_cmd,
                     output_path,
@@ -338,19 +350,9 @@ def render_weekly_content_image(
                     output_path
                 ]
                 subprocess.run(add_text_cmd, capture_output=True, text=True, check=True)
-        else:
-            # Short text - add it normally with annotate
-            add_text_cmd = [
-                magick_cmd,
-                output_path,
-                '-gravity', 'center',
-                '-pointsize', '96',
-                '-font', BODY_FONT,
-                '-fill', TEXT_COLOR,
-                '-annotate', f'+0{phrase_y_offset:+d}', scots_text,
-                output_path
-            ]
-            subprocess.run(add_text_cmd, capture_output=True, text=True, check=True)
+                logger.warning("Used fallback annotate method (text may be truncated)")
+            except Exception as e2:
+                logger.error(f"Failed to add text even with fallback: {e2}")
         
         # Step 7: Add footer text again after logo (ensure it's on top)
         # Re-add footer to ensure it's visible even after logo composite
