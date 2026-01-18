@@ -53,6 +53,7 @@ class PostingExecutor:
                     LEFT JOIN clan_products cp ON pq.product_id = cp.id
                     LEFT JOIN post_section ps ON pq.section_id = ps.id
                     WHERE pq.status IN ('pending', 'ready')
+                    AND pq.status NOT IN ('published', 'failed')  -- CRITICAL: Never reprocess published posts
                     AND (
                         (pq.scheduled_timestamp IS NOT NULL AND pq.scheduled_timestamp <= %s)
                         OR (pq.scheduled_date IS NOT NULL AND pq.scheduled_time IS NOT NULL
@@ -235,10 +236,45 @@ class PostingExecutor:
             # Process each post
             for post in pending_posts:
                 try:
-                    # Check if post is still pending or ready
-                    if post['status'] not in ('pending', 'ready'):
-                        stats['skipped'] += 1
-                        continue
+                    # CRITICAL SAFEGUARD: Re-check status and platform_post_id before posting
+                    # This prevents race conditions where status might have changed
+                    with self.db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT status, platform_post_id
+                            FROM posting_queue
+                            WHERE id = %s
+                        """, (post['id'],))
+                        current_state = cursor.fetchone()
+                        
+                        if not current_state:
+                            logger.warning(f"Post {post['id']} no longer exists, skipping")
+                            stats['skipped'] += 1
+                            continue
+                        
+                        # If already published, skip (shouldn't happen but defense in depth)
+                        if current_state['status'] == 'published':
+                            logger.warning(f"Post {post['id']} already published (status={current_state['status']}), skipping")
+                            stats['skipped'] += 1
+                            continue
+                        
+                        # If has platform_post_id, it was already posted - skip
+                        if current_state['platform_post_id']:
+                            logger.warning(f"Post {post['id']} already has platform_post_id={current_state['platform_post_id']}, skipping to prevent duplicate")
+                            # Update status to published if it's not already
+                            if current_state['status'] != 'published':
+                                cursor.execute("""
+                                    UPDATE posting_queue
+                                    SET status = 'published'
+                                    WHERE id = %s
+                                """, (post['id'],))
+                            stats['skipped'] += 1
+                            continue
+                        
+                        # Check if post is still pending or ready
+                        if current_state['status'] not in ('pending', 'ready'):
+                            logger.debug(f"Post {post['id']} status changed to {current_state['status']}, skipping")
+                            stats['skipped'] += 1
+                            continue
                     
                     # For weekly content, ensure workflow has been run
                     content_type = post.get('content_type', '').lower()

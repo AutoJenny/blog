@@ -51,7 +51,7 @@ class WeeklyContentWorkflowExecutor:
                     WHERE content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult')
                     AND status = 'draft'
                     AND platform = 'facebook'
-                    AND status != 'published'  -- CRITICAL: Don't reprocess published posts
+                    AND status NOT IN ('published', 'failed')  -- CRITICAL: Never reprocess published or failed posts
                     ORDER BY scheduled_date ASC, scheduled_time ASC
                     LIMIT 10
                 """)

@@ -59,6 +59,7 @@ class AutomatedPostingSystem:
                     LEFT JOIN clan_products cp ON pq.product_id = cp.id
                     LEFT JOIN post_section ps ON pq.section_id = ps.id
                     WHERE pq.status = 'ready'
+                    AND pq.status NOT IN ('published', 'failed')  -- CRITICAL: Never reprocess published posts
                     AND pq.scheduled_timestamp IS NOT NULL
                     AND pq.scheduled_timestamp <= %s
                     ORDER BY pq.scheduled_timestamp ASC
