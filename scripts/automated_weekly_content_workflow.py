@@ -173,7 +173,20 @@ class WeeklyContentWorkflowExecutor:
                     
                     # Only publish if scheduled time has passed
                     if now >= scheduled_datetime:
-                        logger.info(f"Executing publish_to_facebook for queue_id {queue_id}")
+                        # Get content info for logging
+                        with self.db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                SELECT pq.content_type, pq.idea_id, ci.scots_text, ci.translation
+                                FROM posting_queue pq
+                                LEFT JOIN calendar_ideas ci ON pq.idea_id = ci.id
+                                WHERE pq.id = %s
+                            """, (queue_id,))
+                            post_info = cursor.fetchone()
+                        
+                        content_type = post_info.get('content_type', 'unknown') if post_info else 'unknown'
+                        scots_text = post_info.get('scots_text', '') if post_info else ''
+                        
+                        logger.info(f"Executing publish_to_facebook for queue_id {queue_id} ({content_type})")
                         result = execute_publish_to_facebook(queue_id, {})
                         if isinstance(result, tuple):
                             result_dict, status_code = result
@@ -183,9 +196,12 @@ class WeeklyContentWorkflowExecutor:
                         
                         if status_code == 200 and result_dict.get('success'):
                             results['publish_to_facebook'] = True
-                            logger.info(f"✅ publish_to_facebook completed")
+                            platform_post_ids = result_dict.get('platform_post_ids', [])
+                            pages_count = len(platform_post_ids)
+                            content_display = scots_text[:30] + '...' if len(scots_text) > 30 else scots_text
+                            logger.info(f"✅ Published to Facebook ({pages_count} page(s)): queue_id {queue_id} ({content_type}) - {content_display}")
                         else:
-                            logger.error(f"❌ publish_to_facebook failed: {result_dict}")
+                            logger.error(f"❌ publish_to_facebook failed for queue_id {queue_id} ({content_type}): {result_dict}")
                     else:
                         # Update status to 'ready' so posting_executor can handle it
                         logger.info(f"Scheduled time not yet reached, updating status to 'ready'")

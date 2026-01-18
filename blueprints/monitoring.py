@@ -250,18 +250,26 @@ def monitoring_events():
                                         
                                         # Actual publication success messages
                                         # Exclude intermediate "Facebook API response" messages (too granular, shows per-page)
-                                        # Only show final completion messages
+                                        # Only show final completion messages with context
                                         if any(phrase in message for phrase in [
                                             'Successfully posted to',
                                             'Posted to',
-                                            'publish_to_facebook completed',
+                                            'Published to Facebook',
                                             'Posting execution complete:',
                                             'Published successfully'
                                         ]):
                                             is_publication_event = True
                                         
-                                        # Explicitly exclude intermediate API response messages
+                                        # New enhanced completion message format
+                                        if 'Published to Facebook' in message and 'queue_id' in message:
+                                            is_publication_event = True
+                                        
+                                        # Explicitly exclude intermediate API response messages and old generic completion
                                         if 'Facebook API response - Status:' in message:
+                                            is_publication_event = False
+                                        
+                                        # Exclude old generic "publish_to_facebook completed" (replaced with detailed message)
+                                        if message.strip() == '✅ publish_to_facebook completed' or message.endswith('publish_to_facebook completed'):
                                             is_publication_event = False
                                         
                                         # Actual publication attempts (when a post is being executed to a platform)
