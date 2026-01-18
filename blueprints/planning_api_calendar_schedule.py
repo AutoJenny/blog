@@ -161,6 +161,54 @@ def api_calendar_schedule(year, week_number):
                 '_from_cyclic_system': True
             })
         
+        # Add product posts from posting_queue for this week
+        try:
+            from datetime import date, timedelta
+            from utils.date_utils import iso_year_week
+            
+            # Calculate week start (Monday) and end (Sunday) dates
+            jan4 = date(year, 1, 4)
+            jan4_day = (jan4.isoweekday() + 6) % 7  # Monday = 0
+            week_start = date(year, 1, 4) + timedelta(days=(week_number - 1) * 7 - jan4_day)
+            week_end = week_start + timedelta(days=6)
+            
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT 
+                        pq.id as posting_queue_id,
+                        pq.product_id,
+                        pq.scheduled_date,
+                        pq.scheduled_time,
+                        pq.status,
+                        cp.name as product_name,
+                        cp.sku
+                    FROM posting_queue pq
+                    LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                    WHERE pq.content_type = 'product'
+                      AND pq.scheduled_date >= %s
+                      AND pq.scheduled_date <= %s
+                      AND pq.scheduled_timestamp IS NOT NULL
+                    ORDER BY pq.scheduled_date, pq.scheduled_time
+                """, (week_start, week_end))
+                product_posts = cursor.fetchall()
+                
+                for post in product_posts:
+                    if post['scheduled_date']:
+                        schedule.append({
+                            'type': 'product',
+                            'item_id': post['product_id'],
+                            'product_id': post['product_id'],
+                            'posting_queue_id': post['posting_queue_id'],
+                            'title': post['product_name'] or f"Product {post['product_id']}",
+                            'scheduled_date': str(post['scheduled_date']),
+                            'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
+                            'status': post['status'] or 'ready',
+                            'position': len([s for s in schedule if s.get('type') == 'product']) + 1
+                        })
+        except Exception as e:
+            logger.warning(f"Error loading product posts for week view: {e}")
+            # Continue without product posts if there's an error
+        
         # Return response with new cyclic system data
         selected_theme_id = theme.get('id') if theme else None
         
