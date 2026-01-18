@@ -382,6 +382,11 @@ function createCategoryCell(items, categoryClass, year, week) {
             card.classList.add('definition');
         }
         
+        // For scheduling view, also add scheduling-item class for proper styling
+        if (categoryClass === 'product-post') {
+            card.classList.add('scheduling-item', 'product-post');
+        }
+        
         cell.appendChild(card);
     });
     
