@@ -155,6 +155,11 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             const insultItems = data.filter(item => item && item.type === 'weekly_insult');
             const productPostItems = data.filter(item => item && item.type === 'product');
             
+            // Debug: Log product posts found
+            if (productPostItems.length > 0) {
+                console.log(`Week ${year}-W${week}: Found ${productPostItems.length} product posts`, productPostItems);
+            }
+            
             row.appendChild(createCategoryCell(themeItem ? [themeItem] : [], 'theme', year, week));
             row.appendChild(createCategoryCell(recipeItems, 'recipe', year, week));
             row.appendChild(createCategoryCell(profileProductItems, 'profile-product', year, week));
