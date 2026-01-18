@@ -28,9 +28,14 @@
             <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
                 <strong>Primary interface</strong> - Tab-based calendar with all views integrated
             </p>
-            <a href="/planning/calendar?tab=week-view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem; font-weight: 600; color: white !important;">
-                Open Unified Calendar →
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                <a href="/planning/calendar" class="kb-ui-link" style="display: inline-block; font-weight: 600; color: white !important;">
+                    Open Unified Calendar →
+                </a>
+                <a href="/planning/calendar?tab=scheduling" class="kb-ui-link" style="display: inline-block; font-weight: 500; color: #94a3b8 !important; font-size: 0.9rem;">
+                    Open Scheduling View →
+                </a>
+            </div>
         </div>
     </div>
 
@@ -121,7 +126,7 @@
                 </tr>
                 <tr>
                     <td><strong>Future items</strong> (Scheduling)</td>
-                    <td>52-week scheduling table with all categories</td>
+                    <td><strong>52-week scheduling table with all categories</strong> - Important view for seeing all scheduled content across the year</td>
                     <td><span class="kb-status-complete">Complete</span></td>
                     <td><a href="/planning/calendar?tab=scheduling" class="kb-ui-link" style="color: white !important;">Open →</a></td>
                 </tr>
@@ -153,6 +158,34 @@
         </table>
     </div>
 
+    <h2>Scheduling View (Future Items)</h2>
+    
+    <div class="kb-info" style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 1rem; margin: 2rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #1e40af;">
+            <strong>📊 Important View:</strong> The <strong>Scheduling</strong> view (also called "Future items") is a critical interface for viewing all scheduled content across the entire year. 
+            It shows a comprehensive 52-week table with all content categories (themes, recipes, profiles, weekly content) in one view.
+        </p>
+    </div>
+    
+    <p><strong>Access:</strong> <a href="/planning/calendar?tab=scheduling" class="kb-ui-link" style="color: #3b82f6 !important; text-decoration: underline; font-weight: 600;">/planning/calendar?tab=scheduling</a></p>
+    
+    <h3>What It Shows</h3>
+    <ul>
+        <li><strong>52-Week Overview:</strong> Complete year view with all weeks (1-52)</li>
+        <li><strong>All Categories:</strong> Themes, recipes, profiles, weekly words/phrases/insults</li>
+        <li><strong>Scheduling Table:</strong> Grid view showing what's scheduled for each week</li>
+        <li><strong>Quick Navigation:</strong> Click weeks to jump to detailed views</li>
+        <li><strong>Category Filtering:</strong> Filter by content type</li>
+    </ul>
+    
+    <h3>Use Cases</h3>
+    <ul>
+        <li><strong>Planning:</strong> See the full year's content schedule at a glance</li>
+        <li><strong>Gap Analysis:</strong> Identify weeks with missing content</li>
+        <li><strong>Balance Check:</strong> Ensure even distribution of content types</li>
+        <li><strong>Quick Reference:</strong> Fast lookup of what's scheduled for any week</li>
+    </ul>
+    
     <h2>System Overview</h2>
     
     <h3>Core Concepts</h3>

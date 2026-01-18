@@ -353,15 +353,26 @@
 
                 <!-- Calendar Quick Access Panel -->
                 <section class="mb-6">
-                    <a href="/planning/posts/{{ first_post_id }}/calendar/week-view" class="block w-full">
-                        <div class="card-dark rounded-xl px-6 py-3 flex items-center justify-between hover:bg-slate-800 transition border border-slate-700">
-                            <div class="flex items-center gap-3">
-                                <span class="icon-circle"><i class="fa-solid fa-calendar-days text-blue-400 text-xl"></i></span>
-                                <span class="text-base font-semibold text-white">Calendar</span>
+                    <div class="space-y-2">
+                        <a href="/planning/calendar" class="block w-full">
+                            <div class="card-dark rounded-xl px-6 py-3 flex items-center justify-between hover:bg-slate-800 transition border border-slate-700">
+                                <div class="flex items-center gap-3">
+                                    <span class="icon-circle"><i class="fa-solid fa-calendar-days text-blue-400 text-xl"></i></span>
+                                    <span class="text-base font-semibold text-white">Calendar</span>
+                                </div>
+                                <span class="text-dark-accent text-sm">Open calendar</span>
                             </div>
-                            <span class="text-dark-accent text-sm">Open week view</span>
-                        </div>
-                    </a>
+                        </a>
+                        <a href="/planning/calendar?tab=scheduling" class="block w-full">
+                            <div class="card-dark rounded-xl px-6 py-3 flex items-center justify-between hover:bg-slate-800 transition border border-slate-700">
+                                <div class="flex items-center gap-3">
+                                    <span class="icon-circle"><i class="fa-solid fa-table text-green-400 text-xl"></i></span>
+                                    <span class="text-base font-semibold text-white">Scheduling</span>
+                                </div>
+                                <span class="text-dark-accent text-sm">Future items</span>
+                            </div>
+                        </a>
+                    </div>
                 </section>
 
                 <!-- Blog & Newsletter Panels -->
@@ -399,9 +410,10 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Calendar quick link -->
-                    <div class="mt-3">
-                        <a href="/planning/posts/{{ first_post_id }}/calendar/view" class="text-dark-accent hover:text-white text-sm transition"><i class="fa-regular fa-calendar"></i> Calendar</a>
+                    <!-- Calendar quick links -->
+                    <div class="mt-3 flex gap-3">
+                        <a href="/planning/calendar" class="text-dark-accent hover:text-white text-sm transition"><i class="fa-regular fa-calendar"></i> Calendar</a>
+                        <a href="/planning/calendar?tab=scheduling" class="text-dark-accent hover:text-white text-sm transition"><i class="fa-solid fa-table"></i> Scheduling</a>
                     </div>
                 </section>
 
