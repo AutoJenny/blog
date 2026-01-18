@@ -47,32 +47,31 @@
     <p>A background monitor runs every 5 minutes and executes these 4 steps:</p>
     
     <h3>Step 1: Create Posts from Calendar</h3>
-    <p><strong>Script:</strong> <code>automated_weekly_content_creator.py</code></p>
+    <p><strong>Scripts:</strong> <code>automated_weekly_content_creator.py</code> and <code>automated_product_post_creator.py</code></p>
     <p><strong>What it does:</strong></p>
     <ul>
-        <li>Looks at calendar for upcoming weeks (next 7 days)</li>
-        <li>For each week, finds what content is scheduled (words, phrases, insults)</li>
+        <li><strong>Weekly Content:</strong> Looks at calendar for upcoming weeks (next 7 days), finds scheduled content (words, phrases, insults)</li>
+        <li><strong>Product Posts:</strong> Reads active schedules from <code>daily_posts_schedule</code>, finds available products, creates draft posts</li>
         <li>Creates <strong>draft</strong> posts in <code>posting_queue</code> table</li>
-        <li>Sets scheduled date/time (e.g., Monday 9 AM)</li>
+        <li>Sets scheduled date/time</li>
     </ul>
-    <p><strong>Example:</strong> Calendar says "Week 3 has word 'dreich'" → Creates <code>posting_queue</code> entry with <code>content_type='weekly_word'</code>, <code>status='draft'</code>, <code>scheduled_date='2026-01-20'</code></p>
+    <p><strong>Example (Weekly):</strong> Calendar says "Week 3 has word 'dreich'" → Creates <code>posting_queue</code> entry with <code>content_type='weekly_word'</code>, <code>status='draft'</code></p>
+    <p><strong>Example (Product):</strong> Schedule says "Saturday 15:00" → Finds product → Creates draft post for next Saturday 15:00</p>
     
     <h3>Step 2: Prepare Posts</h3>
-    <p><strong>Script:</strong> <code>automated_weekly_content_workflow.py</code></p>
+    <p><strong>Scripts:</strong> <code>automated_weekly_content_workflow.py</code> and <code>automated_product_post_workflow.py</code></p>
     <p><strong>What it does:</strong></p>
     <ul>
         <li>Finds <strong>draft</strong> posts in <code>posting_queue</code></li>
         <li>Prepares them for Facebook:
             <ul>
-                <li>Formats content</li>
-                <li>Generates caption</li>
-                <li>Adds hashtags</li>
-                <li>Creates square image (1080×1080)</li>
+                <li><strong>Weekly Content:</strong> Formats content, generates caption, adds hashtags, creates square image (1080×1080)</li>
+                <li><strong>Product Posts:</strong> Formats product data, generates caption (30 style variations), adds hashtags, uses product image URL</li>
             </ul>
         </li>
         <li>Updates status to <strong>ready</strong></li>
     </ul>
-    <p><strong>Example:</strong> Draft post → Generate image → Add caption → Status = <strong>ready</strong></p>
+    <p><strong>Example:</strong> Draft post → Execute workflow stages → Status = <strong>ready</strong></p>
     
     <h3>Step 3: Schedule Posts</h3>
     <p><strong>Script:</strong> <code>automated_posting.py</code></p>
@@ -176,6 +175,8 @@
         <h4>Related Sections</h4>
         <ul>
             <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - Content type details</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='product_posts') }}">Product Posts</a> - Product post content type</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='product_automation') }}">Product Post Automation</a> - Product automation details</li>
             <li><a href="{{ url_for('knowledge_base.page', section='channels', page='facebook') }}">Facebook Channel</a> - Platform details</li>
             <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='calendar') }}">Calendar Interface</a> - Calendar UI</li>
             <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='monitoring') }}">Monitoring Dashboard</a> - View automation status</li>

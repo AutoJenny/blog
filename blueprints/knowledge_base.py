@@ -101,7 +101,7 @@ KB_STRUCTURE = {
                     'product_posts': {
                         'title': 'Product Posts',
                         'template': 'knowledge_base/content_types/product_posts.html',
-                        'status': 'in_progress'
+                        'status': 'complete'
                     }
                 }
             }
@@ -220,7 +220,7 @@ KB_STRUCTURE = {
             'product_automation': {
                 'title': 'Product Post Automation',
                 'template': 'knowledge_base/workflows/product_automation.html',
-                'status': 'planned'
+                'status': 'complete'
             },
             'posting_queue': {
                 'title': 'Posting Queue System',

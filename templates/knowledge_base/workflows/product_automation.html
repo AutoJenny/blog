@@ -1,0 +1,259 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Product Post Automation</h1>
+    
+    {{ get_status_badge('complete')|safe }}
+    
+    <p class="kb-intro">
+        Product posts are now <strong>fully automated</strong>, following the same workflow system as weekly content.
+        Posts are created 1 week in advance, processed through workflow stages, and published automatically at scheduled times.
+    </p>
+    
+    <h2>How Product Post Automation Works</h2>
+    
+    <p>Product posts follow the same automated workflow as weekly content:</p>
+    <div class="kb-info" style="background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>Schedule</strong> → <strong>Create Draft</strong> → <strong>Workflow</strong> → <strong>Ready</strong> → <strong>Published</strong>
+    </div>
+    
+    <h3>Step 1: Create Product Posts (1 Week Ahead)</h3>
+    <p><strong>Script:</strong> <code>automated_product_post_creator.py</code></p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li>Reads active schedules from <code>daily_posts_schedule</code> table</li>
+        <li>Calculates upcoming posting slots (next 7 days)</li>
+        <li>Selects products that haven't been posted recently (prioritizes products with images)</li>
+        <li>Creates <strong>draft</strong> posts in <code>posting_queue</code> table</li>
+        <li>Prevents duplicate posts for the same time slot</li>
+    </ul>
+    <p><strong>Example:</strong> Schedule says "Saturday 15:00" → Finds available product → Creates draft post for next Saturday 15:00</p>
+    
+    <h3>Step 2: Execute Workflow</h3>
+    <p><strong>Script:</strong> <code>automated_product_post_workflow.py</code></p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li>Finds <strong>draft</strong> product posts in <code>posting_queue</code></li>
+        <li>Executes workflow stages:
+            <ul>
+                <li><strong>format_for_facebook</strong> - Extracts product data (name, description, image, URL)</li>
+                <li><strong>generate_caption</strong> - Generates caption using LLMService (30 style variations)</li>
+                <li><strong>add_hashtags</strong> - Adds hashtags to caption</li>
+                <li><strong>optimize_for_facebook</strong> - Uses product image URL directly</li>
+            </ul>
+        </li>
+        <li>Updates status to <strong>ready</strong> when complete</li>
+    </ul>
+    <p><strong>Example:</strong> Draft post → Format data → Generate caption → Add hashtags → Use product image → Status = <strong>ready</strong></p>
+    
+    <h3>Step 3: Schedule Posts</h3>
+    <p><strong>Script:</strong> <code>automated_posting.py</code></p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li>Finds <strong>ready</strong> product posts</li>
+        <li>Checks if scheduled time is coming up (within 30 minutes)</li>
+        <li>Sets exact <code>scheduled_timestamp</code> (with random delay for natural distribution)</li>
+        <li>Updates status to <strong>pending</strong></li>
+    </ul>
+    
+    <h3>Step 4: Publish Posts</h3>
+    <p><strong>Script:</strong> <code>posting_executor.py</code></p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li>Finds <strong>pending</strong> or <strong>ready</strong> posts where <code>scheduled_timestamp <= now()</code></li>
+        <li>Posts to Facebook using product image and generated caption</li>
+        <li>Updates status to <strong>published</strong></li>
+        <li>Stores Facebook post ID</li>
+    </ul>
+    
+    <h2>Workflow Stages</h2>
+    
+    <p>Product posts use the same workflow system as weekly content:</p>
+    
+    <div class="kb-table-wrapper" style="margin: 2rem 0;">
+        <table class="kb-table">
+            <thead>
+                <tr>
+                    <th>Stage</th>
+                    <th>Substage</th>
+                    <th>What It Does</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td rowspan="3"><strong>Content</strong></td>
+                    <td>format_for_facebook</td>
+                    <td>Extracts product data from <code>clan_products</code> table</td>
+                </tr>
+                <tr>
+                    <td>generate_caption</td>
+                    <td>Generates caption using LLMService with 30 style variations</td>
+                </tr>
+                <tr>
+                    <td>add_hashtags</td>
+                    <td>Adds hashtags to caption</td>
+                </tr>
+                <tr>
+                    <td><strong>Imaging</strong></td>
+                    <td>optimize_for_facebook</td>
+                    <td>Uses product image URL directly (no generation needed)</td>
+                </tr>
+                <tr>
+                    <td><strong>Publish</strong></td>
+                    <td>publish_to_facebook</td>
+                    <td>Posts to Facebook using /photos endpoint</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Configuration</h2>
+    
+    <h3>Workflow Configuration</h3>
+    <p>Defined in <code>config/output_channel_stages.py</code>:</p>
+    <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>('product', 'facebook'): {
+    'stages': ['content', 'imaging', 'publish'],
+    'substages': {
+        'content': ['format_for_facebook', 'generate_caption', 'add_hashtags'],
+        'imaging': ['optimize_for_facebook'],
+        'publish': ['publish_to_facebook']
+    }
+}</code></pre>
+    
+    <h3>Prompt Configuration</h3>
+    <p>Product posts use standardized prompts from <code>config/product_post_caption_prompts.py</code>:</p>
+    <ul>
+        <li><strong>System Prompt:</strong> Defines role, rules, and output format</li>
+        <li><strong>30 Variation Styles:</strong> Heritage, Quality, Gift, Storytelling, Craftsmanship, etc.</li>
+        <li><strong>Random Selection:</strong> Each post uses a random style for variety</li>
+    </ul>
+    
+    <h3>Scheduling</h3>
+    <p>Product posts use <code>daily_posts_schedule</code> table for recurring patterns:</p>
+    <ul>
+        <li><strong>Weekends Schedule:</strong> Saturday/Sunday at 15:00</li>
+        <li><strong>TuesThurs5pm Schedule:</strong> Tuesday/Thursday at 17:00</li>
+        <li>Additional schedules can be added as needed</li>
+    </ul>
+    
+    <h2>Background Monitor Integration</h2>
+    
+    <p>The <code>background_posting_monitor.sh</code> script runs every 5 minutes and executes:</p>
+    <ol>
+        <li>Create weekly content posts</li>
+        <li>Execute weekly content workflows</li>
+        <li><strong>Create product posts</strong> (NEW) ✅</li>
+        <li><strong>Execute product post workflows</strong> (NEW) ✅</li>
+        <li>Run automated posting scheduler</li>
+        <li>Run posting executor</li>
+    </ol>
+    
+    <h2>Status Flow</h2>
+    
+    <div class="kb-info" style="background: #f0f8e8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>draft</strong> → <strong>ready</strong> → <strong>pending</strong> → <strong>published</strong>
+    </div>
+    
+    <ul>
+        <li><strong>draft</strong> - Post created, needs workflow execution</li>
+        <li><strong>ready</strong> - Workflow complete, ready to schedule</li>
+        <li><strong>pending</strong> - Scheduled, waiting for time</li>
+        <li><strong>published</strong> - Posted to Facebook ✅</li>
+    </ul>
+    
+    <h2>Key Differences from Weekly Content</h2>
+    
+    <div class="kb-table-wrapper" style="margin: 2rem 0;">
+        <table class="kb-table">
+            <thead>
+                <tr>
+                    <th>Aspect</th>
+                    <th>Weekly Content</th>
+                    <th>Product Posts</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Source</strong></td>
+                    <td>Calendar (calendar_ideas table)</td>
+                    <td>Product catalog (clan_products table)</td>
+                </tr>
+                <tr>
+                    <td><strong>Scheduling</strong></td>
+                    <td>Calendar JSON files (week-based)</td>
+                    <td>daily_posts_schedule (date-based)</td>
+                </tr>
+                <tr>
+                    <td><strong>Image</strong></td>
+                    <td>Generated square image (1080×1080)</td>
+                    <td>Product image URL (from CDN)</td>
+                </tr>
+                <tr>
+                    <td><strong>Caption</strong></td>
+                    <td>JSON with alternatives</td>
+                    <td>Plain text caption</td>
+                </tr>
+                <tr>
+                    <td><strong>Workflow</strong></td>
+                    <td>Same stages</td>
+                    <td>Same stages</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Monitoring</h2>
+    
+    <h3>Log Files</h3>
+    <ul>
+        <li><code>logs/automated_product_post_creator.log</code> - Creation logs</li>
+        <li><code>logs/automated_product_post_workflow.log</code> - Workflow execution logs</li>
+        <li><code>logs/background_posting.log</code> - Overall automation logs</li>
+    </ul>
+    
+    <h3>Database Queries</h3>
+    <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>-- Check draft product posts
+SELECT * FROM posting_queue 
+WHERE content_type = 'product' AND status = 'draft';
+
+-- Check ready product posts
+SELECT * FROM posting_queue 
+WHERE content_type = 'product' AND status = 'ready';
+
+-- Check published product posts
+SELECT * FROM posting_queue 
+WHERE content_type = 'product' AND status = 'published';</code></pre>
+    
+    <h2>Testing</h2>
+    
+    <p>Test the workflow manually:</p>
+    <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code># Test workflow
+python3 scripts/test_product_post_workflow.py
+
+# Test creator
+python3 scripts/automated_product_post_creator.py
+
+# Test workflow executor
+python3 scripts/automated_product_post_workflow.py</code></pre>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='product_posts') }}">Product Posts</a> - Content type details</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='automated_posting') }}">Automated Posting System</a> - Overall automation system</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='weekly_automation') }}">Weekly Content Automation</a> - Reference implementation</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='facebook') }}">Facebook Channel</a> - Platform details</li>
+        </ul>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Technical Documentation</h4>
+        <ul>
+            <li><a href="/docs/PRODUCT_POSTS_ALL_PHASES_COMPLETE.md" target="_blank">All Phases Complete</a> - Complete system overview</li>
+            <li><a href="/docs/PRODUCT_POSTS_DOCUMENTATION_INDEX.md" target="_blank">Documentation Index</a> - All product posts docs</li>
+            <li><a href="/docs/PRODUCT_POSTS_WORKFLOW_TEST_RESULTS.md" target="_blank">Test Results</a> - Testing and verification</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
