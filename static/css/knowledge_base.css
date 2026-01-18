@@ -197,7 +197,7 @@ body:has(.kb-wrapper) {
 
 .kb-nav-page.kb-status-planned a {
     background: transparent;
-    color: #6c757d !important;
+    color: #adb5bd !important;
 }
 
 /* Active page overrides status background */
