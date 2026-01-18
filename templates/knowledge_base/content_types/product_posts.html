@@ -9,8 +9,16 @@
     <p class="kb-intro">
         Product Posts are social media posts that feature products from the Clan.com catalog. These are short-form
         social media posts (not blog articles) designed for platforms like Facebook and Instagram. The system
-        includes a UI for product selection, AI-powered content generation, and posting queue management.
+        is <strong>partially functional but uses outdated/isolated systems</strong> that need updates to align with current architecture.
     </p>
+
+    <div class="kb-info" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; margin: 2rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #92400e;">
+            <strong>⚠️ System Review Required:</strong> Product posts currently use older patterns that don't align with the 
+            current weekly content implementation. See <a href="/docs/PRODUCT_POSTS_SYSTEM_REVIEW.md" style="color: #0056b3 !important; text-decoration: underline; font-weight: 600;">Product Posts System Review</a> 
+            for detailed analysis and update plan.
+        </p>
+    </div>
     
     <h2>What Are Product Posts?</h2>
     <p>Product Posts are social media content that:</p>
@@ -22,60 +30,157 @@
         <li><strong>Queue Management:</strong> Schedule and manage multiple posts in a queue</li>
     </ul>
     
-    <h2>System Components</h2>
+    <h2>Current System Architecture</h2>
     
-    <h3>1. Item Selection</h3>
-    <p>The system allows you to:</p>
+    <h3>1. Product Selection ✅</h3>
+    <p><strong>Status:</strong> Current - Uses `clan_products` table correctly</p>
     <ul>
         <li>Browse products by category from the Clan.com catalog</li>
         <li>View product details (name, SKU, price, description, images)</li>
         <li>Search and filter products</li>
         <li>Select a product for content generation</li>
     </ul>
+    <p><strong>Endpoints:</strong> <code>/launchpad/api/syndication/categories</code>, <code>/launchpad/api/syndication/products</code></p>
     
-    <h3>2. AI Content Generation</h3>
-    <p>Uses Ollama LLM to generate social media captions:</p>
+    <h3>2. AI Content Generation ⚠️</h3>
+    <p><strong>Status:</strong> Outdated - Uses custom LLM integration, not standardized</p>
     <ul>
-        <li><strong>Content Types:</strong> Feature-focused, benefit-focused, or story-focused posts</li>
-        <li><strong>Template System:</strong> Configurable prompt templates for different content styles</li>
-        <li><strong>Ollama Integration:</strong> Automatic AI service management (starts if not running)</li>
-        <li><strong>Content Preview:</strong> Real-time preview of generated content</li>
-        <li><strong>Regeneration:</strong> Generate new content variations</li>
+        <li><strong>Current:</strong> Direct Ollama API calls instead of standardized <code>LLMService</code></li>
+        <li><strong>Current:</strong> Custom prompt templates in <code>llm_prompts</code> table (separate from weekly content)</li>
+        <li><strong>Current:</strong> No integration with <code>intercept_context</code> system for LLM logging</li>
+        <li><strong>Should Use:</strong> <code>LLMService</code> from <code>blueprints/llm_actions</code> (like weekly content)</li>
+        <li><strong>Should Use:</strong> Standardized prompt configuration (similar to <code>weekly_content_caption_prompts.py</code>)</li>
     </ul>
+    <p><strong>Endpoint:</strong> <code>/launchpad/api/syndication/generate-social-content</code></p>
     
-    <h3>3. Posting Queue</h3>
-    <p>Manage scheduled posts:</p>
+    <h3>3. Scheduling ❌</h3>
+    <p><strong>Status:</strong> Outdated - Uses separate <code>daily_posts_schedule</code> table, not integrated with calendar</p>
     <ul>
-        <li><strong>Timeline View:</strong> See all scheduled posts chronologically</li>
-        <li><strong>Drag-and-Drop:</strong> Reorder posts by dragging</li>
-        <li><strong>Status Tracking:</strong> Draft, Ready, Published, Failed</li>
-        <li><strong>Batch Operations:</strong> Generate multiple posts at once</li>
-        <li><strong>Time Slot Generation:</strong> Automatic scheduling based on patterns</li>
+        <li><strong>Current:</strong> Uses <code>daily_posts_schedule</code> table (isolated from calendar system)</li>
+        <li><strong>Current:</strong> Not integrated with calendar JSON files or <code>calendar_week_posts_v2</code></li>
+        <li><strong>Current:</strong> Doesn't appear in publication schedule view</li>
+        <li><strong>Should Use:</strong> Calendar-based scheduling (like weekly content) or unified scheduling system</li>
+        <li><strong>Should Use:</strong> Calendar JSON files + <code>resolve_item_for_week()</code> pattern</li>
     </ul>
+    <p><strong>Endpoint:</strong> <code>/launchpad/api/syndication/schedules</code></p>
     
-    <h3>4. Posting Control</h3>
-    <p>Control when and how posts are published:</p>
+    <h3>4. Posting ⚠️</h3>
+    <p><strong>Status:</strong> Partially Current - Works but uses separate implementation</p>
     <ul>
-        <li>Schedule posts for specific dates and times</li>
-        <li>Post immediately or schedule for later</li>
-        <li>Manage posting schedules (recurring patterns)</li>
+        <li><strong>Current:</strong> Uses <code>execute_facebook_post()</code> from <code>blog_post_syndication.py</code></li>
+        <li><strong>Current:</strong> Posts to both Facebook pages correctly</li>
+        <li><strong>Should Use:</strong> <code>execute_publish_to_facebook()</code> from <code>automation_execute.py</code> (like weekly content)</li>
+        <li><strong>Should Use:</strong> Unified posting function for all content types</li>
     </ul>
+    <p><strong>Endpoint:</strong> <code>/launchpad/api/syndication/post-now</code></p>
     
-    <h2>How It Works</h2>
+    <h3>5. Queue Management ✅</h3>
+    <p><strong>Status:</strong> Current - Uses <code>posting_queue</code> table correctly</p>
+    <ul>
+        <li>Timeline view of scheduled posts</li>
+        <li>Drag-and-drop reordering</li>
+        <li>Status tracking (Draft, Ready, Published, Failed)</li>
+        <li>Batch operations</li>
+    </ul>
+    <p><strong>Endpoint:</strong> <code>/launchpad/api/queue</code></p>
+    
+    <h2>Comparison with Weekly Content (Reference Implementation)</h2>
+    
+    <div class="kb-table-wrapper" style="margin: 2rem 0;">
+        <table class="kb-table">
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Product Posts</th>
+                    <th>Weekly Content</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Workflow System</strong></td>
+                    <td>❌ Custom UI workflow</td>
+                    <td>✅ <code>automation_core.execute_substage()</code></td>
+                    <td><span class="kb-status-in-progress">Needs Update</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Workflow Config</strong></td>
+                    <td>❌ None</td>
+                    <td>✅ <code>output_channel_stages.py</code></td>
+                    <td><span class="kb-status-in-progress">Needs Update</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Scheduling</strong></td>
+                    <td>❌ <code>daily_posts_schedule</code> table</td>
+                    <td>✅ Calendar JSON + <code>resolve_item_for_week()</code></td>
+                    <td><span class="kb-status-in-progress">Needs Update</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Automation</strong></td>
+                    <td>❌ Manual only</td>
+                    <td>✅ Fully automated (creator + workflow + executor)</td>
+                    <td><span class="kb-status-in-progress">Needs Update</span></td>
+                </tr>
+                <tr>
+                    <td><strong>LLM Service</strong></td>
+                    <td>⚠️ Direct Ollama calls</td>
+                    <td>✅ <code>LLMService</code> with intercept_context</td>
+                    <td><span class="kb-status-in-progress">Needs Update</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Caption Prompts</strong></td>
+                    <td>⚠️ Custom <code>llm_prompts</code> table</td>
+                    <td>✅ <code>weekly_content_caption_prompts.py</code></td>
+                    <td><span class="kb-status-in-progress">Needs Update</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Posting Function</strong></td>
+                    <td>⚠️ <code>execute_facebook_post()</code></td>
+                    <td>✅ <code>execute_publish_to_facebook()</code></td>
+                    <td><span class="kb-status-in-progress">Needs Update</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Queue Storage</strong></td>
+                    <td>✅ <code>posting_queue</code> table</td>
+                    <td>✅ <code>posting_queue</code> table</td>
+                    <td><span class="kb-status-complete">OK</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Product Selection</strong></td>
+                    <td>✅ Custom endpoints</td>
+                    <td>N/A</td>
+                    <td><span class="kb-status-complete">OK</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>How It Currently Works</h2>
     <ol>
         <li><strong>Select Product:</strong> Browse and select a product from the catalog</li>
-        <li><strong>Generate Content:</strong> Use AI to generate an engaging social media caption</li>
+        <li><strong>Generate Content:</strong> Use AI to generate an engaging social media caption (direct Ollama calls)</li>
         <li><strong>Add to Queue:</strong> Add the generated post to the posting queue</li>
-        <li><strong>Schedule:</strong> Set date and time for posting (or post immediately)</li>
+        <li><strong>Schedule:</strong> Set date and time for posting using <code>daily_posts_schedule</code> table</li>
         <li><strong>Publish:</strong> System posts to Facebook at scheduled time (or manually trigger)</li>
+    </ol>
+    
+    <h2>How It Should Work (Target Architecture)</h2>
+    <p>To align with current architecture, product posts should:</p>
+    <ol>
+        <li><strong>Use Workflow System:</strong> Integrate with <code>automation_core.execute_substage()</code> and <code>output_channel_stages.py</code></li>
+        <li><strong>Use Calendar Scheduling:</strong> Integrate with calendar JSON files or unified scheduling system</li>
+        <li><strong>Use Standardized LLM:</strong> Use <code>LLMService</code> with intercept_context logging</li>
+        <li><strong>Use Unified Posting:</strong> Use <code>execute_publish_to_facebook()</code> from automation system</li>
+        <li><strong>Add Automation:</strong> Create automated scripts (creator, workflow, executor) like weekly content</li>
+        <li><strong>Appear in Dashboard:</strong> Integrate with publication schedule view</li>
     </ol>
     
     <h2>UI Access</h2>
     <p>Product Posts can be managed through:</p>
     <ul>
-        <li><a href="/launchpad/syndication/facebook/product_post" class="kb-ui-link">Product Posts Interface</a> - Main interface for creating and managing product posts</li>
-        <li><a href="/monitoring/report" class="kb-ui-link">Monitoring Dashboard</a> - View posting status and automation events</li>
-        <li><a href="/dashboard" class="kb-ui-link">Publication Dashboard</a> - Overall publication status (product posts may not appear here yet)</li>
+        <li><a href="/launchpad/syndication/facebook/product_post" class="kb-ui-link" style="color: white !important;">Product Posts Interface</a> - Main interface for creating and managing product posts</li>
+        <li><a href="/monitoring/report" class="kb-ui-link" style="color: white !important;">Monitoring Dashboard</a> - View posting status and automation events</li>
+        <li><a href="/publication/dashboard" class="kb-ui-link" style="color: white !important;">Publication Dashboard</a> - Overall publication status (product posts may not appear here yet)</li>
     </ul>
     
     <h2>Database Storage</h2>
@@ -91,14 +196,24 @@
     
     <h2>Current Status</h2>
     <div class="kb-status-section">
-        <h3>🟡 In Progress / Partially Working</h3>
+        <h3>✅ Working / Current</h3>
         <ul>
             <li>UI interface exists and functional</li>
             <li>Product selection and browsing works</li>
-            <li>AI content generation with Ollama works</li>
+            <li>AI content generation with Ollama works (but uses outdated pattern)</li>
             <li>Posting queue management works</li>
             <li>Manual posting to Facebook works</li>
             <li>Posts stored in <code>posting_queue</code> table</li>
+        </ul>
+        
+        <h3>🟡 Needs Updates / Integration</h3>
+        <ul>
+            <li><strong>Workflow System:</strong> Should use <code>automation_core</code> and <code>output_channel_stages.py</code></li>
+            <li><strong>LLM Integration:</strong> Should use standardized <code>LLMService</code> with intercept_context</li>
+            <li><strong>Scheduling:</strong> Should integrate with calendar system or unified scheduling</li>
+            <li><strong>Posting Function:</strong> Should use unified <code>execute_publish_to_facebook()</code></li>
+            <li><strong>Automation:</strong> Should have automated creation 1 week in advance (like weekly content)</li>
+            <li><strong>Publication Dashboard:</strong> Should appear in publication schedule view</li>
         </ul>
         
         <h3>🔴 Known Issues / Not Complete</h3>
@@ -117,19 +232,28 @@
     <p><em>Both use products as source material, but create different types of content for different channels.</em></p>
     
     <h2>Configuration</h2>
-    <p>Product posts use:</p>
+    <p>Product posts currently use:</p>
     <ul>
         <li><strong>Database:</strong> <code>posting_queue</code> table for storage</li>
-        <li><strong>AI Service:</strong> Ollama (local LLM) for content generation</li>
+        <li><strong>AI Service:</strong> Ollama (local LLM) for content generation (direct calls, not standardized)</li>
         <li><strong>Product Data:</strong> Clan.com catalog integration</li>
         <li><strong>Facebook API:</strong> Graph API for posting (both pages)</li>
-        <li><strong>Scheduling:</strong> <code>daily_posts_schedule</code> table for recurring patterns</li>
+        <li><strong>Scheduling:</strong> <code>daily_posts_schedule</code> table for recurring patterns (outdated)</li>
+    </ul>
+    
+    <p>Product posts should use (target architecture):</p>
+    <ul>
+        <li><strong>Workflow:</strong> <code>config/output_channel_stages.py</code> - Define stages for product → Facebook pipeline</li>
+        <li><strong>LLM Service:</strong> <code>LLMService</code> from <code>blueprints/llm_actions</code> with intercept_context</li>
+        <li><strong>Caption Prompts:</strong> <code>config/product_post_caption_prompts.py</code> - Standardized prompt configuration</li>
+        <li><strong>Scheduling:</strong> Calendar JSON files or unified scheduling system</li>
+        <li><strong>Posting:</strong> <code>execute_publish_to_facebook()</code> from <code>automation_execute.py</code></li>
     </ul>
     
     <div class="kb-related">
         <h4>Related Sections</h4>
         <ul>
-            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - The completed social post system</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - The completed social post system (reference implementation)</li>
             <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='generated') }}">Generated Posts</a> - Blog articles generated from products (different from Product Posts)</li>
             <li><a href="{{ url_for('knowledge_base.page', section='channels', page='facebook') }}">Facebook Channel</a></li>
             <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='product_automation') }}">Product Post Automation</a></li>
@@ -139,9 +263,31 @@
     <div class="kb-related">
         <h4>Technical Documentation</h4>
         <ul>
-            <li><a href="/docs/PRODUCT_POSTS_INTEGRATION_REPORT.md" target="_blank">Product Posts Integration Report</a> - Integration issues and recommendations</li>
-            <li><a href="/blog-launchpad/docs/daily_product_posts_system.md" target="_blank">Daily Product Posts System</a> - System overview</li>
+            <li><a href="/docs/PRODUCT_POSTS_SYSTEM_REVIEW.md" target="_blank" style="color: #0056b3 !important; text-decoration: underline;">Product Posts System Review</a> - Comprehensive analysis and update plan</li>
+            <li><a href="/blog-launchpad/docs/daily_product_posts_system.md" target="_blank" style="color: #0056b3 !important; text-decoration: underline;">Daily Product Posts System</a> - System overview</li>
         </ul>
     </div>
 </div>
+
+<style>
+.kb-status-in-progress {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.kb-status-complete {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+</style>
 {% endblock %}
