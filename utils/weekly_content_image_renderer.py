@@ -278,62 +278,98 @@ def render_weekly_content_image(
             phrase_y_offset = -100
         
         # Always use wrapping for main text to prevent truncation
+        # Keep original font size (96pt) - use manual line splitting if needed
         try:
-            # Calculate optimal font size for wrapping
-                # Use 12px per character for 96pt font (more accurate for italic serif)
-                chars_per_line = PHRASE_MAX_WIDTH / 12  # More accurate estimate
-                estimated_lines = max(2, (len(scots_text) / chars_per_line))
-                if estimated_lines > 2:
-                    phrase_pointsize = max(72, int(96 * (2 / estimated_lines)))
-                else:
-                    phrase_pointsize = 96
+            phrase_pointsize = 96  # Always use full size
+            
+            # Pre-process text: manually split into lines if it's too long
+            # Estimate: 96pt italic Baskerville ≈ 12-15px per character
+            # For 800px width, that's roughly 50-65 characters per line
+            # Use 55 chars as a safe estimate for line breaks
+            max_chars_per_line = 55
+            
+            if len(scots_text) > max_chars_per_line:
+                # Manually split text into lines at word boundaries
+                words = scots_text.split()
+                lines = []
+                current_line = []
+                current_length = 0
                 
-                # Create wrapped text label with transparent background
-                temp_label = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
-                temp_label_path = temp_label.name
-                temp_label.close()
+                for word in words:
+                    # Add space if not first word
+                    word_with_space = (' ' if current_line else '') + word
+                    word_length = len(word_with_space)
+                    
+                    if current_length + word_length <= max_chars_per_line:
+                        # Add to current line
+                        current_line.append(word)
+                        current_length += word_length
+                    else:
+                        # Start new line
+                        if current_line:
+                            lines.append(' '.join(current_line))
+                        current_line = [word]
+                        current_length = len(word)
                 
-                # Create label with automatic wrapping (ImageMagick wraps at word boundaries)
-                # Escape quotes in text for shell safety
-                escaped_text = scots_text.replace('"', '\\"').replace("'", "\\'")
-                label_cmd = [
-                    magick_cmd,
-                    '-background', 'transparent',
-                    '-size', f'{PHRASE_MAX_WIDTH}x',  # Width constraint for wrapping
-                    '-gravity', 'center',
-                    '-pointsize', str(phrase_pointsize),
-                    '-font', BODY_FONT,
-                    '-fill', TEXT_COLOR,
-                    f'label:{escaped_text}',
-                    temp_label_path
-                ]
-                result = subprocess.run(label_cmd, capture_output=True, text=True, check=True)
-                logger.debug(f"Label command output: {result.stdout}")
-                if result.stderr:
-                    logger.debug(f"Label command stderr: {result.stderr}")
+                # Add last line
+                if current_line:
+                    lines.append(' '.join(current_line))
                 
-                # Composite the wrapped text label onto the base image
-                composite_cmd = [
-                    magick_cmd,
-                    output_path,
-                    temp_label_path,
-                    '-gravity', 'center',
-                    '-geometry', f'+0{phrase_y_offset:+d}',
-                    '-composite',
-                    output_path
-                ]
-                result2 = subprocess.run(composite_cmd, capture_output=True, text=True, check=True)
-                logger.debug(f"Composite command output: {result2.stdout}")
-                if result2.stderr:
-                    logger.debug(f"Composite command stderr: {result2.stderr}")
-                
-                # Clean up temp file
-                try:
-                    os.unlink(temp_label_path)
-                except:
-                    pass
-                
-                logger.info(f"Applied text wrapping ({len(scots_text)} chars, {phrase_pointsize}pt)")
+                # Join lines with actual newline for label: (ImageMagick label: supports \n)
+                wrapped_text = '\n'.join(lines)
+                logger.info(f"Manually split {len(scots_text)}-char text into {len(lines)} lines: {lines}")
+            else:
+                # Short text, use as-is
+                wrapped_text = scots_text
+            
+            # Create wrapped text label with transparent background
+            temp_label = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+            temp_label_path = temp_label.name
+            temp_label.close()
+            
+            # Escape quotes in text for shell safety
+            escaped_text = wrapped_text.replace('"', '\\"').replace("'", "\\'")
+            
+            # Create label with manual line breaks (using \n)
+            # label: in ImageMagick supports newlines for multi-line text
+            label_cmd = [
+                magick_cmd,
+                '-background', 'transparent',
+                '-size', f'{PHRASE_MAX_WIDTH}x',  # Width constraint
+                '-gravity', 'center',
+                '-pointsize', str(phrase_pointsize),
+                '-font', BODY_FONT,
+                '-fill', TEXT_COLOR,
+                f'label:{escaped_text}',
+                temp_label_path
+            ]
+            result = subprocess.run(label_cmd, capture_output=True, text=True, check=True)
+            logger.debug(f"Label command output: {result.stdout}")
+            if result.stderr:
+                logger.debug(f"Label command stderr: {result.stderr}")
+            
+            # Composite the wrapped text label onto the base image
+            composite_cmd = [
+                magick_cmd,
+                output_path,
+                temp_label_path,
+                '-gravity', 'center',
+                '-geometry', f'+0{phrase_y_offset:+d}',
+                '-composite',
+                output_path
+            ]
+            result2 = subprocess.run(composite_cmd, capture_output=True, text=True, check=True)
+            logger.debug(f"Composite command output: {result2.stdout}")
+            if result2.stderr:
+                logger.debug(f"Composite command stderr: {result2.stderr}")
+            
+            # Clean up temp file
+            try:
+                os.unlink(temp_label_path)
+            except:
+                pass
+            
+            logger.info(f"Applied text wrapping at {phrase_pointsize}pt ({len(scots_text)} chars)")
         except Exception as e:
             logger.error(f"Text wrapping failed: {e}")
             # If wrapping fails, we still need to add the text somehow
