@@ -1,15 +1,24 @@
 /* Knowledge Base Styles */
+/* Override dark theme for KB pages */
 
 .kb-container {
     display: flex;
     min-height: calc(100vh - 200px);
     margin-top: 20px;
+    background: #ffffff;
+    color: #212529;
+}
+
+/* Force light theme for KB content */
+body .kb-container,
+body .kb-container * {
+    color: #212529 !important;
 }
 
 /* Left Sidebar */
 .kb-sidebar {
     width: 280px;
-    background: #f8f9fa;
+    background: #f8f9fa !important;
     border-right: 1px solid #dee2e6;
     padding: 20px;
     position: sticky;
@@ -17,6 +26,7 @@
     max-height: calc(100vh - 100px);
     overflow-y: auto;
     flex-shrink: 0;
+    color: #212529 !important;
 }
 
 .kb-sidebar-header {
@@ -28,7 +38,7 @@
 .kb-sidebar-header h2 {
     margin: 0 0 10px 0;
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: #2c3e50 !important;
 }
 
 .kb-home-link {
@@ -75,7 +85,7 @@
 .kb-nav-title {
     flex: 1;
     font-weight: 600;
-    color: #495057;
+    color: #495057 !important;
     font-size: 0.95rem;
 }
 
@@ -108,7 +118,7 @@
 .kb-nav-page a {
     display: block;
     padding: 6px 10px;
-    color: #495057;
+    color: #495057 !important;
     text-decoration: none;
     border-radius: 4px;
     font-size: 0.9rem;
@@ -120,8 +130,8 @@
 }
 
 .kb-nav-page.active a {
-    background: #007bff;
-    color: white;
+    background: #007bff !important;
+    color: white !important;
     font-weight: 600;
 }
 
@@ -190,17 +200,19 @@
     padding: 30px 40px;
     max-width: 1000px;
     margin: 0 auto;
+    background: #ffffff !important;
+    color: #212529 !important;
 }
 
 /* Breadcrumbs */
 .kb-breadcrumbs {
     margin-bottom: 20px;
     font-size: 0.9rem;
-    color: #6c757d;
+    color: #6c757d !important;
 }
 
 .kb-breadcrumbs a {
-    color: #007bff;
+    color: #007bff !important;
     text-decoration: none;
 }
 
@@ -216,16 +228,17 @@
 /* Page Content */
 .kb-page {
     line-height: 1.6;
+    color: #212529 !important;
 }
 
 .kb-page h1 {
-    color: #2c3e50;
+    color: #2c3e50 !important;
     margin-bottom: 10px;
     font-size: 2.5rem;
 }
 
 .kb-page h2 {
-    color: #34495e;
+    color: #34495e !important;
     margin-top: 30px;
     margin-bottom: 15px;
     font-size: 1.8rem;
@@ -234,7 +247,7 @@
 }
 
 .kb-page h3 {
-    color: #495057;
+    color: #495057 !important;
     margin-top: 25px;
     margin-bottom: 12px;
     font-size: 1.4rem;
@@ -242,7 +255,7 @@
 
 .kb-page p {
     margin-bottom: 15px;
-    color: #495057;
+    color: #495057 !important;
 }
 
 .kb-page ul, .kb-page ol {
@@ -252,7 +265,7 @@
 
 .kb-page li {
     margin-bottom: 8px;
-    color: #495057;
+    color: #495057 !important;
 }
 
 /* Home Page */
@@ -262,7 +275,7 @@
 
 .kb-intro {
     font-size: 1.1rem;
-    color: #6c757d;
+    color: #6c757d !important;
     margin-bottom: 40px;
 }
 
@@ -347,7 +360,7 @@
 
 .kb-section-card-header h3 {
     margin: 0;
-    color: #2c3e50;
+    color: #2c3e50 !important;
 }
 
 .kb-section-pages {
@@ -361,7 +374,7 @@
 }
 
 .kb-section-pages a {
-    color: #007bff;
+    color: #007bff !important;
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -415,7 +428,7 @@
 .kb-related h4 {
     margin-top: 0;
     margin-bottom: 10px;
-    color: #2c3e50;
+    color: #2c3e50 !important;
 }
 
 .kb-related ul {
@@ -424,7 +437,7 @@
 }
 
 .kb-related a {
-    color: #007bff;
+    color: #007bff !important;
     text-decoration: none;
 }
 
@@ -442,6 +455,7 @@
 
 .kb-status-section h3 {
     margin-top: 0;
+    color: #2c3e50 !important;
 }
 
 /* Status Table */
