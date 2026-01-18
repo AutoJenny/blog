@@ -299,6 +299,25 @@ def index():
     return render_template('knowledge_base/index.html', structure=KB_STRUCTURE, section=None, page=None, page_data=None)
 
 
+def find_page_in_structure(section_data, page_key, parent_key=None):
+    """Recursively search for a page in the structure, including subpages"""
+    # First check direct pages
+    if page_key in section_data.get('pages', {}):
+        return section_data['pages'][page_key], parent_key
+    
+    # Then check subpages recursively
+    for parent_page_key, parent_page_data in section_data.get('pages', {}).items():
+        if 'subpages' in parent_page_data:
+            if page_key in parent_page_data['subpages']:
+                return parent_page_data['subpages'][page_key], parent_page_key
+            # Check nested subpages (e.g., words under weekly_words_phrases)
+            for subpage_key, subpage_data in parent_page_data['subpages'].items():
+                if 'subpages' in subpage_data and page_key in subpage_data['subpages']:
+                    return subpage_data['subpages'][page_key], subpage_key
+    
+    return None, None
+
+
 @bp.route('/<section>/<page>')
 @bp.route('/<section>/<page>/<subpage>')
 def page(section, page, subpage=None):
@@ -307,13 +326,13 @@ def page(section, page, subpage=None):
         return render_template('knowledge_base/404.html'), 404
     
     section_data = KB_STRUCTURE[section]
-    if page not in section_data['pages']:
-        return render_template('knowledge_base/404.html'), 404
     
-    page_data = section_data['pages'][page]
-    
-    # If subpage is specified, get subpage data
+    # If subpage is specified, look for it as a nested subpage
     if subpage:
+        # First try to find the parent page
+        if page not in section_data['pages']:
+            return render_template('knowledge_base/404.html'), 404
+        page_data = section_data['pages'][page]
         if 'subpages' not in page_data or subpage not in page_data['subpages']:
             return render_template('knowledge_base/404.html'), 404
         subpage_data = page_data['subpages'][subpage]
@@ -335,7 +354,18 @@ def page(section, page, subpage=None):
                              structure=KB_STRUCTURE,
                              get_status_badge=get_status_badge)
     else:
-        # Regular page
+        # Try to find page directly first
+        if page in section_data['pages']:
+            page_data = section_data['pages'][page]
+        else:
+            # Search in subpages (for pages like weekly_words_phrases that are now subpages)
+            page_data, parent_key = find_page_in_structure(section_data, page)
+            if not page_data:
+                return render_template('knowledge_base/404.html'), 404
+            # If found as subpage, use parent as page for context
+            if parent_key:
+                page = parent_key
+        
         template = page_data.get('template')
         if not template:
             return render_template('knowledge_base/404.html'), 404
