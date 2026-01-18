@@ -1,5 +1,40 @@
 # Changelog
 
+## 2026-01-18 - Monitoring System with Status Indicator and Reporting
+
+### Added
+- **Monitoring Module in Header**: Traffic light status indicator (green=running, red=stopped) in top right of all pages
+- **Monitoring Report Page**: Full event monitoring with filtering (`/monitoring/report`)
+  - Filter tabs: All Events, Automated Postings, Administrative
+  - Real-time status updates (every 30s for status, 60s for events)
+  - Start/Stop controls for background monitor
+- **Enhanced Publication Messages**: Detailed log messages showing queue_id, content_type, pages count, and content preview
+- **API Endpoints**: 
+  - `GET /monitoring/status` - Get monitoring status
+  - `POST /monitoring/start` - Start monitoring
+  - `POST /monitoring/stop` - Stop monitoring
+  - `GET /monitoring/api/events` - Get events with filtering
+- **Documentation**: `docs/MONITORING_SYSTEM_REFERENCE.md` - Complete monitoring system reference
+
+### Changed
+- **Publication Log Messages**: Enhanced to include context (queue_id, content_type, pages, content preview)
+- **Event Filtering**: Strict filtering for Automated Postings tab to show only actual publication events
+- **Background Monitor Log Parsing**: Distinguishes monitor messages from script outputs
+
+### Technical Details
+- **Blueprint**: `blueprints/monitoring.py` - All monitoring endpoints
+- **Templates**: `templates/monitoring/report.html`, `templates/shared/header.html` (monitoring module)
+- **JavaScript**: `static/js/shared/monitoring-module.js` - Status updates
+- **Event Categories**: 
+  - `posting` - Actual publication events (weekly content, product posts)
+  - `admin` - Infrastructure/monitoring messages
+- **Log Sources**: Reads from individual script log files (last 200 lines each)
+
+### Status
+✅ **PRODUCTION READY** - Full monitoring system operational with status indicator and detailed reporting
+
+---
+
 ## 2026-01-17 - Weekly Content Full Automation System
 
 ### Added
