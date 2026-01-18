@@ -9,7 +9,8 @@ const categoryMap = {
     'profile-surname': 'profile_surname',
     'word': 'weekly_word',
     'phrase': 'weekly_phrase',
-    'insult': 'weekly_insult'
+    'insult': 'weekly_insult',
+    'product-post': 'product'
 };
 
 // State management
@@ -45,7 +46,7 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
     
     if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td></tr>';
     rangeLabel.textContent = 'Loading...';
     navButtons.forEach(btn => btn.disabled = true);
     
@@ -101,7 +102,7 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
         tbody.innerHTML = '';
         
         if (weekData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #94a3b8;">No scheduling data for this range.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">No scheduling data for this range.</td></tr>';
             navButtons.forEach(btn => btn.disabled = false);
             return;
         }
@@ -152,6 +153,7 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             const wordItems = data.filter(item => item && item.type === 'weekly_word');
             const phraseItems = data.filter(item => item && item.type === 'weekly_phrase');
             const insultItems = data.filter(item => item && item.type === 'weekly_insult');
+            const productPostItems = data.filter(item => item && item.type === 'product');
             
             row.appendChild(createCategoryCell(themeItem ? [themeItem] : [], 'theme', year, week));
             row.appendChild(createCategoryCell(recipeItems, 'recipe', year, week));
@@ -160,6 +162,7 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             row.appendChild(createCategoryCell(wordItems, 'word', year, week));
             row.appendChild(createCategoryCell(phraseItems, 'phrase', year, week));
             row.appendChild(createCategoryCell(insultItems, 'insult', year, week));
+            row.appendChild(createCategoryCell(productPostItems, 'product-post', year, week));
             
             tbody.appendChild(row);
         });
@@ -203,6 +206,8 @@ function createCategoryCell(items, categoryClass, year, week) {
             itemId = item.post_id || item.id;
         } else if (categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
             itemId = item.item_id || item.id;
+        } else if (categoryClass === 'product-post') {
+            itemId = item.posting_queue_id || item.product_id || item.item_id || item.id;
         }
         
         if (!itemId) {
@@ -233,10 +238,16 @@ function createCategoryCell(items, categoryClass, year, week) {
         } else if (categoryClass === 'insult') {
             title = item.title || item.idea_title || 'Insult';
             typeName = 'language: insult';
+        } else if (categoryClass === 'product-post') {
+            title = item.title || item.product_name || `Product ${item.product_id || item.item_id}`;
+            typeName = 'product';
         }
         
         // Map categoryClass to API category for unified component
-        const apiCategory = categoryMap[categoryClass] || categoryClass;
+        let apiCategory = categoryMap[categoryClass] || categoryClass;
+        if (categoryClass === 'product-post') {
+            apiCategory = 'product';
+        }
         
         // Check if unified-item-card is loaded
         if (typeof window.createUnifiedItemCard !== 'function') {

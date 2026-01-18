@@ -52,8 +52,9 @@ function normalizeTypeForClass(category, type) {
         'word': 'weekly-word',
         'phrase': 'weekly-phrase',
         'insult': 'weekly-insult',
-        'event': 'event',
-        'product': 'product'
+        'product': 'product',
+        'product-post': 'product',
+        'event': 'event'
     };
     
     return categoryMap[normalized] || normalized;
@@ -85,8 +86,9 @@ function normalizeTypeName(category, typeName, typeNameFromItem) {
         'word': 'Word',
         'phrase': 'Phrase',
         'insult': 'Insult',
-        'event': 'Event',
-        'product': 'Product'
+        'product': 'product',
+        'product-post': 'product',
+        'event': 'Event'
     };
     
     return nameMap[category] || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -199,7 +201,12 @@ function createUnifiedItemCard(item, options = {}) {
                                    type === 'word' || type === 'phrase' || type === 'insult')) ||
                           (item.type && (item.type === 'weekly_word' || item.type === 'weekly_phrase' || item.type === 'weekly_insult')) ||
                           (item.category && (item.category === 'weekly_word' || item.category === 'weekly_phrase' || item.category === 'weekly_insult'));
-    const description = isLanguageItem ? null : getItemDescription(item, options.description);
+    
+    // For product posts, also don't show description (redundant)
+    const isProductPost = typeClass === 'product' || category === 'product' || type === 'product' || type === 'product-post' ||
+                         item.type === 'product' || item.category === 'product';
+    
+    const description = (isLanguageItem || isProductPost) ? null : getItemDescription(item, options.description);
     
     // Determine post status
     const { postExists, postId, postStatus } = determinePostStatus(item);
@@ -240,11 +247,12 @@ function createUnifiedItemCard(item, options = {}) {
     const actionRow = document.createElement('div');
     actionRow.className = 'compact-action-row';
     
-    // Status line (non-clickable) - hide for language items
+    // Status line (non-clickable) - hide for language items and product posts
     const isLanguageItemForStatus = typeClass === 'weekly-word' || typeClass === 'weekly-phrase' || typeClass === 'weekly-insult' ||
                                     category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult' ||
                                     type === 'word' || type === 'phrase' || type === 'insult';
-    if (!isLanguageItemForStatus) {
+    const isProductPostForStatus = typeClass === 'product' || category === 'product' || type === 'product' || type === 'product-post';
+    if (!isLanguageItemForStatus && !isProductPostForStatus) {
         const statusLine = document.createElement('div');
         statusLine.className = 'status-line';
         const statusBadge = document.createElement('span');

@@ -173,6 +173,17 @@
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+.scheduling-item.product-post {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f1f5f9;
+}
+.scheduling-item.product-post:hover {
+    background: rgba(245, 158, 11, 0.25);
+    border-color: #f59e0b;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 .schedule-legend {
     display: flex;
     flex-wrap: wrap;
@@ -196,6 +207,7 @@
 .legend-pill.word { color: #c084fc; }
 .legend-pill.phrase { color: #22d3ee; }
 .legend-pill.insult { color: #f472b6; }
+.legend-pill.product-post { color: #f59e0b; }
 .legend-pill.annual { color: #3b82f6; }
 .legend-pill.special { color: #10b981; }
 .legend-pill.syndication { color: #60a5fa; }
@@ -257,6 +269,8 @@
 .item-card.type-word { border-color: #22c55e; background: rgba(34,197,94,0.12); }
 .item-card.type-phrase { border-color: #22d3ee; background: rgba(34,211,238,0.12); }
 .item-card.type-insult { border-color: #f472b6; background: rgba(244,114,182,0.12); }
+.item-card.type-product { border-color: #f59e0b; background: rgba(245,158,11,0.12); }
+.item-card.type-product-post { border-color: #f59e0b; background: rgba(245,158,11,0.12); }
 .scheduling-item.empty {
     color: #64748b;
     font-style: italic;
