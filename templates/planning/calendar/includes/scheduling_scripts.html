@@ -173,14 +173,17 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             row.appendChild(createCategoryCell(wordItems, 'word', year, week));
             row.appendChild(createCategoryCell(phraseItems, 'phrase', year, week));
             row.appendChild(createCategoryCell(insultItems, 'insult', year, week));
+            
+            // Create product post cell
             const productPostCell = createCategoryCell(productPostItems, 'product-post', year, week);
             
             // TEMPORARY: Add a visible test element to verify cell is rendered
             if (productPostItems.length > 0) {
                 const testDiv = document.createElement('div');
-                testDiv.style.cssText = 'background: red; color: white; padding: 10px; margin: 5px; border: 2px solid yellow;';
+                testDiv.style.cssText = 'background: red !important; color: white !important; padding: 10px !important; margin: 5px !important; border: 2px solid yellow !important; display: block !important; visibility: visible !important;';
                 testDiv.textContent = `TEST: ${productPostItems.length} products`;
                 productPostCell.insertBefore(testDiv, productPostCell.firstChild);
+                console.log('TEST DIV ADDED to product post cell');
             }
             
             console.log(`Product post cell created for week ${year}-W${week}:`, {
@@ -188,15 +191,20 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
                 cellChildren: productPostCell.children.length,
                 cellHTML: productPostCell.innerHTML.substring(0, 500),
                 cellClasses: productPostCell.className,
-                cellDataset: productPostCell.dataset
+                cellDataset: productPostCell.dataset,
+                cellTag: productPostCell.tagName
             });
-            console.log(`Product post cell children:`, Array.from(productPostCell.children).map(c => ({
-                tag: c.tagName,
-                classes: c.className,
-                text: c.textContent?.substring(0, 50)
-            })));
+            
+            // Verify cell before appending
+            console.log(`About to append product post cell. Row currently has ${row.children.length} cells`);
             row.appendChild(productPostCell);
-            console.log(`Product post cell appended to row. Row now has ${row.children.length} cells`);
+            console.log(`Product post cell appended. Row now has ${row.children.length} cells. Cell parent:`, productPostCell.parentElement === row);
+            
+            // Verify cell is actually in DOM
+            setTimeout(() => {
+                const cellInDOM = document.querySelector(`td[data-category="product-post"][data-year="${year}"][data-week="${week}"]`);
+                console.log(`Cell in DOM check:`, cellInDOM ? 'FOUND' : 'NOT FOUND', cellInDOM);
+            }, 100);
             
             tbody.appendChild(row);
         });
