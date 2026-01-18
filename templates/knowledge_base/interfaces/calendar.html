@@ -1,0 +1,323 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-content">
+    <div class="kb-provisional-notice" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; margin-bottom: 2rem; border-radius: 4px;">
+        <p style="margin: 0; color: #92400e; font-weight: 600;">
+            ⚠️ <strong>Provisional Entry</strong> - This page is under review and discussion. 
+            Links provided to help navigate the multiple calendar UIs. 
+            Please provide feedback on structure, content, and which UIs should be primary.
+        </p>
+    </div>
+
+    <h1>Calendar System</h1>
+    
+    <p class="kb-intro">
+        The Calendar System is a comprehensive content planning and scheduling system that manages 
+        52-week content schedules for themes, recipes, profiles, and weekly content (words, phrases, insults). 
+        It provides multiple user interfaces for viewing, managing, and scheduling content.
+    </p>
+
+    <div class="kb-warning" style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 1rem; margin: 2rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #991b1b;">
+            <strong>⚠️ Multiple Overlapping UIs:</strong> The calendar system currently has multiple user interfaces 
+            in various states of completeness. It's unclear which UI is the "current" one. This page documents 
+            all available UIs to help navigate and determine which should be primary.
+        </p>
+    </div>
+
+    <h2>Quick Navigation to Calendar UIs</h2>
+    
+    <div class="kb-ui-links" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 2rem 0;">
+        
+        <div class="kb-ui-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #3b82f6; font-size: 1.1rem;">
+                <i class="fa-solid fa-calendar-days"></i> New Unified Calendar
+            </h3>
+            <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
+                Tab-based interface (appears to be current)
+            </p>
+            <a href="/planning/calendar?tab=week-view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+                Open Unified Calendar →
+            </a>
+        </div>
+
+        <div class="kb-ui-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #f59e0b; font-size: 1.1rem;">
+                <i class="fa-solid fa-calendar-alt"></i> Legacy Year View
+            </h3>
+            <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
+                Requires post_id (may be deprecated)
+            </p>
+            <a href="/planning/posts/0/calendar/view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+                Open Legacy Year View →
+            </a>
+        </div>
+
+        <div class="kb-ui-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #f59e0b; font-size: 1.1rem;">
+                <i class="fa-solid fa-calendar-week"></i> Legacy Week View
+            </h3>
+            <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
+                Requires post_id (may be deprecated)
+            </p>
+            <a href="/planning/posts/0/calendar/week-view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+                Open Legacy Week View →
+            </a>
+        </div>
+
+        <div class="kb-ui-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #10b981; font-size: 1.1rem;">
+                <i class="fa-solid fa-table"></i> Scheduling View
+            </h3>
+            <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
+                Also available as tab in unified calendar
+            </p>
+            <a href="/planning/posts/0/calendar/scheduling" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+                Open Scheduling View →
+            </a>
+        </div>
+
+        <div class="kb-ui-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #10b981; font-size: 1.1rem;">
+                <i class="fa-solid fa-lightbulb"></i> Calendar Ideas
+            </h3>
+            <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
+                Manage calendar ideas (standalone page)
+            </p>
+            <a href="/planning/posts/0/calendar/ideas" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+                Open Ideas Page →
+            </a>
+        </div>
+
+        <div class="kb-ui-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #10b981; font-size: 1.1rem;">
+                <i class="fa-solid fa-tags"></i> Taxonomy Assignment
+            </h3>
+            <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
+                Taxonomy assignment for calendar items
+            </p>
+            <a href="/planning/posts/0/calendar/taxonomy" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+                Open Taxonomy Page →
+            </a>
+        </div>
+
+        <div class="kb-ui-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #10b981; font-size: 1.1rem;">
+                <i class="fa-solid fa-list-ol"></i> Sequence Manager
+            </h3>
+            <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
+                Manage base cyclic sequences (themes, recipes, etc.)
+            </p>
+            <a href="/planning/calendar/sequence-manager" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+                Open Sequence Manager →
+            </a>
+        </div>
+
+    </div>
+
+    <h2>Unified Calendar Tabs</h2>
+    
+    <p>The new unified calendar (<code>/planning/calendar</code>) provides these tabs:</p>
+    
+    <div class="kb-table-wrapper" style="margin: 2rem 0;">
+        <table class="kb-table">
+            <thead>
+                <tr>
+                    <th>Tab</th>
+                    <th>Purpose</th>
+                    <th>Status</th>
+                    <th>Direct Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Year View</strong></td>
+                    <td>52-week grid overview grouped by month</td>
+                    <td><span class="kb-status-unknown">Unknown</span></td>
+                    <td><a href="/planning/calendar?tab=year-view" class="kb-ui-link">Open →</a></td>
+                </tr>
+                <tr>
+                    <td><strong>Week View</strong></td>
+                    <td>Detailed week-by-week view with day breakdown</td>
+                    <td><span class="kb-status-unknown">Unknown</span></td>
+                    <td><a href="/planning/calendar?tab=week-view" class="kb-ui-link">Open →</a></td>
+                </tr>
+                <tr>
+                    <td><strong>Future items</strong> (Scheduling)</td>
+                    <td>52-week scheduling table with all categories</td>
+                    <td><span class="kb-status-complete">Complete</span></td>
+                    <td><a href="/planning/calendar?tab=scheduling" class="kb-ui-link">Open →</a></td>
+                </tr>
+                <tr>
+                    <td><strong>Channels schedule</strong></td>
+                    <td>Publication schedule view (from publication dashboard?)</td>
+                    <td><span class="kb-status-unknown">Unknown</span></td>
+                    <td><a href="/planning/calendar?tab=publication-schedule" class="kb-ui-link">Open →</a></td>
+                </tr>
+                <tr>
+                    <td><strong>Day Assignments</strong></td>
+                    <td>Day-level assignment view</td>
+                    <td><span class="kb-status-unknown">Unknown</span></td>
+                    <td><a href="/planning/calendar?tab=day-assignments" class="kb-ui-link">Open →</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>System Overview</h2>
+    
+    <h3>Core Concepts</h3>
+    <ul>
+        <li><strong>52-Week Structure:</strong> Each year is divided into 52 weeks for consistent content planning</li>
+        <li><strong>Cyclic Lists:</strong> Base sequences (themes, recipes, profiles, words, phrases, insults) that repeat indefinitely</li>
+        <li><strong>JSON-Backed Display:</strong> Fast page loads using pre-computed JSON files (no database queries on display)</li>
+        <li><strong>Week Overrides:</strong> Ability to override specific weeks with different items</li>
+        <li><strong>Category-Based:</strong> Separate schedules for each content category</li>
+    </ul>
+
+    <h3>Content Categories</h3>
+    <p>The calendar system manages schedules for these content types:</p>
+    <ul>
+        <li><strong>Theme</strong> - Themed blog posts</li>
+        <li><strong>Recipe</strong> - Recipe blog posts</li>
+        <li><strong>Profile Product</strong> - Product profile blog posts</li>
+        <li><strong>Profile Surname</strong> - Surname profile blog posts</li>
+        <li><strong>Weekly Word</strong> - Weekly word social posts</li>
+        <li><strong>Weekly Phrase</strong> - Weekly phrase social posts</li>
+        <li><strong>Weekly Insult</strong> - Weekly insult social posts</li>
+    </ul>
+
+    <h2>Known Issues & Questions</h2>
+    
+    <div class="kb-issues" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem; margin: 2rem 0;">
+        <h3 style="margin: 0 0 1rem 0; color: #f59e0b;">⚠️ Issues Requiring Resolution</h3>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #cbd5e1;">1. Which UI is Current?</h4>
+            <ul style="margin: 0; color: #94a3b8;">
+                <li>Is <code>/planning/calendar</code> the new unified interface?</li>
+                <li>Should legacy routes be deprecated/removed?</li>
+                <li>Why do legacy routes require <code>post_id</code> parameter?</li>
+            </ul>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #cbd5e1;">2. Tab Completeness</h4>
+            <ul style="margin: 0; color: #94a3b8;">
+                <li>Are all tabs in unified calendar complete?</li>
+                <li>What's the status of <code>year-view</code>, <code>publication-schedule</code>, <code>day-assignments</code>?</li>
+                <li>Do they work or are they placeholders?</li>
+            </ul>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #cbd5e1;">3. Integration</h4>
+            <ul style="margin: 0; color: #94a3b8;">
+                <li>Should <code>ideas</code> and <code>taxonomy</code> pages be integrated into unified calendar?</li>
+                <li>Or are they intentionally separate?</li>
+                <li>What's the relationship between calendar and these pages?</li>
+            </ul>
+        </div>
+
+        <div>
+            <h4 style="margin: 0 0 0.5rem 0; color: #cbd5e1;">4. Homepage Links</h4>
+            <ul style="margin: 0; color: #94a3b8;">
+                <li>Homepage links to <code>/planning/posts/{id}/calendar/week-view</code> (legacy)</li>
+                <li>Should it link to <code>/planning/calendar?tab=week-view</code> instead?</li>
+                <li>Which is the "correct" entry point?</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2>Technical Documentation</h2>
+    
+    <p>Extensive technical documentation exists in the <code>/docs</code> directory:</p>
+    
+    <div class="kb-doc-links" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+        <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #3b82f6; font-size: 0.95rem;">Architecture</h4>
+            <ul style="margin: 0; padding-left: 1.25rem; color: #94a3b8; font-size: 0.9rem;">
+                <li><a href="/docs/CALENDAR_SCHEDULING_NEW_PARADIGM.md" class="kb-ui-link" target="_blank">New Paradigm</a></li>
+                <li><a href="/docs/CALENDAR_SCHEDULING_COMPONENT_STRUCTURE.md" class="kb-ui-link" target="_blank">Component Structure</a></li>
+                <li><a href="/docs/CALENDAR_SYSTEM_AUDIT.md" class="kb-ui-link" target="_blank">System Audit</a></li>
+            </ul>
+        </div>
+        
+        <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #3b82f6; font-size: 0.95rem;">Operations</h4>
+            <ul style="margin: 0; padding-left: 1.25rem; color: #94a3b8; font-size: 0.9rem;">
+                <li><a href="/docs/CALENDAR_SCHEDULING_BUILDER.md" class="kb-ui-link" target="_blank">Builder Guide</a></li>
+                <li><a href="/docs/CALENDAR_SCHEDULING_OPERATIONS.md" class="kb-ui-link" target="_blank">Operations Guide</a></li>
+                <li><a href="/docs/CALENDAR_SCHEDULING_INDEX.md" class="kb-ui-link" target="_blank">Documentation Index</a></li>
+            </ul>
+        </div>
+        
+        <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #3b82f6; font-size: 0.95rem;">Reference</h4>
+            <ul style="margin: 0; padding-left: 1.25rem; color: #94a3b8; font-size: 0.9rem;">
+                <li><a href="/docs/calendar_system_technical_documentation.md" class="kb-ui-link" target="_blank">Technical Reference</a></li>
+                <li><a href="/docs/CALENDAR_SCHEDULING_JSON_FORMAT.md" class="kb-ui-link" target="_blank">JSON Format</a></li>
+                <li><a href="/docs/CALENDAR_SYSTEM_UI_REVIEW.md" class="kb-ui-link" target="_blank">UI Review</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <h2>Workflow Integration</h2>
+    
+    <p>The calendar system integrates with:</p>
+    <ul>
+        <li><strong>Automation Core:</strong> Calendar schedules trigger automated content creation</li>
+        <li><strong>Publication Dashboard:</strong> Shows publication status for scheduled items</li>
+        <li><strong>Weekly Content:</strong> Weekly words/phrases/insults are scheduled via calendar</li>
+        <li><strong>Blog Posts:</strong> Themes, recipes, and profiles are scheduled via calendar</li>
+    </ul>
+
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - Uses calendar for scheduling</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='publication_dashboard') }}">Publication Dashboard</a> - Shows calendar publication status</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='overview') }}">Workflows & Automation</a> - Calendar triggers automation</li>
+        </ul>
+    </div>
+
+    <div class="kb-feedback" style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1.5rem; margin-top: 3rem;">
+        <h3 style="margin: 0 0 1rem 0; color: #0369a1;">💬 Discussion & Feedback</h3>
+        <p style="margin: 0; color: #0c4a6e;">
+            This is a <strong>provisional entry</strong> created to help navigate the multiple calendar UIs 
+            and facilitate discussion. Please review the UIs linked above and provide feedback on:
+        </p>
+        <ul style="margin: 1rem 0 0 0; color: #0c4a6e;">
+            <li>Which UI should be the primary interface?</li>
+            <li>Which legacy routes should be deprecated?</li>
+            <li>What functionality is missing or incomplete?</li>
+            <li>How should the calendar be documented in the KB?</li>
+            <li>What user guides or tutorials are needed?</li>
+        </ul>
+    </div>
+
+</div>
+
+<style>
+.kb-status-unknown {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.kb-status-complete {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+</style>
+{% endblock %}

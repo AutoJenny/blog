@@ -181,6 +181,11 @@ KB_STRUCTURE = {
                 'title': 'Monitoring System',
                 'template': 'knowledge_base/interfaces/monitoring.html'
             },
+            'calendar': {
+                'title': 'Calendar System',
+                'template': 'knowledge_base/interfaces/calendar.html',
+                'status': 'in_progress'
+            },
             'launchpad': {
                 'title': 'Launchpad',
                 'template': 'knowledge_base/interfaces/launchpad.html',
