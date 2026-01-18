@@ -1,19 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Knowledge Base{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared/site-header.css') }}">
-    {% block extra_css %}{% endblock %}
-</head>
-<body>
-    {% include 'shared/header.html' %}
+{% extends "base.html" %}
 
 {% block title %}Knowledge Base - {{ page_data.title if page_data else 'Home' }}{% endblock %}
 
-{% block extra_css %}
+{% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+{% block extra_css %}{% endblock %}
 {% endblock %}
 
 {% block content %}
@@ -70,11 +61,9 @@
         {% block kb_content %}{% endblock %}
     </main>
 </div>
-    </main>
-</div>
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/knowledge_base.js') }}"></script>
 {% endblock %}
-</body>
-</html>
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/knowledge_base.js') }}"></script>
+{% block extra_js %}{% endblock %}
+{% endblock %}
