@@ -1,18 +1,39 @@
 /* Knowledge Base Styles */
-/* Override dark theme for KB pages */
+/* Override dark theme for KB pages - force light theme */
 
+/* Ensure KB pages have white background */
+body:has(.kb-container) {
+    background: #ffffff !important;
+}
+
+/* Main container */
 .kb-container {
     display: flex;
     min-height: calc(100vh - 200px);
     margin-top: 20px;
-    background: #ffffff;
-    color: #212529;
+    background: #ffffff !important;
+    color: #212529 !important;
+    padding: 0;
+    margin-left: 0;
+    margin-right: 0;
 }
 
-/* Force light theme for KB content */
-body .kb-container,
-body .kb-container * {
-    color: #212529 !important;
+/* Force light theme for KB content - override dark theme */
+.kb-container,
+.kb-container *,
+.kb-sidebar,
+.kb-sidebar *,
+.kb-content,
+.kb-content * {
+    background-color: transparent;
+}
+
+.kb-sidebar {
+    background: #f8f9fa !important;
+}
+
+.kb-content {
+    background: #ffffff !important;
 }
 
 /* Left Sidebar */
