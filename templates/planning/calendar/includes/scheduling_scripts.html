@@ -392,9 +392,23 @@ function createCategoryCell(items, categoryClass, year, week) {
         // For scheduling view, also add scheduling-item class for proper styling
         if (categoryClass === 'product-post') {
             card.classList.add('scheduling-item', 'product-post');
+            // Force visibility styles
+            card.style.display = 'block';
+            card.style.visibility = 'visible';
+            card.style.opacity = '1';
+            console.log('Product post card classes:', card.className, 'Styles:', {
+                display: card.style.display,
+                visibility: card.style.visibility,
+                opacity: card.style.opacity
+            });
         }
         
         cell.appendChild(card);
+        
+        // Debug: Verify card was appended
+        if (categoryClass === 'product-post') {
+            console.log(`Card appended to cell. Cell now has ${cell.children.length} children. Card parent:`, card.parentElement === cell);
+        }
     });
     
     cell.addEventListener('dragover', handleDragOver);
