@@ -4,11 +4,12 @@
 <div class="kb-page">
     <h1>Product Posts</h1>
     
-    {{ get_status_badge('planned')|safe }}
+    {{ get_status_badge('in_progress')|safe }}
     
     <p class="kb-intro">
-        Product Posts are social media posts that feature products from the catalog. These are short-form
-        social media posts (not blog articles) designed for platforms like Facebook and Instagram.
+        Product Posts are social media posts that feature products from the Clan.com catalog. These are short-form
+        social media posts (not blog articles) designed for platforms like Facebook and Instagram. The system
+        includes a UI for product selection, AI-powered content generation, and posting queue management.
     </p>
     
     <h2>What Are Product Posts?</h2>
@@ -16,16 +17,114 @@
     <ul>
         <li><strong>Feature Products:</strong> Showcase products from the Clan.com catalog</li>
         <li><strong>Social Media Format:</strong> Short captions, product images, hashtags</li>
-        <li><strong>Automated Generation:</strong> Use LLM to generate engaging product descriptions</li>
+        <li><strong>AI Content Generation:</strong> Use Ollama LLM to generate engaging product descriptions</li>
         <li><strong>Direct Posting:</strong> Posted directly to social platforms (Facebook, Instagram, etc.)</li>
+        <li><strong>Queue Management:</strong> Schedule and manage multiple posts in a queue</li>
     </ul>
+    
+    <h2>System Components</h2>
+    
+    <h3>1. Item Selection</h3>
+    <p>The system allows you to:</p>
+    <ul>
+        <li>Browse products by category from the Clan.com catalog</li>
+        <li>View product details (name, SKU, price, description, images)</li>
+        <li>Search and filter products</li>
+        <li>Select a product for content generation</li>
+    </ul>
+    
+    <h3>2. AI Content Generation</h3>
+    <p>Uses Ollama LLM to generate social media captions:</p>
+    <ul>
+        <li><strong>Content Types:</strong> Feature-focused, benefit-focused, or story-focused posts</li>
+        <li><strong>Template System:</strong> Configurable prompt templates for different content styles</li>
+        <li><strong>Ollama Integration:</strong> Automatic AI service management (starts if not running)</li>
+        <li><strong>Content Preview:</strong> Real-time preview of generated content</li>
+        <li><strong>Regeneration:</strong> Generate new content variations</li>
+    </ul>
+    
+    <h3>3. Posting Queue</h3>
+    <p>Manage scheduled posts:</p>
+    <ul>
+        <li><strong>Timeline View:</strong> See all scheduled posts chronologically</li>
+        <li><strong>Drag-and-Drop:</strong> Reorder posts by dragging</li>
+        <li><strong>Status Tracking:</strong> Draft, Ready, Published, Failed</li>
+        <li><strong>Batch Operations:</strong> Generate multiple posts at once</li>
+        <li><strong>Time Slot Generation:</strong> Automatic scheduling based on patterns</li>
+    </ul>
+    
+    <h3>4. Posting Control</h3>
+    <p>Control when and how posts are published:</p>
+    <ul>
+        <li>Schedule posts for specific dates and times</li>
+        <li>Post immediately or schedule for later</li>
+        <li>Manage posting schedules (recurring patterns)</li>
+    </ul>
+    
+    <h2>How It Works</h2>
+    <ol>
+        <li><strong>Select Product:</strong> Browse and select a product from the catalog</li>
+        <li><strong>Generate Content:</strong> Use AI to generate an engaging social media caption</li>
+        <li><strong>Add to Queue:</strong> Add the generated post to the posting queue</li>
+        <li><strong>Schedule:</strong> Set date and time for posting (or post immediately)</li>
+        <li><strong>Publish:</strong> System posts to Facebook at scheduled time (or manually trigger)</li>
+    </ol>
+    
+    <h2>UI Access</h2>
+    <p>Product Posts can be managed through:</p>
+    <ul>
+        <li><a href="/launchpad/syndication/facebook/product_post" class="kb-ui-link">Product Posts Interface</a> - Main interface for creating and managing product posts</li>
+        <li><a href="/monitoring/report" class="kb-ui-link">Monitoring Dashboard</a> - View posting status and automation events</li>
+        <li><a href="/dashboard" class="kb-ui-link">Publication Dashboard</a> - Overall publication status (product posts may not appear here yet)</li>
+    </ul>
+    
+    <h2>Database Storage</h2>
+    <p>Product posts are stored in the <code>posting_queue</code> table:</p>
+    <ul>
+        <li><code>content_type = 'product'</code> - Identifies as product post</li>
+        <li><code>product_id</code> - Links to product in catalog</li>
+        <li><code>generated_content</code> - JSON with caption and metadata</li>
+        <li><code>scheduled_date</code> and <code>scheduled_time</code> - When to post</li>
+        <li><code>status</code> - Draft, Ready, Published, Failed</li>
+        <li><code>platform</code> - Facebook, Instagram, etc.</li>
+    </ul>
+    
+    <h2>Current Status</h2>
+    <div class="kb-status-section">
+        <h3>🟡 In Progress / Partially Working</h3>
+        <ul>
+            <li>UI interface exists and functional</li>
+            <li>Product selection and browsing works</li>
+            <li>AI content generation with Ollama works</li>
+            <li>Posting queue management works</li>
+            <li>Manual posting to Facebook works</li>
+            <li>Posts stored in <code>posting_queue</code> table</li>
+        </ul>
+        
+        <h3>🔴 Known Issues / Not Complete</h3>
+        <ul>
+            <li><strong>Integration Issues:</strong> Product posts don't appear in publication schedule view</li>
+            <li><strong>Automation:</strong> No automated creation 1 week in advance (unlike weekly content)</li>
+            <li><strong>Schedule Integration:</strong> Not integrated with calendar scheduling system</li>
+            <li><strong>Background Publishing:</strong> May not be fully automated (needs review)</li>
+            <li><strong>Multi-Platform:</strong> Only Facebook fully implemented</li>
+        </ul>
+    </div>
     
     <h2>Difference from Generated Posts</h2>
     <p><strong>Product Posts</strong> (this page) are <em>social media posts</em> about products - short posts for Facebook/Instagram.</p>
     <p><strong>Generated Posts</strong> (under Blog Posts) are <em>blog articles</em> generated from products - full-length articles for the blog website.</p>
+    <p><em>Both use products as source material, but create different types of content for different channels.</em></p>
     
-    <h2>Status</h2>
-    <p>Product Posts are currently in the planning phase. The system infrastructure exists but is not yet fully implemented.</p>
+    <h2>Configuration</h2>
+    <p>Product posts use:</p>
+    <ul>
+        <li><strong>Database:</strong> <code>posting_queue</code> table for storage</li>
+        <li><strong>AI Service:</strong> Ollama (local LLM) for content generation</li>
+        <li><strong>Product Data:</strong> Clan.com catalog integration</li>
+        <li><strong>Facebook API:</strong> Graph API for posting (both pages)</li>
+        <li><strong>Scheduling:</strong> <code>daily_posts_schedule</code> table for recurring patterns</li>
+    </ul>
     
     <div class="kb-related">
         <h4>Related Sections</h4>
@@ -33,6 +132,15 @@
             <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - The completed social post system</li>
             <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='generated') }}">Generated Posts</a> - Blog articles generated from products (different from Product Posts)</li>
             <li><a href="{{ url_for('knowledge_base.page', section='channels', page='facebook') }}">Facebook Channel</a></li>
+            <li><a href="{{ url_for('knowledge_base.page', section='workflows', page='product_automation') }}">Product Post Automation</a></li>
+        </ul>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Technical Documentation</h4>
+        <ul>
+            <li><a href="/docs/PRODUCT_POSTS_INTEGRATION_REPORT.md" target="_blank">Product Posts Integration Report</a> - Integration issues and recommendations</li>
+            <li><a href="/blog-launchpad/docs/daily_product_posts_system.md" target="_blank">Daily Product Posts System</a> - System overview</li>
         </ul>
     </div>
 </div>

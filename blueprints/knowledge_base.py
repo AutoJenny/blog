@@ -101,7 +101,7 @@ KB_STRUCTURE = {
                     'product_posts': {
                         'title': 'Product Posts',
                         'template': 'knowledge_base/content_types/product_posts.html',
-                        'status': 'planned'
+                        'status': 'in_progress'
                     }
                 }
             }
