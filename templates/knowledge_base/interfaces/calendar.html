@@ -1,7 +1,7 @@
 {% extends "knowledge_base/base.html" %}
 
 {% block kb_content %}
-<div class="kb-content">
+<div class="kb-page">
     <h1>Calendar System</h1>
     
     <p class="kb-intro">
@@ -28,7 +28,7 @@
             <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
                 <strong>Primary interface</strong> - Tab-based calendar with all views integrated
             </p>
-            <a href="/planning/calendar?tab=week-view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem; font-weight: 600;">
+            <a href="/planning/calendar?tab=week-view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem; font-weight: 600; color: white !important;">
                 Open Unified Calendar →
             </a>
         </div>
@@ -49,7 +49,7 @@
             <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
                 Legacy interface (post_id requirement deprecated)
             </p>
-            <a href="/planning/posts/0/calendar/view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+            <a href="/planning/posts/0/calendar/view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem; color: white !important;">
                 Open Legacy Year View →
             </a>
         </div>
@@ -61,7 +61,7 @@
             <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
                 Legacy interface (post_id requirement deprecated)
             </p>
-            <a href="/planning/posts/0/calendar/week-view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+            <a href="/planning/posts/0/calendar/week-view" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem; color: white !important;">
                 Open Legacy Week View →
             </a>
         </div>
@@ -73,7 +73,7 @@
             <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
                 Also available as "Future items" tab in unified calendar
             </p>
-            <a href="/planning/posts/0/calendar/scheduling" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+            <a href="/planning/posts/0/calendar/scheduling" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem; color: white !important;">
                 Open Legacy Scheduling View →
             </a>
         </div>
@@ -85,7 +85,7 @@
             <p style="margin: 0 0 1rem 0; color: #94a3b8; font-size: 0.9rem;">
                 Manage base cyclic sequences (themes, recipes, etc.)
             </p>
-            <a href="/planning/calendar/sequence-manager" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem;">
+            <a href="/planning/calendar/sequence-manager" class="kb-ui-link" style="display: inline-block; margin-top: 0.5rem; color: white !important;">
                 Open Sequence Manager →
             </a>
         </div>
@@ -111,43 +111,43 @@
                     <td><strong>Year View</strong></td>
                     <td>52-week grid overview grouped by month</td>
                     <td><span class="kb-status-in-progress">In Progress</span></td>
-                    <td><a href="/planning/calendar?tab=year-view" class="kb-ui-link">Open →</a></td>
+                    <td><a href="/planning/calendar?tab=year-view" class="kb-ui-link" style="color: white !important;">Open →</a></td>
                 </tr>
                 <tr>
                     <td><strong>Week View</strong></td>
                     <td>Detailed week-by-week view with day breakdown</td>
                     <td><span class="kb-status-in-progress">In Progress</span></td>
-                    <td><a href="/planning/calendar?tab=week-view" class="kb-ui-link">Open →</a></td>
+                    <td><a href="/planning/calendar?tab=week-view" class="kb-ui-link" style="color: white !important;">Open →</a></td>
                 </tr>
                 <tr>
                     <td><strong>Future items</strong> (Scheduling)</td>
                     <td>52-week scheduling table with all categories</td>
                     <td><span class="kb-status-complete">Complete</span></td>
-                    <td><a href="/planning/calendar?tab=scheduling" class="kb-ui-link">Open →</a></td>
+                    <td><a href="/planning/calendar?tab=scheduling" class="kb-ui-link" style="color: white !important;">Open →</a></td>
                 </tr>
                 <tr>
                     <td><strong>Ideas</strong></td>
                     <td>Manage calendar ideas and generate content</td>
                     <td><span class="kb-status-in-progress">In Progress</span></td>
-                    <td><a href="/planning/calendar?tab=ideas" class="kb-ui-link">Open →</a></td>
+                    <td><a href="/planning/calendar?tab=ideas" class="kb-ui-link" style="color: white !important;">Open →</a></td>
                 </tr>
                 <tr>
                     <td><strong>Taxonomy</strong></td>
                     <td>Taxonomy assignment for calendar items</td>
                     <td><span class="kb-status-in-progress">In Progress</span></td>
-                    <td><a href="/planning/calendar?tab=taxonomy" class="kb-ui-link">Open →</a></td>
+                    <td><a href="/planning/calendar?tab=taxonomy" class="kb-ui-link" style="color: white !important;">Open →</a></td>
                 </tr>
                 <tr>
                     <td><strong>Channels schedule</strong></td>
                     <td>Publication schedule view</td>
                     <td><span class="kb-status-in-progress">In Progress</span></td>
-                    <td><a href="/planning/calendar?tab=publication-schedule" class="kb-ui-link">Open →</a></td>
+                    <td><a href="/planning/calendar?tab=publication-schedule" class="kb-ui-link" style="color: white !important;">Open →</a></td>
                 </tr>
                 <tr>
                     <td><strong>Day Assignments</strong></td>
                     <td>Day-level assignment view</td>
                     <td><span class="kb-status-in-progress">In Progress</span></td>
-                    <td><a href="/planning/calendar?tab=day-assignments" class="kb-ui-link">Open →</a></td>
+                    <td><a href="/planning/calendar?tab=day-assignments" class="kb-ui-link" style="color: white !important;">Open →</a></td>
                 </tr>
             </tbody>
         </table>
