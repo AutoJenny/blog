@@ -173,7 +173,11 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             row.appendChild(createCategoryCell(wordItems, 'word', year, week));
             row.appendChild(createCategoryCell(phraseItems, 'phrase', year, week));
             row.appendChild(createCategoryCell(insultItems, 'insult', year, week));
-            row.appendChild(createCategoryCell(productPostItems, 'product-post', year, week));
+            const productPostCell = createCategoryCell(productPostItems, 'product-post', year, week);
+            if (productPostItems.length > 0) {
+                console.log(`Appending product post cell with ${productPostItems.length} items. Cell children:`, productPostCell.children.length);
+            }
+            row.appendChild(productPostCell);
             
             tbody.appendChild(row);
         });
