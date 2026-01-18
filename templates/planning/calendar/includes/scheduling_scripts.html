@@ -252,18 +252,24 @@ function createCategoryCell(items, categoryClass, year, week) {
         // Check if unified-item-card is loaded
         if (typeof window.createUnifiedItemCard !== 'function') {
             console.error('window.createUnifiedItemCard is not available. Make sure unified-item-card.js is loaded.');
-            return null;
+            // Create a simple fallback card
+            const fallbackCard = document.createElement('div');
+            fallbackCard.className = 'scheduling-item';
+            fallbackCard.textContent = title || 'Item';
+            cell.appendChild(fallbackCard);
+            return cell;
         }
         
         // Use unified item card component
-        // Don't pass description for language items - it will be filtered out anyway
+        // Don't pass description for language items or product posts - it will be filtered out anyway
         const isLanguageItem = categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult';
+        const isProductPost = categoryClass === 'product-post';
         const card = window.createUnifiedItemCard(item, {
             type: categoryClass,
             category: apiCategory,
             typeName: typeName,
             title: title,
-            description: isLanguageItem ? null : (item.description || item.theme_description || item.recipe_description || null),
+            description: (isLanguageItem || isProductPost) ? null : (item.description || item.theme_description || item.recipe_description || null),
             year: year,
             week: week,
             dataset: {
@@ -288,6 +294,15 @@ function createCategoryCell(items, categoryClass, year, week) {
                 openItemModal(item, categoryClass, itemId, item.position, year, week);
             }
         });
+        
+        if (!card) {
+            console.error('Failed to create card for item:', item, 'categoryClass:', categoryClass);
+            const fallbackCard = document.createElement('div');
+            fallbackCard.className = 'scheduling-item';
+            fallbackCard.textContent = title || 'Item';
+            cell.appendChild(fallbackCard);
+            return cell;
+        }
         
         // Scheduling-specific: Always show all buttons (override unified component behavior)
         const actions = card.querySelector('.item-actions');
