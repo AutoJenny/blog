@@ -219,9 +219,14 @@ function createCategoryCell(items, categoryClass, year, week) {
             itemId = item.item_id || item.id;
         } else if (categoryClass === 'product-post') {
             itemId = item.posting_queue_id || item.product_id || item.item_id || item.id;
+            if (!itemId) {
+                console.warn('No item ID found for product post:', item, 'category:', categoryClass);
+            } else {
+                console.log('Product post item ID found:', itemId, 'for item:', item.title || item.product_name);
+            }
         }
         
-        if (!itemId) {
+        if (!itemId && categoryClass !== 'product-post') {
             console.warn('No item ID found for item:', item, 'category:', categoryClass);
         }
         
@@ -252,6 +257,7 @@ function createCategoryCell(items, categoryClass, year, week) {
         } else if (categoryClass === 'product-post') {
             title = item.title || item.product_name || `Product ${item.product_id || item.item_id}`;
             typeName = 'product';
+            console.log('Creating product post card:', { title, itemId, item });
         }
         
         // Map categoryClass to API category for unified component
@@ -275,6 +281,11 @@ function createCategoryCell(items, categoryClass, year, week) {
         // Don't pass description for language items or product posts - it will be filtered out anyway
         const isLanguageItem = categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult';
         const isProductPost = categoryClass === 'product-post';
+        
+        if (isProductPost) {
+            console.log('Calling createUnifiedItemCard for product post:', { item, categoryClass, apiCategory, typeName, title });
+        }
+        
         const card = window.createUnifiedItemCard(item, {
             type: categoryClass,
             category: apiCategory,
@@ -313,6 +324,10 @@ function createCategoryCell(items, categoryClass, year, week) {
             fallbackCard.textContent = title || 'Item';
             cell.appendChild(fallbackCard);
             return cell;
+        }
+        
+        if (isProductPost) {
+            console.log('Product post card created successfully:', card);
         }
         
         // Scheduling-specific: Always show all buttons (override unified component behavior)
