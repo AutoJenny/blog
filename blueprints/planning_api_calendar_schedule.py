@@ -164,13 +164,14 @@ def api_calendar_schedule(year, week_number):
         # Add product posts from posting_queue for this week
         try:
             from datetime import date, timedelta
-            from utils.date_utils import iso_year_week
             
             # Calculate week start (Monday) and end (Sunday) dates
             jan4 = date(year, 1, 4)
             jan4_day = (jan4.isoweekday() + 6) % 7  # Monday = 0
             week_start = date(year, 1, 4) + timedelta(days=(week_number - 1) * 7 - jan4_day)
             week_end = week_start + timedelta(days=6)
+            
+            logger.info(f"Loading product posts for week {year}-W{week_number:02d}: {week_start} to {week_end}")
             
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
@@ -192,7 +193,9 @@ def api_calendar_schedule(year, week_number):
                 """, (week_start, week_end))
                 product_posts = cursor.fetchall()
                 
-                for post in product_posts:
+                logger.info(f"Found {len(product_posts)} product posts in database")
+                
+                for idx, post in enumerate(product_posts):
                     if post['scheduled_date']:
                         schedule.append({
                             'type': 'product',
@@ -203,10 +206,12 @@ def api_calendar_schedule(year, week_number):
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
                             'status': post['status'] or 'ready',
-                            'position': len([s for s in schedule if s.get('type') == 'product']) + 1
+                            'position': idx + 1
                         })
+                
+                logger.info(f"Added {len([s for s in schedule if s.get('type') == 'product'])} product posts to schedule")
         except Exception as e:
-            logger.warning(f"Error loading product posts for week view: {e}")
+            logger.error(f"Error loading product posts for week view: {e}", exc_info=True)
             # Continue without product posts if there's an error
         
         # Return response with new cyclic system data
