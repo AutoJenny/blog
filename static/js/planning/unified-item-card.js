@@ -149,13 +149,6 @@ function getItemTitle(item, fallbackTitle) {
  * @returns {string|null} Description (truncated to 50 chars if provided)
  */
 function getItemDescription(item, fallbackDescription) {
-    // For language items (weekly-word, weekly-phrase, weekly-insult), don't show description at all
-    // Translation and Usage are redundant (shown in images)
-    if (item.type === 'weekly_word' || item.type === 'weekly_phrase' || item.type === 'weekly_insult' ||
-        item.category === 'weekly_word' || item.category === 'weekly_phrase' || item.category === 'weekly_insult') {
-        return null;
-    }
-    
     const desc = fallbackDescription ||
                  item.description ||
                  item.theme_description ||
@@ -197,9 +190,11 @@ function createUnifiedItemCard(item, options = {}) {
     const typeName = normalizeTypeName(category, options.typeName, item.type_name);
     const title = getItemTitle(item, options.title);
     
-    // Pass item type/category to getItemDescription for filtering
-    const itemForDesc = { ...item, type: type || item.type, category: category || item.category };
-    const description = getItemDescription(itemForDesc, options.description);
+    // For language items, don't show description at all
+    const isLanguageItem = typeClass === 'weekly-word' || typeClass === 'weekly-phrase' || typeClass === 'weekly-insult' ||
+                          category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult' ||
+                          type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult';
+    const description = isLanguageItem ? null : getItemDescription(item, options.description);
     
     // Determine post status
     const { postExists, postId, postStatus } = determinePostStatus(item);
