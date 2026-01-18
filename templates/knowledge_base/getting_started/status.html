@@ -11,11 +11,12 @@
     
     <h2>Status Legend</h2>
     <ul>
-        <li>{{ get_status_badge('complete')|safe }} - Fully implemented and tested</li>
         <li>{{ get_status_badge('in_progress')|safe }} - Partially implemented</li>
         <li>{{ get_status_badge('planned')|safe }} - Designed but not implemented</li>
         <li>{{ get_status_badge('deprecated')|safe }} - Old system, being replaced</li>
     </ul>
+    
+    <p><em>Note: Status badges are removed until completion is verified and approved.</em></p>
     
     <h2>Content Types Status</h2>
     <table class="kb-status-table">
@@ -28,28 +29,28 @@
         </thead>
         <tbody>
             <tr>
+                <td>Weekly Words & Phrases</td>
+                <td>{{ get_status_badge('in_progress')|safe }}</td>
+                <td>Facebook (automated)</td>
+            </tr>
+            <tr>
                 <td>Themed Posts</td>
-                <td>{{ get_status_badge('complete')|safe }}</td>
+                <td>{{ get_status_badge('planned')|safe }}</td>
                 <td>Blog, Newsletter</td>
             </tr>
             <tr>
                 <td>Recipe Posts</td>
-                <td>{{ get_status_badge('complete')|safe }}</td>
+                <td>{{ get_status_badge('planned')|safe }}</td>
                 <td>Blog, Newsletter</td>
             </tr>
             <tr>
                 <td>Profile Posts</td>
-                <td>{{ get_status_badge('complete')|safe }}</td>
+                <td>{{ get_status_badge('planned')|safe }}</td>
                 <td>Blog</td>
             </tr>
             <tr>
-                <td>Weekly Content</td>
-                <td>{{ get_status_badge('complete')|safe }}</td>
-                <td>Facebook (automated)</td>
-            </tr>
-            <tr>
                 <td>Generated Posts</td>
-                <td>{{ get_status_badge('complete')|safe }}</td>
+                <td>{{ get_status_badge('in_progress')|safe }}</td>
                 <td>Blog</td>
             </tr>
         </tbody>
@@ -66,19 +67,19 @@
         </thead>
         <tbody>
             <tr>
-                <td>Blog</td>
-                <td>{{ get_status_badge('complete')|safe }}</td>
-                <td>Themed, Recipe, Profile, Generated</td>
+                <td>Facebook</td>
+                <td>{{ get_status_badge('in_progress')|safe }}</td>
+                <td>Weekly Words & Phrases (automated)</td>
             </tr>
             <tr>
-                <td>Facebook</td>
-                <td>{{ get_status_badge('complete')|safe }}</td>
-                <td>Weekly Content (automated), Products</td>
+                <td>Blog</td>
+                <td>{{ get_status_badge('in_progress')|safe }}</td>
+                <td>Various (in development)</td>
             </tr>
             <tr>
                 <td>Instagram</td>
-                <td>{{ get_status_badge('in_progress')|safe }}</td>
-                <td>Carousel (in development)</td>
+                <td>{{ get_status_badge('planned')|safe }}</td>
+                <td>Planned</td>
             </tr>
             <tr>
                 <td>Twitter</td>
@@ -87,28 +88,28 @@
             </tr>
             <tr>
                 <td>Newsletter</td>
-                <td>{{ get_status_badge('complete')|safe }}</td>
-                <td>Themed, Recipe</td>
+                <td>{{ get_status_badge('in_progress')|safe }}</td>
+                <td>Various (in development)</td>
             </tr>
         </tbody>
     </table>
     
     <h2>Management Interfaces Status</h2>
     <ul>
-        <li>Planning Interface {{ get_status_badge('complete')|safe }}</li>
-        <li>Authoring Interface {{ get_status_badge('complete')|safe }}</li>
-        <li>Imaging Interface {{ get_status_badge('complete')|safe }}</li>
-        <li>Header Interface {{ get_status_badge('complete')|safe }}</li>
-        <li>Publication Dashboard {{ get_status_badge('complete')|safe }}</li>
-        <li>Monitoring System {{ get_status_badge('complete')|safe }}</li>
-        <li>Launchpad {{ get_status_badge('complete')|safe }}</li>
+        <li>Planning Interface {{ get_status_badge('in_progress')|safe }}</li>
+        <li>Authoring Interface {{ get_status_badge('in_progress')|safe }}</li>
+        <li>Imaging Interface {{ get_status_badge('in_progress')|safe }}</li>
+        <li>Header Interface {{ get_status_badge('in_progress')|safe }}</li>
+        <li>Publication Dashboard {{ get_status_badge('in_progress')|safe }}</li>
+        <li>Monitoring System {{ get_status_badge('in_progress')|safe }}</li>
+        <li>Launchpad {{ get_status_badge('in_progress')|safe }}</li>
     </ul>
     
     <h2>Automation Systems Status</h2>
     <ul>
-        <li>Weekly Content Automation {{ get_status_badge('complete')|safe }}</li>
-        <li>Product Post Automation {{ get_status_badge('complete')|safe }}</li>
-        <li>Background Monitor {{ get_status_badge('complete')|safe }}</li>
+        <li>Weekly Content Automation {{ get_status_badge('in_progress')|safe }}</li>
+        <li>Product Post Automation {{ get_status_badge('in_progress')|safe }}</li>
+        <li>Background Monitor {{ get_status_badge('in_progress')|safe }}</li>
     </ul>
     
     <div class="kb-related">

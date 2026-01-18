@@ -45,22 +45,18 @@ KB_STRUCTURE = {
             'weekly_words_phrases': {
                 'title': 'Weekly Words & Phrases',
                 'template': 'knowledge_base/content_types/weekly_words_phrases.html',
-                'status': 'complete',
                 'subpages': {
                     'words': {
                         'title': 'Weekly Words',
-                        'template': 'knowledge_base/content_types/weekly_words.html',
-                        'status': 'complete'
+                        'template': 'knowledge_base/content_types/weekly_words.html'
                     },
                     'phrases': {
                         'title': 'Weekly Phrases',
-                        'template': 'knowledge_base/content_types/weekly_phrases.html',
-                        'status': 'complete'
+                        'template': 'knowledge_base/content_types/weekly_phrases.html'
                     },
                     'insults': {
                         'title': 'Weekly Insults',
-                        'template': 'knowledge_base/content_types/weekly_insults.html',
-                        'status': 'complete'
+                        'template': 'knowledge_base/content_types/weekly_insults.html'
                     }
                 }
             },
@@ -101,8 +97,7 @@ KB_STRUCTURE = {
             },
             'facebook': {
                 'title': 'Facebook',
-                'template': 'knowledge_base/channels/facebook.html',
-                'status': 'complete'
+                'template': 'knowledge_base/channels/facebook.html'
             },
             'blog': {
                 'title': 'Blog',
@@ -136,38 +131,31 @@ KB_STRUCTURE = {
             },
             'planning': {
                 'title': 'Planning Interface',
-                'template': 'knowledge_base/interfaces/planning.html',
-                'status': 'complete'
+                'template': 'knowledge_base/interfaces/planning.html'
             },
             'authoring': {
                 'title': 'Authoring Interface',
-                'template': 'knowledge_base/interfaces/authoring.html',
-                'status': 'complete'
+                'template': 'knowledge_base/interfaces/authoring.html'
             },
             'imaging': {
                 'title': 'Imaging Interface',
-                'template': 'knowledge_base/interfaces/imaging.html',
-                'status': 'complete'
+                'template': 'knowledge_base/interfaces/imaging.html'
             },
             'header': {
                 'title': 'Header Interface',
-                'template': 'knowledge_base/interfaces/header.html',
-                'status': 'complete'
+                'template': 'knowledge_base/interfaces/header.html'
             },
             'publication_dashboard': {
                 'title': 'Publication Dashboard',
-                'template': 'knowledge_base/interfaces/publication_dashboard.html',
-                'status': 'complete'
+                'template': 'knowledge_base/interfaces/publication_dashboard.html'
             },
             'monitoring': {
                 'title': 'Monitoring System',
-                'template': 'knowledge_base/interfaces/monitoring.html',
-                'status': 'complete'
+                'template': 'knowledge_base/interfaces/monitoring.html'
             },
             'launchpad': {
                 'title': 'Launchpad',
-                'template': 'knowledge_base/interfaces/launchpad.html',
-                'status': 'complete'
+                'template': 'knowledge_base/interfaces/launchpad.html'
             }
         }
     },
@@ -185,18 +173,15 @@ KB_STRUCTURE = {
             },
             'weekly_automation': {
                 'title': 'Weekly Content Automation',
-                'template': 'knowledge_base/workflows/weekly_automation.html',
-                'status': 'complete'
+                'template': 'knowledge_base/workflows/weekly_automation.html'
             },
             'product_automation': {
                 'title': 'Product Post Automation',
-                'template': 'knowledge_base/workflows/product_automation.html',
-                'status': 'complete'
+                'template': 'knowledge_base/workflows/product_automation.html'
             },
             'posting_queue': {
                 'title': 'Posting Queue System',
-                'template': 'knowledge_base/workflows/posting_queue.html',
-                'status': 'complete'
+                'template': 'knowledge_base/workflows/posting_queue.html'
             }
         }
     },
