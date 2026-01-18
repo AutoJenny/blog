@@ -245,12 +245,14 @@ function createCategoryCell(items, categoryClass, year, week) {
         }
         
         // Use unified item card component
+        // Don't pass description for language items - it will be filtered out anyway
+        const isLanguageItem = categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult';
         const card = window.createUnifiedItemCard(item, {
             type: categoryClass,
             category: apiCategory,
             typeName: typeName,
             title: title,
-            description: item.description || item.theme_description || item.recipe_description || null,
+            description: isLanguageItem ? null : (item.description || item.theme_description || item.recipe_description || null),
             year: year,
             week: week,
             dataset: {
