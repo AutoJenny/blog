@@ -246,10 +246,23 @@ def get_status_badge(status):
     return badges.get(status, '')
 
 
+# Make function available to templates
+@bp.app_template_filter('status_badge')
+def status_badge_filter(status):
+    """Template filter for status badges"""
+    return get_status_badge(status)
+
+
+@bp.context_processor
+def inject_status_badge():
+    """Make get_status_badge available to all templates"""
+    return dict(get_status_badge=get_status_badge)
+
+
 @bp.route('/')
 def index():
     """Knowledge Base home page"""
-    return render_template('knowledge_base/index.html', structure=KB_STRUCTURE)
+    return render_template('knowledge_base/index.html', structure=KB_STRUCTURE, section=None, page=None, page_data=None)
 
 
 @bp.route('/<section>/<page>')
@@ -299,7 +312,8 @@ def search():
     query = request.args.get('q', '').strip()
     if not query:
         return render_template('knowledge_base/search.html', 
-                             query='', results=[], structure=KB_STRUCTURE)
+                             query='', results=[], structure=KB_STRUCTURE,
+                             section=None, page=None, page_data=None)
     
     # TODO: Implement full-text search
     # For now, return search page
@@ -307,4 +321,5 @@ def search():
     return render_template('knowledge_base/search.html',
                          query=query,
                          results=results,
-                         structure=KB_STRUCTURE)
+                         structure=KB_STRUCTURE,
+                         section=None, page=None, page_data=None)
