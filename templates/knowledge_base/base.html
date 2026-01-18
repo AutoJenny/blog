@@ -38,11 +38,19 @@
                         </div>
                         <ul class="kb-nav-subpages" data-subsection="{{ section_key }}-{{ page_key }}">
                             {% for subpage_key, subpage_info in page_info.subpages.items() %}
+                            {% if subpage_info.get('template') %}
                             <li class="kb-nav-subpage {% if section == section_key and page == page_key and subpage == subpage_key %}active{% endif %} {% if subpage_info.get('status') %}kb-status-{{ subpage_info.status }}{% endif %}">
-                                <a href="{{ url_for('knowledge_base.page', section=section_key, page=page_key, subpage=subpage_key) if subpage_info.get('template') else '#' }}">
+                                <a href="{{ url_for('knowledge_base.page', section=section_key, page=subpage_key) }}">
                                     {{ subpage_info.title }}
                                 </a>
                             </li>
+                            {% else %}
+                            <li class="kb-nav-subpage {% if section == section_key and page == subpage_key %}active{% endif %} {% if subpage_info.get('status') %}kb-status-{{ subpage_info.status }}{% endif %}">
+                                <a href="{{ url_for('knowledge_base.page', section=section_key, page=subpage_key) }}">
+                                    {{ subpage_info.title }}
+                                </a>
+                            </li>
+                            {% endif %}
                             {% endfor %}
                         </ul>
                     </li>
