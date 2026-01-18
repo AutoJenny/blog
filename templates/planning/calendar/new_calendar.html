@@ -4,13 +4,37 @@
 
 {% block content %}
 <div class="container" style="padding: 2rem 0;">
-    {# Legacy views link #}
-    <div class="legacy-views-link" style="margin-bottom: 1rem; padding: 0 2rem;">
-        <a href="/planning/posts/0/calendar/week-view?year={{ year }}&week={{ week }}" 
+    {# Legacy views and related links #}
+    <div class="legacy-views-link" style="margin-bottom: 1rem; padding: 0 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <span style="color: #94a3b8; font-size: 0.875rem; margin-right: 0.5rem;">Legacy views:</span>
+            <a href="/planning/posts/0/calendar/view?year={{ year }}&week={{ week }}" 
+               class="text-dark-accent hover:text-white text-sm transition" 
+               style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Year View</span>
+            </a>
+            <span style="color: var(--text-secondary); margin: 0 0.25rem;">|</span>
+            <a href="/planning/posts/0/calendar/week-view?year={{ year }}&week={{ week }}" 
+               class="text-dark-accent hover:text-white text-sm transition" 
+               style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-calendar-week"></i>
+                <span>Week View</span>
+            </a>
+            <span style="color: var(--text-secondary); margin: 0 0.25rem;">|</span>
+            <a href="/planning/posts/0/calendar/scheduling" 
+               class="text-dark-accent hover:text-white text-sm transition" 
+               style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-table"></i>
+                <span>Scheduling</span>
+            </a>
+        </div>
+        <span style="color: var(--text-secondary); margin: 0 0.5rem;">|</span>
+        <a href="/planning/calendar/sequence-manager" 
            class="text-dark-accent hover:text-white text-sm transition" 
            style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
-            <i class="fas fa-history"></i>
-            <span>Legacy views</span>
+            <i class="fas fa-list-ol"></i>
+            <span>Sequence Manager</span>
         </a>
         <span style="color: var(--text-secondary); margin: 0 0.5rem;">|</span>
         <a href="/publication/dashboard" 
@@ -45,6 +69,14 @@
         {% elif active_tab == 'day-assignments' %}
             {# DAY ASSIGNMENTS VIEW CONTENT #}
             {% include 'planning/calendar/includes/publication_day_assignments_content.html' %}
+            
+        {% elif active_tab == 'ideas' %}
+            {# IDEAS VIEW CONTENT #}
+            {% include 'planning/calendar/includes/ideas_content.html' %}
+            
+        {% elif active_tab == 'taxonomy' %}
+            {# TAXONOMY VIEW CONTENT #}
+            {% include 'planning/calendar/includes/taxonomy_content.html' %}
             
         {% else %}
             <div class="calendar-view-placeholder">

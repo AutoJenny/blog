@@ -1,0 +1,118 @@
+{# Taxonomy Tab Content for Unified Calendar #}
+<div style="padding: 2rem;">
+    <div class="taxonomy-main">
+        <div class="taxonomy-header">
+            <h2>Taxonomy Assignment</h2>
+            <p>Classify your post by Content Category, Content Type, and Format</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="taxonomy-content">
+            <!-- Current Taxonomy Display -->
+            <div class="taxonomy-display-panel">
+                <h3>Current Taxonomy</h3>
+                <div id="current-taxonomy" class="taxonomy-display">
+                    <div class="loading">Loading taxonomy...</div>
+                </div>
+            </div>
+
+            <!-- Taxonomy Assignment Panel -->
+            <div class="taxonomy-assignment-panel">
+                <div class="panel-header">
+                    <h3>Assign Taxonomy</h3>
+                    <button class="btn btn-primary" id="generate-taxonomy-btn">
+                        <i class="fas fa-magic"></i> Generate Taxonomy
+                    </button>
+                </div>
+
+                <div id="taxonomy-form" class="taxonomy-form">
+                    <!-- Content Category Selection -->
+                    <div class="taxonomy-field">
+                        <label for="theme-select">Content Category *</label>
+                        <select id="theme-select" class="form-select" required>
+                            <option value="">-- Select Content Category --</option>
+                        </select>
+                        <small class="field-help">Top-level thematic grouping</small>
+                    </div>
+
+                    <!-- Content Type Selection -->
+                    <div class="taxonomy-field">
+                        <label for="content-type-select">Content Type *</label>
+                        <select id="content-type-select" class="form-select" required disabled>
+                            <option value="">-- Select Content Category first --</option>
+                        </select>
+                        <small class="field-help">Specific content category (must match selected content category)</small>
+                    </div>
+
+                    <!-- Format Selection -->
+                    <div class="taxonomy-field">
+                        <label for="format-select">Format *</label>
+                        <select id="format-select" class="form-select" required>
+                            <option value="">-- Select Format --</option>
+                        </select>
+                        <small class="field-help">Content format type</small>
+                    </div>
+
+                    <!-- Common Assets Display -->
+                    <div id="common-assets-display" class="common-assets-display" style="display: none;">
+                        <h4>Common Assets for Selected Content Type</h4>
+                        <div id="common-assets-list" class="assets-list"></div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="taxonomy-actions">
+                        <button class="btn btn-primary" id="save-taxonomy-btn" disabled>
+                            <i class="fas fa-save"></i> Save Taxonomy
+                        </button>
+                        <button class="btn btn-secondary" id="cancel-btn">
+                            Cancel
+                        </button>
+                    </div>
+
+                    <!-- Generation Status -->
+                    <div id="generation-status" class="generation-status" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <span>Generating taxonomy...</span>
+                    </div>
+
+                    <!-- LLM Reasoning Display -->
+                    <div id="reasoning-display" class="reasoning-display" style="display: none;">
+                        <h4>LLM Reasoning</h4>
+                        <div id="reasoning-text" class="reasoning-text"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize taxonomy functionality for unified calendar context
+document.addEventListener('DOMContentLoaded', function() {
+    // Set post_id to 0 for calendar context (deprecated but needed for compatibility)
+    if (typeof window.postId === 'undefined') {
+        window.postId = 0;
+    }
+    window.currentStage = 'concept';
+    window.currentSubstage = 'taxonomy';
+    
+    // Set WeekContext from URL or template variables
+    {% if year and week %}
+    if (window.WeekContext) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlYear = urlParams.get('year');
+        const urlWeek = urlParams.get('week');
+        if (urlYear && urlWeek) {
+            window.WeekContext.setWeekContext(parseInt(urlYear), parseInt(urlWeek));
+        } else {
+            window.WeekContext.setWeekContext({{ year }}, {{ week }});
+        }
+    }
+    {% endif %}
+});
+</script>

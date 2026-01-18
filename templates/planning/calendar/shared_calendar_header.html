@@ -66,6 +66,18 @@
                 <i class="fas fa-table"></i>
                 <span>Future items</span>
             </a>
+            <a href="/planning/calendar{% if display_year and display_week %}?year={{ display_year }}&week={{ display_week }}&tab=ideas{% else %}?tab=ideas{% endif %}" 
+               class="calendar-tab {% if active_tab == 'ideas' %}active{% endif %}"
+               data-tab="ideas">
+                <i class="fas fa-lightbulb"></i>
+                <span>Ideas</span>
+            </a>
+            <a href="/planning/calendar{% if display_year and display_week %}?year={{ display_year }}&week={{ display_week }}&tab=taxonomy{% else %}?tab=taxonomy{% endif %}" 
+               class="calendar-tab {% if active_tab == 'taxonomy' %}active{% endif %}"
+               data-tab="taxonomy">
+                <i class="fas fa-tags"></i>
+                <span>Taxonomy</span>
+            </a>
             {# Publication Schedule and Day Assignments tabs #}
             <a href="/planning/calendar{% if display_year and display_week %}?year={{ display_year }}&week={{ display_week }}&tab=publication-schedule{% else %}?tab=publication-schedule{% endif %}" 
                class="calendar-tab {% if active_tab == 'publication-schedule' %}active{% endif %}"
