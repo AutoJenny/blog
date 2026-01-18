@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-01-18 - Text Wrapping for Weekly Content Images
+
+### Changed
+- **Image Text Wrapping**: Implemented automatic text wrapping for long phrases and insults
+  - Always uses full 96pt font size (no font size reduction)
+  - Manual pre-processing splits text into lines at word boundaries when text exceeds 55 characters per line
+  - Uses ImageMagick `label:` with actual newlines (`\n`) for multi-line text rendering
+  - Prevents text truncation at image edges for all content types (words, phrases, insults)
+- **Image Generation**: Updated `utils/weekly_content_image_renderer.py` to handle text wrapping automatically
+  - Wrapping applies to all weekly content types (weekly_word, weekly_phrase, weekly_insult)
+  - Integrated into automated posting workflow via `execute_optimize_for_facebook()`
+
+### Technical Details
+- **Wrapping Logic**: Pre-processes `scots_text` to split into lines at word boundaries
+- **Character Limit**: 55 characters per line (safe estimate for 96pt italic Baskerville at 800px width)
+- **Font Size**: Always maintains 96pt font size regardless of text length
+- **Implementation**: Uses ImageMagick `label:` operation with newline characters for multi-line rendering
+
+### Status
+✅ **PRODUCTION READY** - Text wrapping fully integrated into automated posting workflow
+
+---
+
 ## 2026-01-18 - Monitoring System with Status Indicator and Reporting
 
 ### Added

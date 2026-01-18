@@ -186,9 +186,20 @@ from config.weekly_content_caption_prompts import (
 **ImageMagick Command Structure:**
 1. **Base canvas:** 1080×1080 solid color background
 2. **Header:** Top annotation (pale blue, 48pt)
-3. **Main phrase:** Center annotation (cream, 96pt, italic)
+3. **Main phrase:** Center annotation (cream, 96pt, italic) - **with automatic text wrapping**
 4. **Translation:** Below phrase (cream, 40pt)
-5. **Footer:** Bottom annotation (pale blue, 24pt)
+5. **Usage examples:** (if provided, for weekly_word only) - cream, 40pt, italic
+6. **Provenance/Notes:** (if provided) - grey, 32pt
+7. **Footer:** Bottom annotation (pale blue, 24pt)
+8. **Logo:** Composite in corner (20% scale)
+
+**Text Wrapping (Updated 2026-01-18):**
+- **Font Size:** Always uses full 96pt font size (no reduction)
+- **Wrapping Method:** Manual pre-processing splits text at word boundaries
+- **Character Limit:** 55 characters per line (safe estimate for 96pt italic Baskerville)
+- **Implementation:** Uses ImageMagick `label:` operation with newline characters (`\n`)
+- **Applies To:** All content types (weekly_word, weekly_phrase, weekly_insult)
+- **Prevents:** Text truncation at image edges for long phrases/insults
 6. **Logo:** Composite in bottom-right (20% scale, separate command)
 
 **Technical Details:**
@@ -577,7 +588,10 @@ The system is **fully automated** and requires no manual intervention:
 ### Planned
 - Instagram posting integration
 - Twitter posting integration
-- Text wrapping for long phrases
+- ✅ Text wrapping for long phrases (implemented 2026-01-18)
+  - Automatic line splitting at word boundaries
+  - Maintains full 96pt font size
+  - Prevents text truncation
 - Multiple caption selection UI
 - A/B testing for prompt variations
 
