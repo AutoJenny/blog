@@ -1,9 +1,11 @@
 /* Knowledge Base Styles */
 /* Override dark theme for KB pages - force light theme */
 
-/* Ensure KB pages have white background */
-body:has(.kb-container) {
+/* Ensure KB pages have white background - override dark theme */
+body:has(.kb-container),
+body:has(.kb-container) main {
     background: #ffffff !important;
+    color: #212529 !important;
 }
 
 /* Main container */
@@ -18,14 +20,10 @@ body:has(.kb-container) {
     margin-right: 0;
 }
 
-/* Force light theme for KB content - override dark theme */
+/* Override any dark theme rules */
 .kb-container,
-.kb-container *,
-.kb-sidebar,
-.kb-sidebar *,
-.kb-content,
-.kb-content * {
-    background-color: transparent;
+.kb-container * {
+    background-color: transparent !important;
 }
 
 .kb-sidebar {
@@ -34,6 +32,18 @@ body:has(.kb-container) {
 
 .kb-content {
     background: #ffffff !important;
+}
+
+/* Ensure all text is dark/readable */
+.kb-container h1,
+.kb-container h2,
+.kb-container h3,
+.kb-container h4,
+.kb-container p,
+.kb-container li,
+.kb-container span,
+.kb-container a:not(.kb-ui-link) {
+    color: inherit !important;
 }
 
 /* Left Sidebar */
