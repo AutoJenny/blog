@@ -176,6 +176,7 @@ function renderItems(container, items, type, year, week) {
                      type === 'weekly-word' ? 'language: word' :
                      type === 'weekly-phrase' ? 'language: phrase' :
                      type === 'weekly-insult' ? 'language: insult' :
+                     type === 'product' ? 'product' :
                      type === 'event' ? (item.event_recurrence_type === 'one_off' ? 'Special' : 'Annual') :
                      type === 'scheduled' ? 'Syndication' : type;
     
@@ -739,11 +740,14 @@ async function loadWeek(year, weekNumber) {
   let selectedWord = null;
   let selectedPhrase = null;
   let selectedInsult = null;
+  let productPosts = []; // Product posts for social posts row
   
   if (schedule && Array.isArray(schedule)) {
     selectedWord = schedule.find(s => s.type === 'weekly_word') || null;
     selectedPhrase = schedule.find(s => s.type === 'weekly_phrase') || null;
     selectedInsult = schedule.find(s => s.type === 'weekly_insult') || null;
+    // Filter product posts (type === 'product')
+    productPosts = schedule.filter(s => s.type === 'product') || [];
   }
 
   // Toggle row visibility based on filters
@@ -895,7 +899,7 @@ async function loadWeek(year, weekNumber) {
     });
   }
   
-  // Render weekly words/phrases/insults into Words & Phrases row
+  // Render weekly words/phrases/insults and product posts into Social Posts row
   if (showSocialPosts && socialPostsCells) {
     // Word on Monday (day 1)
     if (selectedWord) {
@@ -920,6 +924,18 @@ async function loadWeek(year, weekNumber) {
         // Pass item as-is; renderItems will add "Insult: " prefix and show description
         renderItems(insultTarget, [selectedInsult], 'weekly-insult', year, weekNumber);
       }
+    }
+    // Product posts - render on available days (Tuesday, Thursday, Saturday, Sunday)
+    // Distribute product posts across available days
+    if (productPosts.length > 0) {
+      const productPostDays = [2, 4, 6, 7]; // Tue, Thu, Sat, Sun
+      productPosts.forEach((productPost, index) => {
+        const dayIndex = productPostDays[index % productPostDays.length];
+        const productTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+        if (productTarget) {
+          renderItems(productTarget, [productPost], 'product', year, weekNumber);
+        }
+      });
     }
   }
   
