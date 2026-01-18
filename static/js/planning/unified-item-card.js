@@ -158,8 +158,21 @@ function getItemDescription(item, fallbackDescription) {
     
     if (!desc) return null;
     
+    // For language items (weekly-word, weekly-phrase, weekly-insult), remove translation from description
+    // Description format: "Translation: ... | Usage: ... | Provenance: ..."
+    let processedDesc = desc;
+    if (item.type === 'weekly_word' || item.type === 'weekly_phrase' || item.type === 'weekly_insult' ||
+        item.category === 'weekly_word' || item.category === 'weekly_phrase' || item.category === 'weekly_insult') {
+        // Remove "Translation: ..." part
+        if (processedDesc.includes('Translation:')) {
+            const parts = processedDesc.split('|');
+            const filteredParts = parts.filter(part => !part.trim().startsWith('Translation:'));
+            processedDesc = filteredParts.join('|').trim();
+        }
+    }
+    
     // Truncate to 50 characters
-    return desc.length > 50 ? desc.substring(0, 50) + '...' : desc;
+    return processedDesc.length > 50 ? processedDesc.substring(0, 50) + '...' : processedDesc;
 }
 
 /**
@@ -189,7 +202,10 @@ function createUnifiedItemCard(item, options = {}) {
     const typeClass = normalizeTypeForClass(category, type);
     const typeName = normalizeTypeName(category, options.typeName, item.type_name);
     const title = getItemTitle(item, options.title);
-    const description = getItemDescription(item, options.description);
+    
+    // Pass item type/category to getItemDescription for filtering
+    const itemForDesc = { ...item, type: type || item.type, category: category || item.category };
+    const description = getItemDescription(itemForDesc, options.description);
     
     // Determine post status
     const { postExists, postId, postStatus } = determinePostStatus(item);
@@ -230,14 +246,17 @@ function createUnifiedItemCard(item, options = {}) {
     const actionRow = document.createElement('div');
     actionRow.className = 'compact-action-row';
     
-    // Status line (non-clickable)
-    const statusLine = document.createElement('div');
-    statusLine.className = 'status-line';
-    const statusBadge = document.createElement('span');
-    statusBadge.className = postStatus ? `status-badge status-${postStatus}` : 'status-badge status-none';
-    statusBadge.textContent = postStatus ? (postStatus.charAt(0).toUpperCase() + postStatus.slice(1)) : 'Not created';
-    statusLine.appendChild(statusBadge);
-    actionRow.appendChild(statusLine);
+    // Status line (non-clickable) - hide for language items
+    const isLanguageItem = typeClass === 'weekly-word' || typeClass === 'weekly-phrase' || typeClass === 'weekly-insult';
+    if (!isLanguageItem) {
+        const statusLine = document.createElement('div');
+        statusLine.className = 'status-line';
+        const statusBadge = document.createElement('span');
+        statusBadge.className = postStatus ? `status-badge status-${postStatus}` : 'status-badge status-none';
+        statusBadge.textContent = postStatus ? (postStatus.charAt(0).toUpperCase() + postStatus.slice(1)) : 'Not created';
+        statusLine.appendChild(statusBadge);
+        actionRow.appendChild(statusLine);
+    }
     
     // Action buttons
     const actions = document.createElement('div');
