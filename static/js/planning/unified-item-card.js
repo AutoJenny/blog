@@ -191,9 +191,14 @@ function createUnifiedItemCard(item, options = {}) {
     const title = getItemTitle(item, options.title);
     
     // For language items, don't show description at all
+    // Check all possible ways language items might be identified
     const isLanguageItem = typeClass === 'weekly-word' || typeClass === 'weekly-phrase' || typeClass === 'weekly-insult' ||
-                          category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult' ||
-                          type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult';
+                          (category && (category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult' ||
+                                       category === 'word' || category === 'phrase' || category === 'insult')) ||
+                          (type && (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult' ||
+                                   type === 'word' || type === 'phrase' || type === 'insult')) ||
+                          (item.type && (item.type === 'weekly_word' || item.type === 'weekly_phrase' || item.type === 'weekly_insult')) ||
+                          (item.category && (item.category === 'weekly_word' || item.category === 'weekly_phrase' || item.category === 'weekly_insult'));
     const description = isLanguageItem ? null : getItemDescription(item, options.description);
     
     // Determine post status
@@ -236,8 +241,10 @@ function createUnifiedItemCard(item, options = {}) {
     actionRow.className = 'compact-action-row';
     
     // Status line (non-clickable) - hide for language items
-    const isLanguageItem = typeClass === 'weekly-word' || typeClass === 'weekly-phrase' || typeClass === 'weekly-insult';
-    if (!isLanguageItem) {
+    const isLanguageItemForStatus = typeClass === 'weekly-word' || typeClass === 'weekly-phrase' || typeClass === 'weekly-insult' ||
+                                    category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult' ||
+                                    type === 'word' || type === 'phrase' || type === 'insult';
+    if (!isLanguageItemForStatus) {
         const statusLine = document.createElement('div');
         statusLine.className = 'status-line';
         const statusBadge = document.createElement('span');
