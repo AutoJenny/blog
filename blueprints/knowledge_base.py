@@ -300,7 +300,8 @@ def index():
 
 
 @bp.route('/<section>/<page>')
-def page(section, page):
+@bp.route('/<section>/<page>/<subpage>')
+def page(section, page, subpage=None):
     """Render a KB page"""
     if section not in KB_STRUCTURE:
         return render_template('knowledge_base/404.html'), 404
@@ -310,25 +311,47 @@ def page(section, page):
         return render_template('knowledge_base/404.html'), 404
     
     page_data = section_data['pages'][page]
-    template = page_data.get('template')
     
-    if not template:
-        return render_template('knowledge_base/404.html'), 404
-    
-    # Check if template exists
-    template_path = os.path.join('templates', template)
-    if not os.path.exists(template_path):
-        logger.warning(f"KB template not found: {template_path}")
-        return render_template('knowledge_base/coming_soon.html', 
-                             section=section, page=page, 
-                             page_data=page_data, structure=KB_STRUCTURE), 200
-    
-    return render_template(template, 
-                         section=section, 
-                         page=page,
-                         page_data=page_data,
-                         structure=KB_STRUCTURE,
-                         get_status_badge=get_status_badge)
+    # If subpage is specified, get subpage data
+    if subpage:
+        if 'subpages' not in page_data or subpage not in page_data['subpages']:
+            return render_template('knowledge_base/404.html'), 404
+        subpage_data = page_data['subpages'][subpage]
+        template = subpage_data.get('template')
+        if not template:
+            return render_template('knowledge_base/404.html'), 404
+        # Check if template exists
+        template_path = os.path.join('templates', template)
+        if not os.path.exists(template_path):
+            logger.warning(f"KB template not found: {template_path}")
+            return render_template('knowledge_base/coming_soon.html', 
+                                 section=section, page=page, subpage=subpage,
+                                 page_data=subpage_data, structure=KB_STRUCTURE), 200
+        return render_template(template, 
+                             section=section, 
+                             page=page,
+                             subpage=subpage,
+                             page_data=subpage_data,
+                             structure=KB_STRUCTURE,
+                             get_status_badge=get_status_badge)
+    else:
+        # Regular page
+        template = page_data.get('template')
+        if not template:
+            return render_template('knowledge_base/404.html'), 404
+        # Check if template exists
+        template_path = os.path.join('templates', template)
+        if not os.path.exists(template_path):
+            logger.warning(f"KB template not found: {template_path}")
+            return render_template('knowledge_base/coming_soon.html', 
+                                 section=section, page=page, 
+                                 page_data=page_data, structure=KB_STRUCTURE), 200
+        return render_template(template, 
+                             section=section, 
+                             page=page,
+                             page_data=page_data,
+                             structure=KB_STRUCTURE,
+                             get_status_badge=get_status_badge)
 
 
 @bp.route('/api/structure')

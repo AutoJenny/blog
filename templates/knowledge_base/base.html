@@ -27,11 +27,33 @@
                 
                 <ul class="kb-nav-pages" data-section="{{ section_key }}">
                     {% for page_key, page_info in section_data.pages.items() %}
+                    {% if page_info.get('subpages') %}
+                    <!-- Page with subpages - render as collapsible subsection -->
+                    <li class="kb-nav-subsection">
+                        <div class="kb-nav-subsection-header" data-subsection="{{ section_key }}-{{ page_key }}">
+                            <a href="{{ url_for('knowledge_base.page', section=section_key, page=page_key) }}" class="kb-nav-subsection-link {% if section == section_key and page == page_key %}active{% endif %} {% if page_info.get('status') %}kb-status-{{ page_info.status }}{% endif %}">
+                                {{ page_info.title }}
+                            </a>
+                            <span class="kb-nav-subsection-toggle">▼</span>
+                        </div>
+                        <ul class="kb-nav-subpages" data-subsection="{{ section_key }}-{{ page_key }}">
+                            {% for subpage_key, subpage_info in page_info.subpages.items() %}
+                            <li class="kb-nav-subpage {% if section == section_key and page == page_key and subpage == subpage_key %}active{% endif %} {% if subpage_info.get('status') %}kb-status-{{ subpage_info.status }}{% endif %}">
+                                <a href="{{ url_for('knowledge_base.page', section=section_key, page=page_key, subpage=subpage_key) if subpage_info.get('template') else '#' }}">
+                                    {{ subpage_info.title }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% else %}
+                    <!-- Regular page without subpages -->
                     <li class="kb-nav-page {% if section == section_key and page == page_key %}active{% endif %} {% if page_info.get('status') %}kb-status-{{ page_info.status }}{% endif %}">
                         <a href="{{ url_for('knowledge_base.page', section=section_key, page=page_key) }}">
                             {{ page_info.title }}
                         </a>
                     </li>
+                    {% endif %}
                     {% endfor %}
                 </ul>
             </div>
