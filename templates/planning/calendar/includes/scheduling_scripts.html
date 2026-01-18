@@ -174,6 +174,15 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             row.appendChild(createCategoryCell(phraseItems, 'phrase', year, week));
             row.appendChild(createCategoryCell(insultItems, 'insult', year, week));
             const productPostCell = createCategoryCell(productPostItems, 'product-post', year, week);
+            
+            // TEMPORARY: Add a visible test element to verify cell is rendered
+            if (productPostItems.length > 0) {
+                const testDiv = document.createElement('div');
+                testDiv.style.cssText = 'background: red; color: white; padding: 10px; margin: 5px; border: 2px solid yellow;';
+                testDiv.textContent = `TEST: ${productPostItems.length} products`;
+                productPostCell.insertBefore(testDiv, productPostCell.firstChild);
+            }
+            
             console.log(`Product post cell created for week ${year}-W${week}:`, {
                 itemsCount: productPostItems.length,
                 cellChildren: productPostCell.children.length,
