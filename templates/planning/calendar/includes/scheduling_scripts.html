@@ -226,13 +226,13 @@ function createCategoryCell(items, categoryClass, year, week) {
             typeName = 'Surname Profile';
         } else if (categoryClass === 'word') {
             title = item.title || item.idea_title || 'Word';
-            typeName = 'Word';
+            typeName = 'language: word';
         } else if (categoryClass === 'phrase') {
             title = item.title || item.idea_title || 'Phrase';
-            typeName = 'Phrase';
+            typeName = 'language: phrase';
         } else if (categoryClass === 'insult') {
             title = item.title || item.idea_title || 'Insult';
-            typeName = 'Insult';
+            typeName = 'language: insult';
         }
         
         // Map categoryClass to API category for unified component

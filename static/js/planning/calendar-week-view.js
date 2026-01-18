@@ -173,9 +173,9 @@ function renderItems(container, items, type, year, week) {
     const typeName = type === 'idea' ? 'Theme' : 
                      type === 'recipe' ? 'Recipe' :
                      type === 'profile' ? 'Profile' :
-                     type === 'weekly-word' ? 'Word' :
-                     type === 'weekly-phrase' ? 'Phrase' :
-                     type === 'weekly-insult' ? 'Insult' :
+                     type === 'weekly-word' ? 'language: word' :
+                     type === 'weekly-phrase' ? 'language: phrase' :
+                     type === 'weekly-insult' ? 'language: insult' :
                      type === 'event' ? (item.event_recurrence_type === 'one_off' ? 'Special' : 'Annual') :
                      type === 'scheduled' ? 'Syndication' : type;
     
@@ -574,15 +574,15 @@ async function loadWeek(year, weekNumber) {
   
   // Check if we have the required row containers
   const blogRow = document.getElementById('blog-row');
-  const wordsPhrasesRow = document.getElementById('words-phrases-row');
+  const socialPostsRow = document.getElementById('social-posts-row');
   const annualEventsRow = document.getElementById('annual-events-row');
   const specialEventsRow = document.getElementById('special-events-row');
   const syndicationRow = document.getElementById('syndication-row');
   
-  if (!blogRow || !wordsPhrasesRow || !annualEventsRow || !specialEventsRow || !syndicationRow) {
+  if (!blogRow || !socialPostsRow || !annualEventsRow || !specialEventsRow || !syndicationRow) {
     console.error('Required row containers not found:', {
       blogRow: !!blogRow,
-      wordsPhrasesRow: !!wordsPhrasesRow,
+      socialPostsRow: !!socialPostsRow,
       annualEventsRow: !!annualEventsRow,
       specialEventsRow: !!specialEventsRow,
       syndicationRow: !!syndicationRow
@@ -601,7 +601,7 @@ async function loadWeek(year, weekNumber) {
   const showAnnualEvents = document.getElementById('toggle-annual-events')?.checked !== false;
   const showSpecialEvents = document.getElementById('toggle-special-events')?.checked !== false;
   const showSyndication = document.getElementById('toggle-syndication')?.checked !== false;
-  const showWordsPhrases = document.getElementById('toggle-words-phrases')?.checked !== false;
+  const showSocialPosts = document.getElementById('toggle-social-posts')?.checked !== false;
 
   // Build row grids cells for rows container
   const ensureRowCells = (rowId) => {
@@ -637,7 +637,7 @@ async function loadWeek(year, weekNumber) {
   const annualEventsCells = ensureRowCells('annual-events-row');
   const specialEventsCells = ensureRowCells('special-events-row');
   const syndicationCells = ensureRowCells('syndication-row');
-  const wordsPhrasesCells = ensureRowCells('words-phrases-row');
+  const socialPostsCells = ensureRowCells('social-posts-row');
 
   // Load themes from schedule (themes scheduled for this week)
   // NEW SYSTEM: Uses cyclic position-based logic (same as scheduling calendar)
@@ -751,13 +751,13 @@ async function loadWeek(year, weekNumber) {
   const annualEventsSections = document.querySelectorAll('[data-filter="annual-events"]');
   const specialEventsSections = document.querySelectorAll('[data-filter="special-events"]');
   const syndicationSections = document.querySelectorAll('[data-filter="syndication"]');
-  const wordsPhrasesSections = document.querySelectorAll('[data-filter="words-phrases"]');
+  const socialPostsSections = document.querySelectorAll('[data-filter="social-posts"]');
   
   blogSections.forEach(section => section.classList.toggle('hidden', !showBlog));
   annualEventsSections.forEach(section => section.classList.toggle('hidden', !showAnnualEvents));
   specialEventsSections.forEach(section => section.classList.toggle('hidden', !showSpecialEvents));
   syndicationSections.forEach(section => section.classList.toggle('hidden', !showSyndication));
-  wordsPhrasesSections.forEach(section => section.classList.toggle('hidden', !showWordsPhrases));
+  socialPostsSections.forEach(section => section.classList.toggle('hidden', !showSocialPosts));
 
   // Ideas row removed - no longer rendering regular ideas
 
@@ -896,10 +896,10 @@ async function loadWeek(year, weekNumber) {
   }
   
   // Render weekly words/phrases/insults into Words & Phrases row
-  if (showWordsPhrases && wordsPhrasesCells) {
+  if (showSocialPosts && socialPostsCells) {
     // Word on Monday (day 1)
     if (selectedWord) {
-      const wordTarget = document.getElementById('words-phrases-row-day-1');
+      const wordTarget = document.getElementById('social-posts-row-day-1');
       if (wordTarget) {
         // Pass item as-is; renderItems will add "Word: " prefix and show description
         renderItems(wordTarget, [selectedWord], 'weekly-word', year, weekNumber);
@@ -907,7 +907,7 @@ async function loadWeek(year, weekNumber) {
     }
     // Phrase on Wednesday (day 3)
     if (selectedPhrase) {
-      const phraseTarget = document.getElementById('words-phrases-row-day-3');
+      const phraseTarget = document.getElementById('social-posts-row-day-3');
       if (phraseTarget) {
         // Pass item as-is; renderItems will add "Phrase: " prefix and show description
         renderItems(phraseTarget, [selectedPhrase], 'weekly-phrase', year, weekNumber);
@@ -915,7 +915,7 @@ async function loadWeek(year, weekNumber) {
     }
     // Insult on Friday (day 5)
     if (selectedInsult) {
-      const insultTarget = document.getElementById('words-phrases-row-day-5');
+      const insultTarget = document.getElementById('social-posts-row-day-5');
       if (insultTarget) {
         // Pass item as-is; renderItems will add "Insult: " prefix and show description
         renderItems(insultTarget, [selectedInsult], 'weekly-insult', year, weekNumber);
@@ -1343,7 +1343,7 @@ console.log('calendar-week-view.js module loaded');
       attach('toggle-annual-events');
       attach('toggle-special-events');
       attach('toggle-syndication');
-      attach('toggle-words-phrases');
+      attach('toggle-social-posts');
 
   function updateFilterVisuals() {
     const map = [
@@ -1351,7 +1351,7 @@ console.log('calendar-week-view.js module loaded');
       { id: 'toggle-annual-events', cls: 'filter-annual-events' },
       { id: 'toggle-special-events', cls: 'filter-special-events' },
       { id: 'toggle-syndication', cls: 'filter-syndication' },
-      { id: 'toggle-words-phrases', cls: 'filter-words-phrases' },
+      { id: 'toggle-social-posts', cls: 'filter-social-posts' },
     ];
     map.forEach(({ id, cls }) => {
       const input = document.getElementById(id);
