@@ -68,13 +68,28 @@ def _build_imagemagick_command(
         # For phrases/insults, keep original position
         phrase_y_offset = -100
     
-    cmd.extend([
-        '-gravity', 'center',
-        '-pointsize', '96',  # Increased from 72 to 96
-        '-font', BODY_FONT,
-        '-fill', TEXT_COLOR,
-        '-annotate', f'+0{phrase_y_offset:+d}', scots_text
-    ])
+    # Use label: for automatic text wrapping (ImageMagick handles wrapping at word boundaries)
+    # This ensures long phrases/insults wrap properly instead of being cut off
+    # label: automatically wraps text within the specified width
+    phrase_pointsize = 96  # Default size
+    
+    # For very long text, we'll reduce font size to ensure it fits nicely
+    # Rough estimate: 96pt font ≈ 6 pixels per character
+    estimated_width = len(scots_text) * 6
+    if estimated_width > PHRASE_MAX_WIDTH:
+        # Calculate how many lines we'll need
+        chars_per_line = PHRASE_MAX_WIDTH / 6
+        estimated_lines = max(2, (len(scots_text) / chars_per_line))
+        # Reduce font size if more than 2 lines, but not below 72pt
+        if estimated_lines > 2:
+            phrase_pointsize = max(72, int(96 * (2 / estimated_lines)))
+    
+    # Use label: operation which supports automatic wrapping
+    # Create label with transparent background that will be composited
+    # Note: We'll handle this in a separate step after base canvas creation
+    # Store the text rendering info - we'll composite it properly in render function
+    # For now, skip main text in base command - will add with wrapping
+    pass  # Main text will be added with wrapping in render function
     
     # Step 4: Translation line (below phrase) - increased size
     translation_y_offset = 60  # Slightly more spacing
@@ -244,6 +259,98 @@ def render_weekly_content_image(
                 'output_path': None,
                 'error': f"ImageMagick completed but output file not found at {output_path}"
             }
+        
+        # Step 6.5: Add main Scots text with proper wrapping
+        # Use label: for automatic text wrapping to prevent text from being cut off
+        import shutil
+        import tempfile
+        magick_cmd = 'magick' if shutil.which('magick') else 'convert'
+        
+        # Calculate if text needs wrapping and adjust font size
+        estimated_width = len(scots_text) * 6  # Rough pixels per character at 96pt
+        needs_wrapping = estimated_width > PHRASE_MAX_WIDTH
+        
+        # Adjust vertical position
+        if usage_examples and len(usage_examples) > 0:
+            phrase_y_offset = -120
+        else:
+            phrase_y_offset = -100
+        
+        if needs_wrapping:
+            try:
+                # Calculate optimal font size for wrapping
+                chars_per_line = PHRASE_MAX_WIDTH / 6  # Rough estimate
+                estimated_lines = max(2, (len(scots_text) / chars_per_line))
+                if estimated_lines > 2:
+                    phrase_pointsize = max(72, int(96 * (2 / estimated_lines)))
+                else:
+                    phrase_pointsize = 96
+                
+                # Create wrapped text label with transparent background
+                temp_label = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                temp_label_path = temp_label.name
+                temp_label.close()
+                
+                # Create label with automatic wrapping (ImageMagick wraps at word boundaries)
+                label_cmd = [
+                    magick_cmd,
+                    '-background', 'transparent',
+                    '-size', f'{PHRASE_MAX_WIDTH}x',
+                    '-gravity', 'center',
+                    '-pointsize', str(phrase_pointsize),
+                    '-font', BODY_FONT,
+                    '-fill', TEXT_COLOR,
+                    f'label:{scots_text}',
+                    temp_label_path
+                ]
+                subprocess.run(label_cmd, capture_output=True, text=True, check=True)
+                
+                # Composite the wrapped text label onto the base image
+                composite_cmd = [
+                    magick_cmd,
+                    output_path,
+                    temp_label_path,
+                    '-gravity', 'center',
+                    '-geometry', f'+0{phrase_y_offset:+d}',
+                    '-composite',
+                    output_path
+                ]
+                subprocess.run(composite_cmd, capture_output=True, text=True, check=True)
+                
+                # Clean up temp file
+                try:
+                    os.unlink(temp_label_path)
+                except:
+                    pass
+                
+                logger.info(f"Applied text wrapping for long text ({len(scots_text)} chars, {phrase_pointsize}pt)")
+            except Exception as e:
+                logger.warning(f"Text wrapping failed, using simple annotate: {e}")
+                # Fallback to simple annotate
+                add_text_cmd = [
+                    magick_cmd,
+                    output_path,
+                    '-gravity', 'center',
+                    '-pointsize', '96',
+                    '-font', BODY_FONT,
+                    '-fill', TEXT_COLOR,
+                    '-annotate', f'+0{phrase_y_offset:+d}', scots_text,
+                    output_path
+                ]
+                subprocess.run(add_text_cmd, capture_output=True, text=True, check=True)
+        else:
+            # Short text - add it normally with annotate
+            add_text_cmd = [
+                magick_cmd,
+                output_path,
+                '-gravity', 'center',
+                '-pointsize', '96',
+                '-font', BODY_FONT,
+                '-fill', TEXT_COLOR,
+                '-annotate', f'+0{phrase_y_offset:+d}', scots_text,
+                output_path
+            ]
+            subprocess.run(add_text_cmd, capture_output=True, text=True, check=True)
         
         # Step 7: Add footer text again after logo (ensure it's on top)
         # Re-add footer to ensure it's visible even after logo composite
