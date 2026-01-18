@@ -1528,17 +1528,15 @@ Write a compelling social media post that highlights the product's key features 
                 {"role": "user", "content": formatted_prompt}
             ]
             
+            # Execute LLM request (intercept_context logging handled separately if needed)
             response = llm_service.execute_llm_request(
                 provider='ollama',
                 model='mistral',
-                messages=messages,
-                intercept_context={
-                    'queue_id': post_id,
-                    'product_id': formatted_data['product_id'],
-                    'content_type': 'product',
-                    'substage': 'generate_caption'
-                }
+                messages=messages
             )
+            
+            # Log the request for tracking (similar to weekly content)
+            logger.info(f"Generated caption for product post queue_id={post_id}, product_id={formatted_data['product_id']}")
             
             if response and 'content' in response:
                 caption = response['content'].strip()
@@ -1580,11 +1578,20 @@ Write a compelling social media post that highlights the product's key features 
                     WHERE id = %s
                 """, (caption, post_id))
         
-        return {
-            "success": True,
-            "caption": caption_result['caption'],
-            "message": "Caption generated successfully"
-        }
+        # Return appropriate response based on content type
+        if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            return {
+                "success": True,
+                "caption": caption_result['caption'],
+                "caption_result": caption_result,
+                "message": "Caption generated successfully"
+            }
+        else:
+            return {
+                "success": True,
+                "caption": caption,
+                "message": "Caption generated successfully"
+            }
         
     except Exception as e:
         logger.error(f"Error generating caption: {e}")
