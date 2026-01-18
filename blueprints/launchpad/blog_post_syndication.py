@@ -33,7 +33,13 @@ def refresh_facebook_cache(url):
 
 
 def post_to_facebook_unified(page_id, access_token, message, link_url, page_name=""):
-    """Unified Facebook posting function - always uses /feed endpoint with link."""
+    """
+    Unified Facebook posting function - always uses /feed endpoint with link.
+    
+    ⚠️ DISABLED - Facebook posting has been disabled to prevent unwanted posts.
+    """
+    logger.error(f"BLOCKED: post_to_facebook_unified called for page={page_name} (ID: {page_id}) - Facebook posting is DISABLED")
+    return {'success': False, 'error': 'Facebook posting has been disabled'}
     logger.info(f"Posting to {page_name} (Page ID: {page_id})")
     logger.info(f"Post content: {message[:100]}...")
     logger.info(f"Link URL: {link_url}")
@@ -125,7 +131,11 @@ def execute_facebook_post(queue_item_id):
     Shared function to post a queue item to Facebook (both pages).
     Used by both manual posting and automated posting systems.
     Returns: {'success': bool, 'message': str, 'platform_post_ids': list}
+    
+    ⚠️ DISABLED - Facebook posting has been disabled to prevent unwanted posts.
     """
+    logger.error(f"BLOCKED: execute_facebook_post called for queue_item_id={queue_item_id} - Facebook posting is DISABLED")
+    return {'success': False, 'message': 'Facebook posting has been disabled', 'platform_post_ids': []}
     try:
         with db_manager.get_cursor() as cursor:
             # Get the queue item details - handle both product and blog post

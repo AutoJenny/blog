@@ -92,7 +92,11 @@ class PostingExecutor:
         """
         Post content to Facebook using the appropriate posting function
         Handles both product posts and weekly content posts
+        
+        ⚠️ DISABLED - Facebook posting has been disabled to prevent unwanted posts.
         """
+        logger.error(f"BLOCKED: post_to_facebook called for post_id={post.get('id')} - Facebook posting is DISABLED")
+        return {'success': False, 'error': 'Facebook posting has been disabled'}
         try:
             content_type = post.get('content_type', '').lower()
             queue_id = post['id']

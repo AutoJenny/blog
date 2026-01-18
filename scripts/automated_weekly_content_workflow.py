@@ -173,6 +173,11 @@ class WeeklyContentWorkflowExecutor:
                     
                     # Only publish if scheduled time has passed
                     if now >= scheduled_datetime:
+                        # ⚠️ FACEBOOK POSTING DISABLED - Block all posting attempts
+                        logger.error(f"BLOCKED: publish_to_facebook attempted for queue_id {queue_id} - Facebook posting is DISABLED")
+                        results['publish_to_facebook'] = False
+                        return results
+                        
                         # Get content info for logging
                         with self.db_manager.get_cursor() as cursor:
                             cursor.execute("""

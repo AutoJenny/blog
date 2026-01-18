@@ -1150,7 +1150,11 @@ def execute_publish_to_facebook(queue_id, data):
     
     Uses generated image and caption from previous substages.
     Posts to both Facebook pages using the /photos endpoint for image posts.
+    
+    ⚠️ DISABLED - Facebook posting has been disabled to prevent unwanted posts.
     """
+    logger.error(f"BLOCKED: execute_publish_to_facebook called for queue_id={queue_id} - Facebook posting is DISABLED")
+    return {"success": False, "error": "Facebook posting has been disabled"}, 403
     try:
         import requests
         import os
