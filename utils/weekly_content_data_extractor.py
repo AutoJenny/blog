@@ -39,10 +39,11 @@ def extract_weekly_content_data(
         'title': 'SCOTS WORD OF THE WEEK',
         'scots_text': 'braw',
         'translation': 'good, fine',
+        'usage_examples': ['Usage example 1', 'Usage example 2'],  # List (weekly_word only)
         'series_footer': 'Scots Language Series',
         'logo_path': '/absolute/path/to/logo.png',
         'output_path': '/absolute/path/to/output/image.png',
-        'notes': 'Optional notes from idea_description',
+        'notes': 'Provenance/notes from idea_description',
         'idea_id': 123
     }
     
@@ -72,21 +73,23 @@ def extract_weekly_content_data(
         if not idea:
             raise ValueError(f"Idea {idea_id} not found in calendar_ideas")
     
-    # Parse idea_description for translation and notes
+    # Parse idea_description for translation, usage examples, and provenance/notes
     description = idea.get('idea_description') or ''
     translation = ''
+    usage_examples = []
     notes = ''
     
-    # Expected format variations:
-    # 1. "Translation: ... | Provenance: ..."
-    # 2. "Translation: ..."
-    # 3. Just description text
+    # Expected format: "Translation: ... | Usage: ... | Usage: ... | Provenance: ..."
     if 'Translation:' in description:
         parts = description.split('|')
         for part in parts:
             part = part.strip()
             if part.startswith('Translation:'):
                 translation = part.replace('Translation:', '').strip()
+            elif part.startswith('Usage:'):
+                usage_text = part.replace('Usage:', '').strip()
+                if usage_text:
+                    usage_examples.append(usage_text)
             elif part.startswith('Provenance:'):
                 notes = part.replace('Provenance:', '').strip()
             elif part.startswith('Notes:'):
@@ -120,9 +123,10 @@ def extract_weekly_content_data(
         'title': title,
         'scots_text': scots_text,
         'translation': translation,
+        'usage_examples': usage_examples,  # List of usage example strings
         'series_footer': SERIES_FOOTER_TEXT,
         'logo_path': logo_path,
         'output_path': output_path,
-        'notes': notes,
+        'notes': notes,  # Provenance/notes
         'idea_id': idea_id
     }
