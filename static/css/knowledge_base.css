@@ -1,11 +1,26 @@
 /* Knowledge Base Styles */
 /* Override dark theme for KB pages - force light theme */
 
-/* Ensure KB pages have white background - override dark theme */
-body:has(.kb-container),
-body:has(.kb-container) main {
+/* KB wrapper - isolates from dark theme */
+.kb-wrapper {
     background: #ffffff !important;
     color: #212529 !important;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+/* Ensure KB pages have white background - override dark theme */
+body:has(.kb-wrapper),
+body:has(.kb-wrapper) main {
+    background: #ffffff !important;
+    color: #212529 !important;
+}
+
+/* Override body dark theme for KB */
+.kb-wrapper ~ *,
+body:has(.kb-wrapper) {
+    background: #ffffff !important;
 }
 
 /* Main container */
