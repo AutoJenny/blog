@@ -158,6 +158,12 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             // Debug: Log product posts found
             if (productPostItems.length > 0) {
                 console.log(`Week ${year}-W${week}: Found ${productPostItems.length} product posts`, productPostItems);
+            } else {
+                // Also log when we expect them but don't find them
+                const allProductTypes = data.filter(item => item && (item.type === 'product' || item.type === 'product-post' || item.category === 'product'));
+                if (allProductTypes.length > 0) {
+                    console.warn(`Week ${year}-W${week}: Found items with product-related types but not matching filter:`, allProductTypes);
+                }
             }
             
             row.appendChild(createCategoryCell(themeItem ? [themeItem] : [], 'theme', year, week));
