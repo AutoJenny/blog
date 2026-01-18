@@ -177,10 +177,17 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             console.log(`Product post cell created for week ${year}-W${week}:`, {
                 itemsCount: productPostItems.length,
                 cellChildren: productPostCell.children.length,
-                cell: productPostCell,
-                cellHTML: productPostCell.innerHTML.substring(0, 200)
+                cellHTML: productPostCell.innerHTML.substring(0, 500),
+                cellClasses: productPostCell.className,
+                cellDataset: productPostCell.dataset
             });
+            console.log(`Product post cell children:`, Array.from(productPostCell.children).map(c => ({
+                tag: c.tagName,
+                classes: c.className,
+                text: c.textContent?.substring(0, 50)
+            })));
             row.appendChild(productPostCell);
+            console.log(`Product post cell appended to row. Row now has ${row.children.length} cells`);
             
             tbody.appendChild(row);
         });
