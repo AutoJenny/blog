@@ -13,7 +13,7 @@
     <!-- Left Sidebar Navigation -->
     <aside class="kb-sidebar">
         <div class="kb-sidebar-header">
-            <h2>📚 Knowledge Base</h2>
+            <h2>Knowledge Base</h2>
             <a href="{{ url_for('knowledge_base.index') }}" class="kb-home-link">Home</a>
         </div>
         
@@ -21,19 +21,15 @@
             {% for section_key, section_data in structure.items() %}
             <div class="kb-nav-section">
                 <div class="kb-nav-section-header" data-section="{{ section_key }}">
-                    <span class="kb-nav-icon">{{ section_data.icon }}</span>
                     <span class="kb-nav-title">{{ section_data.title }}</span>
                     <span class="kb-nav-toggle">▼</span>
                 </div>
                 
                 <ul class="kb-nav-pages" data-section="{{ section_key }}">
                     {% for page_key, page_info in section_data.pages.items() %}
-                    <li class="kb-nav-page {% if section == section_key and page == page_key %}active{% endif %}">
+                    <li class="kb-nav-page {% if section == section_key and page == page_key %}active{% endif %} {% if page_info.get('status') %}kb-status-{{ page_info.status }}{% endif %}">
                         <a href="{{ url_for('knowledge_base.page', section=section_key, page=page_key) }}">
                             {{ page_info.title }}
-                            {% if page_info.get('status') %}
-                                {{ get_status_badge(page_info.status)|safe }}
-                            {% endif %}
                         </a>
                     </li>
                     {% endfor %}
@@ -43,7 +39,7 @@
         </nav>
         
         <div class="kb-sidebar-footer">
-            <a href="{{ url_for('knowledge_base.search') }}" class="kb-search-link">🔍 Search</a>
+            <a href="{{ url_for('knowledge_base.search') }}" class="kb-search-link">Search</a>
         </div>
     </aside>
     

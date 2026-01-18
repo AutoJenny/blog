@@ -123,11 +123,6 @@ body:has(.kb-wrapper) {
     background: #e9ecef;
 }
 
-.kb-nav-icon {
-    margin-right: 8px;
-    font-size: 1.2rem;
-}
-
 .kb-nav-title {
     flex: 1;
     font-weight: 600;
@@ -179,6 +174,36 @@ body:has(.kb-wrapper) {
     background: #007bff !important;
     color: white !important;
     font-weight: 600;
+}
+
+/* Status background colors */
+.kb-nav-page.kb-status-complete a {
+    background: rgba(40, 167, 69, 0.15) !important;
+    border-left: 3px solid #28a745;
+}
+
+.kb-nav-page.kb-status-complete a:hover {
+    background: rgba(40, 167, 69, 0.25) !important;
+}
+
+.kb-nav-page.kb-status-in_progress a {
+    background: rgba(255, 193, 7, 0.15) !important;
+    border-left: 3px solid #ffc107;
+}
+
+.kb-nav-page.kb-status-in_progress a:hover {
+    background: rgba(255, 193, 7, 0.25) !important;
+}
+
+.kb-nav-page.kb-status-planned a {
+    background: transparent;
+}
+
+/* Active page overrides status background */
+.kb-nav-page.active.kb-status-complete a,
+.kb-nav-page.active.kb-status-in_progress a {
+    background: #007bff !important;
+    border-left: none;
 }
 
 .kb-nav-page .status-badge {

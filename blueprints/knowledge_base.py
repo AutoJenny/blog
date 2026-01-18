@@ -45,18 +45,22 @@ KB_STRUCTURE = {
             'weekly_words_phrases': {
                 'title': 'Weekly Words & Phrases',
                 'template': 'knowledge_base/content_types/weekly_words_phrases.html',
+                'status': 'complete',
                 'subpages': {
                     'words': {
                         'title': 'Weekly Words',
-                        'template': 'knowledge_base/content_types/weekly_words.html'
+                        'template': 'knowledge_base/content_types/weekly_words.html',
+                        'status': 'complete'
                     },
                     'phrases': {
                         'title': 'Weekly Phrases',
-                        'template': 'knowledge_base/content_types/weekly_phrases.html'
+                        'template': 'knowledge_base/content_types/weekly_phrases.html',
+                        'status': 'complete'
                     },
                     'insults': {
                         'title': 'Weekly Insults',
-                        'template': 'knowledge_base/content_types/weekly_insults.html'
+                        'template': 'knowledge_base/content_types/weekly_insults.html',
+                        'status': 'complete'
                     }
                 }
             },
@@ -97,7 +101,8 @@ KB_STRUCTURE = {
             },
             'facebook': {
                 'title': 'Facebook',
-                'template': 'knowledge_base/channels/facebook.html'
+                'template': 'knowledge_base/channels/facebook.html',
+                'status': 'complete'
             },
             'blog': {
                 'title': 'Blog',
