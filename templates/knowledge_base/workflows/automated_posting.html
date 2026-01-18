@@ -1,0 +1,194 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Automated Posting System</h1>
+    
+    {{ get_status_badge('complete')|safe }}
+    
+    <p class="kb-intro">
+        The automated posting system takes content from the <strong>calendar</strong> and publishes it to Facebook
+        at the right time. It runs automatically every 5 minutes, handling the entire process from calendar
+        to published post.
+    </p>
+    
+    <h2>How It Works</h2>
+    
+    <p>The system works like a production line:</p>
+    <div class="kb-info" style="background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>Calendar</strong> → <strong>Posting Queue</strong> → <strong>Published</strong>
+    </div>
+    
+    <h3>The Calendar: The Source of Truth</h3>
+    <p>The calendar stores <strong>what</strong> should be published and <strong>when</strong>:</p>
+    <ul>
+        <li><strong>Weekly Words/Phrases/Insults</strong> - Stored in <code>calendar_ideas</code> table</li>
+        <li><strong>Themes</strong> - Blog post themes (stored in calendar JSON files)</li>
+        <li><strong>Recipes</strong> - Blog post recipes (stored in calendar JSON files)</li>
+        <li><strong>Product Posts</strong> - Products to promote (stored in <code>posting_queue</code> directly)</li>
+    </ul>
+    
+    <p>The calendar uses <strong>ISO week numbers</strong> (Week 1-52 per year) and is perpetual - Week 1 of next year cycles back to the same content.</p>
+    
+    <h3>The Posting Queue: The Working Queue</h3>
+    <p>The <code>posting_queue</code> table is where posts wait to be published. It tracks status:</p>
+    <div class="kb-info" style="background: #f0f8e8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>draft</strong> → <strong>ready</strong> → <strong>pending</strong> → <strong>published</strong>
+    </div>
+    <ul>
+        <li><strong>draft</strong> - Post created, needs preparation</li>
+        <li><strong>ready</strong> - Post prepared, ready to schedule</li>
+        <li><strong>pending</strong> - Post scheduled, waiting for time</li>
+        <li><strong>published</strong> - Post sent to Facebook ✅</li>
+    </ul>
+    
+    <h2>The 4-Step Automated Process</h2>
+    
+    <p>A background monitor runs every 5 minutes and executes these 4 steps:</p>
+    
+    <h3>Step 1: Create Posts from Calendar</h3>
+    <p><strong>Script:</strong> <code>automated_weekly_content_creator.py</code></p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li>Looks at calendar for upcoming weeks (next 7 days)</li>
+        <li>For each week, finds what content is scheduled (words, phrases, insults)</li>
+        <li>Creates <strong>draft</strong> posts in <code>posting_queue</code> table</li>
+        <li>Sets scheduled date/time (e.g., Monday 9 AM)</li>
+    </ul>
+    <p><strong>Example:</strong> Calendar says "Week 3 has word 'dreich'" → Creates <code>posting_queue</code> entry with <code>content_type='weekly_word'</code>, <code>status='draft'</code>, <code>scheduled_date='2026-01-20'</code></p>
+    
+    <h3>Step 2: Prepare Posts</h3>
+    <p><strong>Script:</strong> <code>automated_weekly_content_workflow.py</code></p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li>Finds <strong>draft</strong> posts in <code>posting_queue</code></li>
+        <li>Prepares them for Facebook:
+            <ul>
+                <li>Formats content</li>
+                <li>Generates caption</li>
+                <li>Adds hashtags</li>
+                <li>Creates square image (1080×1080)</li>
+            </ul>
+        </li>
+        <li>Updates status to <strong>ready</strong></li>
+    </ul>
+    <p><strong>Example:</strong> Draft post → Generate image → Add caption → Status = <strong>ready</strong></p>
+    
+    <h3>Step 3: Schedule Posts</h3>
+    <p><strong>Script:</strong> <code>automated_posting.py</code></p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li>Finds <strong>ready</strong> posts in <code>posting_queue</code></li>
+        <li>Checks if their scheduled time is coming up (within 30 minutes)</li>
+        <li>Sets exact <code>scheduled_timestamp</code> (adds random delay for natural distribution)</li>
+        <li>Updates status to <strong>pending</strong></li>
+    </ul>
+    <p><strong>Example:</strong> Ready post scheduled for "2026-01-20 09:00" → Sets <code>scheduled_timestamp = '2026-01-20 09:05'</code> (with small random delay) → Status = <strong>pending</strong></p>
+    
+    <h3>Step 4: Actually Post</h3>
+    <p><strong>Script:</strong> <code>posting_executor.py</code></p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li>Finds <strong>pending</strong> or <strong>ready</strong> posts where <code>scheduled_timestamp <= now()</code></li>
+        <li>Posts them to Facebook</li>
+        <li>Updates status to <strong>published</strong></li>
+        <li>Stores Facebook post ID</li>
+    </ul>
+    <p><strong>Example:</strong> Post scheduled for "2026-01-20 09:05" → Current time is "2026-01-20 09:06" → Post to Facebook → Status = <strong>published</strong> ✅</p>
+    
+    <h2>How It Finds What to Publish</h2>
+    
+    <p>The system doesn't look at the calendar directly when posting. Instead:</p>
+    <ol>
+        <li><strong>Calendar</strong> → Creates posts in <code>posting_queue</code> (Step 1)</li>
+        <li><strong>Posting Queue</strong> → Contains all posts waiting to be published</li>
+        <li><strong>Posting Executor</strong> → Queries <code>posting_queue</code> for posts where:
+            <ul>
+                <li>Status is <code>pending</code> or <code>ready</code></li>
+                <li><code>scheduled_timestamp <= now()</code></li>
+            </ul>
+        </li>
+    </ol>
+    
+    <div class="kb-info" style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>Key Point:</strong> The calendar is the <strong>source</strong>, but <code>posting_queue</code> is the <strong>working queue</strong>. 
+        Once a post is in <code>posting_queue</code>, the calendar is no longer checked - everything happens from the queue.
+    </div>
+    
+    <h2>The Complete Flow</h2>
+    
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0; font-family: monospace; line-height: 1.8;">
+        Calendar (Week 3: word "dreich")<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        automated_weekly_content_creator.py<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        posting_queue (draft, scheduled_date=2026-01-20)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        automated_weekly_content_workflow.py<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        posting_queue (ready, has image & caption)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        automated_posting.py<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        posting_queue (pending, scheduled_timestamp=2026-01-20 09:05)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        posting_executor.py<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        Facebook (published!)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+        posting_queue (published, platform_post_id=12345)
+    </div>
+    
+    <h2>Relationship to Calendar</h2>
+    
+    <h3>Calendar's Role:</h3>
+    <ul>
+        <li><strong>Planning</strong> - Shows what content is scheduled for each week</li>
+        <li><strong>Creation</strong> - Used to create draft posts in <code>posting_queue</code></li>
+        <li><strong>Display</strong> - Shows in calendar UI what's coming up</li>
+    </ul>
+    
+    <h3>Posting Queue's Role:</h3>
+    <ul>
+        <li><strong>Execution</strong> - Actually publishes posts</li>
+        <li><strong>Status Tracking</strong> - Tracks if post is draft/ready/pending/published</li>
+        <li><strong>Timing</strong> - Stores exact timestamp for when to post</li>
+    </ul>
+    
+    <h2>Background Monitor</h2>
+    
+    <p>The <code>background_posting_monitor.sh</code> script orchestrates everything:</p>
+    <ul>
+        <li>Runs every 5 minutes</li>
+        <li>Executes all 4 steps in sequence</li>
+        <li>Logs everything to <code>logs/background_posting.log</code></li>
+    </ul>
+    
+    <h2>Summary</h2>
+    
+    <div class="kb-info" style="background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>Calendar</strong> = "What should be published when" (the plan)</p>
+        <p><strong>Posting Queue</strong> = "What's actually being published" (the execution)</p>
+        <p><strong>Automated System</strong> = Moves posts through the queue until they're published</p>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='weekly_words_phrases') }}">Weekly Words & Phrases</a> - Content type details</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='channels', page='facebook') }}">Facebook Channel</a> - Platform details</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='calendar') }}">Calendar Interface</a> - Calendar UI</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='interfaces', page='monitoring') }}">Monitoring Dashboard</a> - View automation status</li>
+        </ul>
+    </div>
+    
+    <div class="kb-related">
+        <h4>Technical Documentation</h4>
+        <ul>
+            <li><a href="/docs/AUTOMATED_POSTING_SIMPLIFIED.md" target="_blank">Simplified Explanation</a></li>
+            <li><a href="/docs/POSTING_SAFEGUARDS_VERIFICATION.md" target="_blank">Safeguards Documentation</a></li>
+            <li><a href="/docs/FACEBOOK_POSTING_BUG_ANALYSIS.md" target="_blank">Bug Analysis</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -212,6 +212,11 @@ KB_STRUCTURE = {
                 'template': 'knowledge_base/workflows/weekly_automation.html',
                 'status': 'planned'
             },
+            'automated_posting': {
+                'title': 'Automated Posting System',
+                'template': 'knowledge_base/workflows/automated_posting.html',
+                'status': 'complete'
+            },
             'product_automation': {
                 'title': 'Product Post Automation',
                 'template': 'knowledge_base/workflows/product_automation.html',
