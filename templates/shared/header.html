@@ -12,17 +12,33 @@
             </div>
             <div class="flex items-center space-x-4 ml-8"></div>
             <div class="flex-shrink-0 flex items-center gap-4 ml-4">
-                <!-- Alert Notifications -->
-                <a href="/planning/calendar" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Calendar</a>
-                <a href="/posts" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
-                <a href="/newsletter" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Newsletter</a>
-                <a href="/launchpad/" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Launchpad</a>
-                <!-- Modules Dropdown moved here -->
+                <!-- Content Dropdown -->
                 <div class="relative group nav-group" tabindex="0">
                     <button class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none" aria-haspopup="true" aria-expanded="false">
-                        <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                        Content <i class="fa fa-caret-down text-xs"></i>
                     </button>
                     <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                        <a href="/planning/calendar" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-calendar text-blue-400"></i> Calendar
+                        </a>
+                        <a href="/posts" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-file-lines text-green-400"></i> Posts
+                        </a>
+                        <a href="/newsletter" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-newspaper text-purple-400"></i> Newsletter
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Tools Dropdown -->
+                <div class="relative group nav-group" tabindex="0">
+                    <button class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa-solid fa-cubes"></i> Tools <i class="fa fa-caret-down text-xs"></i>
+                    </button>
+                    <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                        <a href="/workflow/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-diagram-project text-cyan-400"></i> Workflow
+                        </a>
                         <a href="/db/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
                             <i class="fa-solid fa-database text-purple-400"></i> Database
                         </a>
@@ -35,20 +51,32 @@
                         <a href="/servers/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
                             <i class="fa-solid fa-server text-green-400"></i> Servers
                         </a>
-                        <a href="http://localhost:5000/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                        <a href="/launchpad/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
                             <i class="fa-solid fa-rocket text-orange-400"></i> Launchpad
                         </a>
                     </div>
                 </div>
-                <a href="/kb" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition" title="Knowledge Base">
-                    📚 KB
-                </a>
-                <a href="/docs/" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
-                    Docs
-                </a>
+                
+                <!-- Documentation Dropdown -->
+                <div class="relative group nav-group" tabindex="0">
+                    <button class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa-solid fa-book"></i> Docs <i class="fa fa-caret-down text-xs"></i>
+                    </button>
+                    <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                        <a href="/kb" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-book-open text-blue-400"></i> Knowledge Base
+                        </a>
+                        <a href="/docs/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-file-lines text-green-400"></i> Technical Docs
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- System: Settings, Monitor, Alerts -->
                 <a href="/settings" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
                     Settings
                 </a>
+                
                 <!-- Monitoring Module -->
                 <div class="relative" id="monitoring-container">
                     <div class="monitoring-module flex items-center gap-2 px-3 py-2 rounded-md transition">
@@ -61,6 +89,7 @@
                         </button>
                     </div>
                 </div>
+                
                 <div class="relative" id="alert-container">
                     <button class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 relative" id="alert-bell" onclick="toggleAlertDropdown()">
                         <i class="fas fa-bell"></i>
@@ -83,9 +112,6 @@
                         </div>
                     </div>
                 </div>
-                <a href="/workflow/" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
-                    Workflow
-                </a>
             </div>
         </div>
     </nav>
