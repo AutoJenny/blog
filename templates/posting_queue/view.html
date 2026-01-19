@@ -209,10 +209,96 @@ function renderTable() {
                          (item.scheduled_date && item.scheduled_time ? 
                           `${item.scheduled_date} ${item.scheduled_time}` : 
                           item.scheduled_date || 'Not scheduled');
-        const content = item.generated_content || item.generated_caption || 
-                       item.product_name || item.idea_title || 
-                       'No content';
-        const contentPreview = content.length > 60 ? content.substring(0, 60) + '...' : content;
+        
+        // Format content based on type - show readable content, not JSON
+        let content = '';
+        let contentTitle = '';
+        
+        if (item.content_type === 'product') {
+            // For product posts: prefer caption (readable), then product name, never show JSON
+            content = item.generated_caption || item.product_name || 'No content';
+            contentTitle = item.generated_caption || item.product_name || '';
+            
+            // If we only have JSON in generated_content, extract product name from it
+            if (!content || content === 'No content') {
+                if (item.generated_content && item.generated_content.startsWith('{')) {
+                    try {
+                        const parsed = JSON.parse(item.generated_content);
+                        content = parsed.product_name || parsed.title || 'Product post';
+                        contentTitle = JSON.stringify(parsed, null, 2);
+                    } catch (e) {
+                        content = item.product_name || 'Product post';
+                    }
+                }
+            }
+        } else if (item.content_type && item.content_type.startsWith('weekly_')) {
+            // For language posts: use idea title (clean), never show JSON
+            if (item.idea_title) {
+                content = item.idea_title;
+                if (item.idea_description) {
+                    const desc = item.idea_description.length > 60 
+                        ? item.idea_description.substring(0, 60) + '...' 
+                        : item.idea_description;
+                    content += ' - ' + desc;
+                }
+                contentTitle = item.idea_title + (item.idea_description ? '\n' + item.idea_description : '');
+            } else {
+                // Fallback: use generated_content only if it's NOT JSON
+                const rawContent = item.generated_content || '';
+                if (rawContent && !rawContent.startsWith('{')) {
+                    // Plain text - use it
+                    content = rawContent.length > 100 ? rawContent.substring(0, 100) + '...' : rawContent;
+                    contentTitle = rawContent;
+                } else {
+                    // JSON or empty - use caption or fallback
+                    content = item.generated_caption || 'Language post';
+                    contentTitle = item.generated_caption || '';
+                }
+            }
+        } else {
+            // For other types: prefer caption, avoid showing JSON
+            content = item.generated_caption || 'No content';
+            contentTitle = item.generated_caption || '';
+            
+            // If generated_content is JSON and we have no caption, extract readable text
+            if ((!content || content === 'No content') && item.generated_content && item.generated_content.startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(item.generated_content);
+                    content = parsed.product_name || parsed.title || parsed.description || 'Content post';
+                    contentTitle = JSON.stringify(parsed, null, 2);
+                } catch (e) {
+                    content = 'Content post';
+                }
+            } else if (!item.generated_caption && item.generated_content && !item.generated_content.startsWith('{')) {
+                // Plain text generated_content
+                content = item.generated_content.length > 100 ? item.generated_content.substring(0, 100) + '...' : item.generated_content;
+                contentTitle = item.generated_content;
+            }
+        }
+        
+        // Clean up content preview (remove newlines, extra spaces)
+        content = content.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+        const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        
+        // Format content type for display (user-friendly)
+        let contentTypeDisplay = '-';
+        if (item.content_type) {
+            if (item.content_type === 'product') {
+                contentTypeDisplay = 'Product';
+            } else if (item.content_type === 'weekly_word') {
+                contentTypeDisplay = 'Word';
+            } else if (item.content_type === 'weekly_phrase') {
+                contentTypeDisplay = 'Phrase';
+            } else if (item.content_type === 'weekly_insult') {
+                contentTypeDisplay = 'Insult';
+            } else {
+                // Format other types
+                contentTypeDisplay = item.content_type
+                    .replace('weekly_', '')
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, l => l.toUpperCase());
+            }
+        }
         
         return `
             <tr class="hover:bg-slate-700">
@@ -223,7 +309,7 @@ function renderTable() {
                     </span>
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-300">
-                    ${item.content_type || '-'}
+                    ${contentTypeDisplay}
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-300">
                     ${item.platform || '-'}
@@ -231,7 +317,7 @@ function renderTable() {
                 <td class="px-4 py-3 text-sm text-gray-300">
                     ${scheduled}
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-300" title="${content}">
+                <td class="px-4 py-3 text-sm text-gray-300" title="${contentTitle}">
                     ${contentPreview}
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-400">

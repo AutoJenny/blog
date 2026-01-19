@@ -46,7 +46,10 @@ def get_all_queue_items():
                     cp.image_url as product_image,
                     -- Idea details (for language posts)
                     ci.idea_title,
-                    ci.idea_description
+                    ci.idea_description,
+                    -- Additional fields for better display
+                    pq.generated_caption,
+                    pq.image_path
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
                 LEFT JOIN calendar_ideas ci ON pq.idea_id = ci.id
