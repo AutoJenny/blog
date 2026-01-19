@@ -124,13 +124,6 @@
                                 No required ideas added yet. Click "Add Idea" to add one.
                             </div>
                         </div>
-                        <button type="button" 
-                                id="save-metadata-btn" 
-                                class="btn btn-success" 
-                                style="margin-top: 0.5rem; width: 100%;"
-                                onclick="savePostMetadata()">
-                            <i class="fas fa-save"></i> Save Metadata
-                        </button>
                     </div>
                 </div>
             </div>
@@ -732,6 +725,12 @@ async function loadPostMetadata() {
                     console.log('[loadPostMetadata] Auto-generating subtitle from theme');
                     await generateSubtitleFromTheme();
                 }
+                
+                // Attach auto-save listener if not already attached
+                if (!subtitleInput.hasAttribute('data-auto-save-attached')) {
+                    subtitleInput.setAttribute('data-auto-save-attached', 'true');
+                    subtitleInput.addEventListener('input', autoSaveSubtitle);
+                }
             }
             
             // Load required ideas from embedding_overrides
@@ -836,101 +835,95 @@ function removeRequiredIdea(index) {
     if (index >= 0 && index < requiredIdeas.length) {
         requiredIdeas.splice(index, 1);
         renderRequiredIdeasList();
+        // Auto-save when removed
+        saveRequiredIdeas();
     }
 }
 
-function showAddIdeaModal() {
+async function showAddIdeaModal() {
     const ideaText = prompt('Enter a required idea to include in the post:');
     if (ideaText && ideaText.trim()) {
         requiredIdeas.push(ideaText.trim());
         renderRequiredIdeasList();
+        // Auto-save when added
+        await saveRequiredIdeas();
     }
 }
 
-async function savePostMetadata() {
+async function saveRequiredIdeas() {
     try {
-        const subtitleInput = document.getElementById('post-subtitle');
-        const saveBtn = document.getElementById('save-metadata-btn');
-        
-        if (!subtitleInput || !saveBtn) {
-            return;
-        }
-        
-        // Show loading state
-        const originalText = saveBtn.innerHTML;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-        
-        // Save subtitle to post table
-        const subtitle = subtitleInput.value.trim();
-        const subtitleResponse = await fetch(`/planning/api/posts/${window.postId}/subtitle`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subtitle: subtitle })
-        });
-        
-        // Save required ideas to post_development.embedding_overrides
-        console.log('[savePostMetadata] Saving required ideas:', requiredIdeas);
-        const overridesResponse = await fetch(`/planning/api/posts/${window.postId}/required-ideas`, {
+        console.log('[saveRequiredIdeas] Saving:', requiredIdeas);
+        const response = await fetch(`/planning/api/posts/${window.postId}/required-ideas`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ required_ideas: requiredIdeas })
         });
         
-        const subtitleData = await subtitleResponse.json();
-        const overridesData = await overridesResponse.json();
-        
-        console.log('[savePostMetadata] Subtitle response:', subtitleData);
-        console.log('[savePostMetadata] Required ideas response:', overridesData);
-        
-        if (!subtitleResponse.ok) {
-            throw new Error(subtitleData.error || `HTTP ${subtitleResponse.status}: Failed to save subtitle`);
-        }
-        if (!overridesResponse.ok) {
-            throw new Error(overridesData.error || `HTTP ${overridesResponse.status}: Failed to save required ideas`);
-        }
-        
-        if (subtitleData.success && overridesData.success) {
-            // Reload required ideas from server to verify persistence
-            const ideasResponse = await fetch(`/planning/api/posts/${window.postId}/required-ideas`);
-            const ideasData = await ideasResponse.json();
-            if (ideasData.success && Array.isArray(ideasData.required_ideas)) {
-                requiredIdeas = ideasData.required_ideas;
-                renderRequiredIdeasList();
-                console.log('[savePostMetadata] Reloaded required ideas from server:', requiredIdeas);
-            }
-            
-            // Show success message
-            const statusDisplay = document.getElementById('post-creation-status');
-            if (statusDisplay) {
-                statusDisplay.innerHTML = `
-                    <div class="status-message" style="background: #059669; color: white; padding: 1rem; border-radius: 6px;">
-                        <i class="fas fa-check-circle"></i>
-                        Metadata saved successfully!
-                    </div>
-                `;
-                // Clear after 3 seconds
-                setTimeout(() => {
-                    if (statusDisplay) {
-                        statusDisplay.innerHTML = '';
-                    }
-                }, 3000);
+        const data = await response.json();
+        if (data.success) {
+            console.log('[saveRequiredIdeas] Saved successfully:', data.required_ideas);
+            // Show brief success indicator
+            const ideasList = document.getElementById('required-ideas-list');
+            if (ideasList) {
+                const savedIndicator = document.createElement('div');
+                savedIndicator.style.cssText = 'position: absolute; top: 0.5rem; right: 0.5rem; background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; z-index: 10;';
+                savedIndicator.innerHTML = '<i class="fas fa-check"></i> Saved';
+                ideasList.style.position = 'relative';
+                ideasList.appendChild(savedIndicator);
+                setTimeout(() => savedIndicator.remove(), 2000);
             }
         } else {
-            throw new Error(subtitleData.error || overridesData.error || 'Failed to save metadata');
+            console.error('[saveRequiredIdeas] Save failed:', data.error);
+            alert('Failed to save required ideas: ' + (data.error || 'Unknown error'));
         }
-        
     } catch (error) {
-        console.error('Error saving post metadata:', error);
-        alert('Error saving metadata: ' + error.message);
-    } finally {
-        const saveBtn = document.getElementById('save-metadata-btn');
-        if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Metadata';
-        }
+        console.error('[saveRequiredIdeas] Error:', error);
+        alert('Error saving required ideas: ' + error.message);
     }
 }
+
+// Auto-save subtitle when it changes (with debounce)
+let subtitleSaveTimeout = null;
+function autoSaveSubtitle() {
+    const subtitleInput = document.getElementById('post-subtitle');
+    if (!subtitleInput) return;
+    
+    // Clear existing timeout
+    if (subtitleSaveTimeout) {
+        clearTimeout(subtitleSaveTimeout);
+    }
+    
+    // Set new timeout to save after 1 second of no typing
+    subtitleSaveTimeout = setTimeout(async () => {
+        const subtitle = subtitleInput.value.trim();
+        try {
+            const response = await fetch(`/planning/api/posts/${window.postId}/subtitle`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subtitle: subtitle })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                console.log('[autoSaveSubtitle] Saved successfully');
+            } else {
+                console.error('[autoSaveSubtitle] Save failed:', data.error);
+            }
+        } catch (error) {
+            console.error('[autoSaveSubtitle] Error:', error);
+        }
+    }, 1000);
+}
+
+// Attach auto-save to subtitle input
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const subtitleInput = document.getElementById('post-subtitle');
+        if (subtitleInput) {
+            subtitleInput.addEventListener('input', autoSaveSubtitle);
+        }
+    }, 500);
+});
 
 // Theme selection functionality for post-based ideas page
 let availableThemes = [];
