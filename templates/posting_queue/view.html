@@ -118,6 +118,79 @@ const statusColors = {
     'failed': 'bg-red-600'
 };
 
+// Format datetime in human-friendly way
+function formatHumanDateTime(datetimeStr) {
+    if (!datetimeStr) return 'Not scheduled';
+    
+    const date = new Date(datetimeStr);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const itemDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    // Format time (e.g., "5:00 PM")
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    const timeStr = `${displayHours}:${displayMinutes} ${ampm}`;
+    
+    // Determine relative date
+    if (itemDate.getTime() === today.getTime()) {
+        return `Today ${timeStr}`;
+    } else if (itemDate.getTime() === tomorrow.getTime()) {
+        return `Tomorrow ${timeStr}`;
+    } else {
+        // Calculate days difference
+        const daysDiff = Math.floor((itemDate - today) / (1000 * 60 * 60 * 24));
+        if (daysDiff < 0) {
+            // Past date
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${monthNames[date.getMonth()]} ${date.getDate()} ${timeStr}`;
+        } else if (daysDiff <= 7) {
+            // This week
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return `${dayNames[date.getDay()]} ${timeStr}`;
+        } else {
+            // Future date
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${monthNames[date.getMonth()]} ${date.getDate()} ${timeStr}`;
+        }
+    }
+}
+
+// Format date only (no time)
+function formatHumanDate(dateStr) {
+    if (!dateStr) return 'Not scheduled';
+    
+    const date = new Date(dateStr + 'T00:00:00');
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const itemDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    if (itemDate.getTime() === today.getTime()) {
+        return 'Today';
+    } else if (itemDate.getTime() === tomorrow.getTime()) {
+        return 'Tomorrow';
+    } else {
+        const daysDiff = Math.floor((itemDate - today) / (1000 * 60 * 60 * 24));
+        if (daysDiff < 0) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${monthNames[date.getMonth()]} ${date.getDate()}`;
+        } else if (daysDiff <= 7) {
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return dayNames[date.getDay()];
+        } else {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${monthNames[date.getMonth()]} ${date.getDate()}`;
+        }
+    }
+}
+
 // Load queue data
 async function loadQueue() {
     try {
