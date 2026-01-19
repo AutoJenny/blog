@@ -71,9 +71,13 @@ class WeeklyContentCreator:
             logger.error(f"Error checking existing post: {e}")
             return False
     
-    def get_publication_date_for_week(self, year: int, week_number: int) -> Optional[str]:
+    def get_publication_date_for_week(self, year: int, week_number: int, content_type: str = None) -> Optional[str]:
         """
-        Get the publication date for a week (defaults to Monday of that week)
+        Get the publication date for a week based on content type
+        - weekly_word: Monday (day 1)
+        - weekly_phrase: Wednesday (day 3)
+        - weekly_insult: Friday (day 5)
+        Defaults to Monday if content_type not specified
         """
         try:
             # Get Monday of the week
@@ -86,7 +90,19 @@ class WeeklyContentCreator:
             weeks_from_jan4 = week_number - 1
             target_monday = jan4_monday + timedelta(weeks=weeks_from_jan4)
             
-            return target_monday.date().isoformat()
+            # Determine day offset based on content type
+            day_offset = 0  # Default: Monday
+            if content_type == 'weekly_word':
+                day_offset = 0  # Monday
+            elif content_type == 'weekly_phrase':
+                day_offset = 2  # Wednesday
+            elif content_type == 'weekly_insult':
+                day_offset = 4  # Friday
+            
+            # Calculate target date
+            target_date = target_monday + timedelta(days=day_offset)
+            
+            return target_date.date().isoformat()
         except Exception as e:
             logger.error(f"Error calculating publication date: {e}")
             return None
@@ -139,8 +155,8 @@ class WeeklyContentCreator:
                             logger.warning(f"No idea_id found for {content_type} in week {year}-W{week_number:02d}")
                             continue
                         
-                        # Get publication date
-                        scheduled_date = self.get_publication_date_for_week(year, week_number)
+                        # Get publication date (with correct day based on content type)
+                        scheduled_date = self.get_publication_date_for_week(year, week_number, content_type)
                         if not scheduled_date:
                             logger.warning(f"Could not calculate publication date for week {year}-W{week_number:02d}")
                             continue
