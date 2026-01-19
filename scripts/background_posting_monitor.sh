@@ -48,27 +48,27 @@ main() {
         
         # Step 1: Create weekly content posts (1 week in advance)
         log "Creating weekly content posts..."
-        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_weekly_content_creator.py" >> "$LOG_FILE" 2>&1
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_weekly_content_creator.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_weekly_content_creator.py exited with error (continuing)"
         
         # Step 2: Execute workflow for draft weekly content posts
         log "Executing weekly content workflows..."
-        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_weekly_content_workflow.py" >> "$LOG_FILE" 2>&1
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_weekly_content_workflow.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_weekly_content_workflow.py exited with error (continuing)"
         
         # Step 3: Create product posts (1 week in advance)
         log "Creating product posts..."
-        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_product_post_creator.py" >> "$LOG_FILE" 2>&1
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_product_post_creator.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_product_post_creator.py exited with error (continuing)"
         
         # Step 4: Execute workflow for draft product posts
         log "Executing product post workflows..."
-        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_product_post_workflow.py" >> "$LOG_FILE" 2>&1
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_product_post_workflow.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_product_post_workflow.py exited with error (continuing)"
         
         # Step 5: Run the automated posting scheduler (for product posts)
         log "Running automated posting scheduler..."
-        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_posting.py" >> "$LOG_FILE" 2>&1
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_posting.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_posting.py exited with error (continuing)"
         
         # Step 6: Run the posting executor (handles both product and weekly content)
         log "Running posting executor..."
-        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/posting_executor.py" >> "$LOG_FILE" 2>&1
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/posting_executor.py" >> "$LOG_FILE" 2>&1 || log "Warning: posting_executor.py exited with error (continuing)"
         
         # Wait 5 minutes
         log "Waiting 5 minutes until next check..."
