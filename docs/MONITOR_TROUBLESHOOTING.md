@@ -95,47 +95,24 @@ curl -X POST http://localhost:5000/monitoring/start
 ./scripts/background_posting_monitor.sh
 ```
 
-### Option 2: Launchd Service (Recommended for Auto-Restart)
+### Option 2: Launchd Service ✅ **INSTALLED**
 
-Create a launchd plist file to automatically start and restart the monitor:
+The launchd service is **already installed and running**. It automatically:
+- Starts the monitor when you log in
+- Restarts the monitor if it crashes
+- Runs in the background
 
-**File:** `~/Library/LaunchAgents/com.blog.automated-posting.plist`
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.blog.automated-posting</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/bin/bash</string>
-        <string>/Users/autojenny/Documents/projects/blog/scripts/background_posting_monitor.sh</string>
-    </array>
-    <key>WorkingDirectory</key>
-    <string>/Users/autojenny/Documents/projects/blog</string>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>StandardOutPath</key>
-    <string>/Users/autojenny/Documents/projects/blog/logs/launchd_monitor.out</string>
-    <key>StandardErrorPath</key>
-    <string>/Users/autojenny/Documents/projects/blog/logs/launchd_monitor.err</string>
-</dict>
-</plist>
-```
-
-**Install:**
+**Service Status:**
 ```bash
-launchctl load ~/Library/LaunchAgents/com.blog.automated-posting.plist
+launchctl list com.blog.automated-posting
 ```
 
-**Uninstall:**
-```bash
-launchctl unload ~/Library/LaunchAgents/com.blog.automated-posting.plist
-```
+**Management:**
+- Start: `launchctl start com.blog.automated-posting`
+- Stop: `launchctl stop com.blog.automated-posting`
+- Unload: `launchctl unload ~/Library/LaunchAgents/com.blog.automated-posting.plist`
+
+**Full Documentation:** See `docs/LAUNCHD_SERVICE_SETUP.md`
 
 ### Option 3: Enhanced Monitor Script (Error Recovery)
 
