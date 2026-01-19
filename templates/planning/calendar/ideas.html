@@ -1066,9 +1066,11 @@ function updateUIState() {
         if (themeSelectionSection) themeSelectionSection.style.display = 'none';
         if (expandedIdeaSection) expandedIdeaSection.style.display = 'block';
         // Load metadata when showing expanded idea section
+        // Use a longer delay to ensure theme is fully set
         setTimeout(() => {
+            console.log('[updateUIState] Loading post metadata, selectedTheme:', selectedTheme);
             loadPostMetadata();
-        }, 100);
+        }, 300);
     } else {
         // Theme not selected - show selection UI
         console.log('[updateUIState] Showing theme selection section');
