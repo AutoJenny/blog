@@ -857,13 +857,17 @@ async function checkThemeSelection() {
             // First check top-level selected_theme_id
             if (data.selected_theme_id) {
                 themeId = data.selected_theme_id;
-            } else if (data.schedule && Array.isArray(data.schedule)) {
-                // Look for theme_selection type in schedule array
+                console.log('[checkThemeSelection] Found selected_theme_id:', themeId);
+            }
+            
+            // Also check schedule array for theme_selection item (may have more details)
+            if (data.schedule && Array.isArray(data.schedule)) {
                 const themeItem = data.schedule.find(item => 
                     item.type === 'theme_selection' && (item.selected_theme_id || item.theme_id)
                 );
                 if (themeItem) {
                     themeId = themeItem.selected_theme_id || themeItem.theme_id;
+                    console.log('[checkThemeSelection] Found theme in schedule:', themeItem);
                     // If theme data is already in the schedule item, use it
                     if (themeItem.theme_title) {
                         selectedTheme = {
@@ -873,7 +877,7 @@ async function checkThemeSelection() {
                             priority: themeItem.priority || 'normal'
                         };
                         themeSelectedForWeek = true;
-                        return; // Already have theme data, no need to fetch
+                        console.log('[checkThemeSelection] Set theme from schedule item:', selectedTheme);
                     }
                 }
             }
@@ -881,6 +885,7 @@ async function checkThemeSelection() {
         
         // If we found a theme ID but don't have full theme data, fetch it
         if (themeId && !selectedTheme) {
+            console.log('[checkThemeSelection] Fetching theme details for ID:', themeId);
             themeSelectedForWeek = true;
             // Load theme details
             const themeResp = await fetch(`/planning/api/calendar/themes/${themeId}`);
@@ -892,8 +897,11 @@ async function checkThemeSelection() {
                     theme_description: themeData.theme.theme_description || '',
                     priority: themeData.theme.priority || 'normal'
                 };
+                console.log('[checkThemeSelection] Set theme from API:', selectedTheme);
             }
         }
+        
+        console.log('[checkThemeSelection] Final state - themeSelectedForWeek:', themeSelectedForWeek, 'selectedTheme:', selectedTheme);
     } catch (error) {
         console.error('Error checking theme selection:', error);
     }
@@ -948,8 +956,11 @@ function updateUIState() {
     const themeSelectionSection = document.getElementById('theme-selection-section');
     const expandedIdeaSection = document.getElementById('expanded-idea-section');
     
+    console.log('[updateUIState] themeSelectedForWeek:', themeSelectedForWeek, 'selectedTheme:', selectedTheme);
+    
     if (themeSelectedForWeek && selectedTheme) {
         // Theme already selected - show expanded idea generation
+        console.log('[updateUIState] Showing expanded idea section');
         if (themeSelectionSection) themeSelectionSection.style.display = 'none';
         if (expandedIdeaSection) expandedIdeaSection.style.display = 'block';
         // Load metadata when showing expanded idea section
@@ -958,6 +969,7 @@ function updateUIState() {
         }, 100);
     } else {
         // Theme not selected - show selection UI
+        console.log('[updateUIState] Showing theme selection section');
         if (themeSelectionSection) themeSelectionSection.style.display = 'block';
         if (expandedIdeaSection) expandedIdeaSection.style.display = 'none';
         displayAvailableThemes();
