@@ -395,7 +395,7 @@ class WorkflowNavigation {
             const wrapper = document.createElement('div');
             wrapper.className = 'workflow-navigation-wrapper';
             wrapper.id = 'workflow-navigation-container';
-            wrapper.style.cssText = 'display: flex; justify-content: center; margin: 2rem 0;';
+            wrapper.style.cssText = 'display: flex; justify-content: center; margin: 0.75rem 0;';
             wrapper.appendChild(button);
             
             // Insert after main content
