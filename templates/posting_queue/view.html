@@ -205,10 +205,17 @@ function renderTable() {
     
     tbody.innerHTML = filteredItems.map(item => {
         const statusColor = statusColors[item.status] || 'bg-gray-600';
-        const scheduled = item.scheduled_timestamp || 
-                         (item.scheduled_date && item.scheduled_time ? 
-                          `${item.scheduled_date} ${item.scheduled_time}` : 
-                          item.scheduled_date || 'Not scheduled');
+        
+        // Format scheduled datetime in human-friendly way
+        let scheduled = 'Not scheduled';
+        if (item.scheduled_timestamp) {
+            scheduled = formatHumanDateTime(item.scheduled_timestamp);
+        } else if (item.scheduled_date && item.scheduled_time) {
+            const combined = `${item.scheduled_date}T${item.scheduled_time}`;
+            scheduled = formatHumanDateTime(combined);
+        } else if (item.scheduled_date) {
+            scheduled = formatHumanDate(item.scheduled_date);
+        }
         
         // Format content based on type - show readable content, not JSON
         let content = '';
