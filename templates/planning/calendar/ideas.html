@@ -69,7 +69,7 @@
         <!-- Expanded Idea Generation UI (shown if theme already selected) -->
         <div id="expanded-idea-section" class="expanded-idea-section" style="display: none;">
         <div class="ideas-results">
-            <div id="post-creation-status" class="idea-seed-display" style="margin-bottom: 1rem;">
+            <div id="post-creation-status" class="idea-seed-display" style="margin-bottom: 0; display: none;">
                 <!-- Status messages will appear here -->
             </div>
             
@@ -245,7 +245,7 @@
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
-    padding: 2rem;
+    padding: 1rem;
 }
 
 .ideas-results h3 {
@@ -339,7 +339,8 @@
 }
 
 .expanded-idea-section {
-    margin-bottom: 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .idea-generator {
@@ -481,8 +482,8 @@
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 6px;
-    padding: 1rem;
-    min-height: 100px;
+    padding: 0.75rem;
+    min-height: auto;
 }
 
 .idea-seed-content {
@@ -862,16 +863,21 @@ async function saveRequiredIdeas() {
         const data = await response.json();
         if (data.success) {
             console.log('[saveRequiredIdeas] Saved successfully:', data.required_ideas);
-            // Show brief success indicator
-            const ideasList = document.getElementById('required-ideas-list');
-            if (ideasList) {
-                const savedIndicator = document.createElement('div');
-                savedIndicator.style.cssText = 'position: absolute; top: 0.5rem; right: 0.5rem; background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; z-index: 10;';
-                savedIndicator.innerHTML = '<i class="fas fa-check"></i> Saved';
-                ideasList.style.position = 'relative';
-                ideasList.appendChild(savedIndicator);
-                setTimeout(() => savedIndicator.remove(), 2000);
-            }
+                // Show brief success indicator
+                const ideasList = document.getElementById('required-ideas-list');
+                if (ideasList) {
+                    // Remove any existing indicator
+                    const existing = ideasList.querySelector('.save-indicator');
+                    if (existing) existing.remove();
+                    
+                    const savedIndicator = document.createElement('div');
+                    savedIndicator.className = 'save-indicator';
+                    savedIndicator.style.cssText = 'position: absolute; top: 0.5rem; right: 0.5rem; background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; z-index: 10;';
+                    savedIndicator.innerHTML = '<i class="fas fa-check"></i> Saved';
+                    ideasList.style.position = 'relative';
+                    ideasList.appendChild(savedIndicator);
+                    setTimeout(() => savedIndicator.remove(), 2000);
+                }
         } else {
             console.error('[saveRequiredIdeas] Save failed:', data.error);
             alert('Failed to save required ideas: ' + (data.error || 'Unknown error'));
