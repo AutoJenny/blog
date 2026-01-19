@@ -164,19 +164,24 @@ def api_generate_subtitle_from_theme(post_id):
             return jsonify({'success': False, 'error': 'theme_title is required'}), 400
         
         # Create prompt for subtitle generation
-        system_prompt = """You are a content writer specializing in Scottish and Celtic heritage blog posts.
-Generate engaging, concise subtitles that complement blog post themes.
-Subtitles should be informative, engaging, and under 200 characters."""
+        system_prompt = """You are a content writer for clan.com, a blog about Scottish culture and heritage.
+Generate brief, descriptive subtitles that explain what the article will cover.
+Subtitles should be informative and help readers understand the article's scope and focus."""
         
-        task_prompt = f"""Generate a single, engaging subtitle for a blog post about: {theme_title}
+        task_prompt = f"""Generate a brief subtitle (description) for a blog post about: {theme_title}
 {f'Theme description: {theme_description}' if theme_description else ''}
+
+This subtitle should describe what the article will cover, not be a marketing tagline.
 
 Requirements:
 - Must be under 200 characters
-- Should complement the theme title without repeating it
-- Should provide additional context or intrigue
-- Focus on Scottish/Celtic heritage value
-- Use clear, engaging language
+- Should briefly describe what topics, aspects, or content the article will explore
+- Should fit the clan.com blog's focus on Scottish culture and heritage
+- Should help readers understand the article's scope
+- Use clear, descriptive language (not marketing copy)
+- Focus on content coverage, not selling or enticing
+
+Example format: "Exploring [key aspects] of [topic] and their significance in Scottish [culture/heritage/history]"
 
 CRITICAL: Return ONLY the subtitle text, no explanation, no quotes, no JSON."""
         
