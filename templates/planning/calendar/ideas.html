@@ -851,16 +851,45 @@ async function checkThemeSelection() {
         const response = await fetch(`/planning/api/calendar/schedule/${year}/${week}`);
         const data = await response.json();
         
-        if (data.success && data.theme && data.theme.item_id) {
+        // New API structure: check for selected_theme_id at top level or in schedule array
+        let themeId = null;
+        if (data.success) {
+            // First check top-level selected_theme_id
+            if (data.selected_theme_id) {
+                themeId = data.selected_theme_id;
+            } else if (data.schedule && Array.isArray(data.schedule)) {
+                // Look for theme_selection type in schedule array
+                const themeItem = data.schedule.find(item => 
+                    item.type === 'theme_selection' && (item.selected_theme_id || item.theme_id)
+                );
+                if (themeItem) {
+                    themeId = themeItem.selected_theme_id || themeItem.theme_id;
+                    // If theme data is already in the schedule item, use it
+                    if (themeItem.theme_title) {
+                        selectedTheme = {
+                            id: themeId,
+                            theme_title: themeItem.theme_title,
+                            theme_description: themeItem.theme_description || '',
+                            priority: themeItem.priority || 'normal'
+                        };
+                        themeSelectedForWeek = true;
+                        return; // Already have theme data, no need to fetch
+                    }
+                }
+            }
+        }
+        
+        // If we found a theme ID but don't have full theme data, fetch it
+        if (themeId && !selectedTheme) {
             themeSelectedForWeek = true;
             // Load theme details
-            const themeResp = await fetch(`/planning/api/calendar/themes/${data.theme.item_id}`);
+            const themeResp = await fetch(`/planning/api/calendar/themes/${themeId}`);
             const themeData = await themeResp.json();
             if (themeData.success && themeData.theme) {
                 selectedTheme = {
                     id: themeData.theme.id,
                     theme_title: themeData.theme.theme_title,
-                    theme_description: themeData.theme.theme_description,
+                    theme_description: themeData.theme.theme_description || '',
                     priority: themeData.theme.priority || 'normal'
                 };
             }
