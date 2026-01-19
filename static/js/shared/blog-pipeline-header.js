@@ -153,12 +153,25 @@ class BlogPipelineHeader {
         const post = this.postData.post;
         console.log('[Blog Pipeline Header] Updating header fields with post:', post);
         
-        // Update status
+        // Update status - normalize status display
         const postStatus = document.getElementById('post-status');
         console.log('[Blog Pipeline Header] post-status element:', postStatus);
         if (postStatus) {
-            postStatus.textContent = post.status || 'Unknown';
-            console.log('[Blog Pipeline Header] Updated status to:', post.status);
+            // Normalize status for display
+            let statusDisplay = post.status || 'Unknown';
+            // Map common status values to display-friendly versions
+            const statusMap = {
+                'draft': 'Draft',
+                'in_progress': 'In Progress',
+                'needs_review': 'Needs Review',
+                'ready': 'Ready',
+                'pending': 'Pending',
+                'published': 'Published',
+                'failed': 'Failed'
+            };
+            statusDisplay = statusMap[statusDisplay.toLowerCase()] || statusDisplay;
+            postStatus.textContent = statusDisplay;
+            console.log('[Blog Pipeline Header] Updated status to:', statusDisplay, '(raw:', post.status, ')');
         }
 
         // Update created date
@@ -275,9 +288,9 @@ class BlogPipelineHeader {
             }
 
             const taxonomy = data.taxonomy;
-            // Display as "Category: Type" where Category is theme_name and Type is content_type_name
-            if (taxonomy.theme_name && taxonomy.content_type_name) {
-                taxonomyEl.textContent = `${taxonomy.theme_name}: ${taxonomy.content_type_name}`;
+            // Display only theme_name (content_type_name is redundant and shown elsewhere)
+            if (taxonomy.theme_name) {
+                taxonomyEl.textContent = taxonomy.theme_name;
             } else {
                 taxonomyEl.textContent = '';
             }
