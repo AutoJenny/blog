@@ -360,16 +360,27 @@ class WorkflowNavigation {
      * Insert Next button into page
      */
     insertNextButton(button) {
+        // First, try to find dedicated container
+        const container = document.getElementById('workflow-navigation-container');
+        if (container) {
+            container.innerHTML = ''; // Clear any existing content
+            container.appendChild(button);
+            container.style.display = 'flex';
+            return;
+        }
+        
         // Try to insert after main content area, before footer/end
         const mainContent = document.querySelector('.page-main') || 
                           document.querySelector('.ideas-main') ||
                           document.querySelector('.ideas-results') ||
+                          document.querySelector('.expanded-idea-section') ||
                           document.querySelector('.container > div');
         
         if (mainContent) {
             // Create wrapper div for button
             const wrapper = document.createElement('div');
             wrapper.className = 'workflow-navigation-wrapper';
+            wrapper.id = 'workflow-navigation-container';
             wrapper.style.cssText = 'display: flex; justify-content: center; margin: 2rem 0;';
             wrapper.appendChild(button);
             
@@ -384,6 +395,7 @@ class WorkflowNavigation {
             const footer = document.querySelector('footer');
             const wrapper = document.createElement('div');
             wrapper.className = 'workflow-navigation-wrapper';
+            wrapper.id = 'workflow-navigation-container';
             wrapper.style.cssText = 'display: flex; justify-content: center; margin: 2rem 0;';
             wrapper.appendChild(button);
             
