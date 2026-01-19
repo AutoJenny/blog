@@ -425,8 +425,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (postId) {
+            console.log('[Workflow Navigation] Initializing for post:', postId, 'type:', postType);
             window.workflowNavigation = new WorkflowNavigation();
             window.workflowNavigation.init(postId, postType);
+        } else {
+            console.warn('[Workflow Navigation] No post ID found, cannot initialize');
         }
-    }, 500); // Wait 500ms for page to fully initialize
+    }, 800); // Wait 800ms for page to fully initialize (increased for ideas page)
 });

@@ -135,8 +135,8 @@
                 </div>
             </div>
             
-            <!-- LLM Module with full prompt editing and results panel -->
-            <div class="llm-module">
+            <!-- LLM Module with full prompt editing and results panel (hidden by default) -->
+            <div class="llm-module" id="expanded-idea-llm-module" style="display: none;">
                 <!-- LLM Prompts Panel with full editing functionality -->
                 {% include 'authoring/includes/llm_prompts_panel.html' %}
                 
@@ -145,7 +145,7 @@
                     <div class="results-header">
                         <h4 id="results-title">Generated Results</h4>
                         <button class="btn btn-primary" id="generate-btn">
-                            <i class="fas fa-magic"></i> Generate
+                            <i class="fas fa-magic"></i> Generate Expanded Idea
                         </button>
                     </div>
                     
@@ -177,6 +177,11 @@
                         <!-- Generated results will appear here -->
                     </div>
                 </div>
+            </div>
+            
+            <!-- Next Button Container -->
+            <div id="workflow-navigation-container" style="display: flex; justify-content: center; margin: 2rem 0;">
+                <!-- Next button will be inserted here by workflow-navigation.js -->
             </div>
         </div>
         </div>
