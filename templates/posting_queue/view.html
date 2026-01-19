@@ -386,7 +386,7 @@ function renderTable() {
                 : item.display_image_url.startsWith('/') 
                     ? item.display_image_url 
                     : '/' + item.display_image_url;
-            imageHtml = `<img src="${imageUrl}" alt="${content}" class="w-12 h-12 object-cover rounded mr-3 flex-shrink-0" onerror="this.style.display='none'">`;
+            imageHtml = `<img src="${imageUrl}" alt="${content}" class="w-10 h-10 object-cover rounded mr-2 flex-shrink-0" onerror="this.style.display='none'">`;
         } else if (item.image_path) {
             // Fallback: try to convert image_path
             let imageUrl = item.image_path;
