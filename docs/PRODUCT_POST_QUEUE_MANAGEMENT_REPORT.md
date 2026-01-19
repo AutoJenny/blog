@@ -157,29 +157,39 @@
 
 ## Recommended Implementation Plan
 
-### **Phase 1: Basic Editing & Deletion (Quick Win)**
-1. Add `PUT /api/posting-queue/<int:item_id>` endpoint (update)
-2. Add `DELETE /api/posting-queue/<int:item_id>` endpoint (delete)
-3. Add action buttons to `/posting-queue` rows:
-   - **"Edit"** button (for `draft`/`ready` only)
-   - **"Delete"** button (for `draft`/`ready`/`pending` only, with confirmation)
-4. Edit modal with:
-   - Product picker (search/browse)
-   - Caption editor (textarea)
-   - Date/time picker
-5. Delete confirmation dialog
-6. Save/Delete updates database and refreshes view
+### **Phase 1: Replace Product & Editing (Quick Win)**
 
-**Deletion Behavior:**
-- ✅ **Can delete:** `draft`, `ready`, `pending` posts
-- ❌ **Cannot delete:** `published` posts (historical record)
-- ⚠️ **No auto-shuffle:** Deletion removes the item but does NOT automatically reschedule other items
-  - Items keep their scheduled dates/times
-  - This prevents unintended changes to carefully scheduled posts
-  - User can manually reschedule items if desired
+**Primary Workflow: Replace Product (No Gaps)**
+1. **"Replace Product"** button on each row (for `draft`/`ready`/`pending`)
+   - Opens product browser/search modal
+   - User selects new product
+   - Updates queue item: changes `product_id`, keeps `scheduled_date`/`scheduled_time`
+   - Optionally regenerates caption for new product (or keeps existing)
+   - **No gap created** - slot is immediately filled
+
+2. **"Edit"** button (for `draft`/`ready`/`pending`)
+   - Full edit modal with:
+     - Product picker (can change product)
+     - Caption editor (textarea)
+     - Date/time picker (can reschedule)
+   - Updates all selected fields
+
+3. **"Delete"** button (for `draft`/`ready`/`pending` only, with confirmation)
+   - Removes item from queue
+   - **Note:** Creates a gap - user can manually fill it by editing another item
+
+**API Endpoints:**
+- `PUT /api/posting-queue/<int:item_id>` - Update queue item
+- `DELETE /api/posting-queue/<int:item_id>` - Delete queue item
+
+**Product Browser Integration:**
+- Reuse existing `product_search_component.html` (search by name/SKU)
+- Reuse existing `/products/api/search` endpoint
+- Modal shows search results, user clicks to select
+- Selected product updates the queue item immediately
 
 **Estimated Time:** 3-4 hours  
-**Impact:** High - Solves immediate problem (editing + deletion)
+**Impact:** High - Solves immediate problem (replace duplicate products without gaps)
 
 ---
 
@@ -197,13 +207,27 @@
 **Estimated Time:** 4-6 hours  
 **Impact:** Medium - Nice to have
 
-**Note on "Shuffling Up":**
-- By default, deletion does NOT auto-reschedule other items
-- This prevents accidental changes to carefully planned schedules
-- If user wants to fill gaps, they can:
-  1. Delete the unwanted item
-  2. Manually edit another item to move it to the deleted slot
-  3. Or use future "Fill gap" feature (Phase 2)
+**Recommended Workflow (No Gaps):**
+1. **Use "Replace Product"** instead of delete
+   - Immediately fills slot with new product
+   - No gap created
+   - Simpler workflow
+
+2. **If deletion is needed:**
+   - Delete creates a gap
+   - User can manually fill by editing another item
+   - Or use future "Fill gap" feature (Phase 2)
+
+**Product Browser Integration:**
+- Reuse existing components:
+  - `templates/includes/product_search_component.html` - Search interface
+  - `/products/api/search` - Search API endpoint
+  - `/products/api/<product_id>/full` - Get full product details
+- Modal workflow:
+  1. Click "Replace Product" → Opens modal with product search
+  2. Type product name/SKU → Shows results
+  3. Click product → Updates queue item immediately
+  4. Modal closes, view refreshes
 
 ---
 
@@ -259,7 +283,37 @@ Content-Type: application/json
 
 ---
 
-### **Delete Queue Item**
+### **Replace Product (Recommended - No Gaps)**
+```http
+PUT /api/posting-queue/<int:item_id>
+Content-Type: application/json
+
+{
+  "product_id": 123,              // New product to replace current one
+  "regenerate_caption": true      // Optional: regenerate caption for new product
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Product replaced successfully",
+  "item": { /* updated item with new product, same scheduled_date/time */ }
+}
+```
+
+**Behavior:**
+- ✅ Changes `product_id` to new product
+- ✅ **Keeps `scheduled_date` and `scheduled_time`** (no gap created)
+- ✅ Optionally regenerates `generated_caption` for new product
+- ✅ Updates `product_name`, `product_sku`, `product_image` from new product
+- ✅ Can replace: `draft`, `ready`, `pending` posts
+- ❌ Cannot replace: `published` posts (historical record)
+
+---
+
+### **Delete Queue Item (Creates Gap)**
 ```http
 DELETE /api/posting-queue/<int:item_id>
 ```
@@ -275,9 +329,9 @@ DELETE /api/posting-queue/<int:item_id>
 **Validation:**
 - ✅ Can delete: `draft`, `ready`, `pending` posts
 - ❌ Cannot delete: `published` posts (preserve historical record)
-- ⚠️ **No auto-rescheduling:** Other items keep their scheduled dates/times
-  - This is intentional - prevents unintended changes
-  - User can manually reschedule items if gaps need filling
+- ⚠️ **Creates a gap:** Deleted item's slot becomes empty
+  - Other items keep their scheduled dates/times
+  - User can manually fill gap by editing another item to move it
 
 ---
 
