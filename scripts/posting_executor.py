@@ -309,17 +309,23 @@ class PostingExecutor:
                                 WHERE id = %s
                             """, (result.get('platform_post_id'), post['id']))
                     else:
-                        stats['failed'] += 1
-                        
-                        # Update status to 'failed' with error message
-                        with self.db_manager.get_cursor() as cursor:
-                            cursor.execute("""
-                                UPDATE posting_queue
-                                SET status = 'failed',
-                                    error_message = %s,
-                                    updated_at = NOW()
-                                WHERE id = %s
-                            """, (result.get('error', 'Unknown error'), post['id']))
+                        # Check if error is due to posting being disabled
+                        error_msg = result.get('error', 'Unknown error')
+                        if 'disabled' in str(error_msg).lower() or 'blocked' in str(error_msg).lower():
+                            # Don't mark as failed - keep as 'ready' so it can be retried when posting is re-enabled
+                            logger.info(f"Posting disabled for queue_id {post['id']}, keeping status as 'ready' (not marking as failed)")
+                            stats['skipped'] += 1
+                        else:
+                            # Real error - mark as failed
+                            stats['failed'] += 1
+                            with self.db_manager.get_cursor() as cursor:
+                                cursor.execute("""
+                                    UPDATE posting_queue
+                                    SET status = 'failed',
+                                        error_message = %s,
+                                        updated_at = NOW()
+                                    WHERE id = %s
+                                """, (error_msg, post['id']))
                         
                 except Exception as e:
                     logger.error(f"Error processing post {post.get('id', 'unknown')}: {e}")
