@@ -153,43 +153,46 @@ class BlogPipelineHeader {
         const post = this.postData.post;
         console.log('[Blog Pipeline Header] Updating header fields with post:', post);
         
-        // Update status - normalize status display
+        // Update status - show raw status from database
         const postStatus = document.getElementById('post-status');
-        console.log('[Blog Pipeline Header] post-status element:', postStatus);
         if (postStatus) {
-            // Normalize status for display
-            let statusDisplay = post.status || 'Unknown';
-            // Map common status values to display-friendly versions
-            const statusMap = {
-                'draft': 'Draft',
-                'in_progress': 'In Progress',
-                'needs_review': 'Needs Review',
-                'ready': 'Ready',
-                'pending': 'Pending',
-                'published': 'Published',
-                'failed': 'Failed'
-            };
-            statusDisplay = statusMap[statusDisplay.toLowerCase()] || statusDisplay;
-            postStatus.textContent = statusDisplay;
-            console.log('[Blog Pipeline Header] Updated status to:', statusDisplay, '(raw:', post.status, ')');
+            // Show the actual status from the database, no normalization
+            postStatus.textContent = post.status || 'Unknown';
+            console.log('[Blog Pipeline Header] Updated status to:', post.status);
         }
 
-        // Update created date
+        // Update created date - format as DD/MM/YYYY, HH:MM:SS
         const postCreated = document.getElementById('post-created');
-        console.log('[Blog Pipeline Header] post-created element:', postCreated);
         if (postCreated) {
-            postCreated.textContent = post.created_at ? 
-                new Date(post.created_at).toLocaleString() : 'Unknown';
-            console.log('[Blog Pipeline Header] Updated created date to:', post.created_at);
+            if (post.created_at) {
+                const date = new Date(post.created_at);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                postCreated.textContent = `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
+            } else {
+                postCreated.textContent = 'Unknown';
+            }
         }
 
-        // Update updated date
+        // Update updated date - format as DD/MM/YYYY, HH:MM:SS
         const postUpdated = document.getElementById('post-updated');
-        console.log('[Blog Pipeline Header] post-updated element:', postUpdated);
         if (postUpdated) {
-            postUpdated.textContent = post.updated_at ? 
-                new Date(post.updated_at).toLocaleString() : 'Unknown';
-            console.log('[Blog Pipeline Header] Updated updated date to:', post.updated_at);
+            if (post.updated_at) {
+                const date = new Date(post.updated_at);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                postUpdated.textContent = `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
+            } else {
+                postUpdated.textContent = 'Unknown';
+            }
         }
 
         // Update taxonomy display

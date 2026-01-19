@@ -8,24 +8,25 @@
         <h1 class="pipeline-title" id="pipeline-title">
             <span class="pipeline-title-prefix" id="pipeline-title-prefix"></span>
             <span class="pipeline-title-week-info" id="pipeline-title-week-info"></span>
+            {% if post_type is defined and post_type %}
+            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
+            <span class="pipeline-title-post-type" style="color: #94a3b8; font-weight: 500;">
+                {% if post_type == 'themed' %}
+                    Theme
+                {% elif post_type == 'recipe' %}
+                    Recipe
+                {% elif post_type == 'profile' %}
+                    Profile
+                {% elif post_type == 'generated' %}
+                    Generated
+                {% else %}
+                    {{ post_type|title }}
+                {% endif %}
+            </span>
+            {% endif %}
             {% if post_type is defined and post_type and post_type not in ['recipe', 'profile', 'generated'] %}
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
             <span class="pipeline-title-theme" id="pipeline-title-theme">Unselected theme</span>
-            {% elif post_type is defined and post_type == 'recipe' %}
-            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
-            <span class="pipeline-title-theme" id="pipeline-title-theme">Recipe</span>
-            {% elif post_type is defined and post_type == 'profile' %}
-            <span class="pipeline-title-theme" id="pipeline-title-theme">Profile</span>
-            {% elif post_type is defined and post_type == 'generated' %}
-            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
-            <span class="pipeline-title-theme" id="pipeline-title-theme">{{ post_title or 'Generated Post' }}</span>
-            {% elif post_type is defined and post_type == 'scheduling' %}
-            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
-            <span class="pipeline-title-theme" id="pipeline-title-theme">Scheduling Overview</span>
-            {% else %}
-            <!-- Fallback when post_type not defined - show placeholder -->
-            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
-            <span class="pipeline-title-theme" id="pipeline-title-theme">Loading...</span>
             {% endif %}
         </h1>
         {% if post_type is defined and post_type and post_type not in ['recipe', 'profile', 'generated'] %}
@@ -61,18 +62,16 @@
                 1-click
             </a>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span class="post-type-label">Post type:</span>
-                <span class="post-type-value">
+                <span class="post-type-label">1-click automation:</span>
+                <span class="post-type-value" style="font-size: 0.7rem;">
                     {% if post_type == 'recipe' %}
                         RECIPE
                     {% elif post_type == 'profile' %}
                         PROFILE
                     {% elif post_type == 'generated' %}
                         GENERATED
-                    {% elif post_type == 'themed' %}
-                        THEMED
                     {% else %}
-                        {{ post_type.upper() }}
+                        Available
                     {% endif %}
                 </span>
             </div>
