@@ -145,9 +145,15 @@ class WeeklyContentCreator:
                             logger.warning(f"Could not calculate publication date for week {year}-W{week_number:02d}")
                             continue
                         
-                        # Check if post already exists
-                        if self.check_existing_post(idea_id, content_type, platform, scheduled_date):
-                            logger.info(f"Post already exists for {content_type} ID {idea_id} on {scheduled_date}")
+                        # Check if post already exists (with better error handling)
+                        try:
+                            if self.check_existing_post(idea_id, content_type, platform, scheduled_date):
+                                logger.info(f"Post already exists for {content_type} ID {idea_id} on {scheduled_date}")
+                                stats['posts_skipped'] += 1
+                                continue
+                        except Exception as e:
+                            # If check fails, assume post exists (safer - prevents duplicates)
+                            logger.error(f"Error checking existing post for {content_type} ID {idea_id}: {e}. Skipping to prevent duplicates.")
                             stats['posts_skipped'] += 1
                             continue
                         
@@ -156,18 +162,32 @@ class WeeklyContentCreator:
                         
                         generated_content = f"{idea_title}\n\n{idea_description}".strip() if idea_description else idea_title
                         
-                        queue_id = create_weekly_social_post(
-                            idea_id=idea_id,
-                            content_type=content_type,
-                            platform=platform,
-                            generated_content=generated_content,
-                            status='draft',
-                            scheduled_date=scheduled_date,
-                            scheduled_time=self.default_publication_time
-                        )
-                        
-                        logger.info(f"Created posting_queue entry: ID {queue_id}")
-                        stats['posts_created'] += 1
+                        try:
+                            queue_id = create_weekly_social_post(
+                                idea_id=idea_id,
+                                content_type=content_type,
+                                platform=platform,
+                                generated_content=generated_content,
+                                status='draft',
+                                scheduled_date=scheduled_date,
+                                scheduled_time=self.default_publication_time
+                            )
+                            
+                            if queue_id:
+                                logger.info(f"Created posting_queue entry: ID {queue_id}")
+                                stats['posts_created'] += 1
+                            else:
+                                # create_weekly_social_post returns None on duplicate (database constraint)
+                                logger.warning(f"Post creation skipped (likely duplicate): {content_type} ID {idea_id} on {scheduled_date}")
+                                stats['posts_skipped'] += 1
+                        except Exception as e:
+                            # Handle database constraint violations (duplicate key)
+                            if 'unique' in str(e).lower() or 'duplicate' in str(e).lower():
+                                logger.warning(f"Duplicate post prevented by database constraint: {content_type} ID {idea_id} on {scheduled_date}")
+                                stats['posts_skipped'] += 1
+                            else:
+                                logger.error(f"Error creating post for {content_type} ID {idea_id}: {e}")
+                                stats['errors'] += 1
                         
                     except Exception as e:
                         logger.error(f"Error processing {content_type} for week {year}-W{week_number:02d}: {e}")
