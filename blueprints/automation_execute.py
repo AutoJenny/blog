@@ -1214,11 +1214,7 @@ def execute_publish_to_facebook(queue_id, data):
     Supports:
     - Weekly content: Uses generated image and caption, posts via /photos endpoint
     - Product posts: Uses product image URL and caption, posts via /photos endpoint
-    
-    ⚠️ DISABLED - Facebook posting has been disabled to prevent unwanted posts.
     """
-    logger.error(f"BLOCKED: execute_publish_to_facebook called for queue_id={queue_id} - Facebook posting is DISABLED")
-    return {"success": False, "error": "Facebook posting has been disabled"}, 403
     try:
         import requests
         import os
