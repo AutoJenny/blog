@@ -11,17 +11,54 @@ logger = logging.getLogger(__name__)
 def index():
     """Main page with header and workflow navigation."""
     try:
-        # Get the latest post ID for workflow links
+        from datetime import datetime
+        
+        # Get current week
+        now = datetime.now()
+        current_year = now.isocalendar()[0]
+        current_week = now.isocalendar()[1]
+        
+        # Try to get post for current week first
         with db_manager.get_cursor() as cursor:
+            # Check if calendar_week_posts_v2 exists
             cursor.execute("""
-                SELECT p.id
-                FROM post p
-                WHERE p.status != 'deleted'
-                ORDER BY p.updated_at DESC, p.id DESC
-                LIMIT 1
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'calendar_week_posts_v2'
+                )
             """)
-            result = cursor.fetchone()
-            first_post_id = result['id'] if result else 1
+            has_v2_table = cursor.fetchone()['exists']
+            
+            first_post_id = None
+            
+            if has_v2_table:
+                # Get post scheduled for current week (excluding deleted posts)
+                cursor.execute("""
+                    SELECT cwp.post_id
+                    FROM calendar_week_posts_v2 cwp
+                    INNER JOIN post p ON cwp.post_id = p.id
+                    WHERE cwp.year = %s 
+                      AND cwp.week_number = %s
+                      AND p.status != 'deleted'
+                    ORDER BY cwp.created_at DESC, cwp.post_id DESC
+                    LIMIT 1
+                """, (current_year, current_week))
+                result = cursor.fetchone()
+                if result:
+                    first_post_id = result['post_id']
+            
+            # Fallback to latest post if no current week post found
+            if not first_post_id:
+                cursor.execute("""
+                    SELECT p.id
+                    FROM post p
+                    WHERE p.status != 'deleted'
+                    ORDER BY p.updated_at DESC, p.id DESC
+                    LIMIT 1
+                """)
+                result = cursor.fetchone()
+                first_post_id = result['id'] if result else 1
             
             # Get stats for the dashboard
             cursor.execute("""
