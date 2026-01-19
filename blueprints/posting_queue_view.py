@@ -49,7 +49,19 @@ def get_all_queue_items():
                     ci.idea_description,
                     -- Additional fields for better display
                     pq.generated_caption,
-                    pq.image_path
+                    pq.image_path,
+                    -- Image URLs (for display)
+                    CASE 
+                        WHEN pq.content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult') 
+                             AND pq.image_path IS NOT NULL 
+                             AND pq.image_path LIKE '/Users/%/static/%' 
+                        THEN REPLACE(pq.image_path, '/Users/autojenny/Documents/projects/blog', '')
+                        WHEN pq.content_type = 'product' AND cp.image_url IS NOT NULL
+                        THEN cp.image_url
+                        WHEN pq.content_type = 'product' AND pq.image_path IS NOT NULL
+                        THEN pq.image_path
+                        ELSE NULL
+                    END as display_image_url
                 FROM posting_queue pq
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
                 LEFT JOIN calendar_ideas ci ON pq.idea_id = ci.id

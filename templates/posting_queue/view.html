@@ -377,6 +377,40 @@ function renderTable() {
             }
         }
         
+        // Get image URL for display
+        let imageHtml = '';
+        if (item.display_image_url) {
+            // Use display_image_url if available (already converted to relative path or URL)
+            const imageUrl = item.display_image_url.startsWith('http') 
+                ? item.display_image_url 
+                : item.display_image_url.startsWith('/') 
+                    ? item.display_image_url 
+                    : '/' + item.display_image_url;
+            imageHtml = `<img src="${imageUrl}" alt="${content}" class="w-12 h-12 object-cover rounded mr-3 flex-shrink-0" onerror="this.style.display='none'">`;
+        } else if (item.image_path) {
+            // Fallback: try to convert image_path
+            let imageUrl = item.image_path;
+            if (imageUrl.includes('/static/')) {
+                // Extract relative path from static/
+                const staticIndex = imageUrl.indexOf('/static/');
+                imageUrl = imageUrl.substring(staticIndex);
+            } else if (imageUrl.startsWith('http')) {
+                // Already a URL
+                imageUrl = imageUrl;
+            } else if (imageUrl.startsWith('/Users/')) {
+                // File system path - convert to relative
+                const staticIndex = imageUrl.indexOf('/static/');
+                if (staticIndex > -1) {
+                    imageUrl = imageUrl.substring(staticIndex);
+                } else {
+                    imageUrl = null;
+                }
+            }
+            if (imageUrl) {
+                imageHtml = `<img src="${imageUrl}" alt="${content}" class="w-12 h-12 object-cover rounded mr-3 flex-shrink-0" onerror="this.style.display='none'">`;
+            }
+        }
+        
         return `
             <tr class="hover:bg-slate-700">
                 <td class="px-4 py-3 text-sm text-gray-300">${item.id}</td>
@@ -395,7 +429,10 @@ function renderTable() {
                     ${scheduled}
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-300" title="${contentTitle}">
-                    ${contentPreview}
+                    <div class="flex items-center">
+                        ${imageHtml}
+                        <span class="flex-1">${contentPreview}</span>
+                    </div>
                 </td>
             </tr>
         `;
