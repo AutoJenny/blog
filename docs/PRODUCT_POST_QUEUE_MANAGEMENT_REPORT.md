@@ -68,9 +68,10 @@
 ### ❌ **What's Missing:**
 1. **No Edit UI:** `/posting-queue` is read-only
 2. **No Update API:** `blueprints/posting_queue_view.py` only has GET endpoints
-3. **No Product Swapping:** Can't change `product_id` on existing queue items
-4. **No Caption Editing:** Can't edit `generated_caption` or `generated_content`
-5. **No Rescheduling:** Can't change `scheduled_date` or `scheduled_time`
+3. **No Delete API:** Can't remove items from queue
+4. **No Product Swapping:** Can't change `product_id` on existing queue items
+5. **No Caption Editing:** Can't edit `generated_caption` or `generated_content`
+6. **No Rescheduling:** Can't change `scheduled_date` or `scheduled_time`
 
 ---
 
@@ -156,28 +157,53 @@
 
 ## Recommended Implementation Plan
 
-### **Phase 1: Basic Editing (Quick Win)**
-1. Add `PUT /api/posting-queue/<int:item_id>` endpoint
-2. Add "Edit" button to `/posting-queue` rows (for `draft`/`ready` only)
-3. Simple modal with:
+### **Phase 1: Basic Editing & Deletion (Quick Win)**
+1. Add `PUT /api/posting-queue/<int:item_id>` endpoint (update)
+2. Add `DELETE /api/posting-queue/<int:item_id>` endpoint (delete)
+3. Add action buttons to `/posting-queue` rows:
+   - **"Edit"** button (for `draft`/`ready` only)
+   - **"Delete"** button (for `draft`/`ready`/`pending` only, with confirmation)
+4. Edit modal with:
    - Product picker (search/browse)
    - Caption editor (textarea)
    - Date/time picker
-4. Save updates database and refreshes view
+5. Delete confirmation dialog
+6. Save/Delete updates database and refreshes view
 
-**Estimated Time:** 2-3 hours  
-**Impact:** High - Solves immediate problem
+**Deletion Behavior:**
+- ✅ **Can delete:** `draft`, `ready`, `pending` posts
+- ❌ **Cannot delete:** `published` posts (historical record)
+- ⚠️ **No auto-shuffle:** Deletion removes the item but does NOT automatically reschedule other items
+  - Items keep their scheduled dates/times
+  - This prevents unintended changes to carefully scheduled posts
+  - User can manually reschedule items if desired
+
+**Estimated Time:** 3-4 hours  
+**Impact:** High - Solves immediate problem (editing + deletion)
 
 ---
 
 ### **Phase 2: Enhanced Features (Future)**
 1. Product diversity checking (warn if similar products scheduled close together)
 2. Bulk editing (select multiple, change product/caption)
-3. Schedule optimization (auto-reschedule to avoid duplicates)
-4. Product category filtering in picker
+3. Bulk deletion (select multiple items to delete)
+4. **Optional auto-reschedule on delete** (user preference):
+   - Option to "Fill gap" when deleting
+   - Moves next item(s) up to fill deleted slot
+   - Only if user explicitly requests it
+5. Schedule optimization (auto-reschedule to avoid duplicates)
+6. Product category filtering in picker
 
 **Estimated Time:** 4-6 hours  
 **Impact:** Medium - Nice to have
+
+**Note on "Shuffling Up":**
+- By default, deletion does NOT auto-reschedule other items
+- This prevents accidental changes to carefully planned schedules
+- If user wants to fill gaps, they can:
+  1. Delete the unwanted item
+  2. Manually edit another item to move it to the deleted slot
+  3. Or use future "Fill gap" feature (Phase 2)
 
 ---
 
@@ -226,10 +252,32 @@ Content-Type: application/json
 
 **Validation:**
 - Can't edit `published` posts
-- Can't edit `pending` posts (too close to publish time)
+- Can edit `draft`, `ready`, `pending` posts
 - `product_id` must exist in `clan_products`
-- `scheduled_date`/`scheduled_time` must be in future
-- Auto-recalculate `scheduled_timestamp`
+- `scheduled_date`/`scheduled_time` must be in future (if rescheduling)
+- Auto-recalculate `scheduled_timestamp` if date/time changed
+
+---
+
+### **Delete Queue Item**
+```http
+DELETE /api/posting-queue/<int:item_id>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Queue item deleted successfully"
+}
+```
+
+**Validation:**
+- ✅ Can delete: `draft`, `ready`, `pending` posts
+- ❌ Cannot delete: `published` posts (preserve historical record)
+- ⚠️ **No auto-rescheduling:** Other items keep their scheduled dates/times
+  - This is intentional - prevents unintended changes
+  - User can manually reschedule items if gaps need filling
 
 ---
 
