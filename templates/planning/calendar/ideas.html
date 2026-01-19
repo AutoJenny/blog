@@ -506,7 +506,7 @@ let llmModule = null;
 document.addEventListener('DOMContentLoaded', function() {
     // Set current stage for navigation (Calendar stage deprecated, using Planning instead)
     window.currentStage = 'planning';  // Normalized from 'concept'
-    window.currentSubstage = 'ideas';
+    window.currentSubstage = 'ideas';  // Use substage key (with underscores, will be normalized in JS)
     
     // Post ID persistence: restore from localStorage if post_id is 0 or missing
     const urlPostId = {{ post_id }};
@@ -666,9 +666,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Expanded idea is now generated and displayed via the LLM module below
-    
-    // Load existing metadata
-    loadPostMetadata();
 });
 
 // Load and save post metadata (subtitle, required ideas)

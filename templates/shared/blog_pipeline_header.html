@@ -100,7 +100,7 @@
             <div class="main-stages-left">
                 {% if post_type not in ['recipe', 'profile', 'generated'] %}
             <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
-               class="stage-btn" data-stage="concept">
+               class="stage-btn" data-stage="planning" data-stage-alias="concept">
                 <i class="fas fa-lightbulb"></i>
                 Planning
             </a>
@@ -112,13 +112,13 @@
             {% elif post_type == 'profile' %}
             {# Profile posts have Planning stage only (no Calendar, no Research) #}
             <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
-               class="stage-btn" data-stage="concept">
+               class="stage-btn" data-stage="planning" data-stage-alias="concept">
                 <i class="fas fa-lightbulb"></i>
                 Planning
             </a>
             {% elif post_type == 'generated' %}
             <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
-               class="stage-btn" data-stage="concept">
+               class="stage-btn" data-stage="planning" data-stage-alias="concept">
                 <i class="fas fa-lightbulb"></i>
                 Planning
             </a>
@@ -173,7 +173,7 @@
             <!-- Calendar sub-stages - DEPRECATED: Calendar stage has been removed -->
             
             <!-- Planning sub-stages -->
-            <div class="sub-stage-group" data-stage="concept">
+            <div class="sub-stage-group" data-stage="planning" data-stage-alias="concept">
                 {% set planning_substages = get_substages_for_navbar(post_type or 'themed', 'planning') %}
                 {% for substage in planning_substages %}
                     {% if substage.route_function %}
@@ -329,62 +329,11 @@ const subtitles = {
     }
 };
 
-// Navigation highlighting based on current page
+// Navigation highlighting is now handled by blog-pipeline-header.js
+// This function is kept for backward compatibility but delegates to the main class
 function updateNavigationHighlighting() {
-    // Get current stage and substage from window object (set by each page)
-    const currentStage = window.currentStage;
-    const currentSubstage = window.currentSubstage;
-    
-    console.log('Navigation update - currentStage:', currentStage, 'currentSubstage:', currentSubstage);
-    
-    // Remove active class from all stage buttons first
-    const stageButtons = document.querySelectorAll('.stage-btn');
-    stageButtons.forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Highlight main stage
-    if (currentStage) {
-        stageButtons.forEach(btn => {
-            if (btn.getAttribute('data-stage') === currentStage) {
-                btn.classList.add('active');
-                console.log('Highlighting stage:', currentStage);
-            }
-        });
-    }
-    
-    // Show/hide sub-stages based on current stage
-    const subStagesLine = document.querySelector('.sub-stages-line');
-    if (currentStage && currentStage !== 'old-interface' && subStagesLine) {
-        subStagesLine.style.display = 'flex';
-        
-        // Show only the relevant sub-stage group
-        const subStageGroups = document.querySelectorAll('.sub-stage-group');
-        subStageGroups.forEach(group => {
-            group.style.display = 'none';
-            if (group.getAttribute('data-stage') === currentStage) {
-                group.style.display = 'flex';
-            }
-        });
-        
-        // Highlight current substage and update subtitle
-        if (currentSubstage) {
-            const subStageButtons = document.querySelectorAll('.sub-stage-btn');
-            subStageButtons.forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-substage') === currentSubstage) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            // Update subtitle
-            const subtitleElement = document.getElementById('subtitle');
-            if (subtitleElement && subtitles[currentStage] && subtitles[currentStage][currentSubstage]) {
-                subtitleElement.textContent = subtitles[currentStage][currentSubstage];
-            }
-        }
-    } else if (subStagesLine) {
-        subStagesLine.style.display = 'none';
+    if (window.blogPipelineHeader && window.blogPipelineHeader.updateNavigationHighlighting) {
+        window.blogPipelineHeader.updateNavigationHighlighting();
     }
 }
 

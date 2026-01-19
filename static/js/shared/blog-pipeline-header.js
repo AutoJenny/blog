@@ -874,27 +874,72 @@ class BlogPipelineHeader {
 
     updateNavigationHighlighting() {
         // Get current stage and substage
-        const currentStage = window.currentStage || this.getCurrentStageFromURL();
-        const currentSubstage = window.currentSubstage || this.getCurrentSubstageFromURL();
+        let currentStage = window.currentStage || this.getCurrentStageFromURL();
+        let currentSubstage = window.currentSubstage || this.getCurrentSubstageFromURL();
+        
+        // Normalize stage names (concept -> planning)
+        if (currentStage === 'concept') {
+            currentStage = 'planning';
+        }
 
         console.log('[Blog Pipeline Header] Current stage:', currentStage, 'substage:', currentSubstage);
 
-        // Update main stage buttons
+        // Show sub-stages line (ensure it's visible) - ALWAYS show if post_type is defined
+        const subStagesLine = document.getElementById('sub-stages-line');
+        if (subStagesLine) {
+            // Always show sub-stages line if it exists (post_type is defined)
+            subStagesLine.style.display = 'flex';
+        }
+
+        // Update main stage buttons (check both data-stage and data-stage-alias)
         const stageButtons = document.querySelectorAll('.stage-btn');
         stageButtons.forEach(button => {
             const stage = button.getAttribute('data-stage');
-            if (stage === currentStage) {
+            const stageAlias = button.getAttribute('data-stage-alias');
+            if (stage === currentStage || stageAlias === currentStage || 
+                (currentStage === 'planning' && stageAlias === 'concept')) {
                 button.classList.add('active');
             } else {
                 button.classList.remove('active');
             }
         });
 
-        // Update sub-stage buttons
+        // Show/hide sub-stage groups based on current stage
+        // Show the group for current stage, hide others
+        const subStageGroups = document.querySelectorAll('.sub-stage-group');
+        subStageGroups.forEach(group => {
+            const groupStage = group.getAttribute('data-stage');
+            const groupStageAlias = group.getAttribute('data-stage-alias');
+            // Match if stage matches or alias matches, or if planning/concept match
+            const matches = groupStage === currentStage || 
+                          groupStageAlias === currentStage ||
+                          (currentStage === 'planning' && (groupStage === 'planning' || groupStageAlias === 'concept')) ||
+                          (currentStage === 'concept' && (groupStage === 'planning' || groupStageAlias === 'concept'));
+            if (matches) {
+                group.style.display = 'flex';
+            } else {
+                group.style.display = 'none';
+            }
+        });
+
+        // Update sub-stage buttons (normalize substage names)
+        const normalizedSubstage = this.normalizeSubstageName(currentSubstage);
         const subStageButtons = document.querySelectorAll('.sub-stage-btn');
         subStageButtons.forEach(button => {
             const substage = button.getAttribute('data-substage');
-            if (substage === currentSubstage) {
+            const normalizedButtonSubstage = this.normalizeSubstageName(substage);
+            // Compare both ways (with hyphens and underscores)
+            const buttonHyphen = normalizedButtonSubstage.replace(/_/g, '-');
+            const buttonUnderscore = normalizedButtonSubstage.replace(/-/g, '_');
+            const currentHyphen = normalizedSubstage.replace(/_/g, '-');
+            const currentUnderscore = normalizedSubstage.replace(/-/g, '_');
+            
+            if (normalizedButtonSubstage === normalizedSubstage ||
+                buttonHyphen === currentHyphen ||
+                buttonUnderscore === currentUnderscore ||
+                substage === currentSubstage ||
+                substage === currentSubstage.replace(/_/g, '-') ||
+                substage === currentSubstage.replace(/-/g, '_')) {
                 button.classList.add('active');
             } else {
                 button.classList.remove('active');
@@ -904,13 +949,37 @@ class BlogPipelineHeader {
         // Update subtitle
         this.updateSubtitle(currentStage, currentSubstage);
     }
+    
+    normalizeSubstageName(substage) {
+        if (!substage) return null;
+        // Normalize substage names (e.g., 'brainstorm' -> 'topic_brainstorming')
+        const substageMap = {
+            'brainstorm': 'topic_brainstorming',
+            'ideas': 'ideas',
+            'taxonomy': 'taxonomy',
+            'section-structure': 'section_structure',
+            'topic-allocation': 'topic_allocation',
+            'titling': 'section_titling',
+            'drafting': 'drafting',
+            'image-concepts': 'image_concepts',
+            'image-prompts': 'image_prompts',
+            'image-captions': 'image_captions',
+            'image-generation': 'image_generation',
+            'optimise': 'optimise',
+            'title-summary': 'title_summary',
+            'header-image': 'header_image',
+            'seo-meta': 'seo_meta'
+        };
+        return substageMap[substage] || substage.replace(/-/g, '_');
+    }
 
     getCurrentStageFromURL() {
         const path = window.location.pathname;
-        if (path.includes('/planning/')) return 'concept';
+        if (path.includes('/planning/')) return 'planning';  // Normalized from 'concept'
         if (path.includes('/authoring/')) return 'authoring';
         if (path.includes('/imaging/')) return 'imaging';
         if (path.includes('/header/')) return 'header';
+        if (path.includes('/research/')) return 'research';
         return null;
     }
 
@@ -937,21 +1006,32 @@ class BlogPipelineHeader {
 
     getCurrentSubstageFromURL() {
         const path = window.location.pathname;
-        if (path.includes('/calendar')) return 'calendar';
-        if (path.includes('/concept')) return 'concept';
-        if (path.includes('/author-first-drafts')) return 'author-first-drafts';
-        if (path.includes('/fix_language')) return 'fix-language';
-        if (path.includes('/image_concepts')) return 'image-concepts';
-        if (path.includes('/image_prompts')) return 'image-prompts';
-        if (path.includes('/image_captions')) return 'image-captions';
-        if (path.includes('/image-generation')) return 'image-generation';
-        if (path.includes('/photo-selection')) return 'photo-selection';
-        if (path.includes('/title-summary')) return 'title-summary';
-        if (path.includes('/header-image')) return 'header-image';
-        if (path.includes('/seo-meta')) return 'seo-meta';
-        if (path.includes('/product-match')) return 'product-match';
-        if (path.includes('/publishing-details')) return 'publishing-details';
-        if (path.includes('/final-review')) return 'final-review';
+        // Planning substages
+        if (path.includes('/calendar/ideas')) return 'ideas';
+        if (path.includes('/calendar/taxonomy')) return 'taxonomy';
+        if (path.includes('/concept/brainstorm')) return 'topic_brainstorming';
+        if (path.includes('/concept/section-structure')) return 'section_structure';
+        if (path.includes('/concept/topic-allocation')) return 'topic_allocation';
+        if (path.includes('/concept/titling')) return 'section_titling';
+        // Research substages
+        if (path.includes('/research/sources')) return 'sources';
+        if (path.includes('/research/visuals')) return 'visuals';
+        if (path.includes('/research/prompts')) return 'prompts';
+        if (path.includes('/research/verification')) return 'verification';
+        // Authoring substages
+        if (path.includes('/sections/drafting')) return 'drafting';
+        if (path.includes('/sections/image-concepts')) return 'image_concepts';
+        if (path.includes('/sections/image-prompts')) return 'image_prompts';
+        if (path.includes('/sections/image-captions')) return 'image_captions';
+        // Imaging substages
+        if (path.includes('/sections/image-generation')) return 'image_generation';
+        if (path.includes('/sections/optimise')) return 'optimise';
+        // Header substages
+        if (path.includes('/title-summary')) return 'title_summary';
+        if (path.includes('/header-image')) return 'header_image';
+        if (path.includes('/seo-meta')) return 'seo_meta';
+        if (path.includes('/product-match')) return 'product_match';
+        if (path.includes('/final-review') || path.includes('/preview')) return 'final_review';
         return null;
     }
 
@@ -990,10 +1070,21 @@ class BlogPipelineHeader {
         };
 
         const subtitleElement = document.getElementById('subtitle');
-        if (subtitleElement && currentStage && currentSubstage) {
-            const subtitle = subtitles[currentStage]?.[currentSubstage];
+        if (subtitleElement && currentStage && normalizedSubstage) {
+            // Try exact match first
+            let subtitle = subtitles[currentStage]?.[normalizedSubstage];
+            // Try with underscores
+            if (!subtitle) {
+                subtitle = subtitles[currentStage]?.[normalizedSubstage.replace(/-/g, '_')];
+            }
+            // Try with hyphens
+            if (!subtitle) {
+                subtitle = subtitles[currentStage]?.[normalizedSubstage.replace(/_/g, '-')];
+            }
             if (subtitle) {
                 subtitleElement.textContent = subtitle;
+            } else {
+                subtitleElement.textContent = '';
             }
         }
     }
