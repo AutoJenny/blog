@@ -106,13 +106,19 @@ tail -f logs/launchd_monitor.err
    tail -50 logs/launchd_monitor.err
    ```
 
-3. **Verify script is executable:**
+3. **Permission Issues (Most Common):**
+   If you see "Operation not permitted" errors, you need to grant Full Disk Access:
+   - System Settings → Privacy & Security → Full Disk Access
+   - Add Terminal.app and enable it
+   - See `docs/LAUNCHD_PERMISSIONS_FIX.md` for detailed instructions
+
+4. **Verify script is executable:**
    ```bash
    ls -lah scripts/background_posting_monitor.sh
    chmod +x scripts/background_posting_monitor.sh
    ```
 
-4. **Test script manually:**
+5. **Test script manually:**
    ```bash
    ./scripts/background_posting_monitor.sh
    ```
