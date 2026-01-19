@@ -80,7 +80,8 @@
 .main-stages-line {
     display: flex;
     flex-direction: column;
-    margin-bottom: 0.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
     background: #1e293b;
     border-radius: 6px;
     border: 1px solid #334155;
@@ -217,8 +218,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.25rem;
-    padding: 0.25rem 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
     background: #0f172a;
     border-radius: 6px;
     border: 1px solid #334155;
