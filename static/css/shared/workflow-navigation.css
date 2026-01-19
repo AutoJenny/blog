@@ -18,7 +18,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    margin: 2rem auto;
+    margin: 0.75rem auto;
     max-width: 300px;
     width: 100%;
 }
