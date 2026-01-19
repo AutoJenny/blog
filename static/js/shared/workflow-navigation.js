@@ -156,13 +156,19 @@ class WorkflowNavigation {
      */
     getNextSubstage() {
         if (!this.currentStage || !this.currentSubstage || !this.substages) {
-            console.log('Missing data for next substage:', {
+            console.log('[Workflow Navigation] Missing data for next substage:', {
                 currentStage: this.currentStage,
                 currentSubstage: this.currentSubstage,
-                hasSubstages: !!this.substages
+                hasSubstages: !!this.substages,
+                substages: this.substages
             });
             return null;
         }
+        
+        console.log('[Workflow Navigation] Getting next substage for:', {
+            currentStage: this.currentStage,
+            currentSubstage: this.currentSubstage
+        });
 
         // Handle both array format (from API) and object format (from defaults)
         let stageSubstages = this.substages[this.currentStage];

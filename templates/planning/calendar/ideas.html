@@ -870,6 +870,7 @@ async function savePostMetadata() {
         });
         
         // Save required ideas to post_development.embedding_overrides
+        console.log('[savePostMetadata] Saving required ideas:', requiredIdeas);
         const overridesResponse = await fetch(`/planning/api/posts/${window.postId}/required-ideas`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -878,6 +879,9 @@ async function savePostMetadata() {
         
         const subtitleData = await subtitleResponse.json();
         const overridesData = await overridesResponse.json();
+        
+        console.log('[savePostMetadata] Subtitle response:', subtitleData);
+        console.log('[savePostMetadata] Required ideas response:', overridesData);
         
         if (!subtitleResponse.ok) {
             throw new Error(subtitleData.error || `HTTP ${subtitleResponse.status}: Failed to save subtitle`);
