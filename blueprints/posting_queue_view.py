@@ -267,6 +267,7 @@ def update_queue_item(item_id):
                 if final_date and final_time:
                     # Parse time if it's a string
                     if isinstance(final_time, str):
+                        # Remove seconds if present (HH:MM:SS -> HH:MM)
                         time_parts = final_time.split(':')
                         hour = int(time_parts[0])
                         minute = int(time_parts[1]) if len(time_parts) > 1 else 0
@@ -288,16 +289,16 @@ def update_queue_item(item_id):
             if not update_fields:
                 return jsonify({'success': False, 'error': 'No valid fields to update'}), 400
             
-            # Add updated_at and item_id
+            # Add updated_at (no placeholder needed - it's a function call)
             update_fields.append("updated_at = NOW()")
-            update_values.append(item_id)
             
-            # Execute update
-            update_query = f"""
-                UPDATE posting_queue
-                SET {', '.join(update_fields)}
-                WHERE id = %s
-            """
+            # Build the SET clause - join field assignments
+            set_clause = ', '.join(update_fields)
+            
+            # Execute update - item_id goes at the end for WHERE clause
+            update_query = f"UPDATE posting_queue SET {set_clause} WHERE id = %s"
+            # Add item_id to values for WHERE clause
+            update_values.append(item_id)
             cursor.execute(update_query, tuple(update_values))
             
             # Fetch updated item
