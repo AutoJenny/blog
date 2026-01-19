@@ -5,8 +5,13 @@ Endpoints for managing post metadata (subtitle, required ideas, etc.)
 
 from flask import Blueprint, request, jsonify
 from config.database import db_manager
+from blueprints.header.llm_service import LLMService
 import json
 import logging
+import re
+
+# Initialize LLM service
+llm_service = LLMService()
 
 logger = logging.getLogger(__name__)
 
@@ -145,4 +150,64 @@ def api_post_required_ideas(post_id):
             
     except Exception as e:
         logger.error(f"Error handling required ideas for post {post_id}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/<int:post_id>/generate-subtitle-from-theme', methods=['POST'])
+def api_generate_subtitle_from_theme(post_id):
+    """Generate subtitle from theme using LLM"""
+    try:
+        data = request.get_json() or {}
+        theme_title = data.get('theme_title', '').strip()
+        theme_description = data.get('theme_description', '').strip()
+        
+        if not theme_title:
+            return jsonify({'success': False, 'error': 'theme_title is required'}), 400
+        
+        # Create prompt for subtitle generation
+        system_prompt = """You are a content writer specializing in Scottish and Celtic heritage blog posts.
+Generate engaging, concise subtitles that complement blog post themes.
+Subtitles should be informative, engaging, and under 200 characters."""
+        
+        task_prompt = f"""Generate a single, engaging subtitle for a blog post about: {theme_title}
+{f'Theme description: {theme_description}' if theme_description else ''}
+
+Requirements:
+- Must be under 200 characters
+- Should complement the theme title without repeating it
+- Should provide additional context or intrigue
+- Focus on Scottish/Celtic heritage value
+- Use clear, engaging language
+
+CRITICAL: Return ONLY the subtitle text, no explanation, no quotes, no JSON."""
+        
+        messages = [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': task_prompt}
+        ]
+        
+        # Execute LLM request
+        logger.info(f"Generating subtitle from theme: {theme_title}")
+        llm_response = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+        
+        if 'error' in llm_response:
+            logger.error(f"LLM generation failed: {llm_response['error']}")
+            return jsonify({'success': False, 'error': f'LLM generation failed: {llm_response["error"]}'}), 500
+        
+        generated_content = llm_response.get('content', '').strip()
+        
+        # Clean up the response (remove quotes, extra whitespace)
+        generated_content = re.sub(r'^["\']|["\']$', '', generated_content)
+        generated_content = generated_content.strip()
+        
+        # Limit to 200 characters
+        if len(generated_content) > 200:
+            generated_content = generated_content[:197] + '...'
+        
+        return jsonify({
+            'success': True,
+            'subtitle': generated_content
+        })
+        
+    except Exception as e:
+        logger.error(f"Error generating subtitle from theme for post {post_id}: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

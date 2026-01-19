@@ -73,6 +73,16 @@
                 <!-- Status messages will appear here -->
             </div>
             
+            <!-- Theme Display -->
+            <div id="theme-display" class="theme-display" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: none;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: #f1f5f9;">
+                    <i class="fas fa-palette" style="color: #f97316;"></i>
+                    <strong style="font-size: 1.1rem;">Theme:</strong>
+                    <span id="theme-title-display" style="color: #f97316; font-weight: 600;"></span>
+                </div>
+                <div id="theme-description-display" style="color: #94a3b8; font-size: 0.875rem; margin-top: 0.5rem; display: none;"></div>
+            </div>
+            
             <!-- Post Metadata Editor -->
             <div class="post-metadata-editor" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
                 <h4 style="color: #f1f5f9; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -86,32 +96,48 @@
                         <label for="post-subtitle" style="display: block; color: #cbd5e1; font-weight: 500; margin-bottom: 0.5rem;">
                             <i class="fas fa-heading"></i> Subtitle
                         </label>
-                        <input type="text" 
-                               id="post-subtitle" 
-                               class="metadata-input" 
-                               placeholder="Enter post subtitle..."
-                               style="width: 100%; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 0.9rem;"
-                               maxlength="200" />
-                        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem; display: block;">Brief subtitle for the post (max 200 characters)</small>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" 
+                                   id="post-subtitle" 
+                                   class="metadata-input" 
+                                   placeholder="Subtitle will be auto-generated from theme..."
+                                   style="flex: 1; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 0.9rem;"
+                                   maxlength="200" />
+                            <button type="button" 
+                                    id="generate-subtitle-btn" 
+                                    class="btn btn-secondary" 
+                                    style="white-space: nowrap;"
+                                    onclick="generateSubtitleFromTheme()"
+                                    title="Generate subtitle from theme">
+                                <i class="fas fa-magic"></i> Generate
+                            </button>
+                        </div>
+                        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem; display: block;">Brief subtitle for the post (max 200 characters). Click Generate to auto-create from theme.</small>
                     </div>
                     
                     <!-- Required Ideas to Include Field -->
                     <div class="metadata-field">
-                        <label for="required-ideas" style="display: block; color: #cbd5e1; font-weight: 500; margin-bottom: 0.5rem;">
-                            <i class="fas fa-list-check"></i> Required Ideas to Include
-                        </label>
-                        <textarea id="required-ideas" 
-                                  class="metadata-textarea" 
-                                  placeholder="Enter required ideas, one per line or as JSON array..."
-                                  rows="6"
-                                  style="width: 100%; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 0.9rem; font-family: monospace; resize: vertical;"></textarea>
-                        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem; display: block;">
-                            Enter ideas that must be included in the post. One per line, or as JSON array: ["idea1", "idea2"]
-                        </small>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label style="display: block; color: #cbd5e1; font-weight: 500; margin: 0;">
+                                <i class="fas fa-list-check"></i> Required Ideas to Include
+                            </label>
+                            <button type="button" 
+                                    id="add-idea-btn" 
+                                    class="btn btn-primary" 
+                                    style="white-space: nowrap;"
+                                    onclick="showAddIdeaModal()">
+                                <i class="fas fa-plus"></i> Add Idea
+                            </button>
+                        </div>
+                        <div id="required-ideas-list" style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 0.75rem; min-height: 100px; max-height: 300px; overflow-y: auto;">
+                            <div id="no-ideas-message" style="color: #64748b; font-size: 0.875rem; text-align: center; padding: 1rem;">
+                                No required ideas added yet. Click "Add Idea" to add one.
+                            </div>
+                        </div>
                         <button type="button" 
                                 id="save-metadata-btn" 
-                                class="btn btn-primary" 
-                                style="margin-top: 0.5rem;"
+                                class="btn btn-success" 
+                                style="margin-top: 0.5rem; width: 100%;"
                                 onclick="savePostMetadata()">
                             <i class="fas fa-save"></i> Save Metadata
                         </button>
@@ -668,6 +694,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Expanded idea is now generated and displayed via the LLM module below
 });
 
+// Store required ideas in memory
+let requiredIdeas = [];
+
 // Load and save post metadata (subtitle, required ideas)
 async function loadPostMetadata() {
     try {
@@ -675,6 +704,28 @@ async function loadPostMetadata() {
         const expandedIdeaSection = document.getElementById('expanded-idea-section');
         if (!expandedIdeaSection || expandedIdeaSection.style.display === 'none') {
             return;
+        }
+        
+        // Display theme if available
+        if (selectedTheme && selectedTheme.theme_title) {
+            const themeDisplay = document.getElementById('theme-display');
+            const themeTitleDisplay = document.getElementById('theme-title-display');
+            const themeDescDisplay = document.getElementById('theme-description-display');
+            
+            if (themeDisplay && themeTitleDisplay) {
+                themeDisplay.style.display = 'block';
+                themeTitleDisplay.textContent = selectedTheme.theme_title;
+                if (selectedTheme.theme_description && themeDescDisplay) {
+                    themeDescDisplay.textContent = selectedTheme.theme_description;
+                    themeDescDisplay.style.display = 'block';
+                }
+            }
+            
+            // Auto-generate subtitle if not already set
+            const subtitleInput = document.getElementById('post-subtitle');
+            if (subtitleInput && !subtitleInput.value.trim()) {
+                await generateSubtitleFromTheme();
+            }
         }
         
         const response = await fetch(`/planning/api/posts/${window.postId}`);
@@ -688,44 +739,120 @@ async function loadPostMetadata() {
             }
             
             // Load required ideas from embedding_overrides
-            const requiredIdeasTextarea = document.getElementById('required-ideas');
-            if (requiredIdeasTextarea) {
-                // Try to get from post_development.embedding_overrides
-                if (data.post.embedding_overrides) {
-                    try {
-                        const overrides = typeof data.post.embedding_overrides === 'string' 
-                            ? JSON.parse(data.post.embedding_overrides) 
-                            : data.post.embedding_overrides;
-                        if (overrides && overrides.required_ideas) {
-                            if (Array.isArray(overrides.required_ideas)) {
-                                requiredIdeasTextarea.value = overrides.required_ideas.join('\n');
-                            } else {
-                                requiredIdeasTextarea.value = String(overrides.required_ideas);
-                            }
-                        } else {
-                            requiredIdeasTextarea.value = '';
-                        }
-                    } catch (e) {
-                        console.warn('Error parsing embedding_overrides:', e);
-                        requiredIdeasTextarea.value = '';
+            requiredIdeas = [];
+            if (data.post.embedding_overrides) {
+                try {
+                    const overrides = typeof data.post.embedding_overrides === 'string' 
+                        ? JSON.parse(data.post.embedding_overrides) 
+                        : data.post.embedding_overrides;
+                    if (overrides && overrides.required_ideas && Array.isArray(overrides.required_ideas)) {
+                        requiredIdeas = overrides.required_ideas;
                     }
-                } else {
-                    requiredIdeasTextarea.value = '';
+                } catch (e) {
+                    console.warn('Error parsing embedding_overrides:', e);
                 }
             }
+            renderRequiredIdeasList();
         }
     } catch (error) {
         console.error('Error loading post metadata:', error);
     }
 }
 
+async function generateSubtitleFromTheme() {
+    if (!selectedTheme || !selectedTheme.theme_title) {
+        alert('No theme selected');
+        return;
+    }
+    
+    const subtitleInput = document.getElementById('post-subtitle');
+    const generateBtn = document.getElementById('generate-subtitle-btn');
+    
+    if (!subtitleInput || !generateBtn) return;
+    
+    // Show loading state
+    const originalText = generateBtn.innerHTML;
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/generate-subtitle-from-theme`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                theme_title: selectedTheme.theme_title,
+                theme_description: selectedTheme.theme_description || ''
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success && data.subtitle) {
+            subtitleInput.value = data.subtitle;
+        } else {
+            alert('Failed to generate subtitle: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error generating subtitle:', error);
+        alert('Error generating subtitle: ' + error.message);
+    } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = originalText;
+    }
+}
+
+function renderRequiredIdeasList() {
+    const ideasList = document.getElementById('required-ideas-list');
+    const noIdeasMessage = document.getElementById('no-ideas-message');
+    
+    if (!ideasList) return;
+    
+    if (requiredIdeas.length === 0) {
+        if (noIdeasMessage) {
+            noIdeasMessage.style.display = 'block';
+        }
+        ideasList.innerHTML = '<div id="no-ideas-message" style="color: #64748b; font-size: 0.875rem; text-align: center; padding: 1rem;">No required ideas added yet. Click "Add Idea" to add one.</div>';
+    } else {
+        if (noIdeasMessage) {
+            noIdeasMessage.style.display = 'none';
+        }
+        ideasList.innerHTML = requiredIdeas.map((idea, index) => `
+            <div class="idea-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; margin-bottom: 0.5rem;">
+                <span style="color: #f1f5f9; flex: 1;">${escapeHtml(idea)}</span>
+                <button type="button" onclick="removeRequiredIdea(${index})" style="background: #dc2626; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; margin-left: 0.5rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function removeRequiredIdea(index) {
+    if (index >= 0 && index < requiredIdeas.length) {
+        requiredIdeas.splice(index, 1);
+        renderRequiredIdeasList();
+    }
+}
+
+function showAddIdeaModal() {
+    const ideaText = prompt('Enter a required idea to include in the post:');
+    if (ideaText && ideaText.trim()) {
+        requiredIdeas.push(ideaText.trim());
+        renderRequiredIdeasList();
+    }
+}
+
 async function savePostMetadata() {
     try {
         const subtitleInput = document.getElementById('post-subtitle');
-        const requiredIdeasTextarea = document.getElementById('required-ideas');
         const saveBtn = document.getElementById('save-metadata-btn');
         
-        if (!subtitleInput || !requiredIdeasTextarea || !saveBtn) {
+        if (!subtitleInput || !saveBtn) {
             return;
         }
         
@@ -733,26 +860,6 @@ async function savePostMetadata() {
         const originalText = saveBtn.innerHTML;
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-        
-        // Parse required ideas (support both line-separated and JSON array)
-        let requiredIdeas = [];
-        const ideasText = requiredIdeasTextarea.value.trim();
-        if (ideasText) {
-            // Try to parse as JSON first
-            try {
-                const parsed = JSON.parse(ideasText);
-                if (Array.isArray(parsed)) {
-                    requiredIdeas = parsed;
-                } else {
-                    requiredIdeas = [ideasText];
-                }
-            } catch (e) {
-                // Not JSON, treat as line-separated
-                requiredIdeas = ideasText.split('\n')
-                    .map(line => line.trim())
-                    .filter(line => line.length > 0);
-            }
-        }
         
         // Save subtitle to post table
         const subtitle = subtitleInput.value.trim();
