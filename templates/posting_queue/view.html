@@ -296,9 +296,10 @@ function renderTable() {
         let contentTitle = '';
         
         if (item.content_type === 'product') {
-            // For product posts: prefer caption (readable), then product name, never show JSON
-            content = item.generated_caption || item.product_name || 'No content';
-            contentTitle = item.generated_caption || item.product_name || '';
+            // For product posts: prefer product name (clean), then caption, never show JSON
+            // Use product_name from join (actual_product_name) first, then fallback to caption
+            content = item.product_name || item.generated_caption || 'No content';
+            contentTitle = item.product_name || item.generated_caption || '';
             
             // If we only have JSON in generated_content, extract product name from it
             if (!content || content === 'No content') {

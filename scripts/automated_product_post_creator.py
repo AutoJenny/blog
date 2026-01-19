@@ -98,20 +98,34 @@ class ProductPostCreator:
         logger.info(f"Found {len(slots)} upcoming posting slots")
         return slots
     
-    def check_existing_post(self, scheduled_date: date, scheduled_time: time, platform: str = 'facebook') -> bool:
+    def check_existing_post(self, scheduled_date: date, scheduled_time: time, platform: str = 'facebook', product_id: int = None) -> bool:
         """
-        Check if a posting_queue entry already exists for this date/time/platform
+        Check if a posting_queue entry already exists for this date/time/platform/product
+        If product_id is provided, checks for that specific product. Otherwise checks for any product.
         """
         try:
             with self.db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    SELECT id FROM posting_queue
-                    WHERE content_type = 'product'
-                    AND platform = %s
-                    AND scheduled_date = %s
-                    AND scheduled_time = %s
-                    AND status NOT IN ('published', 'failed')
-                """, (platform, scheduled_date, scheduled_time))
+                if product_id:
+                    # Check for specific product at this time slot
+                    cursor.execute("""
+                        SELECT id FROM posting_queue
+                        WHERE content_type = 'product'
+                        AND platform = %s
+                        AND scheduled_date = %s
+                        AND scheduled_time = %s
+                        AND product_id = %s
+                        AND status NOT IN ('published', 'failed')
+                    """, (platform, scheduled_date, scheduled_time, product_id))
+                else:
+                    # Check for any product at this time slot (prevent multiple products at same time)
+                    cursor.execute("""
+                        SELECT id FROM posting_queue
+                        WHERE content_type = 'product'
+                        AND platform = %s
+                        AND scheduled_date = %s
+                        AND scheduled_time = %s
+                        AND status NOT IN ('published', 'failed')
+                    """, (platform, scheduled_date, scheduled_time))
                 
                 result = cursor.fetchone()
                 return result is not None
@@ -245,7 +259,7 @@ class ProductPostCreator:
                 scheduled_date = slot['date']
                 scheduled_time = slot['time']
                 
-                # Check if post already exists for this slot
+                # Check if any post already exists for this slot (prevent duplicates)
                 if self.check_existing_post(scheduled_date, scheduled_time):
                     logger.info(f"Post already exists for {scheduled_date} {scheduled_time}, skipping")
                     stats['slots_skipped'] += 1
@@ -258,6 +272,17 @@ class ProductPostCreator:
                 
                 product = products[product_index]
                 product_id = product['id']
+                
+                # Double-check this specific product isn't already scheduled for this slot
+                if self.check_existing_post(scheduled_date, scheduled_time, product_id=product_id):
+                    logger.info(f"Product {product_id} already scheduled for {scheduled_date} {scheduled_time}, trying next product")
+                    # Try next product instead
+                    product_index += 1
+                    if product_index >= len(products):
+                        logger.warning(f"Ran out of products")
+                        break
+                    product = products[product_index]
+                    product_id = product['id']
                 
                 # Create post
                 queue_id = self.create_product_post(
