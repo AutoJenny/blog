@@ -26,6 +26,52 @@ class SectionsPanel {
     init() {
         this.loadSections();
         this.bindEvents();
+        this.checkOllamaStatus();
+        // Check Ollama status every 30 seconds
+        setInterval(() => this.checkOllamaStatus(), 30000);
+    }
+    
+    async checkOllamaStatus() {
+        try {
+            const response = await fetch('/api/ollama/status');
+            const data = await response.json();
+            
+            const indicator = document.getElementById('ollama-status-indicator');
+            const icon = document.getElementById('ollama-status-icon');
+            const text = document.getElementById('ollama-status-text');
+            const startBtn = document.getElementById('ollama-start-btn');
+            const generateBtn = document.getElementById('batch-generate-btn');
+            
+            if (!indicator || !icon || !text) return;
+            
+            if (data.is_running) {
+                indicator.style.display = 'block';
+                indicator.style.backgroundColor = '#10b981';
+                indicator.style.color = '#fff';
+                icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                text.textContent = 'Ollama is running';
+                if (startBtn) startBtn.style.display = 'none';
+                if (generateBtn) generateBtn.disabled = false;
+            } else {
+                indicator.style.display = 'block';
+                indicator.style.backgroundColor = '#ef4444';
+                indicator.style.color = '#fff';
+                icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+                text.textContent = 'Ollama is not running';
+                if (startBtn) {
+                    startBtn.style.display = 'inline-block';
+                    startBtn.onclick = () => {
+                        alert('To start Ollama, run: ollama serve\nOr check if Ollama is installed and running on http://localhost:11434');
+                    };
+                }
+                if (generateBtn) {
+                    generateBtn.disabled = true;
+                    generateBtn.title = 'Ollama must be running to generate prompts';
+                }
+            }
+        } catch (error) {
+            console.error('Error checking Ollama status:', error);
+        }
     }
     
     async loadSections() {
@@ -35,8 +81,9 @@ class SectionsPanel {
                 ? `/imaging/api/posts/${this.postId}/sections`
                 : `/authoring/api/posts/${this.postId}/sections`;
             
-            // Add image_context parameter if we're in image captions or image generation context
-            if (window.currentSubstage === 'image-captions' || window.currentSubstage === 'image-generation') {
+            // Add image_context parameter if we're in image captions or image generation context (check both hyphenated and underscored variants)
+            const currentSubstage = window.currentSubstage;
+            if (currentSubstage === 'image-captions' || currentSubstage === 'image_captions' || currentSubstage === 'image-generation') {
                 const separator = apiEndpoint.includes('?') ? '&' : '?';
                 apiEndpoint += `${separator}image_context=true`;
             }
@@ -236,10 +283,21 @@ class SectionsPanel {
         generateBtn.textContent = 'Generating...';
         
         try {
+            // Check Ollama status before starting batch generation
+            const ollamaStatus = await fetch('/api/ollama/status').then(r => r.json());
+            if (!ollamaStatus.is_running) {
+                this.showError('Ollama is not running. Please start Ollama before generating prompts.\n\nTo start Ollama, run: ollama serve\nOr check if Ollama is installed and running on http://localhost:11434');
+                generateBtn.disabled = false;
+                generateBtn.textContent = originalText;
+                return;
+            }
+            
             // For image-prompts substage, use the same logic as individual Generate button
-            if (window.currentSubstage === 'image-prompts') {
+            // Check for both hyphenated and underscored variants
+            const currentSubstage = window.currentSubstage;
+            if (currentSubstage === 'image-prompts' || currentSubstage === 'image_prompts') {
                 await this.batchGenerateImagePrompts(selectedIds);
-            } else if (window.currentSubstage === 'image-concepts') {
+            } else if (currentSubstage === 'image-concepts' || currentSubstage === 'image_concepts') {
                 // For image-concepts, dispatch event so output panel can handle it
                 // Don't re-enable button here - output panel will handle it
                 console.log('[DEBUG] SectionsPanel: Dispatching sections:batch-generate event for image-concepts with IDs:', selectedIds);
@@ -260,6 +318,9 @@ class SectionsPanel {
             
             console.log(`Batch generation completed! Successfully generated content for ${selectedIds.length} sections.`);
             
+            // Reload all sections to get updated data
+            await this.loadSections();
+            
             // Emit batch complete event
             this.callbacks.onBatchComplete({
                 totalSections: selectedIds.length,
@@ -268,6 +329,7 @@ class SectionsPanel {
             
         } catch (error) {
             console.error('Batch generation failed:', error);
+            this.showError(`Batch generation failed: ${error.message || 'Unknown error'}`);
         } finally {
             // Re-enable the button
             generateBtn.disabled = false;
@@ -288,7 +350,8 @@ class SectionsPanel {
                 total: selectedIds.length,
                 sectionId: sectionId,
                 sectionTitle: sectionTitle,
-                status: 'generating'
+                status: 'generating',
+                progress: 0
             });
             
             try {
@@ -334,28 +397,24 @@ class SectionsPanel {
                 
                 console.log(`[Batch Generate] Response status: ${response.status} for section ${sectionId}`);
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    // If response is not JSON, create error object
+                    const text = await response.text();
+                    throw new Error(`Server returned non-JSON response (${response.status}): ${text.substring(0, 200)}`);
                 }
                 
-                const data = await response.json();
                 console.log(`[Batch Generate] Response data for section ${sectionId}:`, data);
                 
-                if (data.success) {
-                    console.log(`Generated image prompt for section ${sectionId}`);
-                    this.updateSectionStatus(sectionId, 'complete');
-                    this.updateSectionProgress(sectionId, 100);
+                if (!response.ok || !data.success) {
+                    const errorMsg = data.error || `HTTP ${response.status}: ${response.statusText}` || 'Unknown error';
+                    console.error(`Failed to generate image prompt for section ${sectionId}:`, errorMsg);
                     
-                    // Emit progress event
-                    this.callbacks.onBatchProgress({
-                        current: i + 1,
-                        total: selectedIds.length,
-                        sectionId: sectionId,
-                        sectionTitle: sectionTitle,
-                        status: 'success'
-                    });
-                } else {
-                    console.error(`Failed to generate image prompt for section ${sectionId}:`, data.error);
+                    // Show user-visible error
+                    this.showError(`Section ${sectionTitle}: ${errorMsg}`);
+                    
                     this.updateSectionStatus(sectionId, 'error');
                     
                     // Emit progress event
@@ -365,7 +424,34 @@ class SectionsPanel {
                         sectionId: sectionId,
                         sectionTitle: sectionTitle,
                         status: 'error',
-                        error: data.error
+                        error: errorMsg,
+                        progress: 0
+                    });
+                } else {
+                    console.log(`Generated image prompt for section ${sectionId}`);
+                    this.updateSectionStatus(sectionId, 'complete');
+                    this.updateSectionProgress(sectionId, 100);
+                    
+                    // Reload section data to get updated image_prompts
+                    await this.reloadSectionData(sectionId);
+                    
+                    // Update output panel if this section is currently displayed
+                    if (window.imagePromptsOutputPanel && window.imagePromptsOutputPanel.currentSection && 
+                        window.imagePromptsOutputPanel.currentSection.id === sectionId) {
+                        const updatedSection = this.sections.find(s => s.id === sectionId || s.id == sectionId);
+                        if (updatedSection) {
+                            window.imagePromptsOutputPanel.onSectionSelected(updatedSection);
+                        }
+                    }
+                    
+                    // Emit progress event
+                    this.callbacks.onBatchProgress({
+                        current: i + 1,
+                        total: selectedIds.length,
+                        sectionId: sectionId,
+                        sectionTitle: sectionTitle,
+                        status: 'success',
+                        progress: 100
                     });
                 }
                 
@@ -376,6 +462,11 @@ class SectionsPanel {
                 
             } catch (error) {
                 console.error(`Error generating image prompt for section ${sectionId}:`, error);
+                
+                // Show user-visible error
+                const errorMsg = error.message || 'Network or server error';
+                this.showError(`Section ${sectionTitle}: ${errorMsg}`);
+                
                 this.updateSectionStatus(sectionId, 'error');
                 
                 // Emit progress event
@@ -385,7 +476,8 @@ class SectionsPanel {
                     sectionId: sectionId,
                     sectionTitle: sectionTitle,
                     status: 'error',
-                    error: error.message
+                    error: errorMsg,
+                    progress: 0
                 });
             }
         }
@@ -408,20 +500,17 @@ class SectionsPanel {
             });
             
             try {
-                // Determine API endpoint based on current substage
+                // Determine API endpoint based on current substage (check both hyphenated and underscored variants)
                 let apiEndpoint;
-                switch (window.currentSubstage) {
-                    case 'drafting':
-                        apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
-                        break;
-                    case 'image-concepts':
-                        apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-concepts`;
-                        break;
-                    case 'image-captions':
-                        apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-captions`;
-                        break;
-                    default:
-                        apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
+                const currentSubstage = window.currentSubstage;
+                if (currentSubstage === 'drafting') {
+                    apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
+                } else if (currentSubstage === 'image-concepts' || currentSubstage === 'image_concepts') {
+                    apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-concepts`;
+                } else if (currentSubstage === 'image-captions' || currentSubstage === 'image_captions') {
+                    apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate-image-captions`;
+                } else {
+                    apiEndpoint = `/authoring/api/posts/${this.postId}/sections/${sectionId}/generate`;
                 }
                 
                 console.log(`[Sections Panel] Batch generating for ${window.currentSubstage}, using endpoint: ${apiEndpoint}`);
@@ -453,8 +542,9 @@ class SectionsPanel {
                                 this.sections[sectionIndex] = { ...this.sections[sectionIndex], ...sectionData.section };
                             }
                             
-                            // Update output panel based on current substage
-                            if (window.currentSubstage === 'image-concepts' && typeof window.imageConceptsOutputPanel !== 'undefined' && window.imageConceptsOutputPanel) {
+                            // Update output panel based on current substage (check both hyphenated and underscored variants)
+                            const currentSubstage = window.currentSubstage;
+                            if ((currentSubstage === 'image-concepts' || currentSubstage === 'image_concepts') && typeof window.imageConceptsOutputPanel !== 'undefined' && window.imageConceptsOutputPanel) {
                                 // For image-concepts, use show() method with proper section data structure
                                 const section = sectionData.section;
                                 // Map section data to expected format
@@ -558,6 +648,31 @@ class SectionsPanel {
         }
     }
     
+    showError(message) {
+        // Create or update error notification
+        let errorDiv = document.getElementById('batch-generate-error');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.id = 'batch-generate-error';
+            errorDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ef4444; color: white; padding: 1rem; border-radius: 8px; z-index: 10000; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+            errorDiv.innerHTML = '<div style="display: flex; justify-content: space-between; align-items: start;"><div><strong>Generation Error</strong><div style="margin-top: 0.5rem; font-size: 0.875rem; white-space: pre-line;" id="error-message"></div></div><button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; margin-left: 1rem;">×</button></div>';
+            document.body.appendChild(errorDiv);
+        }
+        
+        const errorMessage = document.getElementById('error-message');
+        if (errorMessage) {
+            const existing = errorMessage.textContent;
+            errorMessage.textContent = existing ? `${existing}\n${message}` : message;
+        }
+        
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+            if (errorDiv && errorDiv.parentElement) {
+                errorDiv.remove();
+            }
+        }, 10000);
+    }
+    
     bindEvents() {
         // Select All button
         const selectAllBtn = document.getElementById('select-all-btn');
@@ -615,6 +730,37 @@ class SectionsPanel {
     // Public API methods for external updates
     refreshSections() {
         this.loadSections();
+    }
+    
+    async reloadSectionData(sectionId) {
+        try {
+            // Reload section data from API
+            let apiEndpoint = window.currentStage === 'imaging' 
+                ? `/imaging/api/posts/${this.postId}/sections`
+                : `/authoring/api/posts/${this.postId}/sections`;
+            
+            const response = await fetch(apiEndpoint);
+            const data = await response.json();
+            
+            if (data.success && data.sections) {
+                // Update the section in our local array
+                const updatedSection = data.sections.find(s => s.id === sectionId || s.id == sectionId);
+                if (updatedSection) {
+                    const index = this.sections.findIndex(s => s.id === sectionId || s.id == sectionId);
+                    if (index !== -1) {
+                        this.sections[index] = updatedSection;
+                        // Re-render the section in the list
+                        this.renderSections();
+                        // Update the display if this section is currently selected
+                        if (this.currentSectionId === sectionId || this.currentSectionId == sectionId) {
+                            this.selectSection(sectionId);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(`Error reloading section data for ${sectionId}:`, error);
+        }
     }
     
     getCurrentSection() {

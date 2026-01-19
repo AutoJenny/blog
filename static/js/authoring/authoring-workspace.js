@@ -304,6 +304,15 @@ document.addEventListener('DOMContentLoaded', function() {
         onBatchProgress: (progress) => {
             // Update Batch Progress panel
             console.log('Batch progress:', progress);
+            if (window.batchProgressPanel && progress.sectionId) {
+                const status = progress.status === 'generating' ? 'processing' : 
+                               progress.status === 'success' ? 'completed' : 
+                               progress.status === 'error' ? 'error' : 'processing';
+                const progressPercent = progress.status === 'generating' ? 50 : 
+                                       progress.status === 'success' ? 100 : 
+                                       progress.status === 'error' ? 0 : 0;
+                window.batchProgressPanel.updateSectionProgress(progress.sectionId, progressPercent, status);
+            }
         },
         onBatchComplete: (result) => {
             // Hide or update Batch Progress panel

@@ -494,16 +494,38 @@ def api_generate_image_prompt_from_builder():
                 except (json.JSONDecodeError, TypeError) as e:
                             logger.warning(f"Error parsing image_concepts from post_section for section {section_id}: {e}")
             
-            # NO FALLBACKS - if image_concepts is missing from post_section, fail explicitly
+            # Check if image_concepts is missing
             if not image_concepts_data:
                 logger.error(f"[IMAGE_PROMPTS] ERROR: No image_concepts found in post_section for section {section_id}. Cannot generate prompt without concepts.")
+                return jsonify({'error': f'No image concepts found for section {section_id}. Please generate image concepts first before generating prompts.'}), 400
             
             # Extract concept text from the found image_concepts data
             logger.info(f"[IMAGE_PROMPTS] Extracting concept: selected_concept_id={selected_concept_id}, has_concepts_data={bool(image_concepts_data)}")
             
+            # Auto-select first concept if none is selected
+            if not selected_concept_id and image_concepts_data:
+                try:
+                    if isinstance(image_concepts_data, dict):
+                        concepts = image_concepts_data.get('concepts', [])
+                        if concepts and len(concepts) > 0:
+                            # Auto-select the first concept
+                            selected_concept_id = concepts[0].get('concept_id', 'CONCEPT-1')
+                            logger.info(f"[IMAGE_PROMPTS] Auto-selected first concept: {selected_concept_id}")
+                            
+                            # Save the auto-selection to database
+                            cursor.execute("""
+                                UPDATE post_section
+                                SET selected_image_concept = %s
+                                WHERE id = %s
+                            """, (selected_concept_id, section['id']))
+                            cursor.connection.commit()
+                            logger.info(f"[IMAGE_PROMPTS] Saved auto-selected concept {selected_concept_id} to database for section {section['id']}")
+                except Exception as e:
+                    logger.warning(f"[IMAGE_PROMPTS] Error auto-selecting concept: {e}")
+            
             if not selected_concept_id:
-                logger.error(f"[IMAGE_PROMPTS] ERROR: selected_concept_id is None/empty for section {section_id}. Section had: {section.get('selected_image_concept')}")
-                return jsonify({'error': f'No selected_image_concept found for section {section_id}'}), 400
+                logger.error(f"[IMAGE_PROMPTS] ERROR: selected_concept_id is None/empty for section {section_id} and no concepts available to auto-select")
+                return jsonify({'error': f'No selected_image_concept found for section {section_id} and no image concepts available. Please generate image concepts first.'}), 400
             
             if image_concepts_data and selected_concept_id:
                 try:

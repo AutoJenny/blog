@@ -93,6 +93,11 @@ class WorkflowNavigation {
             this.currentStage = 'planning';
         }
         
+        // Normalize substage names (hyphens to underscores to match config keys)
+        if (this.currentSubstage) {
+            this.currentSubstage = this.normalizeSubstageName(this.currentSubstage);
+        }
+        
         console.log('Detected position:', {
             stage: this.currentStage,
             substage: this.currentSubstage
@@ -215,6 +220,8 @@ class WorkflowNavigation {
      * Get first substage of next stage
      */
     getNextStageFirstSubstage() {
+        // SKIP RESEARCH STAGE - Research is currently broken (database errors)
+        // Go directly from Planning to Authoring
         const stageOrder = ['planning', 'research', 'authoring', 'imaging', 'header'];
         const currentStageIndex = stageOrder.indexOf(this.currentStage);
         
@@ -222,7 +229,17 @@ class WorkflowNavigation {
             return null; // No next stage
         }
 
-        const nextStage = stageOrder[currentStageIndex + 1];
+        // Skip research stage - go directly to authoring
+        let nextStageIndex = currentStageIndex + 1;
+        if (stageOrder[nextStageIndex] === 'research') {
+            nextStageIndex++; // Skip research, go to authoring
+        }
+        
+        if (nextStageIndex >= stageOrder.length) {
+            return null; // No next stage after skipping
+        }
+
+        const nextStage = stageOrder[nextStageIndex];
         let nextStageSubstages = this.substages[nextStage];
         
         if (!nextStageSubstages || nextStageSubstages.length === 0) {
@@ -258,10 +275,15 @@ class WorkflowNavigation {
             'section_structure': `/planning/posts/${this.postId}/concept/section-structure`,
             'topic_allocation': `/planning/posts/${this.postId}/concept/topic-allocation`,
             'section_titling': `/planning/posts/${this.postId}/concept/titling`,
-            'drafting': `/authoring/posts/${this.postId}/sections/drafting`,
-            'image_concepts': `/authoring/posts/${this.postId}/sections/image-concepts`,
-            'image_prompts': `/authoring/posts/${this.postId}/sections/image-prompts`,
-            'image_captions': `/authoring/posts/${this.postId}/sections/image-captions`,
+            'research': `/planning/posts/${this.postId}/research`,
+            'sources': `/planning/posts/${this.postId}/research/sources`,
+            'visuals': `/planning/posts/${this.postId}/research/visuals`,
+            'prompts': `/planning/posts/${this.postId}/research/prompts`,
+            'verification': `/planning/posts/${this.postId}/research/verification`,
+            'drafting': `/posts/${this.postId}/sections/drafting`,
+            'image_concepts': `/authoring/posts/${this.postId}/sections/image_concepts`,
+            'image_prompts': `/authoring/posts/${this.postId}/sections/image_prompts`,
+            'image_captions': `/authoring/posts/${this.postId}/sections/image_captions`,
             'image_generation': `/imaging/posts/${this.postId}/sections/image-generation`,
             'optimise': `/imaging/posts/${this.postId}/sections/optimise`,
             'title_summary': `/header/posts/${this.postId}/title-summary`,
@@ -332,6 +354,44 @@ class WorkflowNavigation {
     }
 
     /**
+     * Normalize substage name (convert hyphens to underscores, handle special cases)
+     */
+    normalizeSubstageName(substage) {
+        if (!substage) return null;
+        // Normalize substage names (e.g., 'brainstorm' -> 'topic_brainstorming', 'section-structure' -> 'section_structure')
+        const substageMap = {
+            'brainstorm': 'topic_brainstorming',
+            'ideas': 'ideas',
+            'taxonomy': 'taxonomy',
+            'section-structure': 'section_structure',
+            'section_structure': 'section_structure', // Also handle underscore version
+            'topic-allocation': 'topic_allocation',
+            'topic_allocation': 'topic_allocation', // Also handle underscore version
+            'titling': 'section_titling',
+            'section-titling': 'section_titling',
+            'section_titling': 'section_titling', // Also handle underscore version
+            'drafting': 'drafting',
+            'image-concepts': 'image_concepts',
+            'image_concepts': 'image_concepts', // Also handle underscore version
+            'image-prompts': 'image_prompts',
+            'image_prompts': 'image_prompts', // Also handle underscore version
+            'image-captions': 'image_captions',
+            'image_captions': 'image_captions', // Also handle underscore version
+            'image-generation': 'image_generation',
+            'image_generation': 'image_generation', // Also handle underscore version
+            'optimise': 'optimise',
+            'title-summary': 'title_summary',
+            'title_summary': 'title_summary', // Also handle underscore version
+            'header-image': 'header_image',
+            'header_image': 'header_image', // Also handle underscore version
+            'seo-meta': 'seo_meta',
+            'seo_meta': 'seo_meta' // Also handle underscore version
+        };
+        // First check map, then fallback to replacing hyphens with underscores
+        return substageMap[substage] || substage.replace(/-/g, '_');
+    }
+
+    /**
      * Format substage label for display
      */
     formatSubstageLabel(substage) {
@@ -340,7 +400,7 @@ class WorkflowNavigation {
             'taxonomy': 'Taxonomy',
             'topic_brainstorming': 'Topic Brainstorming',
             'section_structure': 'Section Structure',
-            'topic_allocation': 'Topic Allocation',
+            'topic_allocation': 'Section Ideas',  // Updated: was "Topic Allocation", now "Section Ideas"
             'section_titling': 'Section Titling',
             'drafting': 'Drafting',
             'image_concepts': 'Image Concepts',
@@ -364,17 +424,25 @@ class WorkflowNavigation {
         // First, try to find dedicated container
         const container = document.getElementById('workflow-navigation-container');
         if (container) {
+            console.log('[Workflow Navigation] Found container, inserting button');
             container.innerHTML = ''; // Clear any existing content
             container.appendChild(button);
             container.style.display = 'flex';
+            container.style.justifyContent = 'center';
+            container.style.margin = '1rem 0';
+            console.log('[Workflow Navigation] Button inserted into container');
             return;
         }
+        
+        console.warn('[Workflow Navigation] Container not found, trying fallback insertion');
         
         // Try to insert after main content area, before footer/end
         const mainContent = document.querySelector('.page-main') || 
                           document.querySelector('.ideas-main') ||
                           document.querySelector('.ideas-results') ||
                           document.querySelector('.expanded-idea-section') ||
+                          document.querySelector('.brainstorm-main') ||
+                          document.querySelector('.titling-main') ||
                           document.querySelector('.container > div');
         
         if (mainContent) {
@@ -410,31 +478,45 @@ class WorkflowNavigation {
 }
 
 // Auto-initialize when DOM is ready
+function initializeWorkflowNavigation() {
+    // Get post ID and type from page context
+    const postId = window.postId || (window.location.pathname.match(/\/posts\/(\d+)/) ? 
+                                     parseInt(window.location.pathname.match(/\/posts\/(\d+)/)[1]) : null);
+    
+    // Try to get post type from page context or header
+    let postType = window.postType || 'themed';
+    const postTypeElement = document.querySelector('.post-type-value');
+    if (postTypeElement) {
+        const typeText = postTypeElement.textContent.trim().toLowerCase();
+        // Map UI text to actual post type values
+        const postTypeMap = {
+            'available': 'themed',  // "Available" in UI means "themed" post type
+            'recipe': 'recipe',
+            'profile': 'profile',
+            'generated': 'generated'
+        };
+        postType = postTypeMap[typeText] || 'themed';
+    }
+
+    if (postId) {
+        console.log('[Workflow Navigation] Initializing for post:', postId, 'type:', postType);
+        window.workflowNavigation = new WorkflowNavigation();
+        window.workflowNavigation.init(postId, postType).then(() => {
+            console.log('[Workflow Navigation] Initialization complete');
+        }).catch(error => {
+            console.error('[Workflow Navigation] Initialization error:', error);
+        });
+    } else {
+        console.warn('[Workflow Navigation] No post ID found, cannot initialize');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Wait a bit for page to fully load
-    setTimeout(() => {
-        // Get post ID and type from page context
-        const postId = window.postId || (window.location.pathname.match(/\/posts\/(\d+)/) ? 
-                                         parseInt(window.location.pathname.match(/\/posts\/(\d+)/)[1]) : null);
-        
-        // Try to get post type from page context or header
-        let postType = window.postType || 'themed';
-        const postTypeElement = document.querySelector('.post-type-value');
-        if (postTypeElement) {
-            const typeText = postTypeElement.textContent.trim().toLowerCase();
-            postType = typeText || 'themed';
-        }
-
-        if (postId) {
-            console.log('[Workflow Navigation] Initializing for post:', postId, 'type:', postType);
-            window.workflowNavigation = new WorkflowNavigation();
-            window.workflowNavigation.init(postId, postType).then(() => {
-                console.log('[Workflow Navigation] Initialization complete');
-            }).catch(error => {
-                console.error('[Workflow Navigation] Initialization error:', error);
-            });
-        } else {
-            console.warn('[Workflow Navigation] No post ID found, cannot initialize');
-        }
-    }, 800); // Wait 800ms for page to fully initialize (increased for ideas page)
+    setTimeout(initializeWorkflowNavigation, 800); // Wait 800ms for page to fully initialize (increased for ideas page)
+    
+    // Also try immediately if postId is already set (for pages that set it synchronously)
+    if (window.postId) {
+        setTimeout(initializeWorkflowNavigation, 100);
+    }
 });

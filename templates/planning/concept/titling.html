@@ -51,6 +51,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- Workflow Navigation Container for Next Button -->
+    <div id="workflow-navigation-container" class="workflow-navigation-container"></div>
 </div>
 
 <style>
@@ -287,10 +290,13 @@ function escapeHtml(text) {
 // Set navigation context
 document.addEventListener('DOMContentLoaded', function() {
     // Set current stage for navigation
-    window.currentStage = 'concept';
-    window.currentSubstage = 'titling';
+    window.currentStage = 'concept';  // Will be normalized to 'planning' by workflow navigation
+    window.currentSubstage = 'titling';  // Will be normalized to 'section_titling' by workflow navigation
     
     window.postId = {{ post_id }};
+    
+    // Ensure workflow navigation can find postId immediately
+    console.log('[Titling Page] Set window.postId:', window.postId);
     
     // Initialize LLM module
     llmModule = initializeLLMModule('titling', window.postId);
@@ -341,20 +347,65 @@ async function loadExistingSections() {
     try {
         const response = await fetch(`/planning/api/posts/${window.postId}`);
         const data = await response.json();
-        if (data.success && data.sections && data.sections.length > 0) {
+        
+        // PRIORITY 1: Check post_development.sections (JSONB field) - has titles, subtitles, and topics
+        let sectionsData = null;
+        if (data.success && data.post && data.post.sections) {
+            try {
+                // Parse sections from JSONB field (has titles, subtitles, and topics)
+                const sectionsJson = typeof data.post.sections === 'string' 
+                    ? JSON.parse(data.post.sections) 
+                    : data.post.sections;
+                
+                if (sectionsJson && sectionsJson.sections && Array.isArray(sectionsJson.sections)) {
+                    sectionsData = sectionsJson;
+                    console.log('Loaded sections from post_development.sections (with topics):', sectionsJson.sections.length);
+                }
+            } catch (e) {
+                console.warn('Error parsing sections from post_development:', e);
+            }
+        }
+        
+        // PRIORITY 2: Fallback to post_section table and merge with topic allocation
+        if (!sectionsData && data.success && data.sections && data.sections.length > 0) {
+            // Load topic allocation to merge topics
+            let topicAllocationMap = {};
+            try {
+                const allocResponse = await fetch(`/planning/api/sections/allocate-topics/${window.postId}`);
+                const allocData = await allocResponse.json();
+                if (allocData.success && allocData.allocations && allocData.allocations.allocations) {
+                    // Create a map of section_id -> topics
+                    allocData.allocations.allocations.forEach(alloc => {
+                        topicAllocationMap[alloc.section_id] = alloc.topics || [];
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not load topic allocation for merging:', e);
+            }
+            
             // Convert database sections to the format expected by displaySections
-            const sectionsData = {
-                sections: data.sections.map(section => ({
-                    id: section.id || section.index,
-                    title: section.title || section.section_heading,
-                    subtitle: section.original || section.section_description || section.subtitle || '',
-                    order: section.order || section.section_order || section.index,
-                    topics: [] // Topics will be loaded from topic allocation
-                }))
+            sectionsData = {
+                sections: data.sections.map((section, index) => {
+                    const sectionId = section.id || `section_${index + 1}`;
+                    // Merge topics from topic allocation
+                    const topics = topicAllocationMap[sectionId] || [];
+                    
+                    return {
+                        id: sectionId,
+                        title: section.title || section.section_heading,
+                        subtitle: section.original || section.section_description || section.subtitle || '',
+                        order: section.order || section.section_order || section.index,
+                        topics: topics // Merge topics from topic allocation
+                    };
+                })
             };
+            console.log('Loaded sections from post_section table (merged topics):', data.sections.length);
+        }
+        
+        if (sectionsData && sectionsData.sections && sectionsData.sections.length > 0) {
             generatedSections = sectionsData;
             displaySections(generatedSections);
-            console.log('Loaded existing sections:', data.sections.length);
+            console.log('Displayed sections with topics:', sectionsData.sections.length);
         } else {
             console.log('No existing sections found');
         }

@@ -94,45 +94,38 @@ FORBIDDEN SECTIONS (DO NOT GENERATE TOPICS FOR THESE):
 ═══════════════════════════════════════════════════════════════
 {exclusion_text}
 
-CRITICAL EXCLUSION RULES - READ CAREFULLY:
+GUIDELINES FOR TOPIC GENERATION:
 
-TIME-BASED EXCLUSIONS:
-- If the target section is about MODERN/CONTEMPORARY themes (e.g., "Contemporary Applications", "Modern Impact", "Enduring Legacy", "Current Relevance"), you MUST NOT generate topics about:
-  * Historical origins, ancient roots, traditional foundations, early developments, classical practices
-  * Mythological beginnings, pre-modern traditions, archaic customs
-  * Topics that belong in sections about "Ancient Foundations", "Historical Origins", "Traditional Roots"
-- If the target section is about ANCIENT/HISTORICAL themes (e.g., "Ancient Foundations", "Historical Origins", "Traditional Roots"), you MUST NOT generate topics about:
-  * Modern applications, contemporary practices, current relevance, future implications
-  * Modern-day impact, 21st-century adaptations, recent developments
-  * Topics that belong in sections about "Contemporary Applications", "Modern Impact", "Enduring Legacy"
+TIME-BASED GUIDANCE:
+- If the target section is about MODERN/CONTEMPORARY themes (e.g., "Contemporary Applications", "Modern Impact", "Enduring Legacy", "Current Relevance"), prioritize topics about:
+  * Current practices, modern applications, contemporary relevance, recent developments
+  * Topics that focus on how the theme applies today rather than historical origins
+- If the target section is about ANCIENT/HISTORICAL themes (e.g., "Ancient Foundations", "Historical Origins", "Traditional Roots"), prioritize topics about:
+  * Historical origins, traditional foundations, early developments, classical practices
+  * Topics that focus on the historical context rather than modern applications
 
-THEMATIC EXCLUSIONS:
-- Read each forbidden section's description carefully
-- If your topic mentions themes, concepts, or content described in ANY forbidden section, REJECT it immediately
-- Each topic must be thematically IMPOSSIBLE to place in any forbidden section above
-- If you cannot determine whether a topic fits ONLY the target section, REJECT it
-- Before finalizing EACH of the 6 topics, ask yourself: "Could this topic fit in ANY forbidden section based on its description?" If the answer is YES or UNCERTAIN, REJECT it and generate a different topic
-
-EXAMPLES OF WRONG TOPICS TO GENERATE (Generic Patterns):
-- If target section is about modern/contemporary themes and a forbidden section is about ancient/historical themes, DO NOT generate any topic about: historical origins, ancient roots, traditional foundations, early developments
-- If target section is about ancient/historical themes and a forbidden section is about modern/contemporary themes, DO NOT generate any topic about: modern applications, contemporary practices, current relevance, recent developments
-- ANY topic that relates to themes, concepts, or time periods described in ANY forbidden section is FORBIDDEN, regardless of how interesting or relevant it seems
+THEMATIC GUIDANCE:
+- Read each other section's description to understand the overall structure
+- Generate topics that are PRIMARILY relevant to "{section_title}" 
+- If a topic could fit in multiple sections, choose the one where it's MOST relevant
+- Focus on generating 6 topics that are useful and relevant, even if there's some thematic overlap
+- It's better to have 6 good topics with some overlap than to have fewer topics
 
 STRICT REQUIREMENTS:
-1. Generate exactly 6 topics
-2. Each topic MUST fit EXCLUSIVELY and ONLY within "{section_title}" 
-3. DO NOT generate any topic that could logically belong in ANY forbidden section listed above
-4. DO NOT generate topics about themes, eras, or concepts described in forbidden sections
-5. If a topic's theme overlaps with ANY forbidden section description, you MUST REJECT that topic
-6. Each topic must be specific, actionable, and thematically aligned ONLY with "{section_title}"
-7. Topics must align with the blog post "{post_title}" overall theme but stay within "{section_title}" boundaries
+1. Generate exactly 6 topics - THIS IS MANDATORY, you MUST generate 6 topics
+2. Each topic should fit primarily within "{section_title}" - some thematic overlap with other sections is acceptable if the topic is MOST relevant to this section
+3. Prioritize topics that are MOST relevant to "{section_title}" even if they could also relate to other sections
+4. If you cannot find 6 topics that fit EXCLUSIVELY, generate topics that are PRIMARILY aligned with "{section_title}" - it's better to have 6 topics with some overlap than fewer topics
+5. Each topic must be specific, actionable, and thematically aligned with "{section_title}"
+6. Topics must align with the blog post "{post_title}" overall theme but focus on "{section_title}" 
+7. CRITICAL: You MUST generate 6 topics - do not skip any section, even if it's challenging
 
 VALIDATION CHECKLIST - Before including any topic, verify:
-□ This topic fits ONLY "{section_title}" based on its description
-□ This topic does NOT fit any forbidden section above
-□ This topic's themes do NOT overlap with themes from forbidden sections
-□ This topic cannot be placed in any other section
-□ If this topic were shown to someone reading the forbidden sections, they would NOT think it belongs there
+□ This topic is PRIMARILY relevant to "{section_title}" based on its description
+□ This topic is MORE relevant to "{section_title}" than to other sections
+□ This topic is specific and actionable for "{section_title}"
+□ This topic aligns with the blog post "{post_title}" overall theme
+□ If you have fewer than 6 topics, generate additional topics that are relevant to "{section_title}" even if they have some thematic overlap
 
 OUTPUT FORMAT:
 Return a JSON object with this exact structure:
@@ -147,7 +140,12 @@ Return a JSON object with this exact structure:
   ]
 }}
 
-REMEMBER: Generate topics that are EXCLUSIVELY specific to "{section_title}" and CANNOT belong in any forbidden section listed above."""
+REMEMBER: 
+- Generate exactly 6 topics - this is MANDATORY
+- Topics should be PRIMARILY relevant to "{section_title}" 
+- Some thematic overlap with other sections is acceptable if the topic is MOST relevant to this section
+- It's better to generate 6 topics with some overlap than to generate fewer topics
+- Every section MUST have topics - do not skip any section"""
 
     # Include full expanded_idea context if available (no truncation)
     if expanded_idea:
@@ -180,10 +178,10 @@ def api_generate_section_specific_topics():
         if not post_id:
             return jsonify({'success': False, 'error': 'Post ID is required'}), 400
         
-        # Get post data
+        # Get post data - use subtitle (expanded idea description) instead of expanded_idea
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT p.title, pd.section_structure, pd.expanded_idea
+                SELECT p.title, p.subtitle, pd.section_structure, pd.expanded_idea
                 FROM post p
                 LEFT JOIN post_development pd ON p.id = pd.post_id
                 WHERE p.id = %s
@@ -195,8 +193,9 @@ def api_generate_section_specific_topics():
             
             title = result['title']
             section_structure = result['section_structure']
-            expanded_idea = result['expanded_idea']
-            logger.info(f"Database query result - section_structure: {section_structure is not None}")
+            # Use subtitle (expanded idea description) with fallback to expanded_idea for backwards compatibility
+            expanded_idea = result.get('subtitle') or result.get('expanded_idea')
+            logger.info(f"Database query result - section_structure: {section_structure is not None}, expanded_idea available: {expanded_idea is not None}")
         
         # Parse section structure
         if not section_structure:
@@ -259,7 +258,7 @@ def api_generate_section_specific_topics():
         
         # Use default system prompt if database lookup failed (shouldn't happen, but safety fallback)
         if not system_prompt:
-            system_prompt = 'You are a strict content strategist for section-specific topic generation. Your task is to generate exactly 6 topics that fit EXCLUSIVELY within ONE specified section based on its title and description. You will be given ONE target section and MULTIPLE forbidden sections. Topics that could belong to ANY forbidden section MUST be rejected. Each topic must be thematically aligned ONLY with the target section and cannot overlap with themes from ANY other section. If a topic relates to historical origins but the target section is about modern impact, REJECT it. If a topic relates to modern applications but the target section is about ancient foundations, REJECT it.'
+            system_prompt = 'You are a content strategist for section-specific topic generation. Your task is to generate exactly 6 topics that are PRIMARILY relevant to ONE specified section based on its title and description. You will be given ONE target section and information about other sections. Generate topics that are MOST relevant to the target section - some thematic overlap with other sections is acceptable if the topic is primarily aligned with the target section. CRITICAL: You MUST generate exactly 6 topics for every section - do not skip any section. It is better to have 6 topics with some overlap than fewer topics.'
         
         # Generate topics for each section
         all_section_topics = {}
@@ -327,6 +326,10 @@ def api_generate_section_specific_topics():
                 topics_data = json.loads(json_content)
                 section_topics = topics_data.get('topics', [])
                 
+                # Ensure we have at least some topics - if zero, log warning
+                if len(section_topics) == 0:
+                    logger.warning(f"Section {section_id} ({section_title}) received ZERO topics from LLM. This may indicate the prompt was too strict or the LLM failed to generate topics.")
+                
                 # Add idea codes and section assignment
                 formatted_topics = []
                 for j, topic in enumerate(section_topics):
@@ -367,8 +370,13 @@ def api_generate_section_specific_topics():
             
             # Get topics for this section
             section_topics = []
-            for topic_obj in all_section_topics.get(f"S{str(i+1).zfill(2)}", []):
+            section_code = f"S{str(i+1).zfill(2)}"
+            for topic_obj in all_section_topics.get(section_code, []):
                 section_topics.append(topic_obj.get('topic_title', 'Untitled Topic'))
+            
+            # Log warning if section has zero topics
+            if len(section_topics) == 0:
+                logger.warning(f"Section {section_id} ({section_theme}) has ZERO topics allocated. Section code: {section_code}, Available section topics keys: {list(all_section_topics.keys())}")
             
             allocation_data['allocations'].append({
                 'section_id': section_id,

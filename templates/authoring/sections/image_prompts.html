@@ -13,13 +13,14 @@
 {% endblock %}
 
 {% block js_assets %}
+{% set currentSubstage = 'image-prompts' %}
 {{ js_assets('authoring') }}
 <script>
     window.currentStage = 'authoring';
-    window.currentSubstage = 'image-prompts';
-    window.postId = {{ post_id|default(0) }};
-    // illustration_method is deprecated, always use LLM-creation
-    window.illustrationMethod = 'LLM-creation';
+    window.currentSubstage = 'image_prompts';  // Use underscore to match URL format
+  window.postId = {{ post_id|default(0) }};
+  // illustration_method is deprecated, always use LLM-creation
+  window.illustrationMethod = 'LLM-creation';
   
     // SINGLE SOURCE OF TRUTH: URL query parameters only
     // Week context is read from URL via WeekContext module (no window vars needed)
@@ -93,33 +94,50 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="workspace-container">
         {% include 'shared/sections_panel.html' %}
         <div class="editor-panel">
-            <!-- Route Indicator -->
-            <div class="route-indicator" style="background: #3b82f6;">
-                <i class="fas fa-magic" style="font-size: 1.1rem;"></i>
-                <span>Illustration Route: <strong>LLM-creation</strong></span>
+            <!-- Configuration Accordion - Wraps all configuration panels -->
+            <div class="config-accordion" id="config-accordion">
+                <div class="panel-header" onclick="toggleConfigAccordion()">
+                    <h4>
+                        <span class="panel-name-green">Configuration:</span>
+                        <span style="font-weight: normal; color: #cbd5e1; margin-left: 0.5rem;">
+                            Illustration Route: LLM-creation | Context | LLM Settings | LLM Prompts | Model Selection | Image Styles | Prompt Builder | Complete LLM Input
+                        </span>
+                    </h4>
+                    <div class="header-actions">
+                        <i class="fas fa-chevron-up" id="config-accordion-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="panel-content" id="config-accordion-content" style="display: none;">
+                    <!-- Route Indicator -->
+                    <div class="route-indicator" style="background: #3b82f6; margin-bottom: 1rem;">
+                        <i class="fas fa-magic" style="font-size: 1.1rem;"></i>
+                        <span>Illustration Route: <strong>LLM-creation</strong></span>
+                    </div>
+                    
+                    <!-- Context Panel -->
+                    {% include 'authoring/includes/context_panel.html' %}
+                    
+                    <!-- LLM Settings Panel -->
+                    {% include 'authoring/includes/llm_settings_panel.html' %}
+                    
+                    <!-- LLM Prompts Panel -->
+                    {% include 'authoring/includes/llm_prompts_panel.html' %}
+                    
+                    {# Photo-harvesting is deprecated, always show LLM-creation panels #}
+                    <!-- Imaging Model Selection Panel -->
+                    {% include 'imaging/includes/model_selection_panel.html' %}
+                    
+                    <!-- Styles Panel (post-wide styles management) -->
+                    {% include 'authoring/includes/styles_panel.html' %}
+                    
+                    <!-- Prompt Builder Panel -->
+                    {% include 'authoring/includes/prompt_builder_panel_image_prompts.html' %}
+                    
+                    <!-- LLM Message Intercept Panel (Complete LLM Input) (LLM-creation only) -->
+                    {% include 'authoring/includes/llm_message_intercept_panel.html' %}
+                </div>
             </div>
-            
-            <!-- Context Panel -->
-            {% include 'authoring/includes/context_panel.html' %}
-            
-            <!-- LLM Settings Panel -->
-            {% include 'authoring/includes/llm_settings_panel.html' %}
-            
-            <!-- LLM Prompts Panel -->
-            {% include 'authoring/includes/llm_prompts_panel.html' %}
-            
-            {# Photo-harvesting is deprecated, always show LLM-creation panels #}
-            <!-- Imaging Model Selection Panel -->
-            {% include 'imaging/includes/model_selection_panel.html' %}
-            
-            <!-- Styles Panel (post-wide styles management) -->
-            {% include 'authoring/includes/styles_panel.html' %}
-            
-            <!-- Prompt Builder Panel -->
-            {% include 'authoring/includes/prompt_builder_panel_image_prompts.html' %}
-            
-            <!-- LLM Message Intercept Panel (Complete LLM Input) (LLM-creation only) -->
-            {% include 'authoring/includes/llm_message_intercept_panel.html' %}
             
             <!-- Batch Progress Panel -->
             {% include 'authoring/includes/batch_progress_panel.html' %}
@@ -133,4 +151,105 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Authoring Workspace Styles and Scripts -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/authoring/authoring-workspace.css') }}">
 <script src="{{ url_for('static', filename='js/authoring/authoring-workspace.js') }}"></script>
+
+<!-- Configuration Accordion Toggle Script -->
+<script>
+function toggleConfigAccordion() {
+    const content = document.getElementById('config-accordion-content');
+    const icon = document.getElementById('config-accordion-icon');
+    
+    if (!content || !icon) return;
+    
+    const isCollapsed = content.style.display === 'none' || content.style.display === '';
+    
+    if (isCollapsed) {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        sessionStorage.setItem('config-accordion-state', 'open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        sessionStorage.setItem('config-accordion-state', 'closed');
+    }
+}
+
+// Restore accordion state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedState = sessionStorage.getItem('config-accordion-state');
+    const content = document.getElementById('config-accordion-content');
+    const icon = document.getElementById('config-accordion-icon');
+    
+    if (content && icon) {
+        if (savedState === 'open') {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        } else {
+            // Default to closed
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
+    }
+});
+</script>
+
+<style>
+.config-accordion {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.config-accordion .panel-header {
+    padding: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    transition: background-color 0.2s;
+}
+
+.config-accordion .panel-header:hover {
+    background: #334155;
+}
+
+.config-accordion .panel-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.config-accordion .panel-header .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.config-accordion .panel-header .header-actions i {
+    color: #cbd5e1;
+    transition: transform 0.2s;
+}
+
+.config-accordion .panel-content {
+    padding: 1rem;
+    background: #0f172a;
+}
+
+.config-accordion .panel-content > * {
+    margin-bottom: 1rem;
+}
+
+.config-accordion .panel-content > *:last-child {
+    margin-bottom: 0;
+}
+</style>
 {% endblock %}

@@ -109,6 +109,31 @@ def health():
     """Health check endpoint."""
     return jsonify({"status": "healthy", "service": "core"})
 
+@bp.route('/api/ollama/status')
+def ollama_status():
+    """Check if Ollama is running"""
+    try:
+        from modules.llm_service import LLMService
+        llm_service = LLMService()
+        
+        # Try to get available models (quick check)
+        models = llm_service.get_available_models('ollama')
+        
+        return jsonify({
+            'success': True,
+            'is_running': True,
+            'models': models,
+            'base_url': 'http://localhost:11434'
+        })
+    except Exception as e:
+        logger.error(f"Ollama status check failed: {e}")
+        return jsonify({
+            'success': True,
+            'is_running': False,
+            'error': str(e),
+            'base_url': 'http://localhost:11434'
+        })
+
 @bp.route('/api/posts')
 def api_posts():
     """

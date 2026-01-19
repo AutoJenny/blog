@@ -16,7 +16,7 @@
 {{ js_assets('authoring') }}
 <script>
     window.currentStage = 'authoring';
-                window.currentSubstage = 'image-captions';
+                window.currentSubstage = 'image_captions';  // Use underscore to match URL format
   window.postId = {{ post_id|default(0) }};
   
     // SINGLE SOURCE OF TRUTH: URL query parameters only

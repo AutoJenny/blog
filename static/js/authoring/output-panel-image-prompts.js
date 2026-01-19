@@ -104,6 +104,14 @@ class ImagePromptsOutputPanel {
         this.updateButtonStates();
         console.log('[ImagePromptsOutputPanel] Section selected:', section.id);
     }
+    
+    async onBatchGenerate(sectionIds) {
+        console.log('[ImagePromptsOutputPanel] Batch generation started for sections:', sectionIds);
+        
+        // The actual generation is handled by sections-panel.js
+        // After batch completes, reload sections and update display
+        // This is a placeholder - actual updates happen via sectionSelected events
+    }
 
     updateSectionTitle(title) {
         const titleElement = document.getElementById('current-section-title');
@@ -134,13 +142,29 @@ class ImagePromptsOutputPanel {
             }
             
             textarea.value = promptText;
+            textarea.disabled = false; // Enable textarea to show content
             charCount.textContent = `${promptText.length} chars`;
+            
+            // Expand the output panel if there's content
+            if (promptText.trim()) {
+                const content = document.getElementById('image-prompts-accordion-content');
+                const icon = document.getElementById('image-prompts-accordion-icon');
+                if (content && (content.style.display === 'none' || content.style.display === '')) {
+                    content.style.display = 'block';
+                    if (icon) {
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                    sessionStorage.setItem('image-prompts-output-accordion-state', 'open');
+                }
+            }
             
             // Update metadata if available
             this.updateMetadata(section.image_prompts);
             
         } else {
             textarea.value = '';
+            textarea.disabled = false;
             charCount.textContent = '0 chars';
             this.clearMetadata();
         }
@@ -178,12 +202,25 @@ class ImagePromptsOutputPanel {
         this.currentPrompt = prompt;
         this.currentMetadata = metadata;
         
+        // Expand the output panel to show results
+        const content = document.getElementById('image-prompts-accordion-content');
+        const icon = document.getElementById('image-prompts-accordion-icon');
+        if (content && (content.style.display === 'none' || content.style.display === '')) {
+            content.style.display = 'block';
+            if (icon) {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+            sessionStorage.setItem('image-prompts-output-accordion-state', 'open');
+        }
+        
         // Update display
         const textarea = document.getElementById('generated-prompt-textarea');
         const charCount = document.getElementById('char-count');
         
         if (textarea) {
             textarea.value = prompt;
+            textarea.disabled = false; // Enable textarea to show content
         }
         
         if (charCount) {
@@ -303,10 +340,25 @@ class ImagePromptsOutputPanel {
             const result = await response.json();
             
             if (result.success && result.image_prompt) {
-                // Display the generated prompt
-                const textarea = document.getElementById('generated-prompt-textarea');
-                if (textarea) {
-                    textarea.value = result.image_prompt;
+                // Update current prompt
+                this.currentPrompt = result.image_prompt;
+                
+                // Display the generated prompt immediately (this will expand the panel)
+                this.displayPrompt(result.image_prompt, result.metadata);
+                
+                // Reload section data to show updated prompt
+                if (this.currentSection && window.sectionsPanel) {
+                    await window.sectionsPanel.reloadSectionData(this.currentSection.id);
+                    // Re-select the section to refresh display
+                    if (window.sectionsPanel.selectSection) {
+                        window.sectionsPanel.selectSection(this.currentSection.id);
+                    }
+                } else if (!this.currentSection && window.sectionsPanel) {
+                    // If no section was selected, select the first one that was generated
+                    const updatedSection = window.sectionsPanel.sections.find(s => s.id == this.postId || s.id === this.postId);
+                    if (updatedSection && updatedSection.image_prompts) {
+                        this.onSectionSelected(updatedSection);
+                    }
                 }
                 
                 console.log('[ImagePromptsOutputPanel] Generation completed using fresh prompt from database templates');
@@ -398,14 +450,16 @@ class ImagePromptsOutputPanel {
     async onBatchGenerate(sectionIds) {
         console.log('[ImagePromptsOutputPanel] Batch generation started for sections:', sectionIds);
         
-        // The actual generation is handled by the prompt builder panel
-        // This panel just needs to be ready to receive the results
-        
+        // The actual generation is handled by sections-panel.js
+        // After batch completes, reload sections and update display
         // Update last saved status to show batch processing
         const lastSaved = document.getElementById('last-saved');
         if (lastSaved) {
             lastSaved.textContent = 'Batch processing...';
         }
+        
+        // Wait for batch to complete, then reload and update display
+        // The sections panel will trigger sectionSelected events for updated sections
     }
 }
 
@@ -416,7 +470,9 @@ function toggleImagePromptsOutputAccordion() {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.postId && window.currentSubstage === 'image-prompts') {
+    // Check for both hyphenated and underscored variants
+    const currentSubstage = window.currentSubstage;
+    if (window.postId && (currentSubstage === 'image-prompts' || currentSubstage === 'image_prompts')) {
         window.imagePromptsOutputPanel = new ImagePromptsOutputPanel(window.postId);
     }
 });

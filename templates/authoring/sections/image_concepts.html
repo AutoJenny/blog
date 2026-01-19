@@ -17,7 +17,7 @@
 {{ js_assets('authoring') }}
 <script>
     window.currentStage = 'authoring';
-        window.currentSubstage = 'image-concepts';
+    window.currentSubstage = 'image_concepts';  // Use underscore to match URL format
   window.postId = {{ post_id|default(0) }};
   // illustration_method is deprecated, always use LLM-creation
   window.illustrationMethod = 'LLM-creation';

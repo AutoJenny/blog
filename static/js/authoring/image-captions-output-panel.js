@@ -193,10 +193,33 @@ export class ImageCaptionsOutputPanel {
     
     try {
       const res = await postJSON(`/authoring/api/posts/${this.postId}/sections/${id}/generate-image-captions`, {});
-      this.displayImageCaptions(res.image_captions || '(no content)');
-      this.displayImageAltText(res.image_alt_text || '(no content)');
+      
+      if (res.success) {
+        // Update current section data
+        if (this.current && this.current.id === id) {
+          this.current.image_captions = res.image_captions || '';
+          this.current.image_alt_text = res.image_alt_text || '';
+        }
+        
+        // Display the results
+        this.displayImageCaptions(res.image_captions || '(no content)');
+        this.displayImageAltText(res.image_alt_text || '(no content)');
+        
+        // Reload section data to show updated captions
+        if (window.sectionsPanel && typeof window.sectionsPanel.reloadSectionData === 'function') {
+          await window.sectionsPanel.reloadSectionData(id);
+          // Re-select the section to refresh display
+          if (window.sectionsPanel.selectSection && this.current) {
+            window.sectionsPanel.selectSection(id);
+          }
+        }
+      } else {
+        console.error('Error generating captions:', res.error);
+        this.displayImageCaptions('Error: ' + (res.error || 'Unknown error'));
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error generating image captions:', err);
+      this.displayImageCaptions('Error: ' + err.message);
     }
   }
 }

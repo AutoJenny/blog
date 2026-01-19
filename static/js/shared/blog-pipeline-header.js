@@ -980,17 +980,28 @@ class BlogPipelineHeader {
             'ideas': 'ideas',
             'taxonomy': 'taxonomy',
             'section-structure': 'section_structure',
+            'section_structure': 'section_structure',
             'topic-allocation': 'topic_allocation',
+            'topic_allocation': 'topic_allocation',
             'titling': 'section_titling',
+            'section-titling': 'section_titling',
+            'section_titling': 'section_titling',
             'drafting': 'drafting',
             'image-concepts': 'image_concepts',
+            'image_concepts': 'image_concepts',
             'image-prompts': 'image_prompts',
+            'image_prompts': 'image_prompts',
             'image-captions': 'image_captions',
+            'image_captions': 'image_captions',
             'image-generation': 'image_generation',
+            'image_generation': 'image_generation',
             'optimise': 'optimise',
             'title-summary': 'title_summary',
+            'title_summary': 'title_summary',
             'header-image': 'header_image',
-            'seo-meta': 'seo_meta'
+            'header_image': 'header_image',
+            'seo-meta': 'seo_meta',
+            'seo_meta': 'seo_meta'
         };
         return substageMap[substage] || substage.replace(/-/g, '_');
     }
@@ -1042,9 +1053,9 @@ class BlogPipelineHeader {
         if (path.includes('/research/verification')) return 'verification';
         // Authoring substages
         if (path.includes('/sections/drafting')) return 'drafting';
-        if (path.includes('/sections/image-concepts')) return 'image_concepts';
-        if (path.includes('/sections/image-prompts')) return 'image_prompts';
-        if (path.includes('/sections/image-captions')) return 'image_captions';
+        if (path.includes('/sections/image-concepts') || path.includes('/sections/image_concepts')) return 'image_concepts';
+        if (path.includes('/sections/image-prompts') || path.includes('/sections/image_prompts')) return 'image_prompts';
+        if (path.includes('/sections/image-captions') || path.includes('/sections/image_captions')) return 'image_captions';
         // Imaging substages
         if (path.includes('/sections/image-generation')) return 'image_generation';
         if (path.includes('/sections/optimise')) return 'optimise';

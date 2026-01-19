@@ -125,8 +125,35 @@ class ImageConceptsOutputPanel {
           
           // Update progress modal
           this.updateBatchProgress(id, 'Complete', (i + 1) / ids.length * 100);
+          
+          // Reload section data and update display
+          if (window.sectionsPanel && typeof window.sectionsPanel.reloadSectionData === 'function') {
+            await window.sectionsPanel.reloadSectionData(id);
+          }
+          
+          // If this is the currently displayed section, refresh the output panel
+          if (this.current && this.current.id === id) {
+            const updatedSection = window.sectionsPanel?.sections?.find(s => s.id == id);
+            if (updatedSection) {
+              this.show(updatedSection);
+            }
+          }
         }
         console.log('[DEBUG] Batch generation completed for all sections');
+        
+        // Reload all sections data to show updated results
+        if (window.sectionsPanel && typeof window.sectionsPanel.loadSections === 'function') {
+          await window.sectionsPanel.loadSections();
+          console.log('[DEBUG] Reloaded all sections data after batch generation');
+          
+          // If we have a current section, refresh its display
+          if (this.current) {
+            const updatedSection = window.sectionsPanel?.sections?.find(s => s.id == this.current.id);
+            if (updatedSection) {
+              this.show(updatedSection);
+            }
+          }
+        }
       } catch (error) {
         console.error('[DEBUG] Error during batch generation:', error);
         // Update progress modal to show error
@@ -639,17 +666,38 @@ class ImageConceptsOutputPanel {
       }
       
       if (res.success && res.image_concepts) {
-        // Update the current section data
-        if (this.current && this.current.id === id) {
-          this.current.image_concepts = res.image_concepts;
-        } else if (!this.current) {
-          // If no current section, set it to ensure display works
-          const section = this.getSectionData(id);
-          if (section) {
-            section.image_concepts = res.image_concepts;
-            this.current = section;
+        // Get or create section data
+        let section = this.current && this.current.id === id ? this.current : null;
+        
+        if (!section) {
+          // Try to get from sections panel
+          if (window.sectionsPanel && window.sectionsPanel.sections) {
+            section = window.sectionsPanel.sections.find(s => s.id == id);
           }
         }
+        
+        if (!section) {
+          // Create minimal section object
+          section = {
+            id: id,
+            title: `Section ${id}`,
+            subtitle: '',
+            order: id,
+            topics: [],
+            image_concepts: res.image_concepts,
+            selected_image_concept: res.selected_image_concept || null
+          };
+        } else {
+          // Update existing section
+          section.image_concepts = res.image_concepts;
+          if (res.selected_image_concept) {
+            section.selected_image_concept = res.selected_image_concept;
+          }
+        }
+        
+        // Set as current and show
+        this.current = section;
+        this.show(section);
         
         // Update the visual concept cards (this should replace the loading message)
         console.log('[DEBUG] Calling displayImageConcepts with:', res.image_concepts.substring(0, 100) + '...');
