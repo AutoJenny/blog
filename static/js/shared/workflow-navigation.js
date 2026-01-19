@@ -15,18 +15,18 @@ class WorkflowNavigation {
     /**
      * Initialize navigation system
      */
-    init(postId, postType) {
+    async init(postId, postType) {
         this.postId = postId;
         this.postType = postType || 'themed';
         
         // Get current stage/substage from page context
         this.detectCurrentPosition();
         
-        // Load substage configuration
-        this.loadSubstages();
+        // Load substage configuration and wait for it
+        await this.loadSubstages();
         
-        // Create and display Next button
-        this.createNextButton();
+        // Create and display Next button (wait for it to complete)
+        await this.createNextButton();
     }
 
     /**
@@ -104,18 +104,21 @@ class WorkflowNavigation {
      */
     async loadSubstages() {
         try {
+            console.log('[Workflow Navigation] Loading substages for post type:', this.postType);
             const response = await fetch(`/api/workflow/substages?post_type=${this.postType}`);
             const data = await response.json();
             
             if (data.success && data.substages) {
                 // API returns {stage: [substage_keys]}
                 this.substages = data.substages;
+                console.log('[Workflow Navigation] Loaded substages:', this.substages);
             } else {
                 // Fallback: Use default configuration
+                console.log('[Workflow Navigation] Using default substages');
                 this.substages = this.getDefaultSubstages();
             }
         } catch (error) {
-            console.error('Error loading substages:', error);
+            console.error('[Workflow Navigation] Error loading substages:', error);
             // Fallback: Use default configuration
             this.substages = this.getDefaultSubstages();
         }
@@ -438,7 +441,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (postId) {
             console.log('[Workflow Navigation] Initializing for post:', postId, 'type:', postType);
             window.workflowNavigation = new WorkflowNavigation();
-            window.workflowNavigation.init(postId, postType);
+            window.workflowNavigation.init(postId, postType).then(() => {
+                console.log('[Workflow Navigation] Initialization complete');
+            }).catch(error => {
+                console.error('[Workflow Navigation] Initialization error:', error);
+            });
         } else {
             console.warn('[Workflow Navigation] No post ID found, cannot initialize');
         }

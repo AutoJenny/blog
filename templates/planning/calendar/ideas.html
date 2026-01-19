@@ -891,6 +891,15 @@ async function savePostMetadata() {
         }
         
         if (subtitleData.success && overridesData.success) {
+            // Reload required ideas from server to verify persistence
+            const ideasResponse = await fetch(`/planning/api/posts/${window.postId}/required-ideas`);
+            const ideasData = await ideasResponse.json();
+            if (ideasData.success && Array.isArray(ideasData.required_ideas)) {
+                requiredIdeas = ideasData.required_ideas;
+                renderRequiredIdeasList();
+                console.log('[savePostMetadata] Reloaded required ideas from server:', requiredIdeas);
+            }
+            
             // Show success message
             const statusDisplay = document.getElementById('post-creation-status');
             if (statusDisplay) {
