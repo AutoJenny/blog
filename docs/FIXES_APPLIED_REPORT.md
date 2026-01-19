@@ -19,11 +19,14 @@ All critical fixes have been applied and verified:
 
 ### 1. ✅ Duplicate Cleanup
 
-**Action:** Deleted 618 duplicate language posts, keeping only the oldest of each set.
+**Action:** Deleted duplicate language posts across ALL statuses, keeping only the oldest of each set.
 
 **Result:**
-- Removed all duplicates from 2026-01-18
+- Removed duplicates from all dates (not just 2026-01-18)
 - Each unique combination (idea_id + content_type + platform + scheduled_date) now has only 1 post
+- Cleanup performed in two passes:
+  1. First pass: Draft status duplicates (618 deleted)
+  2. Second pass: All status duplicates (additional cleanup)
 
 **Verification:**
 - ✅ No duplicate sets remain in database
