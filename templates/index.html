@@ -372,6 +372,18 @@
                                 <span class="text-dark-accent text-sm">Future items</span>
                             </div>
                         </a>
+                        <a href="/posting-queue" class="block w-full">
+                            <div class="card-dark rounded-xl px-6 py-3 flex items-center justify-between hover:bg-slate-800 transition border border-slate-700">
+                                <div class="flex items-center gap-3">
+                                    <span class="icon-circle"><i class="fa-solid fa-list-check text-purple-400 text-xl"></i></span>
+                                    <span class="text-base font-semibold text-white">Posting Queue</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-dark-accent text-sm">View all posts</span>
+                                    <i class="fa-solid fa-chevron-right text-dark-accent"></i>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </section>
 
@@ -467,95 +479,6 @@
                             <div class="kpi-card">
                                 <div class="kpi-value" id="homepage-queue-health">0</div>
                                 <div class="kpi-label">Queue Health</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Posting Queue Accordion -->
-                    <div class="queue-accordion">
-                        <div class="accordion-header" onclick="toggleQueueAccordion()">
-                            <div class="accordion-title">
-                                <i class="fas fa-list-alt"></i>
-                                Posting Queue
-                                <span class="queue-count" id="queue-count">(0 items)</span>
-                            </div>
-                            <div class="next-item-preview" id="next-item-preview" style="display: none;">
-                                <div class="next-item-thumb" id="next-item-thumb"></div>
-                                <div class="next-item-details">
-                                    <div class="next-item-title" id="next-item-title">No items in queue</div>
-                                    <div class="next-item-meta">
-                                        <span class="next-item-platform" id="next-item-platform"></span>
-                                        <span class="next-item-type" id="next-item-type"></span>
-                                        <span class="next-item-time" id="next-item-time"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-toggle">
-                                <i class="fas fa-chevron-down" id="queue-chevron"></i>
-                            </div>
-                        </div>
-                        <div class="accordion-content" id="queue-content" style="display: none;">
-                            <!-- Platform Selector -->
-                            <div class="platform-selector">
-                                <div class="platform-tabs">
-                                    <button class="platform-tab active" data-platform="all">
-                                        <i class="fas fa-globe"></i>
-                                        All Platforms
-                                    </button>
-                                    <button class="platform-tab" data-platform="facebook">
-                                        <i class="fab fa-facebook"></i>
-                                        Facebook
-                                    </button>
-                                    <button class="platform-tab" data-platform="instagram">
-                                        <i class="fab fa-instagram"></i>
-                                        Instagram
-                                    </button>
-                                    <button class="platform-tab" data-platform="twitter">
-                                        <i class="fab fa-twitter"></i>
-                                        Twitter
-                                    </button>
-                                    <button class="platform-tab" data-platform="linkedin">
-                                        <i class="fab fa-linkedin"></i>
-                                        LinkedIn
-                                    </button>
-                                </div>
-                                
-                                <!-- Status Filter -->
-                                <div class="status-filter">
-                                    <label for="status-filter">Status:</label>
-                                    <select id="status-filter" class="status-select">
-                                        <option value="ready" selected>Ready</option>
-                                        <option value="published">Published</option>
-                                        <option value="all">All Status</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Queue Table -->
-                            <div class="timeline-container">
-                                <table class="timeline-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 60px;">Thumb</th>
-                                            <th style="width: 120px;">Date/Time</th>
-                                            <th style="width: 100px;">Platform</th>
-                                            <th style="width: 100px;">Type</th>
-                                            <th>Title</th>
-                                            <th style="width: 80px;">Status</th>
-                                            <th style="width: 120px;">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="timeline-body">
-                                        <!-- Timeline rows will be populated here -->
-                                    </tbody>
-                                </table>
-                                
-                                <!-- Empty State -->
-                                <div id="empty-timeline" class="empty-state" style="display: none;">
-                                    <i class="fas fa-inbox"></i>
-                                    <p>No scheduled posts found</p>
-                                    <p>Start by creating some content or check your posting schedules</p>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -712,11 +635,7 @@
 
 {% block scripts %}
     <script>
-        // Global state
-        let currentPlatform = 'all';
-        let currentStatus = 'ready';
-        let timelineData = [];
-        let isAccordionOpen = false;
+        // Global state (for other homepage features)
 
         // ============================================================================
         // ACCORDION FUNCTIONS
