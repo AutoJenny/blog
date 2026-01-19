@@ -47,7 +47,7 @@ def api_post_subtitle(post_id):
                     UPDATE post
                     SET subtitle = %s, updated_at = NOW()
                     WHERE id = %s
-                """, (subtitle[:200] if subtitle else None, post_id))
+                """, (subtitle[:300] if subtitle else None, post_id))
                 
                 if cursor.rowcount == 0:
                     return jsonify({'success': False, 'error': 'Post not found'}), 404
@@ -165,23 +165,25 @@ def api_generate_subtitle_from_theme(post_id):
         
         # Create prompt for subtitle generation
         system_prompt = """You are a content writer for clan.com, a blog about Scottish culture and heritage.
-Generate brief, descriptive subtitles that explain what the article will cover.
-Subtitles should be informative and help readers understand the article's scope and focus."""
+Generate expanded descriptive subtitles (a few sentences) that explain what the article will cover.
+Subtitles should be informative and help readers understand the article's scope, topics, and focus."""
         
-        task_prompt = f"""Generate a brief subtitle (description) for a blog post about: {theme_title}
+        task_prompt = f"""Generate an expanded subtitle (description) for a blog post about: {theme_title}
 {f'Theme description: {theme_description}' if theme_description else ''}
 
-This subtitle should describe what the article will cover, not be a marketing tagline.
+This subtitle should be a few sentences describing what the article will cover, not a marketing tagline.
 
 Requirements:
-- Must be under 200 characters
-- Should briefly describe what topics, aspects, or content the article will explore
+- Should be 2-4 sentences (approximately 150-300 characters)
+- Should describe what topics, aspects, or content the article will explore
+- Should explain the scope and focus of the article
 - Should fit the clan.com blog's focus on Scottish culture and heritage
-- Should help readers understand the article's scope
+- Should help readers understand what they'll learn from the article
 - Use clear, descriptive language (not marketing copy)
-- Focus on content coverage, not selling or enticing
+- Focus on content coverage and educational value, not selling or enticing
+- Write as a brief expanded idea of what the article will cover
 
-Example format: "Exploring [key aspects] of [topic] and their significance in Scottish [culture/heritage/history]"
+Example format: "This article explores [key aspects] of [topic], examining [specific elements]. We'll delve into [related topics] and their significance in Scottish [culture/heritage/history]. The piece will cover [additional content areas] to provide a comprehensive understanding of [main theme]."
 
 CRITICAL: Return ONLY the subtitle text, no explanation, no quotes, no JSON."""
         
@@ -204,9 +206,14 @@ CRITICAL: Return ONLY the subtitle text, no explanation, no quotes, no JSON."""
         generated_content = re.sub(r'^["\']|["\']$', '', generated_content)
         generated_content = generated_content.strip()
         
-        # Limit to 200 characters
-        if len(generated_content) > 200:
-            generated_content = generated_content[:197] + '...'
+        # Limit to 300 characters (allowing for a few sentences)
+        if len(generated_content) > 300:
+            # Try to cut at sentence boundary
+            sentences = generated_content[:297].rsplit('.', 1)
+            if len(sentences) > 1:
+                generated_content = sentences[0] + '.'
+            else:
+                generated_content = generated_content[:297] + '...'
         
         return jsonify({
             'success': True,
