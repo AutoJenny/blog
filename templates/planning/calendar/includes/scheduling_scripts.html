@@ -7,6 +7,7 @@ const categoryMap = {
     'recipe': 'recipe',
     'profile-product': 'profile_product',
     'profile-surname': 'profile_surname',
+    'language': 'language', // Combined language posts (word, phrase, insult)
     'word': 'weekly_word',
     'phrase': 'weekly_phrase',
     'insult': 'weekly_insult',
@@ -46,7 +47,7 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
     
     if (!tbody) return;
     
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading scheduling data...</td></tr>';
     rangeLabel.textContent = 'Loading...';
     navButtons.forEach(btn => btn.disabled = true);
     
@@ -102,7 +103,7 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
         tbody.innerHTML = '';
         
         if (weekData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">No scheduling data for this range.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: #94a3b8;">No scheduling data for this range.</td></tr>';
             navButtons.forEach(btn => btn.disabled = false);
             return;
         }
@@ -153,6 +154,8 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             const wordItems = data.filter(item => item && item.type === 'weekly_word');
             const phraseItems = data.filter(item => item && item.type === 'weekly_phrase');
             const insultItems = data.filter(item => item && item.type === 'weekly_insult');
+            // Combine all language items into one array
+            const languageItems = [...wordItems, ...phraseItems, ...insultItems];
             const productPostItems = data.filter(item => item && item.type === 'product');
             
             // Debug: Log product posts found
@@ -170,9 +173,8 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
             row.appendChild(createCategoryCell(recipeItems, 'recipe', year, week));
             row.appendChild(createCategoryCell(profileProductItems, 'profile-product', year, week));
             row.appendChild(createCategoryCell(profileSurnameItems, 'profile-surname', year, week));
-            row.appendChild(createCategoryCell(wordItems, 'word', year, week));
-            row.appendChild(createCategoryCell(phraseItems, 'phrase', year, week));
-            row.appendChild(createCategoryCell(insultItems, 'insult', year, week));
+            // Combined language column
+            row.appendChild(createCategoryCell(languageItems, 'language', year, week));
             
             // Create product post cell
             const productPostCell = createCategoryCell(productPostItems, 'product-post', year, week);
@@ -185,7 +187,7 @@ async function loadSchedulingRange(startYear, startWeek, weeks) {
         
     } catch (error) {
         console.error('Error loading scheduling data:', error);
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #ef4444;">Error loading scheduling data: ' + error.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: #ef4444;">Error loading scheduling data: ' + error.message + '</td></tr>';
         rangeLabel.textContent = 'Error loading data';
         navButtons.forEach(btn => btn.disabled = false);
     }
@@ -218,7 +220,7 @@ function createCategoryCell(items, categoryClass, year, week) {
             itemId = item.recipe_id || item.id;
         } else if (categoryClass === 'profile-product' || categoryClass === 'profile-surname') {
             itemId = item.post_id || item.id;
-        } else if (categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
+        } else if (categoryClass === 'language' || categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
             itemId = item.item_id || item.id;
         } else if (categoryClass === 'product-post') {
             itemId = item.posting_queue_id || item.product_id || item.item_id || item.id;
@@ -248,6 +250,22 @@ function createCategoryCell(items, categoryClass, year, week) {
         } else if (categoryClass === 'profile-surname') {
             title = item.post_title || `Profile #${item.post_id}`;
             typeName = 'Surname Profile';
+        } else if (categoryClass === 'language') {
+            // Determine the specific language type from the item
+            if (item.type === 'weekly_word') {
+                title = item.title || item.idea_title || 'Word';
+                typeName = 'language: word';
+            } else if (item.type === 'weekly_phrase') {
+                title = item.title || item.idea_title || 'Phrase';
+                typeName = 'language: phrase';
+            } else if (item.type === 'weekly_insult') {
+                title = item.title || item.idea_title || 'Insult';
+                typeName = 'language: insult';
+            } else {
+                title = item.title || item.idea_title || 'Language';
+                typeName = 'language';
+            }
+        // Individual language types (for backward compatibility)
         } else if (categoryClass === 'word') {
             title = item.title || item.idea_title || 'Word';
             typeName = 'language: word';
@@ -267,6 +285,15 @@ function createCategoryCell(items, categoryClass, year, week) {
         let apiCategory = categoryMap[categoryClass] || categoryClass;
         if (categoryClass === 'product-post') {
             apiCategory = 'product';
+        } else if (categoryClass === 'language') {
+            // Map to the specific language type for API calls
+            if (item.type === 'weekly_word') {
+                apiCategory = 'weekly_word';
+            } else if (item.type === 'weekly_phrase') {
+                apiCategory = 'weekly_phrase';
+            } else if (item.type === 'weekly_insult') {
+                apiCategory = 'weekly_insult';
+            }
         }
         
         // Check if unified-item-card is loaded
@@ -282,15 +309,28 @@ function createCategoryCell(items, categoryClass, year, week) {
         
         // Use unified item card component
         // Don't pass description for language items or product posts - it will be filtered out anyway
-        const isLanguageItem = categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult';
+        const isLanguageItem = categoryClass === 'language' || categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult';
         const isProductPost = categoryClass === 'product-post';
         
         if (isProductPost) {
             console.log('Calling createUnifiedItemCard for product post:', { item, categoryClass, apiCategory, typeName, title });
         }
         
+        // For language items, determine the specific type for styling
+        let cardType = categoryClass;
+        if (categoryClass === 'language') {
+            // Use the specific language type for card styling
+            if (item.type === 'weekly_word') {
+                cardType = 'word';
+            } else if (item.type === 'weekly_phrase') {
+                cardType = 'phrase';
+            } else if (item.type === 'weekly_insult') {
+                cardType = 'insult';
+            }
+        }
+        
         const card = window.createUnifiedItemCard(item, {
-            type: categoryClass,
+            type: cardType,
             category: apiCategory,
             typeName: typeName,
             title: title,
@@ -299,7 +339,7 @@ function createCategoryCell(items, categoryClass, year, week) {
             week: week,
             dataset: {
                 itemId: itemId || '',
-                category: categoryClass,
+                category: categoryClass, // Keep 'language' for drag/drop logic
                 position: item.position || '',
                 itemData: JSON.stringify(item)
             },
@@ -406,6 +446,11 @@ function createCategoryCell(items, categoryClass, year, week) {
             });
         }
         
+        // Add language class for styling (all language items get the green styling)
+        if (isLanguageItem) {
+            card.classList.add('scheduling-item', 'language');
+        }
+        
         cell.appendChild(card);
         
         // Debug: Verify card was appended
@@ -457,7 +502,10 @@ function handleDragOver(e) {
     }
     const cellCategory = e.currentTarget.dataset.category;
     const draggedCategory = draggedElement?.dataset.category;
-    if (cellCategory === draggedCategory) {
+    // Allow drops if categories match, or if both are language-related
+    const isLanguageCategory = cellCategory === 'language' || cellCategory === 'word' || cellCategory === 'phrase' || cellCategory === 'insult';
+    const isDraggedLanguage = draggedCategory === 'language' || draggedCategory === 'word' || draggedCategory === 'phrase' || draggedCategory === 'insult';
+    if (cellCategory === draggedCategory || (isLanguageCategory && isDraggedLanguage)) {
         e.dataTransfer.dropEffect = 'move';
     } else {
         e.dataTransfer.dropEffect = 'none';
@@ -468,7 +516,10 @@ function handleDragOver(e) {
 function handleDragEnter(e) {
     const cellCategory = e.currentTarget.dataset.category;
     const draggedCategory = draggedElement?.dataset.category;
-    if (cellCategory === draggedCategory) {
+    // Allow drag enter if categories match, or if both are language-related
+    const isLanguageCategory = cellCategory === 'language' || cellCategory === 'word' || cellCategory === 'phrase' || cellCategory === 'insult';
+    const isDraggedLanguage = draggedCategory === 'language' || draggedCategory === 'word' || draggedCategory === 'phrase' || draggedCategory === 'insult';
+    if (cellCategory === draggedCategory || (isLanguageCategory && isDraggedLanguage)) {
         e.currentTarget.classList.add('drag-over');
     }
 }
@@ -485,13 +536,29 @@ function handleDrop(e) {
     e.currentTarget.classList.remove('drag-over');
     const cellCategory = e.currentTarget.dataset.category;
     const draggedCategory = draggedElement?.dataset.category;
-    if (cellCategory !== draggedCategory) {
+    // Allow drops if categories match, or if both are language-related
+    const isLanguageCategory = cellCategory === 'language' || cellCategory === 'word' || cellCategory === 'phrase' || cellCategory === 'insult';
+    const isDraggedLanguage = draggedCategory === 'language' || draggedCategory === 'word' || draggedCategory === 'phrase' || draggedCategory === 'insult';
+    if (cellCategory !== draggedCategory && !(isLanguageCategory && isDraggedLanguage)) {
         return false;
     }
     const targetWeek = parseInt(e.currentTarget.dataset.week);
     const targetYear = parseInt(e.currentTarget.dataset.year);
     const itemId = parseInt(draggedElement.dataset.itemId);
-    moveItemToWeek(cellCategory, itemId, targetYear, targetWeek);
+    // Use the dragged category for the move, but map 'language' to the actual item type
+    let moveCategory = draggedCategory;
+    if (draggedCategory === 'language') {
+        // Extract the actual type from the dragged item data
+        const itemData = JSON.parse(draggedElement.dataset.itemData || '{}');
+        if (itemData.type === 'weekly_word') {
+            moveCategory = 'word';
+        } else if (itemData.type === 'weekly_phrase') {
+            moveCategory = 'phrase';
+        } else if (itemData.type === 'weekly_insult') {
+            moveCategory = 'insult';
+        }
+    }
+    moveItemToWeek(moveCategory, itemId, targetYear, targetWeek);
     return false;
 }
 
@@ -608,7 +675,7 @@ function openItemModal(item, categoryClass, itemId, position, year = null, week 
         descField = item.recipe_description || '';
         descContainer.style.display = 'block';
         wordPhraseFields.style.display = 'none';
-    } else if (categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
+    } else if (categoryClass === 'language' || categoryClass === 'word' || categoryClass === 'phrase' || categoryClass === 'insult') {
         titleField = item.title || item.idea_title || '';
         descField = item.description || item.idea_description || '';
         descContainer.style.display = 'none';
@@ -728,7 +795,7 @@ async function saveItemEdit() {
                 const description = document.getElementById('modal-description-input').value.trim();
                 payload.data.recipe_title = title;
                 if (description) payload.data.recipe_description = description;
-            } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
+            } else if (currentModalCategory === 'language' || currentModalCategory === 'word' || currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
                 payload.data.idea_title = title;
                 const translation = document.getElementById('modal-translation-input').value.trim();
                 const usage1 = document.getElementById('modal-usage1-input').value.trim();
@@ -786,7 +853,7 @@ async function saveItemEdit() {
             const description = document.getElementById('modal-description-input').value.trim();
             payload.recipe_title = title;
             if (description) payload.recipe_description = description;
-        } else if (currentModalCategory === 'word' || currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
+        } else if (currentModalCategory === 'language' || currentModalCategory === 'word' || currentModalCategory === 'phrase' || currentModalCategory === 'insult') {
             payload.idea_title = title;
             const translation = document.getElementById('modal-translation-input').value.trim();
             const usage1 = document.getElementById('modal-usage1-input').value.trim();

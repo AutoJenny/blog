@@ -1,7 +1,9 @@
 # Calendar Scheduling System - Complete Audit
 
-**Date**: 2025-12-03  
+**Date**: 2025-12-03 (Updated: 2026-01-19)  
 **Purpose**: Verify alignment of all components and identify incompatible legacy code
+
+**IMPORTANT UPDATE (2026-01-19):** All calendar views now use `resolve_item_for_week()` as the single source of truth. See `CALENDAR_UNIFIED_RESOLVER_IMPLEMENTATION.md` for details.
 
 ---
 

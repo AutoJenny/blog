@@ -140,36 +140,21 @@
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-.scheduling-item.word {
-    background: rgba(139, 92, 246, 0.15);
-    border-color: rgba(139, 92, 246, 0.3);
-    color: #f1f5f9;
-}
-.scheduling-item.word:hover {
-    background: rgba(139, 92, 246, 0.25);
-    border-color: #8b5cf6;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-.scheduling-item.phrase {
-    background: rgba(168, 85, 247, 0.15);
-    border-color: rgba(168, 85, 247, 0.3);
-    color: #f1f5f9;
-}
-.scheduling-item.phrase:hover {
-    background: rgba(168, 85, 247, 0.25);
-    border-color: #a855f7;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+/* Language posts (combined) - using green from week-view */
+.scheduling-item.language,
+.scheduling-item.word,
+.scheduling-item.phrase,
 .scheduling-item.insult {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #f1f5f9;
+    background: #065f46;
+    border-color: #047857;
+    color: #fff;
 }
+.scheduling-item.language:hover,
+.scheduling-item.word:hover,
+.scheduling-item.phrase:hover,
 .scheduling-item.insult:hover {
-    background: rgba(239, 68, 68, 0.25);
-    border-color: #ef4444;
+    background: #10b981;
+    border-color: #34d399;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -266,9 +251,21 @@
 .item-card.type-profile-product,
 .item-card.type-profile-surname,
 .item-card.type-profile { border-color: #38bdf8; background: rgba(56,189,248,0.12); }
-.item-card.type-word { border-color: #22c55e; background: rgba(34,197,94,0.12); }
-.item-card.type-phrase { border-color: #22d3ee; background: rgba(34,211,238,0.12); }
-.item-card.type-insult { border-color: #f472b6; background: rgba(244,114,182,0.12); }
+/* Language posts (combined) - using green from week-view */
+.item-card.type-language,
+.item-card.type-word,
+.item-card.type-phrase,
+.item-card.type-insult {
+    border-color: #047857;
+    background: rgba(6, 95, 70, 0.15);
+}
+.item-card.type-language:hover,
+.item-card.type-word:hover,
+.item-card.type-phrase:hover,
+.item-card.type-insult:hover {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.2);
+}
 .item-card.type-product { border-color: #f59e0b; background: rgba(245,158,11,0.12); }
 .item-card.type-product-post { border-color: #f59e0b; background: rgba(245,158,11,0.12); }
 .scheduling-item.empty {

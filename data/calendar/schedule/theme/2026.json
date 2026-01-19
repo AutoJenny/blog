@@ -288,10 +288,11 @@
   },
   {
     "week": 42,
-    "item_id": 49,
-    "position": 42,
-    "title": "Golden Eagle",
-    "description": "A Highland icon of power and wildness."
+    "item_id": 99,
+    "position": 91,
+    "title": "Talking Trees",
+    "description": "Folklore surrounding ancient woods.",
+    "_override": true
   },
   {
     "week": 43,
@@ -302,10 +303,11 @@
   },
   {
     "week": 44,
-    "item_id": 51,
-    "position": 44,
-    "title": "Heather",
-    "description": "A national symbol of resilience and identity."
+    "item_id": 99,
+    "position": 91,
+    "title": "Talking Trees",
+    "description": "Folklore surrounding ancient woods.",
+    "_override": true
   },
   {
     "week": 45,
