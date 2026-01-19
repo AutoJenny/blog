@@ -207,7 +207,7 @@ async function loadQueue() {
             console.error('Failed to load queue:', data.error);
             document.getElementById('queue-tbody').innerHTML = `
                 <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-red-400">
+                    <td colspan="7" class="px-4 py-8 text-center text-red-400">
                         Error loading queue: ${data.error}
                     </td>
                 </tr>
@@ -217,7 +217,7 @@ async function loadQueue() {
         console.error('Error loading queue:', error);
         document.getElementById('queue-tbody').innerHTML = `
             <tr>
-                <td colspan="6" class="px-4 py-8 text-center text-red-400">
+                <td colspan="7" class="px-4 py-8 text-center text-red-400">
                     Error: ${error.message}
                 </td>
             </tr>
