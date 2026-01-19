@@ -40,16 +40,6 @@
     {% set process_content_html %}
     <div class="page-main">
         <div class="ideas-main">
-        <!-- Category Indicator Banner -->
-        {% if content_type_name %}
-        <div class="route-indicator">
-            <i class="fas fa-tag"></i>
-            <span>Content Category: <strong>{{ content_type_name }}</strong></span>
-            {% if year and week_number %}
-            <span class="route-indicator-week">Week {{ week_number }}, {{ year }}</span>
-            {% endif %}
-        </div>
-        {% endif %}
         <div class="ideas-results">
             <!-- LLM Module with full prompt editing and results panel -->
             <div class="llm-module">
