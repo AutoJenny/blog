@@ -312,16 +312,12 @@ function renderTable() {
                 }
             }
         } else if (item.content_type && item.content_type.startsWith('weekly_')) {
-            // For language posts: use idea title (clean), never show JSON
+            // For language posts: show ONLY the main word/phrase (Scots text), not translation
             if (item.idea_title) {
+                // idea_title is the main word/phrase - use it directly
                 content = item.idea_title;
-                if (item.idea_description) {
-                    const desc = item.idea_description.length > 60 
-                        ? item.idea_description.substring(0, 60) + '...' 
-                        : item.idea_description;
-                    content += ' - ' + desc;
-                }
-                contentTitle = item.idea_title + (item.idea_description ? '\n' + item.idea_description : '');
+                contentTitle = item.idea_title;
+                // Don't include description (which contains translation)
             } else {
                 // Fallback: use generated_content only if it's NOT JSON
                 const rawContent = item.generated_content || '';
