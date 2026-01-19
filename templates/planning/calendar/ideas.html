@@ -72,6 +72,53 @@
             <div id="post-creation-status" class="idea-seed-display" style="margin-bottom: 1rem;">
                 <!-- Status messages will appear here -->
             </div>
+            
+            <!-- Post Metadata Editor -->
+            <div class="post-metadata-editor" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h4 style="color: #f1f5f9; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-edit"></i>
+                    Post Metadata
+                </h4>
+                
+                <div class="metadata-fields" style="display: grid; gap: 1rem;">
+                    <!-- Subtitle Field -->
+                    <div class="metadata-field">
+                        <label for="post-subtitle" style="display: block; color: #cbd5e1; font-weight: 500; margin-bottom: 0.5rem;">
+                            <i class="fas fa-heading"></i> Subtitle
+                        </label>
+                        <input type="text" 
+                               id="post-subtitle" 
+                               class="metadata-input" 
+                               placeholder="Enter post subtitle..."
+                               style="width: 100%; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 0.9rem;"
+                               maxlength="200" />
+                        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem; display: block;">Brief subtitle for the post (max 200 characters)</small>
+                    </div>
+                    
+                    <!-- Required Ideas to Include Field -->
+                    <div class="metadata-field">
+                        <label for="required-ideas" style="display: block; color: #cbd5e1; font-weight: 500; margin-bottom: 0.5rem;">
+                            <i class="fas fa-list-check"></i> Required Ideas to Include
+                        </label>
+                        <textarea id="required-ideas" 
+                                  class="metadata-textarea" 
+                                  placeholder="Enter required ideas, one per line or as JSON array..."
+                                  rows="6"
+                                  style="width: 100%; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 0.9rem; font-family: monospace; resize: vertical;"></textarea>
+                        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                            Enter ideas that must be included in the post. One per line, or as JSON array: ["idea1", "idea2"]
+                        </small>
+                        <button type="button" 
+                                id="save-metadata-btn" 
+                                class="btn btn-primary" 
+                                style="margin-top: 0.5rem;"
+                                onclick="savePostMetadata()">
+                            <i class="fas fa-save"></i> Save Metadata
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <!-- LLM Module with full prompt editing and results panel -->
             <div class="llm-module">
                 <!-- LLM Prompts Panel with full editing functionality -->
@@ -507,6 +554,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize LLM module (expanded idea generation)
     llmModule = initializeLLMModule('ideas', window.postId);
     
+    // Load post metadata after page is ready
+    setTimeout(() => {
+        loadPostMetadata();
+    }, 500);
+    
     // Override generateContent to include idea_seed from page
     if (llmModule && llmModule.generateContent) {
         const originalGenerateContent = llmModule.generateContent.bind(llmModule);
@@ -614,7 +666,147 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Expanded idea is now generated and displayed via the LLM module below
+    
+    // Load existing metadata
+    loadPostMetadata();
 });
+
+// Load and save post metadata (subtitle, required ideas)
+async function loadPostMetadata() {
+    try {
+        // Only load if we're in the expanded idea section
+        const expandedIdeaSection = document.getElementById('expanded-idea-section');
+        if (!expandedIdeaSection || expandedIdeaSection.style.display === 'none') {
+            return;
+        }
+        
+        const response = await fetch(`/planning/api/posts/${window.postId}`);
+        const data = await response.json();
+        
+        if (data.success && data.post) {
+            // Load subtitle
+            const subtitleInput = document.getElementById('post-subtitle');
+            if (subtitleInput) {
+                subtitleInput.value = data.post.subtitle || '';
+            }
+            
+            // Load required ideas from embedding_overrides
+            const requiredIdeasTextarea = document.getElementById('required-ideas');
+            if (requiredIdeasTextarea) {
+                // Try to get from post_development.embedding_overrides
+                if (data.post.embedding_overrides) {
+                    try {
+                        const overrides = typeof data.post.embedding_overrides === 'string' 
+                            ? JSON.parse(data.post.embedding_overrides) 
+                            : data.post.embedding_overrides;
+                        if (overrides && overrides.required_ideas) {
+                            if (Array.isArray(overrides.required_ideas)) {
+                                requiredIdeasTextarea.value = overrides.required_ideas.join('\n');
+                            } else {
+                                requiredIdeasTextarea.value = String(overrides.required_ideas);
+                            }
+                        } else {
+                            requiredIdeasTextarea.value = '';
+                        }
+                    } catch (e) {
+                        console.warn('Error parsing embedding_overrides:', e);
+                        requiredIdeasTextarea.value = '';
+                    }
+                } else {
+                    requiredIdeasTextarea.value = '';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading post metadata:', error);
+    }
+}
+
+async function savePostMetadata() {
+    try {
+        const subtitleInput = document.getElementById('post-subtitle');
+        const requiredIdeasTextarea = document.getElementById('required-ideas');
+        const saveBtn = document.getElementById('save-metadata-btn');
+        
+        if (!subtitleInput || !requiredIdeasTextarea || !saveBtn) {
+            return;
+        }
+        
+        // Show loading state
+        const originalText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        // Parse required ideas (support both line-separated and JSON array)
+        let requiredIdeas = [];
+        const ideasText = requiredIdeasTextarea.value.trim();
+        if (ideasText) {
+            // Try to parse as JSON first
+            try {
+                const parsed = JSON.parse(ideasText);
+                if (Array.isArray(parsed)) {
+                    requiredIdeas = parsed;
+                } else {
+                    requiredIdeas = [ideasText];
+                }
+            } catch (e) {
+                // Not JSON, treat as line-separated
+                requiredIdeas = ideasText.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0);
+            }
+        }
+        
+        // Save subtitle to post table
+        const subtitle = subtitleInput.value.trim();
+        const subtitleResponse = await fetch(`/planning/api/posts/${window.postId}/subtitle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subtitle: subtitle })
+        });
+        
+        // Save required ideas to post_development.embedding_overrides
+        const overridesResponse = await fetch(`/planning/api/posts/${window.postId}/required-ideas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ required_ideas: requiredIdeas })
+        });
+        
+        const subtitleData = await subtitleResponse.json();
+        const overridesData = await overridesResponse.json();
+        
+        if (subtitleData.success && overridesData.success) {
+            // Show success message
+            const statusDisplay = document.getElementById('post-creation-status');
+            if (statusDisplay) {
+                statusDisplay.innerHTML = `
+                    <div class="status-message" style="background: #059669; color: white; padding: 1rem; border-radius: 6px;">
+                        <i class="fas fa-check-circle"></i>
+                        Metadata saved successfully!
+                    </div>
+                `;
+                // Clear after 3 seconds
+                setTimeout(() => {
+                    if (statusDisplay) {
+                        statusDisplay.innerHTML = '';
+                    }
+                }, 3000);
+            }
+        } else {
+            throw new Error(subtitleData.error || overridesData.error || 'Failed to save metadata');
+        }
+        
+    } catch (error) {
+        console.error('Error saving post metadata:', error);
+        alert('Error saving metadata: ' + error.message);
+    } finally {
+        const saveBtn = document.getElementById('save-metadata-btn');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Metadata';
+        }
+    }
+}
 
 // Theme selection functionality for post-based ideas page
 let availableThemes = [];
@@ -734,6 +926,10 @@ function updateUIState() {
         // Theme already selected - show expanded idea generation
         if (themeSelectionSection) themeSelectionSection.style.display = 'none';
         if (expandedIdeaSection) expandedIdeaSection.style.display = 'block';
+        // Load metadata when showing expanded idea section
+        setTimeout(() => {
+            loadPostMetadata();
+        }, 100);
     } else {
         // Theme not selected - show selection UI
         if (themeSelectionSection) themeSelectionSection.style.display = 'block';
@@ -897,6 +1093,11 @@ async function confirmThemeSelection() {
                     </div>
                 `;
             }
+            
+            // Load metadata after post is created/updated
+            setTimeout(() => {
+                loadPostMetadata();
+            }, 500);
             
             // Auto-navigate to next stage after a short delay
             setTimeout(() => {

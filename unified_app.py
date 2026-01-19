@@ -141,6 +141,10 @@ def create_app(config_name=None):
     from blueprints.planning import bp as planning_bp
     app.register_blueprint(planning_bp)
     
+    # Register planning post metadata API
+    from blueprints.planning_api_post_metadata import bp as planning_api_post_metadata_bp
+    app.register_blueprint(planning_api_post_metadata_bp)
+    
     # Register cyclic calendar API
     from blueprints.planning_api_calendar_cyclic import bp as planning_api_calendar_cyclic_bp
     app.register_blueprint(planning_api_calendar_cyclic_bp)
