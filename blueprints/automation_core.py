@@ -397,7 +397,7 @@ def get_calendar_item():
                           AND p.recipe_id IS NULL
                           AND p.profile_category_id IS NULL
                           AND (p.generated_source_type IS NULL OR p.generated_source_type = '')
-                          AND p.status != 'deleted'
+                          AND p.status IN ('draft', 'in_process')
                           AND (pd.idea_seed ILIKE %s OR p.title ILIKE %s)
                         ORDER BY p.created_at DESC
                         LIMIT 1
@@ -407,11 +407,13 @@ def get_calendar_item():
                         post_id = result['id']
                 
                 # Fallback: If no week/year match, try title match only
+                # Only reuse posts in workflow states, never published
                 if not post_id:
                     cursor.execute("""
-                        SELECT p.id FROM post p
+                        SELECT p.id, p.status FROM post p
                         JOIN post_development pd ON p.id = pd.post_id
-                        WHERE pd.idea_seed ILIKE %s AND p.status != 'deleted'
+                        WHERE pd.idea_seed ILIKE %s 
+                          AND p.status IN ('draft', 'in_process')
                         ORDER BY p.created_at DESC
                         LIMIT 1
                     """, (f'%{item.get("theme_title") or item.get("title", "")}%',))
@@ -420,21 +422,24 @@ def get_calendar_item():
                         post_id = result['id']
             elif category == 'recipe':
                 # For recipes, use recipe_id (most reliable)
+                # Only reuse posts in workflow states, never published
                 cursor.execute("""
-                    SELECT id FROM post
-                    WHERE recipe_id = %s AND status != 'deleted'
+                    SELECT id, status FROM post
+                    WHERE recipe_id = %s 
+                      AND status IN ('draft', 'in_process')
                     ORDER BY created_at DESC
                     LIMIT 1
                 """, (item.get("id"),))
                 result = cursor.fetchone()
                 if result:
                     post_id = result['id']
+                    logger.info(f"Reusing recipe post {post_id} with status '{result['status']}'")
             elif category in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
                 # For weekly content, prefer week/year context if available
                 if year and week:
                     # First try: Check calendar_week_posts_v2 for same year/week + title match
                     cursor.execute("""
-                        SELECT DISTINCT p.id
+                        SELECT DISTINCT p.id, p.status
                         FROM calendar_week_posts_v2 cwp
                         JOIN post p ON cwp.post_id = p.id
                         LEFT JOIN post_development pd ON p.id = pd.post_id
@@ -442,7 +447,7 @@ def get_calendar_item():
                           AND cwp.week_number = %s
                           AND p.recipe_id IS NULL
                           AND p.profile_category_id IS NULL
-                          AND p.status != 'deleted'
+                          AND p.status IN ('draft', 'in_process')
                           AND (pd.idea_seed ILIKE %s OR p.title ILIKE %s)
                         ORDER BY p.created_at DESC
                         LIMIT 1
@@ -452,11 +457,13 @@ def get_calendar_item():
                         post_id = result['id']
                 
                 # Fallback: If no week/year match, try title match only
+                # Only reuse posts in workflow states, never published
                 if not post_id:
                     cursor.execute("""
-                        SELECT p.id FROM post p
+                        SELECT p.id, p.status FROM post p
                         JOIN post_development pd ON p.id = pd.post_id
-                        WHERE pd.idea_seed ILIKE %s AND p.status != 'deleted'
+                        WHERE pd.idea_seed ILIKE %s 
+                          AND p.status IN ('draft', 'in_process')
                         ORDER BY p.created_at DESC
                         LIMIT 1
                     """, (f'%{item.get("idea_title") or item.get("title", "")}%',))
@@ -583,9 +590,11 @@ def create_post_from_item():
             
             if category == 'recipe':
                 # For recipes, check by recipe_id (most reliable)
+                # Only reuse posts in workflow states, never published
                 cursor.execute("""
                     SELECT id, status FROM post
-                    WHERE recipe_id = %s AND status != 'deleted'
+                    WHERE recipe_id = %s 
+                      AND status IN ('draft', 'in_process')
                     ORDER BY created_at DESC
                     LIMIT 1
                 """, (recipe_id,))
@@ -593,8 +602,10 @@ def create_post_from_item():
                 if result:
                     existing_post_id = result['id']
                     existing_post_status = result['status']
+                    logger.info(f"Reusing recipe post {existing_post_id} with status '{existing_post_status}'")
             elif category == 'theme' and year and week:
                 # For themes, check canonical week→post mapping (ID-only, no title matching).
+                # Only reuse posts in workflow states, never published
                 cursor.execute("""
                     SELECT DISTINCT p.id, p.status
                     FROM calendar_week_posts_v2 cwp
@@ -604,7 +615,7 @@ def create_post_from_item():
                       AND p.recipe_id IS NULL
                       AND p.profile_category_id IS NULL
                       AND (p.generated_source_type IS NULL OR p.generated_source_type = '')
-                      AND p.status != 'deleted'
+                      AND p.status IN ('draft', 'in_process')
                     ORDER BY cwp.created_at DESC
                     LIMIT 1
                 """, (year, week))
@@ -612,6 +623,7 @@ def create_post_from_item():
                 if result:
                     existing_post_id = result['id']
                     existing_post_status = result['status']
+                    logger.info(f"Reusing theme post {existing_post_id} with status '{existing_post_status}' for week {year}/{week}")
             
             # If existing post found, return it instead of creating new
             if existing_post_id:

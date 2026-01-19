@@ -133,6 +133,10 @@ class BlogPipelineHeader {
             this.postData = data;
             
             console.log('[Blog Pipeline Header] Post data received:', data);
+            
+            // Update preview link with correct post ID
+            this.updatePreviewLink(postId);
+            
             this.updateHeaderFields();
             console.log('[Blog Pipeline Header] Post data loaded successfully');
             
@@ -289,9 +293,13 @@ class BlogPipelineHeader {
             }
 
             const taxonomy = data.taxonomy;
-            // Display only theme_name (content_type_name is redundant and shown elsewhere)
+            // Display theme_name and content_type_name (sub-category)
             if (taxonomy.theme_name) {
-                taxonomyEl.textContent = taxonomy.theme_name;
+                if (taxonomy.content_type_name) {
+                    taxonomyEl.textContent = `${taxonomy.theme_name}: ${taxonomy.content_type_name}`;
+                } else {
+                    taxonomyEl.textContent = taxonomy.theme_name;
+                }
             } else {
                 taxonomyEl.textContent = '';
             }
@@ -1047,6 +1055,14 @@ class BlogPipelineHeader {
         if (path.includes('/product-match')) return 'product_match';
         if (path.includes('/final-review') || path.includes('/preview')) return 'final_review';
         return null;
+    }
+
+    updatePreviewLink(postId) {
+        const previewLink = document.querySelector('.preview-button');
+        if (previewLink && postId) {
+            previewLink.setAttribute('href', `/preview/${postId}`);
+            console.log(`[Blog Pipeline Header] Updated preview link to /preview/${postId}`);
+        }
     }
 
     updateSubtitle(currentStage, currentSubstage) {

@@ -247,23 +247,10 @@ class WorkflowNavigation {
 
     /**
      * Get route URL for a substage
-     * Uses API to get next substage URL
+     * Builds URL directly from substage key (we already know which substage we want)
      */
-    async getSubstageRoute(stage, substage) {
-        try {
-            const response = await fetch(
-                `/api/workflow/next-substage?post_id=${this.postId}&stage=${stage}&substage=${substage}`
-            );
-            const data = await response.json();
-            
-            if (data.success && data.next && data.next.url) {
-                return data.next.url;
-            }
-        } catch (error) {
-            console.error('Error getting next substage URL:', error);
-        }
-        
-        // Fallback: Build URL from pattern
+    getSubstageRoute(stage, substage) {
+        // Build URL directly from substage key - we already know which substage we want
         const routeMap = {
             'ideas': `/planning/posts/${this.postId}/calendar/ideas`,
             'taxonomy': `/planning/posts/${this.postId}/calendar/taxonomy`,
@@ -298,7 +285,7 @@ class WorkflowNavigation {
         }
 
         console.log('[Workflow Navigation] Next substage:', nextSubstage);
-        const route = await this.getSubstageRoute(nextSubstage.stage, nextSubstage.substage);
+        const route = this.getSubstageRoute(nextSubstage.stage, nextSubstage.substage);
         if (!route) {
             console.warn('[Workflow Navigation] No route available for next substage');
             return; // No route available

@@ -788,6 +788,23 @@ async function generateSubtitleFromTheme() {
         if (data.success && data.subtitle) {
             subtitleInput.value = data.subtitle;
             console.log('Subtitle auto-generated:', data.subtitle);
+            
+            // CRITICAL: Save the generated subtitle immediately (auto-save won't trigger on programmatic value change)
+            try {
+                const saveResponse = await fetch(`/planning/api/posts/${window.postId}/subtitle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subtitle: data.subtitle })
+                });
+                const saveData = await saveResponse.json();
+                if (saveData.success) {
+                    console.log('[generateSubtitleFromTheme] Subtitle saved successfully');
+                } else {
+                    console.error('[generateSubtitleFromTheme] Failed to save subtitle:', saveData.error);
+                }
+            } catch (saveError) {
+                console.error('[generateSubtitleFromTheme] Error saving subtitle:', saveError);
+            }
         } else {
             console.error('Failed to generate subtitle:', data.error || 'Unknown error');
             subtitleInput.placeholder = 'Enter post subtitle...';

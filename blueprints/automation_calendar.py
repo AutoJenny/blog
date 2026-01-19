@@ -52,17 +52,19 @@ def get_next_up():
             existing_post_id = None
             theme_title = theme_item.get('theme_title') or theme_item.get('title', '')
             if theme_title:
+                # Only reuse posts in workflow states, never published
                 cursor.execute("""
-                    SELECT p.id FROM post p
+                    SELECT p.id, p.status FROM post p
                     JOIN post_development pd ON p.id = pd.post_id
-                    WHERE pd.idea_seed ILIKE %s AND p.status != 'deleted'
+                    WHERE pd.idea_seed ILIKE %s 
+                      AND p.status IN ('draft', 'in_process')
                     ORDER BY p.created_at DESC
                     LIMIT 1
                 """, (f'%{theme_title}%',))
                 existing_post = cursor.fetchone()
                 if existing_post:
                     existing_post_id = existing_post['id']
-                    logger.info(f"Found existing post {existing_post_id} for theme '{theme_title}'")
+                    logger.info(f"Found existing post {existing_post_id} with status '{existing_post['status']}' for theme '{theme_title}'")
             
             # Get production status
             production_status = "not_started"

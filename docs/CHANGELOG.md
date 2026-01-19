@@ -1,5 +1,37 @@
 # Changelog
 
+## 2025-01-19 - Post Status Management and Workflow Improvements
+
+### Fixed
+- **Critical Bug:** Post reuse logic now correctly excludes published posts
+  - All post lookup queries now only reuse posts in workflow states: `draft`, `in_process` (corrected enum values)
+  - Published posts are never reused - new posts always start as `draft`
+  - Fixed in: `blueprints/planning_api_posts.py`, `blueprints/automation_core.py`, `blueprints/automation_calendar.py`
+  - Added helper functions in `utils/post_status_helpers.py` for consistent status validation
+  - Documentation: `docs/POST_STATUS_MANAGEMENT.md`
+- **Subtitle Field Integration:** Updated all pages to use `subtitle` field instead of `expanded_idea`
+  - Ideas page: Auto-generates and saves subtitle (expanded idea description) from theme
+  - Taxonomy page: Checks for subtitle before allowing taxonomy generation
+  - Brainstorm page: Uses subtitle when generating topics
+  - Fixed auto-save to persist generated subtitles immediately
+- **Workflow Navigation:** Fixed Next button routing
+  - Corrected navigation from Ideas → Taxonomy (was incorrectly going to Brainstorm)
+  - Updated to build URLs directly from substage keys instead of using API incorrectly
+- **Preview Link:** Preview link now updates dynamically with correct post ID
+- **Taxonomy Display:** Header now shows both category and sub-category (e.g., "Culture & Life: Modern Celebrations")
+- **Taxonomy Auto-Save:** Removed manual save button, implemented auto-save with visual feedback
+
+### Added
+- `utils/post_status_helpers.py` - Helper functions for post status validation
+- `docs/POST_STATUS_MANAGEMENT.md` - Complete documentation of status flow and reuse rules
+
+### Changed
+- **Ideas Page:** Subtitle auto-generates from theme and auto-saves immediately after generation
+- **Taxonomy Page:** Auto-saves taxonomy assignments when any field changes (debounced 500ms)
+- **Brainstorm Page:** Now uses subtitle field instead of expanded_idea endpoint
+
+---
+
 ## 2026-01-18 - Text Wrapping for Weekly Content Images
 
 ### Changed

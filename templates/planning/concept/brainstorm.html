@@ -528,14 +528,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadExpandedIdea() {
     try {
-        const response = await fetch(`/planning/api/posts/${window.postId}/expanded-idea`);
+        // Use subtitle (the expanded idea description) instead of expanded_idea
+        const response = await fetch(`/planning/api/posts/${window.postId}`);
         const data = await response.json();
         
-        if (data.success) {
-            displayExpandedIdea(data.expanded_idea);
+        if (data.success && data.post) {
+            // Use subtitle (expanded idea description) with fallback to expanded_idea for backwards compatibility
+            const expandedIdea = data.post.subtitle || data.post.expanded_idea;
+            displayExpandedIdea(expandedIdea);
         } else {
-            console.error('Error loading expanded idea:', data.error);
-            displayExpandedIdeaError(data.error);
+            console.error('Error loading post data:', data.error);
+            displayExpandedIdeaError(data.error || 'Failed to load post data');
         }
     } catch (error) {
         console.error('Error loading expanded idea:', error);
@@ -609,11 +612,21 @@ async function startBrainstorming() {
     const brainstormType = document.getElementById('brainstorm-type').value;
     
     // Get the expanded idea content
-    const expandedIdeaElement = document.getElementById('expanded-idea-display');
-    const expandedIdea = expandedIdeaElement.textContent.trim();
+    // Get expanded idea (subtitle) from post data, not from the display element
+    let expandedIdea = null;
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}`);
+        const data = await response.json();
+        if (data.success && data.post) {
+            // Use subtitle (expanded idea description) with fallback to expanded_idea
+            expandedIdea = data.post.subtitle || data.post.expanded_idea;
+        }
+    } catch (error) {
+        console.error('Error fetching post data:', error);
+    }
     
-    if (!expandedIdea || expandedIdea.includes('No expanded idea available')) {
-        alert('Please go back to the previous page to generate an expanded idea first.');
+    if (!expandedIdea || expandedIdea.trim() === '') {
+        alert('Please go back to the Ideas page to generate a subtitle (expanded idea description) first.');
         return;
     }
     

@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentTypeSelect = document.getElementById('content-type-select');
     const formatSelect = document.getElementById('format-select');
     const generateBtn = document.getElementById('generate-taxonomy-btn');
-    const saveBtn = document.getElementById('save-taxonomy-btn');
     const cancelBtn = document.getElementById('cancel-btn');
+    const saveStatus = document.getElementById('save-status');
     const currentTaxonomyDisplay = document.getElementById('current-taxonomy');
     const commonAssetsDisplay = document.getElementById('common-assets-display');
     const commonAssetsList = document.getElementById('common-assets-list');
@@ -135,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayCommonAssets(data.taxonomy.content_type_assets);
                 
                 // Enable save button
-                updateSaveButtonState();
             } else {
                 currentTaxonomyDisplay.innerHTML = '<div class="taxonomy-item"><div class="taxonomy-item-value">No taxonomy assigned yet</div></div>';
             }
@@ -256,16 +255,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            let expandedIdeaUrl = `/planning/api/posts/${postId}/expanded-idea`;
+            // Check for subtitle (the expanded idea description generated at ideas stage)
+            let postDataUrl = `/planning/api/posts/${postId}`;
             if (year && week) {
-                expandedIdeaUrl += `?year=${year}&week=${week}`;
+                postDataUrl += `?year=${year}&week=${week}`;
             }
             
-            const expandedIdeaResponse = await fetch(expandedIdeaUrl);
-            const expandedIdeaData = await expandedIdeaResponse.json();
+            const postDataResponse = await fetch(postDataUrl);
+            const postData = await postDataResponse.json();
             
-            if (!expandedIdeaData.success || !expandedIdeaData.expanded_idea) {
-                alert('Please generate an expanded idea first before assigning taxonomy.');
+            // Check for subtitle (the expanded idea description) - this is what we now use instead of expanded_idea
+            const expandedIdea = postData.post?.subtitle || postData.post?.expanded_idea;
+            
+            if (!expandedIdea || expandedIdea.trim() === '') {
+                alert('Please generate a subtitle (expanded idea description) first at the Ideas stage before assigning taxonomy.');
                 return;
             }
             
@@ -308,12 +311,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show loading state
             generationStatus.style.display = 'flex';
             generateBtn.disabled = true;
-            saveBtn.disabled = true;
             
             // Call LLM generation API - pass year/week so backend can find correct post
+            // Use subtitle as expanded_idea (they're the same thing - subtitle is the expanded idea description)
             const requestBody = {
                 post_id: targetPostId,  // Use the correct post_id for the week (or fallback)
-                expanded_idea: expandedIdeaData.expanded_idea
+                expanded_idea: expandedIdea  // This is now the subtitle from the ideas stage
             };
             
             // CRITICAL: Pass year/week parameters so backend can override post_id if wrong
@@ -361,8 +364,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Update save button state
-                updateSaveButtonState();
-                
                 // Reload current taxonomy display (will use correct post_id)
                 await loadCurrentTaxonomy();
             } else {
@@ -389,82 +390,71 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             generationStatus.style.display = 'none';
             generateBtn.disabled = false;
-            updateSaveButtonState();
+            // Auto-save after generation completes
+            autoSaveTaxonomy();
         }
     }
     
-    // Save taxonomy assignment
-    async function saveTaxonomy() {
+    // Auto-save taxonomy assignment (debounced)
+    let saveTimeout = null;
+    async function autoSaveTaxonomy() {
         const themeId = parseInt(themeSelect.value);
         const contentTypeId = parseInt(contentTypeSelect.value);
         const formatId = parseInt(formatSelect.value);
         
+        // Only save if all three fields are selected
         if (!themeId || !contentTypeId || !formatId) {
-            alert('Please select all three taxonomy fields.');
             return;
         }
         
-        try {
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            
-            // CRITICAL: Use assignedPostId (the correct post) instead of postId from URL
-            const savePostId = assignedPostId || postId;
-            console.log(`[Taxonomy] Saving taxonomy to post ${savePostId}`);
-            
-            const response = await fetch(`/planning/api/posts/${savePostId}/taxonomy`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    theme_id: themeId,
-                    content_type_id: contentTypeId,
-                    format_id: formatId
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Ensure assignedPostId is persisted
-                localStorage.setItem(storageKey, assignedPostId.toString());
-                // Reload current taxonomy display
-                await loadCurrentTaxonomy();
-                
-                // Check if this is a generated post - if so, navigate to next stage
-                try {
-                    const postTypeResp = await fetch(`/api/post-type-pipeline/posts/${savePostId}/pipeline`);
-                    if (postTypeResp.ok) {
-                        const postTypeData = await postTypeResp.json();
-                        if (postTypeData.success && postTypeData.post_type === 'generated') {
-                            // Navigate to product-data-review for generated posts
-                            window.location.href = `/planning/posts/${savePostId}/calendar/product-data-review`;
-                            return; // Exit early - navigation will happen
-                        }
-                    }
-                } catch (e) {
-                    console.warn('[Taxonomy] Error checking post type for navigation:', e);
-                }
-                
-                // For non-generated posts, show success message
-                alert('Taxonomy saved successfully!');
-            } else {
-                alert(`Error saving taxonomy: ${data.error}`);
-            }
-        } catch (error) {
-            console.error('Error saving taxonomy:', error);
-            alert('Error saving taxonomy. Please try again.');
-        } finally {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Taxonomy';
+        // Clear existing timeout
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
         }
-    }
-    
-    // Update save button state
-    function updateSaveButtonState() {
-        const hasAllSelections = themeSelect.value && contentTypeSelect.value && formatSelect.value;
-        saveBtn.disabled = !hasAllSelections;
+        
+        // Debounce: save after 500ms of no changes
+        saveTimeout = setTimeout(async () => {
+            try {
+                // CRITICAL: Use assignedPostId (the correct post) instead of postId from URL
+                const savePostId = assignedPostId || postId;
+                console.log(`[Taxonomy] Auto-saving taxonomy to post ${savePostId}`);
+                
+                const response = await fetch(`/planning/api/posts/${savePostId}/taxonomy`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        theme_id: themeId,
+                        content_type_id: contentTypeId,
+                        format_id: formatId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Ensure assignedPostId is persisted
+                    localStorage.setItem(storageKey, assignedPostId.toString());
+                    // Reload current taxonomy display
+                    await loadCurrentTaxonomy();
+                    
+                    // Show saved indicator
+                    if (saveStatus) {
+                        saveStatus.style.display = 'block';
+                        setTimeout(() => {
+                            saveStatus.style.display = 'none';
+                        }, 2000);
+                    }
+                    
+                    console.log('[Taxonomy] Auto-saved successfully');
+                } else {
+                    console.error('[Taxonomy] Auto-save failed:', data.error);
+                }
+            } catch (error) {
+                console.error('[Taxonomy] Error auto-saving taxonomy:', error);
+            }
+        }, 500);
     }
     
     // Setup event listeners
@@ -476,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
             contentTypeSelect.value = '';
             formatSelect.value = '';
             commonAssetsDisplay.style.display = 'none';
-            updateSaveButtonState();
+            autoSaveTaxonomy(); // Auto-save when category changes
         });
         
         // Content type selection shows common assets
@@ -495,17 +485,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 commonAssetsDisplay.style.display = 'none';
             }
-            updateSaveButtonState();
+            autoSaveTaxonomy(); // Auto-save when content type changes
         });
         
-        // Format selection
-        formatSelect.addEventListener('change', updateSaveButtonState);
+        // Format selection - auto-save on change
+        formatSelect.addEventListener('change', autoSaveTaxonomy);
         
         // Generate button
         generateBtn.addEventListener('click', generateTaxonomy);
-        
-        // Save button
-        saveBtn.addEventListener('click', saveTaxonomy);
         
         // Cancel button
         cancelBtn.addEventListener('click', function() {

@@ -122,20 +122,23 @@ def confirm_calendar_idea():
             post_id = None
             if not force_new:
                 # Check existing topic (same year)
-                # CRITICAL: Only reuse posts that are NOT deleted
-                # If a deleted post exists, create a new one instead
+                # CRITICAL: Only reuse posts that are in workflow states (draft, in_progress, needs_review, ready)
+                # Never reuse published or deleted posts - always create new draft for those
                 cursor.execute("""
-                    SELECT p.id
+                    SELECT p.id, p.status
                     FROM post p
                     LEFT JOIN post_development pd ON pd.post_id = p.id
                     WHERE (p.title = %s OR pd.idea_seed ILIKE %s)
-                      AND p.status != 'deleted'
+                      AND p.status IN ('draft', 'in_process')
                     ORDER BY p.updated_at DESC
                     LIMIT 1
                 """, (topic, f"%{topic}%"))
                 row = cursor.fetchone()
                 if row:
                     post_id = row['id']
+                    logger.info(f"Reusing existing post {post_id} with status '{row['status']}' for topic '{topic}'")
+                else:
+                    logger.info(f"No reusable post found for topic '{topic}', will create new draft post")
 
             # Create post if needed
             if not post_id:
