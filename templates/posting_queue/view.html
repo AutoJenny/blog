@@ -87,12 +87,11 @@
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Platform</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Scheduled</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Content Preview</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Created</th>
                     </tr>
                 </thead>
                 <tbody id="queue-tbody" class="divide-y divide-slate-700">
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-400">
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">
                             <i class="fas fa-spinner fa-spin text-2xl mb-2 block"></i>
                             Loading queue...
                         </td>
@@ -207,7 +206,7 @@ async function loadQueue() {
             console.error('Failed to load queue:', data.error);
             document.getElementById('queue-tbody').innerHTML = `
                 <tr>
-                    <td colspan="7" class="px-4 py-8 text-center text-red-400">
+                    <td colspan="6" class="px-4 py-8 text-center text-red-400">
                         Error loading queue: ${data.error}
                     </td>
                 </tr>
@@ -217,7 +216,7 @@ async function loadQueue() {
         console.error('Error loading queue:', error);
         document.getElementById('queue-tbody').innerHTML = `
             <tr>
-                <td colspan="7" class="px-4 py-8 text-center text-red-400">
+                <td colspan="6" class="px-4 py-8 text-center text-red-400">
                     Error: ${error.message}
                 </td>
             </tr>
@@ -266,7 +265,7 @@ function renderTable() {
     if (filteredItems.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="px-4 py-8 text-center text-gray-400">
+                <td colspan="6" class="px-4 py-8 text-center text-gray-400">
                     <i class="fas fa-inbox text-2xl mb-2 block"></i>
                     No posts found
                 </td>
@@ -397,9 +396,6 @@ function renderTable() {
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-300" title="${contentTitle}">
                     ${contentPreview}
-                </td>
-                <td class="px-4 py-3 text-sm text-gray-400">
-                    ${item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}
                 </td>
             </tr>
         `;
