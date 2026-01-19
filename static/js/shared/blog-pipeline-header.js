@@ -153,12 +153,17 @@ class BlogPipelineHeader {
         const post = this.postData.post;
         console.log('[Blog Pipeline Header] Updating header fields with post:', post);
         
-        // Update status - show raw status from database
+        // Update status - verify actual publication status
         const postStatus = document.getElementById('post-status');
         if (postStatus) {
-            // Show the actual status from the database, no normalization
-            postStatus.textContent = post.status || 'Unknown';
-            console.log('[Blog Pipeline Header] Updated status to:', post.status);
+            // If status says 'published' but no clan_post_id, it's not actually published
+            let displayStatus = post.status || 'Unknown';
+            if (displayStatus === 'published' && !post.clan_post_id && !post.clan_uploaded_url) {
+                // Status says published but no evidence of actual publication
+                displayStatus = 'draft (status mismatch)';
+            }
+            postStatus.textContent = displayStatus;
+            console.log('[Blog Pipeline Header] Updated status to:', displayStatus, '(raw:', post.status, ', clan_post_id:', post.clan_post_id, ')');
         }
 
         // Update created date - format as DD/MM/YYYY, HH:MM:SS

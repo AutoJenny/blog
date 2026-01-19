@@ -16,10 +16,11 @@ def api_posts(post_id):
     """Get post data for planning"""
     try:
         with db_manager.get_cursor() as cursor:
-            # Get post data
+            # Get post data - include publication verification fields
             cursor.execute("""
                 SELECT p.id, p.title, p.subtitle, p.status, p.created_at, p.updated_at,
                        p.profile_product_id, p.profile_category_id, p.profile_type,
+                       p.clan_post_id, p.clan_uploaded_url, p.first_published_at,
                        pd.idea_scope, pd.section_structure, pd.topic_allocation,
                        pd.refined_topics, pd.expanded_idea, pd.idea_seed, pd.sections,
                        pd.embedding_overrides
@@ -79,9 +80,15 @@ def api_posts(post_id):
                     logger.warning(f"Failed to parse sections from post_development: {e}")
                     sections = []
             
+            # Include publication verification in response
+            post_data = dict(result)
+            post_data['clan_post_id'] = result.get('clan_post_id')
+            post_data['clan_uploaded_url'] = result.get('clan_uploaded_url')
+            post_data['first_published_at'] = result.get('first_published_at')
+            
             return jsonify({
                 'success': True,
-                'post': result,
+                'post': post_data,
                 'schedule': schedule,
                 'sections': sections
             })
