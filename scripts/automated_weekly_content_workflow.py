@@ -178,6 +178,14 @@ class WeeklyContentWorkflowExecutor:
                         # ⚠️ FACEBOOK POSTING DISABLED - Block all posting attempts
                         logger.error(f"BLOCKED: publish_to_facebook attempted for queue_id {queue_id} - Facebook posting is DISABLED")
                         results['publish_to_facebook'] = False
+                        # Still update status to 'ready' even though posting is disabled
+                        logger.info(f"Workflow completed, updating status to 'ready' (posting disabled)")
+                        with self.db_manager.get_cursor() as cursor:
+                            cursor.execute("""
+                                UPDATE posting_queue
+                                SET status = 'ready', updated_at = NOW()
+                                WHERE id = %s
+                            """, (queue_id,))
                         return results
                         
                         # CRITICAL FIX: Don't post directly from workflow executor
