@@ -40,7 +40,38 @@
     {% set process_content_html %}
     <div class="page-main">
         <div class="ideas-main">
+        <!-- Theme Selection UI (shown if theme not yet selected) -->
+        <div id="theme-selection-section" class="theme-selection-section" style="display: none;">
+            <div class="idea-generator">
+                <div class="available-ideas">
+                    <div class="available-ideas-header">
+                        <h4>Available Themes</h4>
+                    </div>
+                    <div id="available-themes-list" class="ideas-list">
+                        <!-- Available themes will appear here -->
+                    </div>
+                </div>
+                
+                <div class="selected-idea">
+                    <h4>Selected Theme</h4>
+                    <div id="selected-theme-display" class="selected-idea-content">
+                        <div class="no-selection">No theme selected</div>
+                    </div>
+                    <div class="selected-idea-actions">
+                        <button class="btn btn-success" onclick="confirmThemeSelection()" id="confirm-theme-btn" disabled>
+                            <i class="fas fa-check"></i> Confirm & Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Expanded Idea Generation UI (shown if theme already selected) -->
+        <div id="expanded-idea-section" class="expanded-idea-section" style="display: none;">
         <div class="ideas-results">
+            <div id="post-creation-status" class="idea-seed-display" style="margin-bottom: 1rem;">
+                <!-- Status messages will appear here -->
+            </div>
             <!-- LLM Module with full prompt editing and results panel -->
             <div class="llm-module">
                 <!-- LLM Prompts Panel with full editing functionality -->
@@ -84,6 +115,7 @@
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </div>
@@ -239,6 +271,27 @@
 
 .available-ideas, .selected-idea {
     margin-bottom: 2rem;
+}
+
+.theme-selection-section {
+    margin-bottom: 2rem;
+}
+
+.expanded-idea-section {
+    margin-bottom: 2rem;
+}
+
+.idea-generator {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .idea-generator {
+        grid-template-columns: 1fr;
+    }
 }
 
 .available-ideas-header {
@@ -405,7 +458,7 @@ let llmModule = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Set current stage for navigation (Calendar stage deprecated, using Planning instead)
-    window.currentStage = 'concept';
+    window.currentStage = 'planning';  // Normalized from 'concept'
     window.currentSubstage = 'ideas';
     
     // Post ID persistence: restore from localStorage if post_id is 0 or missing
@@ -563,7 +616,343 @@ document.addEventListener('DOMContentLoaded', function() {
     // Expanded idea is now generated and displayed via the LLM module below
 });
 
-// Idea selection is handled in the Calendar stage; no week-ideas loading here
+// Theme selection functionality for post-based ideas page
+let availableThemes = [];
+let selectedTheme = null;
+let themeSelectedForWeek = false;
+
+// Check if theme is already selected and load themes
+document.addEventListener('DOMContentLoaded', async function() {
+    await checkThemeSelection();
+    await loadThemesForWeek();
+    updateUIState();
+});
+
+async function checkThemeSelection() {
+    try {
+        // Get year/week from URL or WeekContext
+        let year = null;
+        let week = null;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
+        week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
+        
+        if ((!year || !week) && window.WeekContext) {
+            const context = window.WeekContext.getWeekContext();
+            if (context) {
+                year = year || context.year;
+                week = week || context.week;
+            }
+        }
+        
+        if (!year || !week) {
+            {% if year and week_number %}
+            year = year || {{ year }};
+            week = week || {{ week_number }};
+            {% endif %}
+        }
+        
+        if (!year || !week) {
+            console.warn('Could not determine year/week for theme check');
+            return;
+        }
+        
+        // Check if theme is selected for this week
+        const response = await fetch(`/planning/api/calendar/schedule/${year}/${week}`);
+        const data = await response.json();
+        
+        if (data.success && data.theme && data.theme.item_id) {
+            themeSelectedForWeek = true;
+            // Load theme details
+            const themeResp = await fetch(`/planning/api/calendar/themes/${data.theme.item_id}`);
+            const themeData = await themeResp.json();
+            if (themeData.success && themeData.theme) {
+                selectedTheme = {
+                    id: themeData.theme.id,
+                    theme_title: themeData.theme.theme_title,
+                    theme_description: themeData.theme.theme_description,
+                    priority: themeData.theme.priority || 'normal'
+                };
+            }
+        }
+    } catch (error) {
+        console.error('Error checking theme selection:', error);
+    }
+}
+
+async function loadThemesForWeek() {
+    try {
+        let year = null;
+        let week = null;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
+        week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
+        
+        if ((!year || !week) && window.WeekContext) {
+            const context = window.WeekContext.getWeekContext();
+            if (context) {
+                year = year || context.year;
+                week = week || context.week;
+            }
+        }
+        
+        if (!year || !week) {
+            {% if year and week_number %}
+            year = year || {{ year }};
+            week = week || {{ week_number }};
+            {% endif %}
+        }
+        
+        if (!year || !week) {
+            console.warn('Could not determine year/week for loading themes');
+            return;
+        }
+        
+        // Load theme for this week (cyclic system returns one theme)
+        const response = await fetch(`/planning/api/calendar/themes/week/${week}?year=${year}`);
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.themes) && data.themes.length > 0) {
+            availableThemes = data.themes;
+            // Auto-select if only one theme
+            if (availableThemes.length === 1 && !selectedTheme) {
+                selectedTheme = availableThemes[0];
+            }
+        }
+    } catch (error) {
+        console.error('Error loading themes:', error);
+    }
+}
+
+function updateUIState() {
+    const themeSelectionSection = document.getElementById('theme-selection-section');
+    const expandedIdeaSection = document.getElementById('expanded-idea-section');
+    
+    if (themeSelectedForWeek && selectedTheme) {
+        // Theme already selected - show expanded idea generation
+        if (themeSelectionSection) themeSelectionSection.style.display = 'none';
+        if (expandedIdeaSection) expandedIdeaSection.style.display = 'block';
+    } else {
+        // Theme not selected - show selection UI
+        if (themeSelectionSection) themeSelectionSection.style.display = 'block';
+        if (expandedIdeaSection) expandedIdeaSection.style.display = 'none';
+        displayAvailableThemes();
+    }
+}
+
+function displayAvailableThemes() {
+    const themesList = document.getElementById('available-themes-list');
+    if (!themesList) return;
+    
+    themesList.innerHTML = '';
+    
+    if (!Array.isArray(availableThemes) || availableThemes.length === 0) {
+        themesList.innerHTML = '<div class="no-ideas">No themes available for this week</div>';
+        return;
+    }
+    
+    availableThemes.forEach((theme) => {
+        const isSelected = selectedTheme && selectedTheme.id === theme.id;
+        const themeItem = document.createElement('div');
+        themeItem.className = `idea-item ${isSelected ? 'selected' : ''}`;
+        themeItem.innerHTML = `
+            <div class="idea-header">
+                <div class="idea-title">${escapeHtml(theme.theme_title)} ${isSelected ? '<i class="fas fa-check-circle" style="color: #10b981; margin-left: 0.5rem;"></i>' : ''}</div>
+                <div class="idea-priority priority-${theme.priority || 'random'}">${theme.priority || 'random'}</div>
+            </div>
+            <div class="idea-description">${escapeHtml(theme.theme_description || 'No description available')}</div>
+        `;
+        
+        themeItem.addEventListener('click', () => selectTheme(theme));
+        themesList.appendChild(themeItem);
+    });
+}
+
+function selectTheme(theme) {
+    selectedTheme = theme;
+    displaySelectedTheme();
+    const confirmBtn = document.getElementById('confirm-theme-btn');
+    if (confirmBtn) confirmBtn.disabled = false;
+    displayAvailableThemes(); // Re-render to show selection
+}
+
+function displaySelectedTheme() {
+    const selectedDisplay = document.getElementById('selected-theme-display');
+    if (!selectedDisplay) return;
+    
+    if (!selectedTheme) {
+        selectedDisplay.innerHTML = '<div class="no-selection">No theme selected</div>';
+        return;
+    }
+    
+    selectedDisplay.innerHTML = `
+        <div class="idea-header">
+            <div class="idea-title">${escapeHtml(selectedTheme.theme_title || 'Unknown Theme')}</div>
+            <div class="idea-priority priority-${selectedTheme.priority || 'random'}">${selectedTheme.priority || 'random'}</div>
+        </div>
+        <div class="idea-description">${escapeHtml(selectedTheme.theme_description || 'No description available')}</div>
+    `;
+}
+
+async function confirmThemeSelection() {
+    if (!selectedTheme) {
+        alert('Please select a theme first');
+        return;
+    }
+    
+    try {
+        // Get year/week
+        let year = null;
+        let week = null;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        year = urlParams.get('year') ? parseInt(urlParams.get('year')) : null;
+        week = urlParams.get('week') ? parseInt(urlParams.get('week')) : null;
+        
+        if ((!year || !week) && window.WeekContext) {
+            const context = window.WeekContext.getWeekContext();
+            if (context) {
+                year = year || context.year;
+                week = week || context.week;
+            }
+        }
+        
+        if (!year || !week) {
+            {% if year and week_number %}
+            year = year || {{ year }};
+            week = week || {{ week_number }};
+            {% endif %}
+        }
+        
+        if (!year || !week) {
+            alert('Could not determine year/week');
+            return;
+        }
+        
+        const confirmBtn = document.getElementById('confirm-theme-btn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Confirming...';
+        }
+        
+        // 1. Select theme for week
+        const selectResp = await fetch('/planning/api/calendar/select-theme', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                theme_id: selectedTheme.id,
+                year: year,
+                week_number: week
+            })
+        });
+        const selectData = await selectResp.json();
+        
+        if (!selectResp.ok || !selectData.success) {
+            throw new Error(selectData.error || 'Failed to select theme');
+        }
+        
+        // 2. Confirm idea (create/update post)
+        const confirmResp = await fetch('/planning/api/calendar/confirm-idea', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                topic: selectedTheme.theme_title,
+                week_number: week,
+                year: year
+            })
+        });
+        const confirmData = await confirmResp.json();
+        
+        if (!confirmResp.ok || !confirmData.success) {
+            throw new Error(confirmData.error || 'Failed to confirm idea');
+        }
+        
+        // 3. Auto-generate expanded idea
+        const generateResp = await fetch(`/planning/api/posts/${window.postId}/expanded-idea?year=${year}&week=${week}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        const generateData = await generateResp.json();
+        
+        if (generateResp.ok && generateData.success) {
+            // Success - update UI to show expanded idea section
+            themeSelectedForWeek = true;
+            updateUIState();
+            
+            // Display expanded idea if generated
+            if (generateData.expanded_idea && llmModule) {
+                llmModule.uiManager.displayResults(generateData.expanded_idea, llmModule);
+            }
+            
+            // Show success message
+            const statusDisplay = document.getElementById('post-creation-status');
+            if (statusDisplay) {
+                statusDisplay.innerHTML = `
+                    <div class="status-message" style="background: #059669; color: white; padding: 1rem; border-radius: 6px;">
+                        <i class="fas fa-check-circle"></i>
+                        Theme confirmed and expanded idea generated successfully!
+                    </div>
+                `;
+            }
+            
+            // Auto-navigate to next stage after a short delay
+            setTimeout(() => {
+                // Use workflow navigation if available
+                if (window.workflowNavigation) {
+                    const nextSubstage = window.workflowNavigation.getNextSubstage();
+                    if (nextSubstage) {
+                        window.workflowNavigation.getSubstageRoute(nextSubstage.stage, nextSubstage.substage).then(route => {
+                            if (route) {
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const year = urlParams.get('year');
+                                const week = urlParams.get('week');
+                                let nextUrl = route;
+                                const params = [];
+                                if (year) params.push(`year=${year}`);
+                                if (week) params.push(`week=${week}`);
+                                if (params.length > 0) {
+                                    nextUrl += (nextUrl.includes('?') ? '&' : '?') + params.join('&');
+                                }
+                                window.location.href = nextUrl;
+                            }
+                        });
+                    }
+                } else {
+                    // Fallback: Navigate to taxonomy
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const year = urlParams.get('year');
+                    const week = urlParams.get('week');
+                    let nextUrl = `/planning/posts/${window.postId}/calendar/taxonomy`;
+                    const params = [];
+                    if (year) params.push(`year=${year}`);
+                    if (week) params.push(`week=${week}`);
+                    if (params.length > 0) {
+                        nextUrl += '?' + params.join('&');
+                    }
+                    window.location.href = nextUrl;
+                }
+            }, 2000); // 2 second delay to show success
+        } else {
+            // Still update UI even if generation failed
+            themeSelectedForWeek = true;
+            updateUIState();
+        }
+        
+    } catch (error) {
+        console.error('Error confirming theme selection:', error);
+        alert('Error: ' + error.message);
+        const confirmBtn = document.getElementById('confirm-theme-btn');
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-check"></i> Confirm & Continue';
+        }
+    }
+}
+
+// Idea selection is handled above for post-based page
 
 // Removed loadCurrentIdeaSeed and displayCurrentIdeaSeed - redundant field removed
 // Removed loadExpandedIdea, displayExpandedIdea, displayExpandedIdeaError - expanded idea now handled by LLM module
