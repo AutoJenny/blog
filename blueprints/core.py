@@ -73,10 +73,14 @@ def index():
     except Exception as e:
         logger.warning(f"Could not fetch data: {e}")
         first_post_id = 1
+        current_year = datetime.now().isocalendar()[0]
+        current_week = datetime.now().isocalendar()[1]
         stats = {'post_count': 0, 'image_count': 0, 'workflow_count': 0, 'llm_count': 0}
     
     return render_template('index.html', 
                          first_post_id=first_post_id,
+                         current_year=current_year,
+                         current_week=current_week,
                          post_count=stats['post_count'],
                          image_count=stats['image_count'],
                          workflow_count=stats['workflow_count'],

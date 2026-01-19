@@ -476,8 +476,9 @@ class BlogPipelineHeader {
                     if (resp.ok) {
                         const data = await resp.json();
                         if (data.schedule) {
-                            // Only use post schedule if window vars weren't set (viewed week takes priority)
-                            if (!window.year || !window.weekNumber) {
+                            // Only use post schedule if WeekContext wasn't set (viewed week takes priority)
+                            // WeekContext from URL parameters takes absolute priority
+                            if (!year || !weekNumber) {
                                 year = data.schedule.year;
                                 weekNumber = data.schedule.week_number;
                             }
