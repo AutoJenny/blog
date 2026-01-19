@@ -710,14 +710,9 @@ async function loadPostMetadata() {
                     themeDescDisplay.style.display = 'block';
                 }
             }
-            
-            // Auto-generate subtitle if not already set
-            const subtitleInput = document.getElementById('post-subtitle');
-            if (subtitleInput && !subtitleInput.value.trim()) {
-                await generateSubtitleFromTheme();
-            }
         }
         
+        // Load post data first
         const response = await fetch(`/planning/api/posts/${window.postId}`);
         const data = await response.json();
         
@@ -726,6 +721,12 @@ async function loadPostMetadata() {
             const subtitleInput = document.getElementById('post-subtitle');
             if (subtitleInput) {
                 subtitleInput.value = data.post.subtitle || '';
+                
+                // Auto-generate subtitle if not already set and theme is available
+                if (!subtitleInput.value.trim() && selectedTheme && selectedTheme.theme_title) {
+                    console.log('[loadPostMetadata] Auto-generating subtitle from theme');
+                    await generateSubtitleFromTheme();
+                }
             }
             
             // Load required ideas from embedding_overrides
