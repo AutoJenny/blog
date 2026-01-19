@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Posting Queue - All Automated Posts{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-white mb-2">Posting Queue</h1>
+        <p class="text-gray-400">View and manage all automated posts (language posts and product posts)</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" id="stats-cards">
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
+            <div class="text-sm text-gray-400 mb-1">Total Posts</div>
+            <div class="text-2xl font-bold text-white" id="stat-total">-</div>
+        </div>
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
+            <div class="text-sm text-gray-400 mb-1">Draft</div>
+            <div class="text-2xl font-bold text-yellow-400" id="stat-draft">-</div>
+        </div>
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
+            <div class="text-sm text-gray-400 mb-1">Ready</div>
+            <div class="text-2xl font-bold text-green-400" id="stat-ready">-</div>
+        </div>
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
+            <div class="text-sm text-gray-400 mb-1">Published</div>
+            <div class="text-2xl font-bold text-blue-400" id="stat-published">-</div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="bg-slate-800 rounded-lg p-4 mb-6 border border-slate-700">
+        <div class="flex flex-wrap gap-4 items-center">
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Status</label>
+                <select id="filter-status" class="bg-slate-700 text-white rounded px-3 py-2 border border-slate-600">
+                    <option value="all">All Status</option>
+                    <option value="draft">Draft</option>
+                    <option value="ready">Ready</option>
+                    <option value="pending">Pending</option>
+                    <option value="published">Published</option>
+                    <option value="failed">Failed</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Content Type</label>
+                <select id="filter-content-type" class="bg-slate-700 text-white rounded px-3 py-2 border border-slate-600">
+                    <option value="all">All Types</option>
+                    <option value="weekly_word">Weekly Word</option>
+                    <option value="weekly_phrase">Weekly Phrase</option>
+                    <option value="weekly_insult">Weekly Insult</option>
+                    <option value="product">Product</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Platform</label>
+                <select id="filter-platform" class="bg-slate-700 text-white rounded px-3 py-2 border border-slate-600">
+                    <option value="all">All Platforms</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                </select>
+            </div>
+            <div class="flex-1"></div>
+            <div>
+                <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Queue Table -->
+    <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full" id="queue-table">
+                <thead class="bg-slate-900">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">ID</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Status</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Type</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Platform</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Scheduled</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Content</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Created</th>
+                    </tr>
+                </thead>
+                <tbody id="queue-tbody" class="divide-y divide-slate-700">
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-400">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2 block"></i>
+                            Loading queue...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div id="queue-info" class="mt-4 text-sm text-gray-400 text-center"></div>
+</div>
+
+<script>
+let allQueueItems = [];
+let filteredItems = [];
+
+// Status colors
+const statusColors = {
+    'draft': 'bg-yellow-600',
+    'ready': 'bg-green-600',
+    'pending': 'bg-blue-600',
+    'published': 'bg-gray-600',
+    'failed': 'bg-red-600'
+};
+
+// Load queue data
+async function loadQueue() {
+    try {
+        const response = await fetch('/api/posting-queue/all');
+        const data = await response.json();
+        
+        if (data.success) {
+            allQueueItems = data.items;
+            applyFilters();
+            loadStats();
+        } else {
+            console.error('Failed to load queue:', data.error);
+            document.getElementById('queue-tbody').innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-4 py-8 text-center text-red-400">
+                        Error loading queue: ${data.error}
+                    </td>
+                </tr>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading queue:', error);
+        document.getElementById('queue-tbody').innerHTML = `
+            <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-red-400">
+                    Error: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Load stats
+async function loadStats() {
+    try {
+        const response = await fetch('/api/posting-queue/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('stat-total').textContent = data.totals.total || 0;
+            document.getElementById('stat-draft').textContent = data.totals.draft || 0;
+            document.getElementById('stat-ready').textContent = data.totals.ready || 0;
+            document.getElementById('stat-published').textContent = data.totals.published || 0;
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+// Apply filters
+function applyFilters() {
+    const statusFilter = document.getElementById('filter-status').value;
+    const typeFilter = document.getElementById('filter-content-type').value;
+    const platformFilter = document.getElementById('filter-platform').value;
+    
+    filteredItems = allQueueItems.filter(item => {
+        if (statusFilter !== 'all' && item.status !== statusFilter) return false;
+        if (typeFilter !== 'all' && item.content_type !== typeFilter) return false;
+        if (platformFilter !== 'all' && item.platform !== platformFilter) return false;
+        return true;
+    });
+    
+    renderTable();
+}
+
+// Render table
+function renderTable() {
+    const tbody = document.getElementById('queue-tbody');
+    const info = document.getElementById('queue-info');
+    
+    if (filteredItems.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-gray-400">
+                    <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                    No posts found
+                </td>
+            </tr>
+        `;
+        info.textContent = '';
+        return;
+    }
+    
+    info.textContent = `Showing ${filteredItems.length} of ${allQueueItems.length} posts`;
+    
+    tbody.innerHTML = filteredItems.map(item => {
+        const statusColor = statusColors[item.status] || 'bg-gray-600';
+        const scheduled = item.scheduled_timestamp || 
+                         (item.scheduled_date && item.scheduled_time ? 
+                          `${item.scheduled_date} ${item.scheduled_time}` : 
+                          item.scheduled_date || 'Not scheduled');
+        const content = item.generated_content || item.generated_caption || 
+                       item.product_name || item.idea_title || 
+                       'No content';
+        const contentPreview = content.length > 60 ? content.substring(0, 60) + '...' : content;
+        
+        return `
+            <tr class="hover:bg-slate-700">
+                <td class="px-4 py-3 text-sm text-gray-300">${item.id}</td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-1 rounded text-xs font-semibold ${statusColor} text-white">
+                        ${item.status}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-300">
+                    ${item.content_type || '-'}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-300">
+                    ${item.platform || '-'}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-300">
+                    ${scheduled}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-300" title="${content}">
+                    ${contentPreview}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-400">
+                    ${item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Event listeners
+document.getElementById('filter-status').addEventListener('change', applyFilters);
+document.getElementById('filter-content-type').addEventListener('change', applyFilters);
+document.getElementById('filter-platform').addEventListener('change', applyFilters);
+document.getElementById('refresh-btn').addEventListener('click', () => {
+    loadQueue();
+    loadStats();
+});
+
+// Initial load
+loadQueue();
+loadStats();
+
+// Auto-refresh every 30 seconds
+setInterval(() => {
+    loadQueue();
+    loadStats();
+}, 30000);
+</script>
+{% endblock %}

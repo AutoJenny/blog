@@ -62,6 +62,10 @@ def create_app(config_name=None):
     from blueprints.knowledge_base import bp as knowledge_base_bp
     app.register_blueprint(knowledge_base_bp)
     
+    # Register posting queue view blueprint
+    from blueprints.posting_queue_view import bp as posting_queue_view_bp
+    app.register_blueprint(posting_queue_view_bp)
+    
     from blueprints.launchpad_scheduling import bp as launchpad_scheduling_bp
     app.register_blueprint(launchpad_scheduling_bp, url_prefix='/launchpad')
     

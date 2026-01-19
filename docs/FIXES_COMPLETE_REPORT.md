@@ -156,22 +156,32 @@ Failed:     0 posts
 
 ## UI to View Queue
 
-### **Queue API Endpoint:**
+### **Dedicated Queue View Page** ✅ **NEW**
 ```
-GET http://localhost:5000/launchpad/api/queue
+http://localhost:5000/posting-queue
 ```
+- **Full queue view** with all posts
+- **Filtering** by status, content type, platform
+- **Statistics** cards showing totals
+- **Auto-refresh** every 30 seconds
+- Shows all automated posts (language + product)
 
-Returns all posts in queue with:
-- Status (draft, ready, pending, published)
-- Content type
-- Scheduled date/time
-- Product/idea details
+### **Queue API Endpoints:**
+```
+GET http://localhost:5000/api/posting-queue/all
+```
+Returns all posts with full details (status, content type, scheduled dates, etc.)
 
-### **Homepage Timeline:**
+```
+GET http://localhost:5000/api/posting-queue/stats
+```
+Returns statistics (totals by status, language posts, product posts)
+
+### **Homepage Queue Accordion:**
 - URL: `http://localhost:5000/`
-- Scroll to "Publication Timeline" section
-- Shows queue items filtered by status
-- Can filter by "Ready", "Published", or "All Status"
+- Look for **"Posting Queue"** accordion section
+- Click to expand and view queue items
+- Filtered by status (Ready, Published, All)
 
 ### **Publication Dashboard:**
 ```
