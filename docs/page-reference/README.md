@@ -16,10 +16,12 @@ page-reference/
 │   ├── idea-generation.md       # Idea Generation substage
 │   └── week-ideas.md            # Week Ideas substage
 ├── planning/                    # Planning Stage
+│   ├── calendar-ideas.md        # Calendar Ideas substage
 │   ├── topic-brainstorming.md   # Topic Brainstorming substage
 │   ├── section-structure.md     # Section Structure Design substage
 │   ├── topic-allocation.md      # Section Ideas substage (renamed from Topic Allocation)
-│   └── section-titling.md       # Section Titling substage
+│   ├── section-titling.md      # Section Titling substage
+│   └── family-data-review.md    # Family Data Review substage (future)
 ├── authoring/                   # Authoring Stage
 │   ├── drafting.md              # Drafting substage
 │   ├── image-concepts.md        # Image Concepts substage
@@ -48,6 +50,8 @@ The BlogForge CMS follows a structured 5-stage workflow for blog creation:
 
 ### 2. Planning Stage
 **Purpose**: Content structure and topic development
+- **Calendar Ideas**: Select and confirm calendar ideas/themes (themed posts)
+- **Family Data Review**: Review family research data (family profile posts)
 - **Topic Brainstorming**: Generate 50+ topic ideas
 - **Section Structure Design**: Create logical content organization
 - **Section Ideas**: Generate new topics for each section (renamed from Topic Allocation)

@@ -248,6 +248,21 @@ Redirect to brainstorm page (if new post)
 - **API response times**: Track endpoint performance
 - **Error rates**: Monitor failure patterns
 
+### Automation Integration
+
+**Current State**: Manual idea selection and confirmation
+
+**Future State**: Automated post creation 1 week in advance
+
+**Automation Flow**:
+1. Background monitor runs `automated_blog_post_creator.py`
+2. Script resolves themes for upcoming weeks
+3. Creates posts automatically with `status='draft'`
+4. Sets `idea_seed` from theme title
+5. Schedules in `calendar_week_items`
+
+**See**: `docs/BLOG_POST_AUTOMATION_GOALS.md` for detailed automation plan
+
 ### Future Enhancements
 
 #### Potential Improvements
@@ -255,6 +270,7 @@ Redirect to brainstorm page (if new post)
 - **Advanced filtering**: More sophisticated idea selection
 - **Integration expansion**: Connect with external idea sources
 - **Analytics dashboard**: Visualize idea usage patterns
+- **Automated creation**: Posts created 1 week in advance automatically
 
 #### Technical Debt
 - **Code consolidation**: Reduce duplication in API calls
