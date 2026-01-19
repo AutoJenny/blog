@@ -284,13 +284,18 @@ class WorkflowNavigation {
         const nextSubstage = this.getNextSubstage();
         
         if (!nextSubstage) {
+            console.log('[Workflow Navigation] No next substage available');
             return; // No next substage available
         }
 
+        console.log('[Workflow Navigation] Next substage:', nextSubstage);
         const route = await this.getSubstageRoute(nextSubstage.stage, nextSubstage.substage);
         if (!route) {
+            console.warn('[Workflow Navigation] No route available for next substage');
             return; // No route available
         }
+        
+        console.log('[Workflow Navigation] Next route:', route);
 
         // Check if button already exists
         let nextButton = document.getElementById('workflow-next-button');

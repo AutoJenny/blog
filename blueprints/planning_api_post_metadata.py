@@ -43,11 +43,13 @@ def api_post_subtitle(post_id):
             subtitle = data.get('subtitle', '').strip()
             
             with db_manager.get_cursor() as cursor:
+                # Truncate to 300 characters to match database column size
+                subtitle_trimmed = subtitle[:300] if subtitle else None
                 cursor.execute("""
                     UPDATE post
                     SET subtitle = %s, updated_at = NOW()
                     WHERE id = %s
-                """, (subtitle[:300] if subtitle else None, post_id))
+                """, (subtitle_trimmed, post_id))
                 
                 if cursor.rowcount == 0:
                     return jsonify({'success': False, 'error': 'Post not found'}), 404

@@ -879,6 +879,13 @@ async function savePostMetadata() {
         const subtitleData = await subtitleResponse.json();
         const overridesData = await overridesResponse.json();
         
+        if (!subtitleResponse.ok) {
+            throw new Error(subtitleData.error || `HTTP ${subtitleResponse.status}: Failed to save subtitle`);
+        }
+        if (!overridesResponse.ok) {
+            throw new Error(overridesData.error || `HTTP ${overridesResponse.status}: Failed to save required ideas`);
+        }
+        
         if (subtitleData.success && overridesData.success) {
             // Show success message
             const statusDisplay = document.getElementById('post-creation-status');
