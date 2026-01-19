@@ -86,7 +86,7 @@
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Type</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Platform</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Scheduled</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Content</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Content Preview</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Created</th>
                     </tr>
                 </thead>
@@ -256,7 +256,7 @@ function renderTable() {
                 }
             }
         } else {
-            // For other types: prefer caption, avoid showing JSON
+            // For other types (feature, blog_post, etc.): prefer caption, avoid showing JSON
             content = item.generated_caption || 'No content';
             contentTitle = item.generated_caption || '';
             
@@ -270,7 +270,7 @@ function renderTable() {
                     content = 'Content post';
                 }
             } else if (!item.generated_caption && item.generated_content && !item.generated_content.startsWith('{')) {
-                // Plain text generated_content
+                // Plain text generated_content (like feature posts)
                 content = item.generated_content.length > 100 ? item.generated_content.substring(0, 100) + '...' : item.generated_content;
                 contentTitle = item.generated_content;
             }
