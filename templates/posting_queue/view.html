@@ -87,11 +87,12 @@
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Platform</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Scheduled</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Content Preview</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-300">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="queue-tbody" class="divide-y divide-slate-700">
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-400">
                             <i class="fas fa-spinner fa-spin text-2xl mb-2 block"></i>
                             Loading queue...
                         </td>
@@ -265,7 +266,7 @@ function renderTable() {
     if (filteredItems.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+                <td colspan="7" class="px-4 py-8 text-center text-gray-400">
                     <i class="fas fa-inbox text-2xl mb-2 block"></i>
                     No posts found
                 </td>
@@ -430,6 +431,53 @@ function renderTable() {
             }
         }
         
+        // Action buttons (only for editable statuses)
+        let actionButtons = '';
+        const canEdit = ['draft', 'ready', 'pending'].includes(item.status);
+        
+        if (canEdit) {
+            if (item.content_type === 'product') {
+                // Product posts: Replace Product button
+                actionButtons = `
+                    <div class="flex gap-2">
+                        <button onclick="replaceProduct(${item.id}, '${item.product_name || 'Product'}')" 
+                                class="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition"
+                                title="Replace with different product">
+                            <i class="fas fa-exchange-alt"></i> Replace
+                        </button>
+                        <button onclick="editQueueItem(${item.id})" 
+                                class="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition"
+                                title="Edit caption and schedule">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button onclick="deleteQueueItem(${item.id}, '${item.product_name || 'Item'}')" 
+                                class="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition"
+                                title="Delete this item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                // Language posts: Edit and Delete only
+                actionButtons = `
+                    <div class="flex gap-2">
+                        <button onclick="editQueueItem(${item.id})" 
+                                class="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition"
+                                title="Edit caption and schedule">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button onclick="deleteQueueItem(${item.id}, '${item.idea_title || 'Item'}')" 
+                                class="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition"
+                                title="Delete this item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }
+        } else {
+            actionButtons = '<span class="text-gray-500 text-xs">-</span>';
+        }
+        
         return `
             <tr class="hover:bg-slate-700">
                 <td class="px-4 py-3 text-sm text-gray-300">${item.id}</td>
@@ -452,6 +500,9 @@ function renderTable() {
                         ${imageHtml}
                         <span class="flex-1">${contentPreview}</span>
                     </div>
+                </td>
+                <td class="px-4 py-3">
+                    ${actionButtons}
                 </td>
             </tr>
         `;
@@ -476,5 +527,338 @@ setInterval(() => {
     loadQueue();
     loadStats();
 }, 30000);
+
+// ============================================================================
+// ACTION HANDLERS
+// ============================================================================
+
+let currentEditingItemId = null;
+
+// Replace Product (for product posts)
+async function replaceProduct(itemId, currentProductName) {
+    currentEditingItemId = itemId;
+    
+    // Show modal
+    const modal = document.getElementById('replace-product-modal');
+    if (!modal) {
+        createReplaceProductModal();
+    }
+    document.getElementById('replace-product-modal').classList.remove('hidden');
+    document.getElementById('replace-product-item-id').textContent = itemId;
+    document.getElementById('replace-product-current').textContent = currentProductName;
+    
+    // Clear previous selection
+    document.getElementById('replace-product-selected').classList.add('hidden');
+    document.getElementById('replace-product-search').value = '';
+    document.getElementById('replace-product-search-results').innerHTML = '';
+}
+
+// Edit Queue Item
+async function editQueueItem(itemId) {
+    currentEditingItemId = itemId;
+    
+    // Get item data
+    const item = allQueueItems.find(i => i.id === itemId);
+    if (!item) {
+        alert('Item not found');
+        return;
+    }
+    
+    // Show modal
+    const modal = document.getElementById('edit-item-modal');
+    if (!modal) {
+        createEditItemModal();
+    }
+    
+    // Populate form
+    document.getElementById('edit-item-id').textContent = itemId;
+    document.getElementById('edit-caption').value = item.generated_caption || '';
+    
+    if (item.scheduled_date) {
+        document.getElementById('edit-scheduled-date').value = item.scheduled_date;
+    }
+    if (item.scheduled_time) {
+        const timeStr = typeof item.scheduled_time === 'string' ? item.scheduled_time : item.scheduled_time;
+        document.getElementById('edit-scheduled-time').value = timeStr.substring(0, 5); // HH:MM format
+    }
+    
+    document.getElementById('edit-item-modal').classList.remove('hidden');
+}
+
+// Delete Queue Item
+async function deleteQueueItem(itemId, itemName) {
+    if (!confirm(`Are you sure you want to delete "${itemName}"?\n\nThis will remove it from the queue.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/posting-queue/${itemId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Reload queue
+            loadQueue();
+            loadStats();
+        } else {
+            alert(`Error: ${data.error}`);
+        }
+    } catch (error) {
+        console.error('Error deleting item:', error);
+        alert('Error deleting item: ' + error.message);
+    }
+}
+
+// Create Replace Product Modal
+function createReplaceProductModal() {
+    const modal = document.createElement('div');
+    modal.id = 'replace-product-modal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center';
+    modal.innerHTML = `
+        <div class="bg-slate-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-white">Replace Product</h2>
+                <button onclick="document.getElementById('replace-product-modal').classList.add('hidden')" 
+                        class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4 text-sm text-gray-300">
+                <p>Current item: <span id="replace-product-item-id" class="font-semibold"></span></p>
+                <p>Current product: <span id="replace-product-current" class="font-semibold"></span></p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Search for new product</label>
+                <input type="text" id="replace-product-search" 
+                       class="w-full bg-slate-700 text-white rounded px-3 py-2 border border-slate-600"
+                       placeholder="Search by product name or SKU..."
+                       onkeyup="searchProductsForReplace(this.value)">
+                <div id="replace-product-search-results" class="mt-2 max-h-60 overflow-y-auto"></div>
+            </div>
+            
+            <div id="replace-product-selected" class="hidden mb-4 p-4 bg-slate-700 rounded border border-slate-600">
+                <p class="text-sm text-gray-300 mb-2">Selected product:</p>
+                <p class="font-semibold text-white" id="replace-product-selected-name"></p>
+                <p class="text-xs text-gray-400" id="replace-product-selected-sku"></p>
+            </div>
+            
+            <div class="flex gap-3 justify-end">
+                <button onclick="document.getElementById('replace-product-modal').classList.add('hidden')" 
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                    Cancel
+                </button>
+                <button id="replace-product-confirm" onclick="confirmReplaceProduct()" 
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded" disabled>
+                    Replace Product
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Create Edit Item Modal
+function createEditItemModal() {
+    const modal = document.createElement('div');
+    modal.id = 'edit-item-modal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center';
+    modal.innerHTML = `
+        <div class="bg-slate-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-white">Edit Queue Item</h2>
+                <button onclick="document.getElementById('edit-item-modal').classList.add('hidden')" 
+                        class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4 text-sm text-gray-300">
+                <p>Item ID: <span id="edit-item-id" class="font-semibold"></span></p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Caption</label>
+                <textarea id="edit-caption" rows="4" 
+                          class="w-full bg-slate-700 text-white rounded px-3 py-2 border border-slate-600"
+                          placeholder="Enter caption..."></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Scheduled Date</label>
+                    <input type="date" id="edit-scheduled-date" 
+                           class="w-full bg-slate-700 text-white rounded px-3 py-2 border border-slate-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Scheduled Time</label>
+                    <input type="time" id="edit-scheduled-time" 
+                           class="w-full bg-slate-700 text-white rounded px-3 py-2 border border-slate-600">
+                </div>
+            </div>
+            
+            <div class="flex gap-3 justify-end">
+                <button onclick="document.getElementById('edit-item-modal').classList.add('hidden')" 
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                    Cancel
+                </button>
+                <button onclick="confirmEditItem()" 
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Product search for replace modal
+let selectedProductForReplace = null;
+
+async function searchProductsForReplace(query) {
+    if (!query || query.length < 2) {
+        document.getElementById('replace-product-search-results').innerHTML = '';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/products/api/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        const resultsDiv = document.getElementById('replace-product-search-results');
+        if (data.success && data.products && data.products.length > 0) {
+            let html = '<div class="space-y-1">';
+            data.products.slice(0, 10).forEach(product => {
+                html += `
+                    <div onclick="selectProductForReplace(${product.id}, '${product.name.replace(/'/g, "\\'")}', '${(product.sku || '').replace(/'/g, "\\'")}')" 
+                         class="p-2 bg-slate-700 hover:bg-slate-600 rounded cursor-pointer border border-slate-600">
+                        <div class="font-semibold text-white">${product.name}</div>
+                        ${product.sku ? `<div class="text-xs text-gray-400">SKU: ${product.sku}</div>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        } else {
+            resultsDiv.innerHTML = '<div class="text-gray-400 text-sm p-2">No products found</div>';
+        }
+    } catch (error) {
+        console.error('Error searching products:', error);
+        document.getElementById('replace-product-search-results').innerHTML = 
+            '<div class="text-red-400 text-sm p-2">Error searching products</div>';
+    }
+}
+
+function selectProductForReplace(productId, productName, productSku) {
+    selectedProductForReplace = { id: productId, name: productName, sku: productSku };
+    
+    document.getElementById('replace-product-selected-name').textContent = productName;
+    document.getElementById('replace-product-selected-sku').textContent = productSku ? `SKU: ${productSku}` : '';
+    document.getElementById('replace-product-selected').classList.remove('hidden');
+    document.getElementById('replace-product-confirm').disabled = false;
+}
+
+async function confirmReplaceProduct() {
+    if (!selectedProductForReplace || !currentEditingItemId) {
+        alert('Please select a product first');
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('replace-product-confirm');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Replacing...';
+    
+    try {
+        const response = await fetch(`/api/posting-queue/${currentEditingItemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: selectedProductForReplace.id,
+                regenerate_caption: true
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal and reload
+            document.getElementById('replace-product-modal').classList.add('hidden');
+            selectedProductForReplace = null;
+            currentEditingItemId = null;
+            loadQueue();
+            loadStats();
+        } else {
+            alert(`Error: ${data.error}`);
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Replace Product';
+        }
+    } catch (error) {
+        console.error('Error replacing product:', error);
+        alert('Error replacing product: ' + error.message);
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Replace Product';
+    }
+}
+
+async function confirmEditItem() {
+    if (!currentEditingItemId) {
+        return;
+    }
+    
+    const saveBtn = event.target;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    
+    try {
+        const updateData = {};
+        
+        const caption = document.getElementById('edit-caption').value.trim();
+        if (caption) {
+            updateData.generated_caption = caption;
+        }
+        
+        const scheduledDate = document.getElementById('edit-scheduled-date').value;
+        if (scheduledDate) {
+            updateData.scheduled_date = scheduledDate;
+        }
+        
+        const scheduledTime = document.getElementById('edit-scheduled-time').value;
+        if (scheduledTime) {
+            updateData.scheduled_time = scheduledTime + ':00'; // Add seconds
+        }
+        
+        const response = await fetch(`/api/posting-queue/${currentEditingItemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal and reload
+            document.getElementById('edit-item-modal').classList.add('hidden');
+            currentEditingItemId = null;
+            loadQueue();
+            loadStats();
+        } else {
+            alert(`Error: ${data.error}`);
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Changes';
+        }
+    } catch (error) {
+        console.error('Error updating item:', error);
+        alert('Error updating item: ' + error.message);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes';
+    }
+}
 </script>
 {% endblock %}
