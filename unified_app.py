@@ -185,6 +185,10 @@ def create_app(config_name=None):
     from blueprints.substage_management import bp as substage_management_bp
     app.register_blueprint(substage_management_bp)
     
+    # Register workflow navigation blueprint
+    from blueprints.workflow_navigation import bp as workflow_navigation_bp
+    app.register_blueprint(workflow_navigation_bp)
+    
     # TEMPORARY: Test route for Authoring template preview
     @app.route('/test-authoring/<int:post_id>')
     def test_authoring_preview(post_id):

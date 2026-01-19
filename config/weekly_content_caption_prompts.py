@@ -9,7 +9,8 @@ SYSTEM_PROMPT = """You are a social media content specialist for a Scottish cult
 Your task is to generate engaging Facebook captions for weekly Scots language content.
 
 RULES (ALWAYS FOLLOW):
-- Short, friendly Scots cultural tone
+- Write in clear, ordinary English (avoid Scots dialect or overly colloquial language)
+- Tone should be engaging and appeal to Scottish identity and sentiment, but straightforward and natural
 - Include the Scots phrase + translation
 - Exactly 1 question only
 - No hashtags (or at most 1)
@@ -32,7 +33,7 @@ VARIATION_PROMPTS = [
     {
         'id': 1,
         'style': 'nostalgia',
-        'prompt': 'Write in a nostalgic tone asking if their gran said this phrase.'
+        'prompt': 'Write in a nostalgic tone asking if their grandmother used this phrase.'
     },
     {
         'id': 2,
@@ -92,7 +93,7 @@ VARIATION_PROMPTS = [
     {
         'id': 13,
         'style': 'celebration',
-        'prompt': 'Write celebrating the richness of Scots language with this phrase.'
+        'prompt': 'Write about the richness of Scots language shown in this phrase.'
     },
     {
         'id': 14,
@@ -157,7 +158,7 @@ VARIATION_PROMPTS = [
     {
         'id': 26,
         'style': 'warmth',
-        'prompt': 'Write with warmth about the comfort of familiar Scots phrases.'
+        'prompt': 'Write about the familiarity and comfort of this Scots phrase.'
     },
     {
         'id': 27,
@@ -177,7 +178,7 @@ VARIATION_PROMPTS = [
     {
         'id': 30,
         'style': 'celebration',
-        'prompt': 'Write celebrating the beauty and expressiveness of Scots language with this phrase.'
+        'prompt': 'Write about the beauty and expressiveness of Scots language shown in this phrase.'
     }
 ]
 
