@@ -188,13 +188,57 @@
     
     <h2>System Overview</h2>
     
+    <div class="kb-info" style="background: #d1fae5; border-left: 4px solid #10b981; padding: 1rem; margin: 2rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #065f46;">
+            <strong>✅ Single Source of Truth:</strong> All calendar views use the <strong>unified resolver</strong> (<code>resolve_item_for_week()</code>) 
+            to ensure consistent data across all tabs. This means Year View, Week View, Scheduling, and all other tabs show the same scheduled items for any given week.
+        </p>
+    </div>
+    
     <h3>Core Concepts</h3>
     <ul>
         <li><strong>52-Week Structure:</strong> Each year is divided into 52 weeks for consistent content planning</li>
         <li><strong>Cyclic Lists:</strong> Base sequences (themes, recipes, profiles, words, phrases, insults) that repeat indefinitely</li>
-        <li><strong>JSON-Backed Display:</strong> Fast page loads using pre-computed JSON files (no database queries on display)</li>
-        <li><strong>Week Overrides:</strong> Ability to override specific weeks with different items</li>
+        <li><strong>Unified Resolver:</strong> Single source of truth (<code>resolve_item_for_week()</code>) ensures all views show consistent data</li>
+        <li><strong>JSON-Backed Display:</strong> Fast page loads using pre-computed JSON files (generated from resolver, includes overrides)</li>
+        <li><strong>Week Overrides:</strong> Ability to override specific weeks with different items (automatically included in all views)</li>
         <li><strong>Category-Based:</strong> Separate schedules for each content category</li>
+    </ul>
+    
+    <h3>Data Architecture</h3>
+    <p>The calendar system uses a unified resolver pattern:</p>
+    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0;">
+        <div style="font-family: monospace; color: #cbd5e1; line-height: 1.8;">
+            <div style="text-align: center; color: #10b981; font-weight: 600; margin-bottom: 1rem;">Single Source of Truth</div>
+            <div style="text-align: center; color: #3b82f6; margin-bottom: 0.5rem;">Base Lists (DB) + Cyclic Logic + Overrides</div>
+            <div style="text-align: center; color: #60a5fa; margin-bottom: 1rem;">↓</div>
+            <div style="text-align: center; color: #3b82f6; font-weight: 600; margin-bottom: 1rem;">resolve_item_for_week()</div>
+            <div style="text-align: center; color: #60a5fa; margin-bottom: 1rem;">↓</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                <div style="text-align: center; color: #94a3b8;">
+                    <div style="color: #10b981;">Scheduling View</div>
+                    <div style="font-size: 0.85rem;">(JSON cache)</div>
+                </div>
+                <div style="text-align: center; color: #94a3b8;">
+                    <div style="color: #10b981;">Week View</div>
+                    <div style="font-size: 0.85rem;">(Direct call)</div>
+                </div>
+                <div style="text-align: center; color: #94a3b8;">
+                    <div style="color: #10b981;">All Other Views</div>
+                    <div style="font-size: 0.85rem;">(Direct call)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <p style="color: #94a3b8; margin-top: 1rem;">
+        <strong>Key Points:</strong>
+    </p>
+    <ul style="color: #94a3b8;">
+        <li>All views use the same resolver, ensuring <strong>100% consistency</strong> across all tabs</li>
+        <li>JSON files are a <strong>performance cache</strong> generated from the resolver (not the source of truth)</li>
+        <li>Overrides are <strong>automatically included</strong> in all views</li>
+        <li>Base lists + cyclic logic + overrides = unified schedule</li>
     </ul>
 
     <h3>Content Categories</h3>
@@ -241,6 +285,7 @@
         <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 1rem;">
             <h4 style="margin: 0 0 0.5rem 0; color: #3b82f6; font-size: 0.95rem;">Architecture</h4>
             <ul style="margin: 0; padding-left: 1.25rem; color: #94a3b8; font-size: 0.9rem;">
+                <li><a href="/docs/CALENDAR_UNIFIED_RESOLVER_IMPLEMENTATION.md" class="kb-ui-link" target="_blank" style="color: #10b981 !important; font-weight: 600;">Unified Resolver</a></li>
                 <li><a href="/docs/CALENDAR_SCHEDULING_NEW_PARADIGM.md" class="kb-ui-link" target="_blank" style="color: white !important;">New Paradigm</a></li>
                 <li><a href="/docs/CALENDAR_SCHEDULING_COMPONENT_STRUCTURE.md" class="kb-ui-link" target="_blank" style="color: white !important;">Component Structure</a></li>
                 <li><a href="/docs/CALENDAR_SYSTEM_AUDIT.md" class="kb-ui-link" target="_blank" style="color: white !important;">System Audit</a></li>
