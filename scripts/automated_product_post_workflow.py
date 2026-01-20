@@ -19,8 +19,7 @@ from blueprints.automation_execute import (
     execute_format_for_facebook,
     execute_generate_caption,
     execute_add_hashtags,
-    execute_optimize_for_facebook,
-    execute_publish_to_facebook
+    execute_optimize_for_facebook
 )
 
 # Configure logging
@@ -142,81 +141,18 @@ class ProductPostWorkflowExecutor:
                 logger.error(f"❌ optimize_for_facebook failed: {result_dict}")
                 return results  # Stop if image optimization fails
             
-            # Stage 5: Publish to Facebook (only if scheduled date/time has passed)
-            # Check if it's time to publish
+            # Stage 5: Mark as ready for publishing
+            # CRITICAL: Do NOT publish directly from workflow executor.
+            # The centralized scheduler (scheduled_posting_executor.py) handles all publishing
+            # with proper date validation. We only set status to 'ready' here.
+            logger.info(f"Workflow completed for queue_id {queue_id}, setting status to 'ready' for scheduled_posting_executor")
             with self.db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT scheduled_date, scheduled_time
-                    FROM posting_queue
+                    UPDATE posting_queue
+                    SET status = 'ready', updated_at = NOW()
                     WHERE id = %s
                 """, (queue_id,))
-                row = cursor.fetchone()
-                
-                if row and row.get('scheduled_date') and row.get('scheduled_time'):
-                    scheduled_date = row['scheduled_date']
-                    scheduled_time = row['scheduled_time']
-                    
-                    # Parse scheduled time
-                    if isinstance(scheduled_time, str):
-                        time_parts = scheduled_time.split(':')
-                        hour = int(time_parts[0])
-                        minute = int(time_parts[1]) if len(time_parts) > 1 else 0
-                    else:
-                        hour = scheduled_time.hour
-                        minute = scheduled_time.minute
-                    
-                    # Create datetime for scheduled time
-                    if isinstance(scheduled_date, str):
-                        from datetime import date as date_class
-                        scheduled_date = date_class.fromisoformat(scheduled_date)
-                    
-                    scheduled_datetime = datetime.combine(scheduled_date, datetime.min.time().replace(hour=hour, minute=minute))
-                    now = datetime.now()
-                    
-                    # Only publish if scheduled time has passed
-                    if now >= scheduled_datetime:
-                        # ⚠️ FACEBOOK POSTING DISABLED - Block all posting attempts
-                        logger.error(f"BLOCKED: publish_to_facebook attempted for queue_id {queue_id} - Facebook posting is DISABLED")
-                        results['publish_to_facebook'] = False
-                        # Still update status to 'ready' even though posting is disabled
-                        logger.info(f"Workflow completed, updating status to 'ready' (posting disabled)")
-                        with self.db_manager.get_cursor() as cursor:
-                            cursor.execute("""
-                                UPDATE posting_queue
-                                SET status = 'ready', updated_at = NOW()
-                                WHERE id = %s
-                            """, (queue_id,))
-                        return results
-                        
-                        # CRITICAL FIX: Don't post directly from workflow executor
-                        # Instead, set status to 'ready' and let posting_executor handle it
-                        # This prevents duplicate posting and ensures status is properly updated
-                        logger.info(f"Scheduled time has passed for queue_id {queue_id}, setting status to 'ready' for posting_executor")
-                        with self.db_manager.get_cursor() as cursor:
-                            cursor.execute("""
-                                UPDATE posting_queue
-                                SET status = 'ready', updated_at = NOW()
-                                WHERE id = %s
-                            """, (queue_id,))
-                        results['publish_to_facebook'] = False  # Not published yet, will be handled by posting_executor
-                    else:
-                        # Update status to 'ready' so posting_executor can handle it
-                        logger.info(f"Scheduled time not yet reached, updating status to 'ready'")
-                        with self.db_manager.get_cursor() as cursor:
-                            cursor.execute("""
-                                UPDATE posting_queue
-                                SET status = 'ready', updated_at = NOW()
-                                WHERE id = %s
-                            """, (queue_id,))
-                else:
-                    # No scheduled time, update to 'ready' anyway
-                    logger.info(f"No scheduled time, updating status to 'ready'")
-                    with self.db_manager.get_cursor() as cursor:
-                        cursor.execute("""
-                            UPDATE posting_queue
-                            SET status = 'ready', updated_at = NOW()
-                            WHERE id = %s
-                        """, (queue_id,))
+            results['publish_to_facebook'] = False  # Not published yet, will be handled by scheduled_posting_executor
             
             return results
             

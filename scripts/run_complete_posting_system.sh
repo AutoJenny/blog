@@ -24,8 +24,8 @@ echo "$(date): Scheduler completed with exit code: $SCHEDULER_EXIT_CODE" >> logs
 
 # Step 2: Run the posting executor (actual posting)
 echo "$(date): Running posting executor" >> logs/complete_posting_system.log
-echo "$(date): Command: python3 scripts/posting_executor.py" >> logs/complete_posting_system.log
-python3 scripts/posting_executor.py 2>&1 | tee -a logs/complete_posting_system.log
+echo "$(date): Command: python3 scripts/scheduled_posting_executor.py" >> logs/complete_posting_system.log
+python3 scripts/scheduled_posting_executor.py 2>&1 | tee -a logs/complete_posting_system.log
 EXECUTOR_EXIT_CODE=${PIPESTATUS[0]}
 echo "$(date): Executor completed with exit code: $EXECUTOR_EXIT_CODE" >> logs/complete_posting_system.log
 

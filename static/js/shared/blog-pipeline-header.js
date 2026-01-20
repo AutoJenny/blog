@@ -149,6 +149,12 @@ class BlogPipelineHeader {
         // Update week info and theme (works for both post-based and week-based)
         await this.updateWeekAndTheme();
         
+        // For recipe posts, also update recipe title
+        const recipeEl = document.getElementById('pipeline-title-recipe');
+        if (recipeEl) {
+            this.updateRecipeTitle();
+        }
+        
         if (!this.postData || !this.postData.post) {
             console.warn('[Blog Pipeline Header] No post data available for update');
             return;
@@ -309,6 +315,61 @@ class BlogPipelineHeader {
         }
     }
 
+    async updateRecipeTitle() {
+        const recipeEl = document.getElementById('pipeline-title-recipe');
+        if (!recipeEl) return;
+        
+        const postId = this.getPostId();
+        if (!postId || postId === '0' || parseInt(postId) === 0) {
+            recipeEl.textContent = 'Recipe';
+            return;
+        }
+        
+        try {
+            // Try multiple endpoints to get post title
+            let postTitle = null;
+            
+            // Try /planning/api/posts/<post_id> first (most reliable)
+            try {
+                const postResp = await fetch(`/planning/api/posts/${postId}`);
+                if (postResp.ok) {
+                    const postData = await postResp.json();
+                    // The API returns { post: { title: "...", ... } } structure
+                    if (postData.post && postData.post.title) {
+                        postTitle = postData.post.title;
+                    } else if (postData.title) {
+                        postTitle = postData.title;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Blog Pipeline Header] Error fetching from planning API:', e);
+            }
+            
+            // Fallback: try /post-info/api/post-info/<post_id>
+            if (!postTitle) {
+                try {
+                    const postResp = await fetch(`/post-info/api/post-info/${postId}`);
+                    if (postResp.ok) {
+                        const postData = await postResp.json();
+                        postTitle = postData.title;
+                    }
+                } catch (e) {
+                    console.warn('[Blog Pipeline Header] Error fetching from post-info API:', e);
+                }
+            }
+            
+            // Use post title (should be set to recipe title when post is created)
+            if (postTitle) {
+                recipeEl.textContent = postTitle;
+            } else {
+                recipeEl.textContent = 'Recipe';
+            }
+        } catch (e) {
+            console.warn('[Blog Pipeline Header] Error fetching recipe title:', e);
+            recipeEl.textContent = 'Recipe';
+        }
+    }
+    
     async updateWeekAndTheme() {
         const prefixEl = document.getElementById('pipeline-title-prefix');
         const weekInfoEl = document.getElementById('pipeline-title-week-info');
@@ -1111,19 +1172,30 @@ class BlogPipelineHeader {
         };
 
         const subtitleElement = document.getElementById('subtitle');
-        if (subtitleElement && currentStage && normalizedSubstage) {
-            // Try exact match first
-            let subtitle = subtitles[currentStage]?.[normalizedSubstage];
-            // Try with underscores
-            if (!subtitle) {
-                subtitle = subtitles[currentStage]?.[normalizedSubstage.replace(/-/g, '_')];
-            }
-            // Try with hyphens
-            if (!subtitle) {
-                subtitle = subtitles[currentStage]?.[normalizedSubstage.replace(/_/g, '-')];
-            }
-            if (subtitle) {
-                subtitleElement.textContent = subtitle;
+        if (subtitleElement && currentStage && currentSubstage) {
+            // Normalize the substage name
+            const normalizedSubstage = this.normalizeSubstageName(currentSubstage);
+            
+            if (normalizedSubstage) {
+                // Try exact match first
+                let subtitle = subtitles[currentStage]?.[normalizedSubstage];
+                // Try with underscores
+                if (!subtitle) {
+                    subtitle = subtitles[currentStage]?.[normalizedSubstage.replace(/-/g, '_')];
+                }
+                // Try with hyphens
+                if (!subtitle) {
+                    subtitle = subtitles[currentStage]?.[normalizedSubstage.replace(/_/g, '-')];
+                }
+                // Try with original substage name
+                if (!subtitle) {
+                    subtitle = subtitles[currentStage]?.[currentSubstage];
+                }
+                if (subtitle) {
+                    subtitleElement.textContent = subtitle;
+                } else {
+                    subtitleElement.textContent = '';
+                }
             } else {
                 subtitleElement.textContent = '';
             }

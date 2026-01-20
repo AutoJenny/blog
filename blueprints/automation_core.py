@@ -518,6 +518,13 @@ def create_post_from_item():
         if not category or not item_id:
             return jsonify({"success": False, "error": "category and item_id are required"}), 400
         
+        # Validate item_id can be converted to int
+        try:
+            item_id_int = int(item_id)
+        except (ValueError, TypeError):
+            logger.error(f"Invalid item_id: {item_id} (type: {type(item_id)})")
+            return jsonify({"success": False, "error": f"Invalid item_id: {item_id}. Must be a number."}), 400
+        
         # Get calendar item data
         from utils.calendar_resolver import get_category_config
         from utils.channel_assignment import (
@@ -527,15 +534,24 @@ def create_post_from_item():
         )
         from config.channel_content_formats import requires_post
         
-        cfg = get_category_config(category)
-        table = cfg["table"]
-        id_col = cfg["id_column"]
-        extra_filter = cfg["extra_filter"]
+        try:
+            cfg = get_category_config(category)
+        except Exception as e:
+            logger.error(f"Error getting category config for '{category}': {e}")
+            return jsonify({"success": False, "error": f"Invalid category: {category}"}), 400
+        
+        table = cfg.get("table")
+        id_col = cfg.get("id_column")
+        extra_filter = cfg.get("extra_filter")
+        
+        if not table or not id_col:
+            logger.error(f"Invalid category config for '{category}': missing table or id_column")
+            return jsonify({"success": False, "error": f"Invalid category configuration: {category}"}), 500
         
         with db_manager.get_cursor() as cursor:
             # Get item data
             sql = f"SELECT * FROM {table} WHERE {id_col} = %s"
-            params = [int(item_id)]
+            params = [item_id_int]
             
             if extra_filter:
                 cond, extra_params = extra_filter
@@ -553,6 +569,7 @@ def create_post_from_item():
             # Determine post type and title
             post_type = None
             title = None
+            recipe_id = None  # Initialize recipe_id for scope
             
             if category == 'theme':
                 post_type = 'themed'
@@ -560,7 +577,10 @@ def create_post_from_item():
             elif category == 'recipe':
                 post_type = 'recipe'
                 title = item_dict.get('recipe_title') or item_dict.get('title', '')
-                recipe_id = item_dict.get('id')
+                recipe_id = item_dict.get('id') or item_dict.get('recipe_id')
+                if not recipe_id:
+                    logger.error(f"Recipe ID not found in item_dict. Keys: {list(item_dict.keys())}")
+                    return jsonify({"success": False, "error": "Recipe ID not found in calendar item"}), 400
             elif category == 'weekly_word':
                 post_type = 'weekly_word'
                 title = item_dict.get('idea_title') or item_dict.get('title', '')
@@ -591,6 +611,9 @@ def create_post_from_item():
             if category == 'recipe':
                 # For recipes, check by recipe_id (most reliable)
                 # Only reuse posts in workflow states, never published
+                if not recipe_id:
+                    logger.error(f"recipe_id is None for category='recipe', item_id={item_id}")
+                    return jsonify({"success": False, "error": "Recipe ID not found"}), 400
                 cursor.execute("""
                     SELECT id, status FROM post
                     WHERE recipe_id = %s 
@@ -768,10 +791,16 @@ def create_post_from_item():
                 RETURNING id
             """, (title, slug))
             
-            post_id = cursor.fetchone()['id']
+            result = cursor.fetchone()
+            if not result or 'id' not in result:
+                return jsonify({"success": False, "error": "Failed to create post - no ID returned"}), 500
+            post_id = result['id']
             
             # Link to calendar item based on category
             if category == 'recipe':
+                if not recipe_id:
+                    logger.error(f"recipe_id is None when trying to link post {post_id} to recipe")
+                    return jsonify({"success": False, "error": "Recipe ID not found when linking post"}), 500
                 cursor.execute("""
                     UPDATE post SET recipe_id = %s WHERE id = %s
                 """, (recipe_id, post_id))
@@ -830,5 +859,7 @@ def create_post_from_item():
             return jsonify(response_data)
             
     except Exception as e:
-        logger.error(f"Error creating post from item: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Error creating post from item: {e}\n{error_trace}")
+        return jsonify({"success": False, "error": str(e), "traceback": error_trace}), 500

@@ -165,6 +165,42 @@ function getItemDescription(item, fallbackDescription) {
 }
 
 /**
+ * Navigate to the pipeline page for a post
+ * @param {Object} item - Item data
+ * @param {number} postId - Post ID
+ */
+function navigateToPipeline(item, postId) {
+    const category = item.category || '';
+    const year = item.year;
+    const week = item.week;
+    
+    let workflowUrl = null;
+    
+    // Determine first workflow stage based on category
+    if (category === 'recipe') {
+        // Recipes: taxonomy redirects to drafting, so go directly to drafting
+        workflowUrl = `/posts/${postId}/sections/drafting`;
+    } else if (category === 'theme') {
+        // Themes start at Planning -> Ideas
+        workflowUrl = `/planning/posts/${postId}/calendar/ideas`;
+    } else if (category === 'profile_product' || category === 'profile_surname') {
+        // Profiles start at Planning -> Taxonomy
+        workflowUrl = `/planning/posts/${postId}/calendar/taxonomy`;
+    } else {
+        // Default: Planning -> Ideas
+        workflowUrl = `/planning/posts/${postId}/calendar/ideas`;
+    }
+    
+    // Add year/week params if available
+    if (year && week) {
+        workflowUrl += `?year=${year}&week=${week}`;
+    }
+    
+    console.log('[Unified Item Card] Navigating to pipeline:', workflowUrl);
+    window.location.href = workflowUrl;
+}
+
+/**
  * Create unified item card
  * 
  * @param {Object} item - Item data (from API)
@@ -237,10 +273,41 @@ function createUnifiedItemCard(item, options = {}) {
     typeLabel.textContent = typeName;
     card.appendChild(typeLabel);
     
-    // Title
+    // Title (clickable to navigate to pipeline if post exists)
     const titleEl = document.createElement('div');
     titleEl.className = 'item-title';
     titleEl.textContent = title;
+    if (postExists && postId) {
+        titleEl.style.cursor = 'pointer';
+        titleEl.style.textDecoration = 'underline';
+        titleEl.style.textDecorationStyle = 'dotted';
+        titleEl.title = 'Click to open pipeline';
+        titleEl.onclick = (e) => {
+            e.stopPropagation();
+            console.log('[Unified Item Card] Title clicked for item:', item, 'postId:', postId);
+            if (typeof navigateToPipeline === 'function') {
+                navigateToPipeline(item, postId);
+            } else if (window.navigateToPipeline && typeof window.navigateToPipeline === 'function') {
+                window.navigateToPipeline(item, postId);
+            } else {
+                console.error('[Unified Item Card] navigateToPipeline function not found');
+                // Fallback: navigate directly
+                const category = item.category || '';
+                let url;
+                if (category === 'recipe') {
+                    url = `/posts/${postId}/sections/drafting`;
+                } else if (category === 'theme') {
+                    url = `/planning/posts/${postId}/calendar/ideas`;
+                } else {
+                    url = `/planning/posts/${postId}/calendar/taxonomy`;
+                }
+                if (item.year && item.week) {
+                    url += `?year=${item.year}&week=${item.week}`;
+                }
+                window.location.href = url;
+            }
+        };
+    }
     card.appendChild(titleEl);
     
     // Compact action row: status + actions
@@ -266,19 +333,56 @@ function createUnifiedItemCard(item, options = {}) {
     const actions = document.createElement('div');
     actions.className = 'item-actions';
     
-    // Play button (create) - shown when post doesn't exist
+    // Start button - shown when post doesn't exist (prominent text button)
     if (!postExists) {
-        const createBtn = document.createElement('button');
-        createBtn.className = 'icon-btn-compact btn-create';
-        createBtn.title = 'Create post';
-        createBtn.innerHTML = '<i class="fas fa-play"></i>';
-        createBtn.onclick = (e) => {
+        const startBtn = document.createElement('button');
+        startBtn.className = 'btn-start btn-primary';
+        startBtn.innerHTML = '<i class="fas fa-play" style="margin-right: 0.25rem;"></i> Start';
+        startBtn.title = 'Start work on this item';
+        startBtn.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 600; border-radius: 6px; background: #3b82f6; color: white; border: none; cursor: pointer; transition: all 0.2s; white-space: nowrap;';
+        startBtn.onmouseover = function() { this.style.background = '#2563eb'; this.style.transform = 'translateY(-1px)'; };
+        startBtn.onmouseout = function() { this.style.background = '#3b82f6'; this.style.transform = 'translateY(0)'; };
+        startBtn.onclick = (e) => {
             e.stopPropagation();
             if (options.onCreate) {
                 options.onCreate(e, item, card);
             }
         };
-        actions.appendChild(createBtn);
+        actions.appendChild(startBtn);
+    }
+    
+    // Pipeline button - shown when post exists (navigates to first workflow stage)
+    if (postExists && postId) {
+        const pipelineBtn = document.createElement('button');
+        pipelineBtn.className = 'icon-btn-compact btn-pipeline';
+        pipelineBtn.title = 'Open pipeline';
+        pipelineBtn.innerHTML = '<i class="fas fa-sitemap"></i>';
+        pipelineBtn.onclick = (e) => {
+            e.stopPropagation();
+            console.log('[Unified Item Card] Pipeline button clicked for item:', item, 'postId:', postId);
+            if (typeof navigateToPipeline === 'function') {
+                navigateToPipeline(item, postId);
+            } else if (window.navigateToPipeline && typeof window.navigateToPipeline === 'function') {
+                window.navigateToPipeline(item, postId);
+            } else {
+                console.error('[Unified Item Card] navigateToPipeline function not found');
+                // Fallback: navigate directly
+                const category = item.category || '';
+                let url;
+                if (category === 'recipe') {
+                    url = `/posts/${postId}/sections/drafting`;
+                } else if (category === 'theme') {
+                    url = `/planning/posts/${postId}/calendar/ideas`;
+                } else {
+                    url = `/planning/posts/${postId}/calendar/taxonomy`;
+                }
+                if (item.year && item.week) {
+                    url += `?year=${item.year}&week=${item.week}`;
+                }
+                window.location.href = url;
+            }
+        };
+        actions.appendChild(pipelineBtn);
     }
     
     // Rocket button (work on / 1-click) - shown when post exists
@@ -299,18 +403,20 @@ function createUnifiedItemCard(item, options = {}) {
         actions.appendChild(rocketBtn);
     }
     
-    // Info button (always shown)
-    const infoBtn = document.createElement('button');
-    infoBtn.className = 'icon-btn-compact btn-info';
-    infoBtn.title = 'View details';
-    infoBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
-    infoBtn.onclick = (e) => {
-        e.stopPropagation();
-        if (options.onInfo) {
-            options.onInfo(e, item, card);
-        }
-    };
-    actions.appendChild(infoBtn);
+    // Info button - only show if post doesn't exist (pipeline button handles navigation when post exists)
+    if (!postExists) {
+        const infoBtn = document.createElement('button');
+        infoBtn.className = 'icon-btn-compact btn-info';
+        infoBtn.title = 'View details';
+        infoBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
+        infoBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (options.onInfo) {
+                options.onInfo(e, item, card);
+            }
+        };
+        actions.appendChild(infoBtn);
+    }
     
     actionRow.appendChild(actions);
     card.appendChild(actionRow);
@@ -347,8 +453,11 @@ function createUnifiedItemCard(item, options = {}) {
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { createUnifiedItemCard, normalizeTypeForClass, normalizeTypeName, determinePostStatus };
+    module.exports = { createUnifiedItemCard, normalizeTypeForClass, normalizeTypeName, determinePostStatus, navigateToPipeline };
 }
+
+// Expose to window for use in other scripts
+window.navigateToPipeline = navigateToPipeline;
 
 // Make available globally
 window.createUnifiedItemCard = createUnifiedItemCard;

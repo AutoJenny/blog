@@ -32,6 +32,22 @@
             <h1 class="calendar-main-title">Calendar</h1>
             <p class="calendar-main-subtitle">Content scheduling and planning</p>
         </div>
+        <!-- Automated Posting Control - Positioned top right -->
+        <div class="automated-posting-control" id="automated-posting-control" style="display: flex !important; visibility: visible !important; opacity: 1 !important; position: absolute !important; top: 1.5rem !important; right: 2rem !important; z-index: 1000 !important;">
+            <div class="posting-control-label">Automated Posting</div>
+            <label class="posting-toggle-switch">
+                <input type="checkbox" id="automated-posting-toggle" />
+                <span class="toggle-slider"></span>
+            </label>
+            <button type="button" id="manual-posting-trigger" class="manual-trigger-btn" style="display: none;">
+                <i class="fas fa-play"></i>
+                <span>Publish Now</span>
+            </button>
+            <div class="posting-status-indicator" id="posting-status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Loading...</span>
+            </div>
+        </div>
         <div class="calendar-week-indicator">
             <div class="week-indicator-content">
                 <div class="week-indicator-label">Current Week</div>
@@ -111,6 +127,11 @@
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
     gap: 1rem;
+    position: relative;
+}
+
+.calendar-header-top > * {
+    flex-shrink: 0;
 }
 
 .calendar-title-section {
@@ -133,12 +154,152 @@
     line-height: 1.4;
 }
 
+/* calendar-header-right removed - automated posting control now absolutely positioned */
+
+.automated-posting-control {
+    display: flex !important;
+    align-items: center;
+    gap: 0.75rem;
+    background: #1e293b !important;
+    border: 2px solid #3b82f6 !important;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    min-width: 280px;
+    max-width: 400px;
+    flex-shrink: 0;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 1000 !important;
+    position: absolute !important;
+    top: 1.5rem !important;
+    right: 2rem !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.posting-control-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    white-space: nowrap;
+}
+
+.posting-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+    margin: 0;
+}
+
+.posting-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #475569;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.posting-toggle-switch input:checked + .toggle-slider {
+    background-color: #10b981;
+}
+
+.posting-toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.posting-toggle-switch input:disabled + .toggle-slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.manual-trigger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.manual-trigger-btn:hover:not(:disabled) {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.manual-trigger-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.manual-trigger-btn.loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.posting-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #94a3b8;
+    transition: background-color 0.3s;
+}
+
+.status-dot.enabled {
+    background-color: #10b981;
+}
+
+.status-dot.disabled {
+    background-color: #ef4444;
+}
+
+.status-text {
+    white-space: nowrap;
+}
+
 .calendar-week-indicator {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
     padding: 1rem 1.5rem;
     min-width: 200px;
+    flex-shrink: 0;
 }
 
 .week-indicator-content {
@@ -241,6 +402,15 @@
         align-items: flex-start;
     }
     
+    .automated-posting-control {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        min-width: auto;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
     .calendar-week-indicator {
         width: 100%;
     }
@@ -293,6 +463,145 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dateRangeEl) {
         dateRangeEl.textContent = formatDate(dateRange.start) + ' - ' + formatDateWithYear(dateRange.end);
     }
+    
+    // Load automated posting control state
+    loadAutomatedPostingState();
+    
+    // Set up toggle handler
+    const toggle = document.getElementById('automated-posting-toggle');
+    if (toggle) {
+        toggle.addEventListener('change', function() {
+            const enabled = this.checked;
+            updateAutomatedPosting(enabled);
+        });
+    }
+    
+    // Set up manual trigger handler
+    const manualTrigger = document.getElementById('manual-posting-trigger');
+    if (manualTrigger) {
+        manualTrigger.addEventListener('click', function() {
+            triggerManualPublishing();
+        });
+    }
 });
+
+// Load automated posting state from server
+async function loadAutomatedPostingState() {
+    try {
+        const response = await fetch('/api/automated-posting/status');
+        const data = await response.json();
+        
+        if (data.success) {
+            const enabled = data.enabled === true || data.enabled === 'true';
+            const toggle = document.getElementById('automated-posting-toggle');
+            const manualTrigger = document.getElementById('manual-posting-trigger');
+            const statusIndicator = document.getElementById('posting-status-indicator');
+            const statusDot = statusIndicator?.querySelector('.status-dot');
+            const statusText = statusIndicator?.querySelector('.status-text');
+            
+            if (toggle) {
+                toggle.checked = enabled;
+            }
+            
+            if (manualTrigger) {
+                manualTrigger.style.display = enabled ? 'none' : 'inline-flex';
+            }
+            
+            if (statusDot && statusText) {
+                statusDot.className = 'status-dot ' + (enabled ? 'enabled' : 'disabled');
+                statusText.textContent = enabled ? 'Enabled' : 'Disabled';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading automated posting state:', error);
+        const statusText = document.querySelector('#posting-status-indicator .status-text');
+        if (statusText) {
+            statusText.textContent = 'Error';
+        }
+    }
+}
+
+// Update automated posting state
+async function updateAutomatedPosting(enabled) {
+    try {
+        const response = await fetch('/api/automated-posting/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ enabled: enabled })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const manualTrigger = document.getElementById('manual-posting-trigger');
+            const statusIndicator = document.getElementById('posting-status-indicator');
+            const statusDot = statusIndicator?.querySelector('.status-dot');
+            const statusText = statusIndicator?.querySelector('.status-text');
+            
+            if (manualTrigger) {
+                manualTrigger.style.display = enabled ? 'none' : 'inline-flex';
+            }
+            
+            if (statusDot && statusText) {
+                statusDot.className = 'status-dot ' + (enabled ? 'enabled' : 'disabled');
+                statusText.textContent = enabled ? 'Enabled' : 'Disabled';
+            }
+        } else {
+            // Revert toggle on error
+            const toggle = document.getElementById('automated-posting-toggle');
+            if (toggle) {
+                toggle.checked = !enabled;
+            }
+            alert('Error updating automated posting: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error updating automated posting:', error);
+        // Revert toggle on error
+        const toggle = document.getElementById('automated-posting-toggle');
+        if (toggle) {
+            toggle.checked = !enabled;
+        }
+        alert('Error updating automated posting: ' + error.message);
+    }
+}
+
+// Trigger manual publishing
+async function triggerManualPublishing() {
+    const manualTrigger = document.getElementById('manual-posting-trigger');
+    if (!manualTrigger) return;
+    
+    // Disable button and show loading state
+    manualTrigger.disabled = true;
+    manualTrigger.classList.add('loading');
+    const originalText = manualTrigger.querySelector('span').textContent;
+    manualTrigger.querySelector('span').textContent = 'Publishing...';
+    
+    try {
+        const response = await fetch('/api/automated-posting/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`Manual publishing triggered. ${data.message || ''}`);
+        } else {
+            alert('Error triggering manual publishing: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error triggering manual publishing:', error);
+        alert('Error triggering manual publishing: ' + error.message);
+    } finally {
+        // Re-enable button
+        manualTrigger.disabled = false;
+        manualTrigger.classList.remove('loading');
+        manualTrigger.querySelector('span').textContent = originalText;
+    }
+}
 </script>
 

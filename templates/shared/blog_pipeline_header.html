@@ -24,7 +24,10 @@
                 {% endif %}
             </span>
             {% endif %}
-            {% if post_type is defined and post_type and post_type not in ['recipe', 'profile', 'generated'] %}
+            {% if post_type is defined and post_type and post_type == 'recipe' %}
+            <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
+            <span class="pipeline-title-recipe" id="pipeline-title-recipe">Loading recipe...</span>
+            {% elif post_type is defined and post_type and post_type not in ['recipe', 'profile', 'generated'] %}
             <span class="pipeline-title-separator" style="margin: 0 0.5rem;">|</span>
             <span class="pipeline-title-theme" id="pipeline-title-theme">Unselected theme</span>
             {% endif %}
@@ -104,6 +107,18 @@
                 <i class="fas fa-search"></i>
                 Research
             </a>
+            {% elif post_type == 'recipe' %}
+            {# Recipe posts have Research before Planning (research feeds into planning background) #}
+            <a href="{{ url_for('research.background_research', post_id=post_id) }}" 
+               class="stage-btn" data-stage="research">
+                <i class="fas fa-search"></i>
+                Research
+            </a>
+            <a href="{{ url_for('planning.planning_calendar_taxonomy', post_id=post_id) }}" 
+               class="stage-btn" data-stage="planning" data-stage-alias="concept">
+                <i class="fas fa-lightbulb"></i>
+                Planning
+            </a>
             {% elif post_type == 'profile' %}
             {# Profile posts have Planning stage only (no Calendar, no Research) #}
             <a href="{{ url_for('planning.planning_concept', post_id=post_id) }}" 
@@ -167,6 +182,22 @@
         <div class="sub-stages" id="sub-stages">
             <!-- Calendar sub-stages - DEPRECATED: Calendar stage has been removed -->
             
+            {% set research_substages = get_substages_for_navbar(post_type or 'themed', 'research') %}
+            {% if research_substages %}
+            <!-- Research sub-stages (comes before Planning for recipes) -->
+            <div class="sub-stage-group" data-stage="research">
+                {% for substage in research_substages %}
+                    {% if substage.route_function %}
+                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
+                           class="sub-stage-btn sub-stage-shared" 
+                           data-substage="{{ substage.key.replace('_', '-') }}">
+                            {{ substage.label }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            
             <!-- Planning sub-stages -->
             <div class="sub-stage-group" data-stage="planning" data-stage-alias="concept">
                 {% set planning_substages = get_substages_for_navbar(post_type or 'themed', 'planning') %}
@@ -191,22 +222,6 @@
                     {% endif %}
                 {% endfor %}
             </div>
-            
-            {% set research_substages = get_substages_for_navbar(post_type or 'themed', 'research') %}
-            {% if research_substages %}
-            <!-- Research sub-stages -->
-            <div class="sub-stage-group" data-stage="research">
-                {% for substage in research_substages %}
-                    {% if substage.route_function %}
-                        <a href="{{ url_for(substage.route_function, post_id=post_id) }}" 
-                           class="sub-stage-btn sub-stage-shared" 
-                           data-substage="{{ substage.key.replace('_', '-') }}">
-                            {{ substage.label }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            {% endif %}
             
             <!-- Authoring sub-stages -->
             <div class="sub-stage-group" data-stage="authoring">

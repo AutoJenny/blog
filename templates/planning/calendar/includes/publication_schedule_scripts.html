@@ -87,7 +87,29 @@ function renderSchedule(channels) {
                     navigateToOneClick(item);
                 },
                 onInfo: (e, item, card) => {
-                    openItemModal(item);
+                    // For recipes with posts, navigate to pipeline instead of modal
+                    if (item.category === 'recipe' && item.post_id) {
+                        if (window.navigateToPipeline && typeof window.navigateToPipeline === 'function') {
+                            window.navigateToPipeline(item, item.post_id);
+                        } else {
+                            // Fallback: navigate directly
+                            const category = item.category || '';
+                            let url;
+                            if (category === 'recipe') {
+                                url = `/posts/${item.post_id}/sections/drafting`;
+                            } else if (category === 'theme') {
+                                url = `/planning/posts/${item.post_id}/calendar/ideas`;
+                            } else {
+                                url = `/planning/posts/${item.post_id}/calendar/taxonomy`;
+                            }
+                            if (item.year && item.week) {
+                                url += `?year=${item.year}&week=${item.week}`;
+                            }
+                            window.location.href = url;
+                        }
+                    } else {
+                        openItemModal(item);
+                    }
                 },
                 onClick: (e, item, card) => {
                     openItemModal(item);
@@ -182,6 +204,8 @@ function bindItemCardActions(itemCard, item) {
 }
 
 async function createPostFromItem(item, itemCard) {
+    console.log('[createPostFromItem] Called with item:', item, 'itemCard:', itemCard);
+    
     // Only create for blog channel
     if (item.channel !== 'blog') {
         // For non-blog channels, navigate to one-click (existing behavior)
@@ -191,30 +215,60 @@ async function createPostFromItem(item, itemCard) {
     
     // Disable button and show loading state
     const createBtn = itemCard.querySelector('.btn-create');
-    if (createBtn) {
-        createBtn.disabled = true;
-        createBtn.textContent = 'Creating...';
+    const startBtn = itemCard.querySelector('.btn-start');
+    const buttonToDisable = createBtn || startBtn;
+    if (buttonToDisable) {
+        buttonToDisable.disabled = true;
+        if (startBtn) {
+            startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 0.25rem;"></i> Creating...';
+        } else if (createBtn) {
+            createBtn.textContent = 'Creating...';
+        }
     }
     
     try {
+        // Get item_id from various possible fields
+        const item_id = getItemId(item);
+        
+        const requestBody = {
+            category: item.category,
+            item_id: item_id,
+            year: item.year,
+            week: item.week,
+            output_channel: item.channel || 'blog'
+        };
+        
+        console.log('[createPostFromItem] Item data:', item);
+        console.log('[createPostFromItem] Extracted item_id:', item_id);
+        console.log('[createPostFromItem] Request body:', requestBody);
+        
+        if (!requestBody.item_id) {
+            console.error('[createPostFromItem] Missing item_id. Item data:', item);
+            alert('Error: Cannot create post - item ID is missing. Please check the browser console (F12) for details.');
+            throw new Error('Item ID is missing. Cannot create post without item_id.');
+        }
+        
         const response = await fetch('/launchpad/one-click-publication/api/create-post-from-item', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                category: item.category,
-                item_id: item.item_id,
-                year: item.year,
-                week: item.week,
-                output_channel: item.channel
-            })
+            body: JSON.stringify(requestBody)
         });
         
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `HTTP ${response.status}`);
+            let errorText;
+            try {
+                const errorJson = await response.json();
+                errorText = errorJson.error || errorJson.message || JSON.stringify(errorJson);
+            } catch (e) {
+                errorText = await response.text();
+            }
+            console.error('[createPostFromItem] API error response:', response.status, errorText);
+            throw new Error(errorText || `HTTP ${response.status}: ${response.statusText}`);
         }
         
         const result = await response.json();
+        
+        console.log('[createPostFromItem] API response:', result);
         
         if (result.success && result.post_id) {
             // Update the item data
@@ -222,21 +276,77 @@ async function createPostFromItem(item, itemCard) {
             item.post_exists = true;
             item.post_status = 'draft';
             
-            // Update the card UI
-            updateItemCardAfterCreation(itemCard, item);
+            // Navigate to the first workflow stage based on category
+            const postId = result.post_id;
+            const category = item.category;
+            let workflowUrl = null;
+            
+            // Determine first workflow stage based on category
+            if (category === 'recipe') {
+                // Recipes: taxonomy redirects to drafting, so go directly to drafting
+                workflowUrl = `/posts/${postId}/sections/drafting`;
+                if (item.year && item.week) {
+                    workflowUrl += `?year=${item.year}&week=${item.week}`;
+                }
+            } else if (category === 'theme') {
+                // Themes start at Planning -> Ideas
+                workflowUrl = `/planning/posts/${postId}/calendar/ideas`;
+                if (item.year && item.week) {
+                    workflowUrl += `?year=${item.year}&week=${item.week}`;
+                }
+            } else if (category === 'profile_product' || category === 'profile_surname') {
+                // Profiles start at Planning -> Taxonomy
+                workflowUrl = `/planning/posts/${postId}/calendar/taxonomy`;
+                if (item.year && item.week) {
+                    workflowUrl += `?year=${item.year}&week=${item.week}`;
+                }
+            } else {
+                // Default: Planning -> Ideas
+                workflowUrl = `/planning/posts/${postId}/calendar/ideas`;
+                if (item.year && item.week) {
+                    workflowUrl += `?year=${item.year}&week=${item.week}`;
+                }
+            }
+            
+            // Navigate to workflow
+            if (workflowUrl) {
+                console.log('[createPostFromItem] Navigating to:', workflowUrl);
+                window.location.href = workflowUrl;
+            } else {
+                console.warn('[createPostFromItem] No workflow URL determined, updating card UI');
+                // Fallback: Update the card UI if navigation fails
+                updateItemCardAfterCreation(itemCard, item);
+            }
         } else {
             throw new Error(result.error || 'Failed to create post');
         }
     } catch (error) {
-        console.error('Error creating post:', error);
-        alert(`Error creating post: ${error.message}`);
+        console.error('[createPostFromItem] Error creating post:', error);
+        console.error('[createPostFromItem] Error stack:', error.stack);
+        console.error('[createPostFromItem] Item that failed:', item);
+        
+        // Show user-friendly error message
+        let errorMessage = error.message || 'Unknown error occurred';
+        if (errorMessage.includes('500') || errorMessage.includes('Internal Server Error')) {
+            errorMessage = 'Server error occurred. Please check the browser console (F12) for details and try again.';
+        }
+        alert(`Error creating post: ${errorMessage}`);
         
         // Re-enable button
-        if (createBtn) {
+        const startBtn = itemCard.querySelector('.btn-start');
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play" style="margin-right: 0.25rem;"></i> Start';
+        } else if (createBtn) {
             createBtn.disabled = false;
             createBtn.textContent = 'Create';
         }
     }
+}
+
+// Helper to get item_id from various possible fields
+function getItemId(item) {
+    return item.item_id || item.id || item.recipe_id || item.theme_id || item.profile_id;
 }
 
 function updateItemCardAfterCreation(itemCard, item) {
@@ -264,6 +374,12 @@ function openItemModal(item) {
     const itemId = item.item_id || item.id;
     const postId = item.post_id;
     
+    // For recipes, navigate to pipeline instead of opening modal
+    if (category === 'recipe' && postId) {
+        navigateToPipeline(item, postId);
+        return;
+    }
+    
     if (category === 'theme' || category === 'theme_selection') {
         if (itemId) {
             const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
@@ -283,7 +399,8 @@ function openItemModal(item) {
         }
     } else if (category === 'recipe') {
         if (postId) {
-            window.location.href = `/planning/posts/${postId}`;
+            // Navigate to pipeline (first workflow stage for recipes)
+            navigateToPipeline(item, postId);
             return;
         } else if (itemId) {
             window.location.href = `/recipes`;
@@ -344,6 +461,49 @@ function navigateToOneClick(item) {
     
     url += params.join('&');
     window.location.href = url;
+}
+
+/**
+ * Navigate to the pipeline page for a post
+ * Uses the function from unified-item-card.js if available, otherwise defines it here
+ * @param {Object} item - Item data
+ * @param {number} postId - Post ID
+ */
+function navigateToPipeline(item, postId) {
+    // Use the function from unified-item-card.js if available
+    if (window.navigateToPipeline && typeof window.navigateToPipeline === 'function' && window.navigateToPipeline !== navigateToPipeline) {
+        window.navigateToPipeline(item, postId);
+        return;
+    }
+    
+    const category = item.category || '';
+    const year = item.year;
+    const week = item.week;
+    
+    let workflowUrl = null;
+    
+    // Determine first workflow stage based on category
+    if (category === 'recipe') {
+        // Recipes: taxonomy redirects to drafting, so go directly to drafting
+        workflowUrl = `/posts/${postId}/sections/drafting`;
+    } else if (category === 'theme') {
+        // Themes start at Planning -> Ideas
+        workflowUrl = `/planning/posts/${postId}/calendar/ideas`;
+    } else if (category === 'profile_product' || category === 'profile_surname') {
+        // Profiles start at Planning -> Taxonomy
+        workflowUrl = `/planning/posts/${postId}/calendar/taxonomy`;
+    } else {
+        // Default: Planning -> Ideas
+        workflowUrl = `/planning/posts/${postId}/calendar/ideas`;
+    }
+    
+    // Add year/week params if available
+    if (year && week) {
+        workflowUrl += `?year=${year}&week=${week}`;
+    }
+    
+    console.log('[Publication Schedule] Navigating to pipeline:', workflowUrl);
+    window.location.href = workflowUrl;
 }
 
 // Load schedule on initial page load or when tab becomes visible

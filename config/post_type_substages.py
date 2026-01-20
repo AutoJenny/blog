@@ -97,6 +97,11 @@ SUBSTAGE_METADATA = {
         'route_function': 'planning.planning_research_verification',
         'order': 5
     },
+    'background_research': {
+        'label': 'Background Research',
+        'route_function': 'research.background_research',
+        'order': 1
+    },
     
     # Authoring substages
     'drafting': {
@@ -198,6 +203,7 @@ POST_TYPE_SUBSTAGES = {
     },
     'recipe': {
         'planning': ['taxonomy', 'section_structure', 'topic_allocation', 'section_titling'],
+        'research': ['background_research'],
         'authoring': ['drafting', 'recipe_image_style_prompt', 'image_captions'],
         'imaging': ['image_generation', 'optimise'],
         'header': ['title_summary', 'header_image', 'seo_meta', 'final_review']

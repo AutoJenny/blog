@@ -240,10 +240,10 @@ from config.weekly_content_caption_prompts import (
    - Generates square image using ImageMagick
    - Stores `image_path` in `posting_queue`
 
-6. **`execute_publish_to_facebook(post_id, data)`**
-   - Converts local image path to public URL
-   - Posts to both Facebook pages using `/photos` endpoint
-   - Updates status to 'published' and stores `platform_post_id`
+6. **`execute_publish_to_facebook(post_id, data)`** (DEPRECATED)
+   - ⚠️ **Note:** This function is deprecated. Publishing is now handled by `scripts/scheduled_posting_executor.py`
+   - This function now delegates to `utils/platform_publishers.publish_to_facebook()`
+   - Publishing should go through the centralized scheduler for date validation and automation switch checking
 
 ---
 
@@ -279,6 +279,34 @@ Routes weekly content substages to execution functions:
 - `content` stage → `format_for_facebook`, `generate_caption`, `add_hashtags`, `add_translation`
 - `imaging` stage → `optimize_for_facebook`
 - `publish` stage → `publish_to_facebook`
+
+---
+
+## Automated Posting Control
+
+### Master Switch
+
+The system includes a **master switch** to control all automated posting:
+
+- **Database:** `system_config` table with key `automated_posting_enabled`
+- **Default:** `'true'` (enabled)
+- **Location:** Homepage "Calendar & Planning" panel (top right) or Calendar page header
+
+### How It Works
+
+1. **Scheduled Posting Executor** (`scripts/scheduled_posting_executor.py`) checks the switch before publishing
+2. **When OFF:** All due posts are marked as 'skipped', no publishing occurs
+3. **When ON:** Normal automated publishing proceeds
+4. **Manual Trigger:** "Publish Now" button bypasses switch for one-off publishing
+
+### Integration
+
+The executor's `process_due_posts()` method checks `is_automated_posting_enabled()`:
+- Returns early if switch is OFF (unless bypassed)
+- Logs: "Automated posting is DISABLED - skipping all publishing"
+- All entry points respect the switch (background monitor, manual scripts)
+
+**See:** `docs/AUTOMATED_POSTING_CONTROL_SYSTEM.md` for complete documentation
 
 ---
 
@@ -573,9 +601,11 @@ The system is **fully automated** and requires no manual intervention:
    - Executes all workflow stages (format → caption → image → publish)
    - Publishes immediately if scheduled time has passed
 
-3. **Automatic Publishing** (`scripts/posting_executor.py`):
+3. **Automatic Publishing** (`scripts/scheduled_posting_executor.py`):
    - Publishes 'ready' posts at scheduled time
    - Handles both product posts and weekly content
+   - Checks automated posting switch before publishing
+   - Returns early if automation switch is OFF
 
 **Background Monitor:** `scripts/background_posting_monitor.sh` runs every 5 minutes
 

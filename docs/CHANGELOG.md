@@ -1,5 +1,70 @@
 # Changelog
 
+## 2026-01-20 - Automated Posting Control System
+
+### Added
+- **Master Switch for Automated Posting**: New system-wide control to enable/disable all automated posting
+  - Database table: `system_config` with key `automated_posting_enabled`
+  - UI controls on homepage "Calendar & Planning" panel (top right)
+  - UI controls on calendar page header (top right)
+  - Toggle switch, status indicator, and manual trigger button
+- **API Endpoints**: New endpoints for controlling automated posting
+  - `GET /api/automated-posting/status` - Get current state
+  - `POST /api/automated-posting/toggle` - Toggle on/off
+  - `POST /api/automated-posting/trigger` - Manual publish (bypasses switch)
+- **Scheduled Posting Executor Enhancement**: Updated to check automation switch before publishing
+  - Returns early with all posts marked as 'skipped' when switch is OFF
+  - Supports `--bypass-switch` flag for manual triggers
+  - Comprehensive logging when posting is disabled
+
+### Changed
+- **Scheduled Posting Executor**: Now checks `automated_posting_enabled` switch before any publishing
+  - File: `scripts/scheduled_posting_executor.py`
+  - Method: `process_due_posts()` now has early return when switch is OFF
+  - All automated entry points respect the switch
+
+### Technical Details
+- Migration: `migrations/add_automated_posting_control.sql`
+- Blueprint: `blueprints/automated_posting_api.py`
+- Documentation: `docs/AUTOMATED_POSTING_CONTROL_SYSTEM.md`
+- Updated KB templates: `templates/knowledge_base/workflows/automated_posting.html`, `templates/knowledge_base/channels/facebook.html`
+- Updated docs: `docs/AUTOMATED_POSTING_SIMPLIFIED.md`
+
+### Security
+- Default state: ENABLED (safer - allows posting)
+- Error handling: Defaults to ENABLED on database errors (safer)
+- Bypass flag: Only set via manual API trigger (intentional)
+
+---
+
+## 2026-01-19 - Calendar Item Navigation Improvements
+
+### Added
+- **Pipeline Button**: Calendar items with existing posts now display a pipeline button (sitemap icon) that navigates directly to the first workflow stage
+  - Recipes: Navigate to `/posts/{postId}/sections/drafting` (recipes skip planning stages)
+  - Themes: Navigate to `/planning/posts/{postId}/calendar/ideas`
+  - Profiles: Navigate to `/planning/posts/{postId}/calendar/taxonomy`
+- **Clickable Titles**: Item titles are now clickable when a post exists, providing an alternative way to navigate to the pipeline
+
+### Changed
+- **Info Button Behavior**: Info button now only appears for items without posts (where it opens the modal). Items with posts use the pipeline button instead
+- **Recipe Navigation**: Fixed recipe navigation to go directly to drafting stage (`/posts/{postId}/sections/drafting`) instead of attempting to access taxonomy (which redirects)
+
+### Fixed
+- **Recipe Info Button**: Fixed broken info button for recipes - now navigates to pipeline instead of non-existent page
+- **Pipeline Button Function**: Fixed pipeline button to properly navigate to first workflow stage with year/week parameters preserved
+- **WorkflowNavigation Duplicate Error**: Fixed duplicate class definition error by adding proper guards
+- **Recipe Title Display**: Fixed recipe title not displaying in header - now fetches and displays post title correctly
+- **API Ideas Endpoint**: Fixed SQL GROUP BY error in `/planning/api/calendar/ideas/week/{week}` endpoint that was causing 500 errors on calendar page load
+
+### Technical Details
+- Updated `static/js/planning/unified-item-card.js` with `navigateToPipeline()` function
+- Updated `templates/planning/calendar/includes/publication_schedule_scripts.html` with navigation logic
+- Fixed `normalizedSubstage` undefined error in `blog-pipeline-header.js`
+- Added recipe title fetching in header initialization
+
+---
+
 ## 2025-01-19 - Post Status Management and Workflow Improvements
 
 ### Fixed

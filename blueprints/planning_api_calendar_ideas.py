@@ -31,15 +31,6 @@ def api_calendar_ideas(week_number):
             has_classification = cursor.fetchone() is not None
             classification_field = 'ci.item_classification' if has_classification else "'idea'::varchar as item_classification"
             
-            # Build GROUP BY clause with optional item_classification
-            group_by_fields = """ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
-                         ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
-                         ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
-                         ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
-                         ci.evergreen_notes, ci.created_at, ci.updated_at"""
-            if has_classification:
-                group_by_fields += ", ci.item_classification"
-            
             # Check if important_notes column exists
             cursor.execute("""
                 SELECT column_name FROM information_schema.columns 
@@ -47,6 +38,19 @@ def api_calendar_ideas(week_number):
             """)
             has_important_notes = cursor.fetchone() is not None
             important_notes_field = 'ci.important_notes' if has_important_notes else "'[]'::jsonb as important_notes"
+            
+            # Build GROUP BY clause with optional item_classification, important_notes, and sources
+            group_by_fields = """ci.id, ci.week_number, ci.idea_title, ci.idea_description, 
+                         ci.seasonal_context, ci.content_type, ci.priority, ci.tags,
+                         ci.is_recurring, ci.can_span_weeks, ci.max_weeks, ci.is_evergreen,
+                         ci.evergreen_frequency, ci.last_used_date, ci.usage_count,
+                         ci.evergreen_notes, ci.created_at, ci.updated_at"""
+            if has_sources:
+                group_by_fields += ", ci.sources"
+            if has_classification:
+                group_by_fields += ", ci.item_classification"
+            if has_important_notes:
+                group_by_fields += ", ci.important_notes"
             
             cursor.execute(f"""
                 SELECT ci.id, ci.week_number, ci.idea_title, ci.idea_description, 

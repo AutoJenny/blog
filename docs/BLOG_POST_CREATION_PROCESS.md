@@ -21,7 +21,8 @@ Blog posts are created through a multi-stage workflow that varies by post type. 
 ### 2. Recipe Posts
 - **Source**: Calendar recipes (`calendar_recipes` table / JSON schedule)
 - **Publication Day**: Monday, 10:00 (configurable)
-- **Pipeline**: Planning → Authoring → Imaging → Header (no research)
+- **Pipeline**: Research → Planning → Authoring → Imaging → Header
+- **First Stage**: `/research/posts/{postId}/background-research` (research feeds into planning background)
 
 ### 3. Product Profile Posts
 - **Source**: Calendar profile sequence (product profiles)
@@ -75,7 +76,7 @@ Blog posts are created through a multi-stage workflow that varies by post type. 
 - **section_titling**: Create section titles
 
 **Substages (Recipe/Profile Posts):**
-- **taxonomy**: Content category/type/format assignment
+- **taxonomy**: Content category/type/format assignment (Note: Recipe posts redirect from taxonomy to drafting)
 - **topic_brainstorming**: Generate topic ideas
 - **section_structure**: Design content structure
 - **topic_allocation**: Allocate topics to sections
@@ -83,7 +84,10 @@ Blog posts are created through a multi-stage workflow that varies by post type. 
 - **product_data_review** (Product Profiles): Review product data
 - **section_content_mapping** (Generated Posts): Map content to sections
 
-**Entry Point**: `/planning/posts/<post_id>/calendar/ideas` (themed) or `/planning/posts/<post_id>/concept/taxonomy` (others)
+**Entry Point**: 
+- Themed: `/planning/posts/<post_id>/calendar/ideas`
+- Recipe: `/research/posts/<post_id>/background-research` (research comes before planning)
+- Profile/Generated: `/planning/posts/<post_id>/calendar/taxonomy`
 
 **Key Actions:**
 - Assign taxonomy
@@ -96,26 +100,28 @@ Blog posts are created through a multi-stage workflow that varies by post type. 
 
 ---
 
-### Stage 3: Research (Themed Posts Only)
+### Stage 3: Research
 
 **Purpose**: Gather research materials and sources
 
-**Substages:**
-- **research**: Research overview
-- **sources**: Source collection
-- **visuals**: Visual research
-- **prompts**: Research prompts
-- **verification**: Fact verification
+**For Themed Posts:**
+- **Substages**: research, sources, visuals, prompts, verification
+- **Entry Point**: `/planning/posts/<post_id>/research`
 
-**Entry Point**: `/planning/posts/<post_id>/research`
+**For Recipe Posts:**
+- **Substages**: background_research
+- **Entry Point**: `/research/posts/<post_id>/background-research`
+- **Purpose**: Comprehensive background research on origins, geographic spread, evolution, cultural significance, and modern incarnations
+- **Output**: Research feeds into Planning stage (background section)
 
 **Key Actions:**
 - Collect research sources
-- Gather visual materials
+- Gather visual materials (themed posts)
 - Verify facts
-- Prepare research prompts
+- Prepare research prompts (themed posts)
+- Background research topics (recipe posts)
 
-**Output**: Research materials ready for authoring
+**Output**: Research materials ready for planning/authoring
 
 ---
 

@@ -112,6 +112,14 @@ def create_app(config_name=None):
     from blueprints.recipes_research import bp as recipes_research_bp
     app.register_blueprint(recipes_research_bp)
     
+    # Register research blueprint (background research system)
+    from blueprints.research import bp as research_bp
+    app.register_blueprint(research_bp)
+    
+    # Register research API blueprint
+    from blueprints.research_api import bp as research_api_bp
+    app.register_blueprint(research_api_bp)
+    
     # Register post type config blueprint
     from blueprints.post_type_config import bp as post_type_config_bp
     app.register_blueprint(post_type_config_bp)
@@ -169,6 +177,10 @@ def create_app(config_name=None):
     
     from blueprints.planning_api_themes import bp as planning_themes_api_bp
     app.register_blueprint(planning_themes_api_bp)
+    
+    # Register automated posting API blueprint
+    from blueprints.automated_posting_api import bp as automated_posting_api_bp
+    app.register_blueprint(automated_posting_api_bp)
     
     # Register publication dashboard blueprint
     from blueprints.publication_dashboard import bp as publication_dashboard_bp

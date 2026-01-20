@@ -94,10 +94,12 @@ A background monitor runs every 5 minutes and does 4 steps:
 ---
 
 ### Step 4: Actually Post
-**Script:** `posting_executor.py`
+**Script:** `scheduled_posting_executor.py` (replaces old `posting_executor.py`)
 
 **What it does:**
+- **Checks automated posting switch** (master control - see below)
 - Finds **pending** or **ready** posts where `scheduled_timestamp <= now()`
+- Validates scheduled dates (failsafe protection)
 - Posts them to Facebook
 - Updates status to **published**
 - Stores Facebook post ID
@@ -105,7 +107,10 @@ A background monitor runs every 5 minutes and does 4 steps:
 **Example:**
 - Post scheduled for "2026-01-20 09:05"
 - Current time is "2026-01-20 09:06"
+- Automated posting switch is ON
 - → Post to Facebook → Status = **published** ✅
+
+**⚠️ Important:** If the automated posting switch is OFF, this step will skip all publishing and mark posts as 'skipped'. See [Automated Posting Control System](../docs/AUTOMATED_POSTING_CONTROL_SYSTEM.md) for details.
 
 ---
 
@@ -151,7 +156,7 @@ automated_posting.py
     ↓
 posting_queue (pending, scheduled_timestamp=2026-01-20 09:05)
     ↓
-posting_executor.py
+scheduled_posting_executor.py (checks automated posting switch)
     ↓
 Facebook (published!)
     ↓

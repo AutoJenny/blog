@@ -3,6 +3,8 @@
  * Provides "Next" button functionality to navigate between workflow substages
  */
 
+// Prevent duplicate class definition
+if (typeof WorkflowNavigation === 'undefined') {
 class WorkflowNavigation {
     constructor() {
         this.postId = null;
@@ -10,6 +12,7 @@ class WorkflowNavigation {
         this.currentStage = null;
         this.currentSubstage = null;
         this.substages = null;
+        this.initialized = false;
     }
 
     /**
@@ -149,6 +152,7 @@ class WorkflowNavigation {
                 'header': ['title_summary', 'header_image', 'seo_meta', 'final_review']
             },
             'recipe': {
+                'research': ['background_research'],
                 'planning': ['taxonomy', 'section_structure', 'topic_allocation', 'section_titling'],
                 'authoring': ['drafting', 'recipe_image_style_prompt', 'image_captions'],
                 'imaging': ['image_generation', 'optimise'],
@@ -220,23 +224,26 @@ class WorkflowNavigation {
      * Get first substage of next stage
      */
     getNextStageFirstSubstage() {
-        // SKIP RESEARCH STAGE - Research is currently broken (database errors)
-        // Go directly from Planning to Authoring
-        const stageOrder = ['planning', 'research', 'authoring', 'imaging', 'header'];
+        // Stage order - research comes before planning (research feeds into planning background)
+        const stageOrder = ['research', 'planning', 'authoring', 'imaging', 'header'];
         const currentStageIndex = stageOrder.indexOf(this.currentStage);
         
         if (currentStageIndex === -1 || currentStageIndex === stageOrder.length - 1) {
             return null; // No next stage
         }
-
-        // Skip research stage - go directly to authoring
+        
+        // For non-recipe posts, check if they have research stage
         let nextStageIndex = currentStageIndex + 1;
         if (stageOrder[nextStageIndex] === 'research') {
-            nextStageIndex++; // Skip research, go to authoring
+            // Check if this post type actually has research substages
+            const hasResearch = this.substages && this.substages.research && this.substages.research.length > 0;
+            if (!hasResearch) {
+                nextStageIndex++; // Skip research if no research substages
+            }
         }
         
         if (nextStageIndex >= stageOrder.length) {
-            return null; // No next stage after skipping
+            return null; // No next stage
         }
 
         const nextStage = stageOrder[nextStageIndex];
@@ -280,6 +287,7 @@ class WorkflowNavigation {
             'visuals': `/planning/posts/${this.postId}/research/visuals`,
             'prompts': `/planning/posts/${this.postId}/research/prompts`,
             'verification': `/planning/posts/${this.postId}/research/verification`,
+            'background_research': `/research/posts/${this.postId}/background-research`,
             'drafting': `/posts/${this.postId}/sections/drafting`,
             'image_concepts': `/authoring/posts/${this.postId}/sections/image_concepts`,
             'image_prompts': `/authoring/posts/${this.postId}/sections/image_prompts`,
@@ -475,10 +483,21 @@ class WorkflowNavigation {
             }
         }
     }
-}
+};
+
+// Expose to window
+window.WorkflowNavigation = WorkflowNavigation;
+
+} // End of if (typeof window.WorkflowNavigation === 'undefined')
 
 // Auto-initialize when DOM is ready
 function initializeWorkflowNavigation() {
+    // Prevent duplicate initialization
+    if (window.workflowNavigation && window.workflowNavigation.initialized) {
+        console.log('[Workflow Navigation] Already initialized, skipping');
+        return;
+    }
+    
     // Get post ID and type from page context
     const postId = window.postId || (window.location.pathname.match(/\/posts\/(\d+)/) ? 
                                      parseInt(window.location.pathname.match(/\/posts\/(\d+)/)[1]) : null);
@@ -500,23 +519,81 @@ function initializeWorkflowNavigation() {
 
     if (postId) {
         console.log('[Workflow Navigation] Initializing for post:', postId, 'type:', postType);
-        window.workflowNavigation = new WorkflowNavigation();
-        window.workflowNavigation.init(postId, postType).then(() => {
-            console.log('[Workflow Navigation] Initialization complete');
-        }).catch(error => {
-            console.error('[Workflow Navigation] Initialization error:', error);
-        });
+        
+        // Check if WorkflowNavigation class is available
+        if (typeof window.WorkflowNavigation === 'undefined') {
+            console.warn('[Workflow Navigation] WorkflowNavigation class not yet defined, will retry');
+            // Retry after a short delay
+            setTimeout(() => {
+                if (typeof window.WorkflowNavigation !== 'undefined') {
+                    initializeWorkflowNavigation();
+                } else {
+                    console.error('[Workflow Navigation] WorkflowNavigation class still not defined after retry');
+                }
+            }, 500);
+            return;
+        }
+        
+        try {
+            const WorkflowNavClass = window.WorkflowNavigation;
+            
+            // Check if init method exists
+            if (typeof WorkflowNavClass.prototype.init !== 'function') {
+                console.error('[Workflow Navigation] WorkflowNavigation.init method not found');
+                return;
+            }
+            
+            window.workflowNavigation = new WorkflowNavClass();
+            
+            // Check if init method exists on instance
+            if (typeof window.workflowNavigation.init !== 'function') {
+                console.error('[Workflow Navigation] init method not found on instance');
+                return;
+            }
+            
+            // Call init and handle Promise or undefined
+            const initResult = window.workflowNavigation.init(postId, postType);
+            
+            if (initResult && typeof initResult.then === 'function') {
+                // init returns a Promise
+                initResult.then(() => {
+                    if (window.workflowNavigation) {
+                        window.workflowNavigation.initialized = true;
+                    }
+                    console.log('[Workflow Navigation] Initialization complete');
+                }).catch(error => {
+                    console.error('[Workflow Navigation] Initialization error:', error);
+                });
+            } else {
+                // init is synchronous or doesn't return a Promise
+                if (window.workflowNavigation) {
+                    window.workflowNavigation.initialized = true;
+                }
+                console.log('[Workflow Navigation] Initialization complete (synchronous)');
+            }
+        } catch (error) {
+            console.error('[Workflow Navigation] Error during initialization:', error);
+        }
     } else {
         console.warn('[Workflow Navigation] No post ID found, cannot initialize');
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait a bit for page to fully load
-    setTimeout(initializeWorkflowNavigation, 800); // Wait 800ms for page to fully initialize (increased for ideas page)
-    
-    // Also try immediately if postId is already set (for pages that set it synchronously)
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for page to fully load
+        setTimeout(initializeWorkflowNavigation, 800); // Wait 800ms for page to fully initialize (increased for ideas page)
+        
+        // Also try immediately if postId is already set (for pages that set it synchronously)
+        if (window.postId) {
+            setTimeout(initializeWorkflowNavigation, 100);
+        }
+    });
+} else {
+    // DOM already loaded
+    setTimeout(initializeWorkflowNavigation, 800);
     if (window.postId) {
         setTimeout(initializeWorkflowNavigation, 100);
     }
-});
+}

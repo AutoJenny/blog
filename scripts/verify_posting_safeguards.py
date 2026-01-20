@@ -100,7 +100,7 @@ def verify_safeguards():
         due_posts = cursor.fetchall()
         print(f"   Found {len(due_posts)} posts that are due but not yet posted")
         if due_posts:
-            print("   These should be processed by posting_executor:")
+            print("   These should be processed by scheduled_posting_executor:")
             for post in due_posts[:10]:
                 print(f"   - ID {post['id']}: {post['status']}, scheduled={post['scheduled_timestamp']}")
         print()
@@ -118,7 +118,7 @@ def verify_safeguards():
                 AND platform = 'facebook'
                 AND status NOT IN ('published', 'failed')
             """,
-            'posting_executor': """
+            'scheduled_posting_executor': """
                 SELECT COUNT(*) as count
                 FROM posting_queue
                 WHERE status IN ('pending', 'ready')

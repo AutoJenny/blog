@@ -92,15 +92,24 @@
     <p><strong>Example:</strong> Ready post scheduled for "2026-01-20 09:00" → Sets <code>scheduled_timestamp = '2026-01-20 09:05'</code> (with small random delay) → Status = <strong>pending</strong></p>
     
     <h3>Step 4: Actually Post</h3>
-    <p><strong>Script:</strong> <code>posting_executor.py</code></p>
+    <p><strong>Script:</strong> <code>scheduled_posting_executor.py</code> (replaces old <code>posting_executor.py</code>)</p>
     <p><strong>What it does:</strong></p>
     <ul>
+        <li><strong>Checks automated posting switch</strong> (master control - see <a href="#automated-posting-control">Automated Posting Control</a> below)</li>
+        <li>Validates scheduled dates (failsafe protection against future-dated posts)</li>
         <li>Finds <strong>pending</strong> or <strong>ready</strong> posts where <code>scheduled_timestamp <= now()</code></li>
         <li>Posts them to Facebook</li>
         <li>Updates status to <strong>published</strong></li>
         <li>Stores Facebook post ID</li>
     </ul>
-    <p><strong>Example:</strong> Post scheduled for "2026-01-20 09:05" → Current time is "2026-01-20 09:06" → Post to Facebook → Status = <strong>published</strong> ✅</p>
+    <p><strong>Example:</strong> Post scheduled for "2026-01-20 09:05" → Current time is "2026-01-20 09:06" → Automated posting switch is ON → Post to Facebook → Status = <strong>published</strong> ✅</p>
+    
+    <div class="kb-info" style="background: #fff3cd; border-left: 4px solid #f59e0b; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #92400e; font-size: 0.9rem;">
+            <strong>⚠️ Important:</strong> If the automated posting switch is OFF, this step will skip all publishing and mark posts as 'skipped'. 
+            See <a href="#automated-posting-control">Automated Posting Control</a> section below for details.
+        </p>
+    </div>
     
     <h2>How It Finds What to Publish</h2>
     
@@ -138,7 +147,7 @@
         &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
         posting_queue (pending, scheduled_timestamp=2026-01-20 09:05)<br>
         &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
-        posting_executor.py<br>
+        scheduled_posting_executor.py (checks automated posting switch)<br>
         &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
         Facebook (published!)<br>
         &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
@@ -169,6 +178,50 @@
         <li>Executes all 4 steps in sequence</li>
         <li>Logs everything to <code>logs/background_posting.log</code></li>
     </ul>
+    
+    <h2 id="automated-posting-control">Automated Posting Control</h2>
+    
+    <p>The system includes a <strong>master switch</strong> to enable/disable all automated posting:</p>
+    
+    <h3>Control Panel</h3>
+    <p>The automated posting control is available in two locations:</p>
+    <ul>
+        <li><strong>Homepage</strong> - Top right of "Calendar & Planning" panel</li>
+        <li><strong>Calendar Page</strong> - Top right of calendar header</li>
+    </ul>
+    
+    <h3>Features</h3>
+    <ul>
+        <li><strong>Toggle Switch</strong> - Enable/disable automated posting</li>
+        <li><strong>Status Indicator</strong> - Shows current state (green = enabled, red = disabled)</li>
+        <li><strong>Manual Trigger</strong> - "Publish Now" button (only visible when automation is off)</li>
+    </ul>
+    
+    <h3>How It Works</h3>
+    <p>When the switch is <strong>OFF</strong>:</p>
+    <ul>
+        <li><code>scheduled_posting_executor.py</code> checks the switch before publishing</li>
+        <li>All due posts are marked as 'skipped' in stats</li>
+        <li><strong>No posts are published</strong> to any platform</li>
+        <li>Background monitor continues running (doesn't stop)</li>
+    </ul>
+    
+    <p>When the switch is <strong>ON</strong> (default):</p>
+    <ul>
+        <li>Normal automated publishing proceeds</li>
+        <li>Posts are published according to their scheduled times</li>
+    </ul>
+    
+    <p><strong>Manual Trigger:</strong> The "Publish Now" button bypasses the switch and publishes due posts immediately. This is useful for testing or one-off publishing when automation is disabled.</p>
+    
+    <div class="kb-info" style="background: #d1fae5; border-left: 4px solid #10b981; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #065f46; font-size: 0.9rem;">
+            <strong>✅ Safety Feature:</strong> The automated posting control provides a safe way to pause all automated publishing 
+            without modifying code or stopping background processes. The switch state is stored in the <code>system_config</code> table.
+        </p>
+    </div>
+    
+    <p>For detailed technical documentation, see: <a href="/docs/AUTOMATED_POSTING_CONTROL_SYSTEM.md" class="kb-ui-link">Automated Posting Control System</a></p>
     
     <h2>Summary</h2>
     

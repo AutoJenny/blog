@@ -186,6 +186,35 @@
         <li><strong>Quick Reference:</strong> Fast lookup of what's scheduled for any week</li>
     </ul>
     
+    <h2>Calendar Item Navigation</h2>
+    
+    <p>Calendar items (themes, recipes, profiles) display action buttons based on their status:</p>
+    
+    <div class="kb-info" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem; margin: 2rem 0;">
+        <h3 style="margin: 0 0 1rem 0; color: #3b82f6; font-size: 1.1rem;">Items Without Posts</h3>
+        <ul style="margin: 0; padding-left: 1.5rem; color: #cbd5e1;">
+            <li><strong>Start Button</strong> (blue, prominent) - Creates a new post and navigates to the first workflow stage</li>
+            <li><strong>Info Button</strong> (info icon) - Opens item details modal</li>
+        </ul>
+        
+        <h3 style="margin: 1.5rem 0 1rem 0; color: #3b82f6; font-size: 1.1rem;">Items With Posts</h3>
+        <ul style="margin: 0; padding-left: 1.5rem; color: #cbd5e1;">
+            <li><strong>Pipeline Button</strong> (sitemap icon) - Navigates to the first workflow stage:
+                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                    <li>Recipes: <code>/posts/{postId}/sections/drafting</code> (recipes skip planning stages)</li>
+                    <li>Themes: <code>/planning/posts/{postId}/calendar/ideas</code></li>
+                    <li>Profiles: <code>/planning/posts/{postId}/calendar/taxonomy</code></li>
+                </ul>
+            </li>
+            <li><strong>Title</strong> (clickable, dotted underline) - Alternative way to navigate to pipeline</li>
+            <li><strong>Rocket Button</strong> (rocket icon) - Opens 1-click publication view</li>
+        </ul>
+    </div>
+    
+    <p style="color: #94a3b8; margin-top: 1rem;">
+        <strong>Note:</strong> The info button only appears for items without posts. Items with posts use the pipeline button for navigation.
+    </p>
+    
     <h2>System Overview</h2>
     
     <div class="kb-info" style="background: #d1fae5; border-left: 4px solid #10b981; padding: 1rem; margin: 2rem 0; border-radius: 4px;">

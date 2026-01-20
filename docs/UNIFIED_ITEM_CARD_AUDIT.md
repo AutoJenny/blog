@@ -133,10 +133,15 @@ Missing in publication-schedule styles:
 - **Info:** `onInfo` callback
 
 ### Publication-Schedule:
-- **Create:** `createPostFromItem(item, itemCard)`
-- **Rocket:** `navigateToOneClick(item)`
-- **Info:** `openItemModal(item)`
-- **Card click:** `openItemModal(item)`
+- **Start (no post):** `createPostFromItem(item, itemCard)` - Creates post and navigates to first workflow stage
+- **Pipeline (has post):** `navigateToPipeline(item, postId)` - Navigates to first workflow stage (sitemap icon)
+  - Recipes: `/posts/{postId}/sections/drafting`
+  - Themes: `/planning/posts/{postId}/calendar/ideas`
+  - Profiles: `/planning/posts/{postId}/calendar/taxonomy`
+- **Rocket (has post):** `navigateToOneClick(item)` - Navigates to 1-click publication view
+- **Info (no post only):** `openItemModal(item)` - Opens item details modal
+- **Title (has post):** Clickable - navigates to pipeline
+- **Card click:** `openItemModal(item)` (only if no post exists)
 
 ### Scheduling:
 - **Create/Play:** `openItemModal(item, categoryClass, itemId, position, year, week)`

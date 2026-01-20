@@ -66,9 +66,9 @@ main() {
         log "Running automated posting scheduler..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_posting.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_posting.py exited with error (continuing)"
         
-        # Step 6: Run the posting executor (handles both product and weekly content)
-        log "Running posting executor..."
-        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/posting_executor.py" >> "$LOG_FILE" 2>&1 || log "Warning: posting_executor.py exited with error (continuing)"
+        # Step 6: Run the scheduled posting executor (centralized date-sensitive scheduler)
+        log "Running scheduled posting executor..."
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/scheduled_posting_executor.py" >> "$LOG_FILE" 2>&1 || log "Warning: scheduled_posting_executor.py exited with error (continuing)"
         
         # Wait 5 minutes
         log "Waiting 5 minutes until next check..."

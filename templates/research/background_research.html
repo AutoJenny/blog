@@ -1,0 +1,683 @@
+{% extends 'base.html' %}
+
+{% block title %}Background Research - {{ item_name }}{% endblock %}
+
+{% block css_assets %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.research-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+}
+
+.research-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #333;
+}
+
+.research-header h1 {
+    color: #7dd3fc;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}
+
+.item-name {
+    font-size: 1.5rem;
+    color: #fbbf24;
+    margin-bottom: 0.5rem;
+}
+
+.item-description {
+    color: #9ca3af;
+    font-size: 1rem;
+}
+
+.info-panel {
+    background: #2a2a2a;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #3b82f6;
+}
+
+.info-panel h2 {
+    color: #7dd3fc;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.info-panel ul {
+    margin-left: 1.5rem;
+    color: #d1d5db;
+}
+
+.research-topics {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.topic-card {
+    background: #2a2a2a;
+    border: 2px solid #374151;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+}
+
+.topic-card:hover {
+    border-color: #4b5563;
+}
+
+.topic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.topic-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.topic-title h3 {
+    color: #7dd3fc;
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.topic-status {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: #374151;
+    color: #9ca3af;
+}
+
+.status-researching {
+    background: #1e40af;
+    color: #93c5fd;
+}
+
+.status-completed {
+    background: #065f46;
+    color: #6ee7b7;
+}
+
+.status-failed {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+.topic-description {
+    color: #9ca3af;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.topic-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #4b5563;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.topic-details {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #374151;
+}
+
+.details-section {
+    margin-bottom: 1rem;
+}
+
+.details-section h4 {
+    color: #7dd3fc;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.research-query {
+    background: #1a1a1a;
+    padding: 0.75rem;
+    border-radius: 4px;
+    color: #d1d5db;
+    font-family: monospace;
+    font-size: 0.875rem;
+}
+
+.sources-list {
+    list-style: none;
+    padding: 0;
+}
+
+.sources-list li {
+    background: #1a1a1a;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.source-title {
+    color: #7dd3fc;
+    font-weight: 600;
+}
+
+.source-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+.reliability-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.reliability-high {
+    background: #065f46;
+    color: #6ee7b7;
+}
+
+.reliability-medium {
+    background: #78350f;
+    color: #fbbf24;
+}
+
+.reliability-low {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+.synthesized-content {
+    background: #1a1a1a;
+    padding: 1rem;
+    border-radius: 4px;
+    color: #d1d5db;
+    line-height: 1.6;
+}
+
+.facts-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.fact-count {
+    background: #1a1a1a;
+    padding: 0.5rem;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.fact-count-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.fact-count-value {
+    font-size: 1.25rem;
+    color: #7dd3fc;
+    font-weight: 600;
+}
+
+.loading {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #4b5563;
+    border-top-color: #7dd3fc;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    background: #7f1d1d;
+    color: #fca5a5;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="research-container">
+    <!-- Set page context for navigation highlighting -->
+    <script>
+        window.currentStage = 'research';
+        window.currentSubstage = 'background_research';
+        window.postId = {{ post_id }};
+        window.postType = '{{ post_type }}';
+    </script>
+
+    <!-- Include condensed header -->
+    {% include 'shared/blog_pipeline_header.html' %}
+    
+    <!-- Note: workflow-navigation.js is loaded by blog_pipeline_header.html -->
+
+    <div class="research-header">
+        <h1><i class="fas fa-search"></i> Background Research</h1>
+        <div class="item-name">{{ item_name }}</div>
+        {% if item_description %}
+        <div class="item-description">{{ item_description }}</div>
+        {% endif %}
+    </div>
+
+    <div class="info-panel">
+        <h2><i class="fas fa-info-circle"></i> Research Purpose</h2>
+        <p>This stage performs comprehensive background research on multiple aspects of {{ item_name }}. Each research topic is researched separately using web search agents that prioritize reliable, academic sources.</p>
+        <ul>
+            <li>Research topics are executed sequentially (one at a time)</li>
+            <li>Sources are prioritized by reliability (academic > heritage > general web)</li>
+            <li>Facts are extracted and synthesized into coherent paragraphs</li>
+            <li>Research results can be integrated into the background section during drafting</li>
+        </ul>
+    </div>
+
+    <div class="research-topics" id="research-topics">
+        {% for topic in research_topics %}
+        <div class="topic-card" data-topic-key="{{ topic.key }}">
+            <div class="topic-header">
+                <div class="topic-title">
+                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                    <h3>{{ topic.label }}</h3>
+                </div>
+                <span class="topic-status status-pending" id="status-{{ topic.key }}">Pending</span>
+            </div>
+            
+            <div class="topic-description">{{ topic.description }}</div>
+            
+            <div class="topic-actions">
+                <button class="btn btn-primary" onclick="startResearch('{{ topic.key }}')" id="btn-start-{{ topic.key }}">
+                    <i class="fas fa-play"></i> Start Research
+                </button>
+                <button class="btn btn-secondary" onclick="viewDetails('{{ topic.key }}')" id="btn-view-{{ topic.key }}" style="display: none;">
+                    <i class="fas fa-eye"></i> View Details
+                </button>
+            </div>
+            
+            <div class="topic-details" id="details-{{ topic.key }}" style="display: none;">
+                <!-- Details will be populated by JavaScript -->
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+const postId = {{ post_id }};
+
+// Load research status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadResearchStatus();
+});
+
+async function loadResearchStatus() {
+    try {
+        const response = await fetch(`/api/posts/${postId}/research/status`);
+        const data = await response.json();
+        
+        if (data.success && data.research_data && data.research_data.background_research) {
+            const topics = data.research_data.background_research.topics || [];
+            
+            topics.forEach(topic => {
+                // Client-side check for stuck researching state (backup to server-side check)
+                if (topic.status === 'researching') {
+                    const updatedAt = topic.updated_at ? new Date(topic.updated_at) : null;
+                    const now = new Date();
+                    // If it's been researching for more than 10 minutes, treat as pending
+                    if (updatedAt && (now - updatedAt) > 10 * 60 * 1000) {
+                        console.warn(`Topic ${topic.key} stuck in researching state (elapsed: ${Math.round((now - updatedAt) / 1000 / 60)} min), treating as pending`);
+                        topic.status = 'pending';
+                        topic.error_message = 'Previous research attempt appears to have failed. Please try again.';
+                    }
+                }
+                updateTopicUI(topic);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading research status:', error);
+    }
+}
+
+function updateTopicUI(topic) {
+    const statusEl = document.getElementById(`status-${topic.key}`);
+    const startBtn = document.getElementById(`btn-start-${topic.key}`);
+    const viewBtn = document.getElementById(`btn-view-${topic.key}`);
+    const detailsEl = document.getElementById(`details-${topic.key}`);
+    
+    if (!statusEl) return;
+    
+    // Check if topic is stuck in researching state (client-side check as backup)
+    if (topic.status === 'researching') {
+        const updatedAt = topic.updated_at ? new Date(topic.updated_at) : null;
+        const now = new Date();
+        if (updatedAt && (now - updatedAt) > 10 * 60 * 1000) {
+            // Been researching for more than 10 minutes - treat as pending
+            console.warn(`Topic ${topic.key} appears stuck in researching state, treating as pending`);
+            topic.status = 'pending';
+        }
+    }
+    
+    // Update status
+    statusEl.className = `topic-status status-${topic.status}`;
+    statusEl.textContent = topic.status.charAt(0).toUpperCase() + topic.status.slice(1);
+    
+    // Update buttons
+    if (topic.status === 'completed' || topic.status === 'failed') {
+        // Show both "Re-run" and "View Details" buttons for completed/failed topics
+        if (startBtn) {
+            startBtn.style.display = 'inline-block';
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-redo"></i> Re-run Research';
+            startBtn.onclick = () => startResearch(topic.key);
+        }
+        if (viewBtn) viewBtn.style.display = 'inline-block';
+    } else if (topic.status === 'researching') {
+        if (startBtn) {
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<span class="loading"></span> Researching...';
+        }
+        if (viewBtn) viewBtn.style.display = 'none';
+    } else {
+        // pending state
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.style.display = 'inline-block';
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Start Research';
+            startBtn.onclick = () => startResearch(topic.key);
+        }
+        if (viewBtn) viewBtn.style.display = 'none';
+    }
+    
+    // Show details if completed
+    if (topic.status === 'completed' && detailsEl) {
+        renderTopicDetails(topic, detailsEl);
+    } else if (topic.status === 'failed' && detailsEl) {
+        detailsEl.innerHTML = `<div class="error-message">${topic.error_message || 'Research failed'}</div>`;
+        detailsEl.style.display = 'block';
+    }
+}
+
+async function startResearch(topicKey) {
+    const startBtn = document.getElementById(`btn-start-${topicKey}`);
+    const statusEl = document.getElementById(`status-${topicKey}`);
+    const detailsEl = document.getElementById(`details-${topicKey}`);
+    
+    // Confirm if re-running completed research
+    const currentStatus = statusEl.textContent.toLowerCase();
+    if (currentStatus === 'completed' || currentStatus === 'failed') {
+        if (!confirm('This will overwrite the existing research. Continue?')) {
+            return;
+        }
+    }
+    
+    try {
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<span class="loading"></span> Starting...';
+        statusEl.className = 'topic-status status-researching';
+        statusEl.textContent = 'Researching';
+        
+        // Hide details if showing
+        if (detailsEl) {
+            detailsEl.style.display = 'none';
+        }
+        
+        // Start research
+        const startResponse = await fetch(`/api/posts/${postId}/research/${topicKey}/start`, {
+            method: 'POST'
+        });
+        
+        if (!startResponse.ok) {
+            throw new Error(`HTTP ${startResponse.status}: ${startResponse.statusText}`);
+        }
+        
+        const startData = await startResponse.json();
+        
+        if (!startData.success) {
+            throw new Error(startData.error || 'Failed to start research');
+        }
+        
+        // Execute research (this may take a while - set timeout)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+        
+        try {
+            const executeResponse = await fetch(`/api/posts/${postId}/research/${topicKey}/execute`, {
+                method: 'POST',
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            
+            if (!executeResponse.ok) {
+                let errorText = '';
+                try {
+                    const errorData = await executeResponse.json();
+                    errorText = errorData.error || errorData.message || '';
+                } catch {
+                    try {
+                        errorText = await executeResponse.text();
+                    } catch {
+                        errorText = executeResponse.statusText;
+                    }
+                }
+                throw new Error(`HTTP ${executeResponse.status}: ${errorText || executeResponse.statusText}`);
+            }
+            
+            const executeData = await executeResponse.json();
+            
+            if (!executeData || !executeData.success) {
+                throw new Error(executeData?.error || executeData?.message || 'Research execution failed');
+            }
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('Research timed out after 5 minutes. Please try again or check server logs.');
+            }
+            throw error;
+        }
+        
+        // Reload status
+        await loadResearchStatus();
+        
+    } catch (error) {
+        console.error('Error starting research:', error);
+        alert(`Error: ${error.message}`);
+        
+        // Reset button based on current status
+        const currentStatus = statusEl.textContent.toLowerCase();
+        if (currentStatus === 'completed' || currentStatus === 'failed') {
+            startBtn.innerHTML = '<i class="fas fa-redo"></i> Re-run Research';
+        } else {
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Start Research';
+        }
+        startBtn.disabled = false;
+        statusEl.className = 'topic-status status-failed';
+        statusEl.textContent = 'Failed';
+    }
+}
+
+function viewDetails(topicKey) {
+    const detailsEl = document.getElementById(`details-${topicKey}`);
+    if (!detailsEl) return;
+    
+    if (detailsEl.style.display === 'none' || detailsEl.style.display === '') {
+        // Show loading state
+        detailsEl.innerHTML = '<div class="loading-message">Loading details...</div>';
+        detailsEl.style.display = 'block';
+        
+        // Load details
+        fetch(`/api/posts/${postId}/research/${topicKey}/results`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.topic) {
+                    renderTopicDetails(data.topic, detailsEl);
+                } else {
+                    detailsEl.innerHTML = `<div class="error-message">Error: ${data.error || 'Failed to load details'}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading details:', error);
+                detailsEl.innerHTML = `<div class="error-message">Error loading details: ${error.message || 'Connection failed'}</div>`;
+            });
+    } else {
+        detailsEl.style.display = 'none';
+    }
+}
+
+function renderTopicDetails(topic, container) {
+    let html = '';
+    
+    // Research query
+    if (topic.research_query) {
+        html += `
+            <div class="details-section">
+                <h4>Research Query</h4>
+                <div class="research-query">${topic.research_query}</div>
+            </div>
+        `;
+    }
+    
+    // Sources
+    if (topic.sources && topic.sources.length > 0) {
+        html += `
+            <div class="details-section">
+                <h4>Sources (${topic.sources.length})</h4>
+                <ul class="sources-list">
+        `;
+        topic.sources.forEach(source => {
+            const reliabilityClass = source.reliability === 'high' ? 'reliability-high' : 
+                                   source.reliability === 'medium' ? 'reliability-medium' : 'reliability-low';
+            html += `
+                <li>
+                    <div>
+                        <div class="source-title">${source.title || 'Untitled'}</div>
+                        <div class="source-meta">
+                            <span>Tier ${source.domain_tier}</span>
+                            <span class="reliability-badge ${reliabilityClass}">${source.reliability}</span>
+                            ${source.is_academic ? '<span>Academic</span>' : ''}
+                        </div>
+                    </div>
+                    <a href="${source.url}" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </li>
+            `;
+        });
+        html += `</ul></div>`;
+    }
+    
+    // Facts summary
+    if (topic.extracted_facts) {
+        const facts = topic.extracted_facts;
+        const totalFacts = (facts.dates?.length || 0) + (facts.locations?.length || 0) + 
+                          (facts.events?.length || 0) + (facts.people?.length || 0) + 
+                          (facts.cultural_notes?.length || 0);
+        
+        if (totalFacts > 0) {
+            html += `
+                <div class="details-section">
+                    <h4>Extracted Facts</h4>
+                    <div class="facts-summary">
+                        <div class="fact-count">
+                            <div class="fact-count-label">Dates</div>
+                            <div class="fact-count-value">${facts.dates?.length || 0}</div>
+                        </div>
+                        <div class="fact-count">
+                            <div class="fact-count-label">Locations</div>
+                            <div class="fact-count-value">${facts.locations?.length || 0}</div>
+                        </div>
+                        <div class="fact-count">
+                            <div class="fact-count-label">Events</div>
+                            <div class="fact-count-value">${facts.events?.length || 0}</div>
+                        </div>
+                        <div class="fact-count">
+                            <div class="fact-count-label">People</div>
+                            <div class="fact-count-value">${facts.people?.length || 0}</div>
+                        </div>
+                        <div class="fact-count">
+                            <div class="fact-count-label">Cultural Notes</div>
+                            <div class="fact-count-value">${facts.cultural_notes?.length || 0}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    // Synthesized content
+    if (topic.synthesized_content) {
+        html += `
+            <div class="details-section">
+                <h4>Synthesized Content</h4>
+                <div class="synthesized-content">${topic.synthesized_content}</div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+</script>
+
+{% endblock %}

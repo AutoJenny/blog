@@ -218,7 +218,19 @@ function renderItems(container, items, type, year, week) {
         }
         if (type === 'recipe') {
           if (item.post_id) {
-            window.location.href = `/planning/posts/${item.post_id}`;
+            // Navigate to pipeline (first workflow stage for recipes - drafting)
+            if (window.navigateToPipeline && typeof window.navigateToPipeline === 'function') {
+              window.navigateToPipeline(item, item.post_id);
+            } else {
+              // Fallback: navigate directly to drafting
+              const y = item.year || itemYear;
+              const w = item.week || itemWeek;
+              let url = `/posts/${item.post_id}/sections/drafting`;
+              if (y && w) {
+                url += `?year=${y}&week=${w}`;
+              }
+              window.location.href = url;
+            }
             return;
           } else if (item.id) {
             window.location.href = `/recipes`;
@@ -253,7 +265,8 @@ function renderItems(container, items, type, year, week) {
       onCreate: async (e, item, card) => {
         // Recipe: create post directly from calendar
         if (type === 'recipe' && typeof window.createRecipePostFromCalendar === 'function') {
-          await window.createRecipePostFromCalendar(item.recipe_week_number);
+          // Pass the full item so we can extract recipe_id, year, week
+          await window.createRecipePostFromCalendar(item);
           return;
         }
 
@@ -1632,10 +1645,31 @@ function renderSocialFocuses(focuses) {
   
   // Function to create recipe post from calendar view
   // Expose to window for access from renderItems
-  window.createRecipePostFromCalendar = async function(recipeWeekNumber, button) {
+  window.createRecipePostFromCalendar = async function(itemOrRecipeId, button) {
+    // Handle both old signature (recipeId) and new signature (item object)
+    let item;
+    if (typeof itemOrRecipeId === 'object' && itemOrRecipeId !== null) {
+      item = itemOrRecipeId;
+    } else {
+      // Legacy: if passed a number, try to construct item from current context
+      console.warn('createRecipePostFromCalendar called with legacy recipeId parameter. Please update to pass item object.');
+      const urlParams = new URLSearchParams(window.location.search);
+      const year = parseInt(urlParams.get('year')) || new Date().getFullYear();
+      const week = parseInt(urlParams.get('week')) || getISOWeekInfo(new Date()).week;
+      item = {
+        category: 'recipe',
+        item_id: itemOrRecipeId,
+        recipe_id: itemOrRecipeId,
+        id: itemOrRecipeId,
+        year: year,
+        week: week,
+        channel: 'blog'
+      };
+    }
+    
     if (!button) {
       // Try to find button from event target
-      button = event?.target?.closest('.recipe-create-btn-small') || event?.target;
+      button = event?.target?.closest('.btn-start') || event?.target?.closest('.recipe-create-btn-small') || event?.target;
     }
     
     const originalHTML = button?.innerHTML || '';
@@ -1644,64 +1678,72 @@ function renderSocialFocuses(focuses) {
     // Update button state
     if (button) {
       button.disabled = true;
-      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      button.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 0.25rem;"></i> Creating...';
       button.title = 'Creating...';
       button.style.cursor = 'not-allowed';
     }
     
     try {
-      // Get current year and week from URL or state
-      const urlParams = new URLSearchParams(window.location.search);
-      const year = parseInt(urlParams.get('year')) || new Date().getFullYear();
-      const weekNumber = parseInt(urlParams.get('week')) || getISOWeekInfo(new Date()).week;
+      // Get item_id from various possible fields
+      const item_id = item.item_id || item.id || item.recipe_id;
       
-      const response = await fetch(`/api/recipes/${recipeWeekNumber}/create-post`, {
+      // Get year and week from item or URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const year = item.year || parseInt(urlParams.get('year')) || new Date().getFullYear();
+      const week = item.week || parseInt(urlParams.get('week')) || getISOWeekInfo(new Date()).week;
+      
+      const requestBody = {
+        category: 'recipe',
+        item_id: item_id,
+        year: year,
+        week: week,
+        output_channel: item.channel || 'blog'
+      };
+      
+      console.log('[createRecipePostFromCalendar] Request body:', requestBody);
+      
+      if (!requestBody.item_id) {
+        throw new Error('Recipe ID is missing. Cannot create post without item_id.');
+      }
+      
+      const response = await fetch('/launchpad/one-click-publication/api/create-post-from-item', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          year: year,
-          week_number: weekNumber,
-          weekday: 1 // Default to Monday
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
       });
       
-      const data = await response.json();
+      if (!response.ok) {
+        let errorText;
+        try {
+          const errorJson = await response.json();
+          errorText = errorJson.error || errorJson.message || JSON.stringify(errorJson);
+        } catch (e) {
+          errorText = await response.text();
+        }
+        throw new Error(errorText || `HTTP ${response.status}: ${response.statusText}`);
+      }
       
-      if (data.success) {
-        // Show success
-        if (button) {
-          button.innerHTML = '<i class="fas fa-check"></i>';
-          button.style.background = '#10b981';
-          button.title = 'Created!';
+      const result = await response.json();
+      
+      console.log('[createRecipePostFromCalendar] API response:', result);
+      
+      if (result.success && result.post_id) {
+        // Navigate to the first workflow stage (taxonomy for recipes)
+        const postId = result.post_id;
+        let workflowUrl = `/planning/posts/${postId}/calendar/taxonomy`;
+        if (year && week) {
+          workflowUrl += `?year=${year}&week=${week}`;
         }
         
-        // Reload page after a short delay to show the new post
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        console.log('[createRecipePostFromCalendar] Navigating to:', workflowUrl);
+        window.location.href = workflowUrl;
       } else {
-        // Show error
-        if (button) {
-          button.innerHTML = '<i class="fas fa-times"></i>';
-          button.style.background = '#ef4444';
-          button.title = data.error || 'Error';
-          
-          // Reset after 3 seconds
-          setTimeout(() => {
-            button.innerHTML = originalHTML;
-            button.style.background = '#d97706';
-            button.title = originalTitle;
-            button.disabled = false;
-            button.style.cursor = 'pointer';
-          }, 3000);
-        } else {
-          alert(`Error: ${data.error || 'Failed to create recipe post'}`);
-        }
+        throw new Error(result.error || 'Failed to create post');
       }
     } catch (error) {
-      console.error('Error creating recipe post:', error);
+      console.error('[createRecipePostFromCalendar] Error creating recipe post:', error);
+      
+      // Show error
       if (button) {
         button.innerHTML = '<i class="fas fa-times"></i>';
         button.style.background = '#ef4444';
@@ -1716,7 +1758,7 @@ function renderSocialFocuses(focuses) {
           button.style.cursor = 'pointer';
         }, 3000);
       } else {
-        alert('Error creating recipe post. Please try again.');
+        alert(`Error creating recipe post: ${error.message || 'Please try again.'}`);
       }
     }
   }

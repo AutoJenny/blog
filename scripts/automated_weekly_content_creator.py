@@ -78,17 +78,54 @@ class WeeklyContentCreator:
         - weekly_phrase: Wednesday (day 3)
         - weekly_insult: Friday (day 5)
         Defaults to Monday if content_type not specified
+        
+        Uses ISO week calculation: finds Thursday of the target week (always in correct ISO week),
+        then calculates Monday from there.
         """
         try:
-            # Get Monday of the week
+            # ISO week calculation: January 4 is always in ISO week 1
+            # Find Thursday of week 1 (more reliable than Monday due to year boundaries)
             jan4 = datetime(year, 1, 4)
-            jan4_weekday = jan4.weekday()  # 0=Monday
-            days_to_monday = (jan4_weekday) % 7
-            jan4_monday = jan4 - timedelta(days=days_to_monday)
+            jan4_iso_year, jan4_iso_week, jan4_iso_weekday = jan4.isocalendar()
             
-            # Calculate Monday of target week
-            weeks_from_jan4 = week_number - 1
-            target_monday = jan4_monday + timedelta(weeks=weeks_from_jan4)
+            # Calculate days to Thursday from Jan 4
+            # ISO weekday: 1=Monday, 4=Thursday, 7=Sunday
+            days_to_thursday = 4 - jan4_iso_weekday
+            week1_thursday = jan4 + timedelta(days=days_to_thursday)
+            
+            # Verify week1_thursday is actually in week 1
+            thursday_iso_year, thursday_iso_week, thursday_iso_weekday = week1_thursday.isocalendar()
+            if thursday_iso_week != 1 or thursday_iso_year != year:
+                # Adjust: if Jan 4 is in previous year's week 53, week 1 starts later
+                # Find the first Thursday that's in week 1 of the target year
+                # Try a few days around Jan 4
+                for day_offset in range(-3, 4):
+                    test_date = jan4 + timedelta(days=day_offset)
+                    test_iso_year, test_iso_week, test_iso_weekday = test_date.isocalendar()
+                    if test_iso_week == 1 and test_iso_year == year and test_iso_weekday == 4:
+                        week1_thursday = test_date
+                        break
+            
+            # Calculate Thursday of target week
+            weeks_from_week1 = week_number - 1
+            target_thursday = week1_thursday + timedelta(weeks=weeks_from_week1)
+            
+            # Go back to Monday (3 days before Thursday)
+            target_monday = target_thursday - timedelta(days=3)
+            
+            # Verify we got the right week
+            monday_iso_year, monday_iso_week, monday_iso_weekday = target_monday.isocalendar()
+            if monday_iso_week != week_number or monday_iso_year != year:
+                logger.error(f"ISO week calculation error: expected {year}-W{week_number:02d}, got {monday_iso_year}-W{monday_iso_week:02d}")
+                # Fallback: brute force - find a date in the correct week
+                # Start from January 1 and search forward
+                test_date = datetime(year, 1, 1)
+                for _ in range(365):
+                    test_iso_year, test_iso_week, test_iso_weekday = test_date.isocalendar()
+                    if test_iso_week == week_number and test_iso_year == year and test_iso_weekday == 1:
+                        target_monday = test_date
+                        break
+                    test_date += timedelta(days=1)
             
             # Determine day offset based on content type
             day_offset = 0  # Default: Monday
@@ -102,9 +139,14 @@ class WeeklyContentCreator:
             # Calculate target date
             target_date = target_monday + timedelta(days=day_offset)
             
+            # Final verification and logging
+            final_iso_year, final_iso_week, final_iso_weekday = target_date.isocalendar()
+            logger.info(f"Calculated publication date for {year}-W{week_number:02d} {content_type}: {target_date.date()} (ISO: {final_iso_year}-W{final_iso_week:02d}-{final_iso_weekday}, day_offset={day_offset})")
+            
             return target_date.date().isoformat()
         except Exception as e:
-            logger.error(f"Error calculating publication date: {e}")
+            logger.error(f"Error calculating publication date for {year}-W{week_number:02d} {content_type}: {e}")
+            logger.exception("Full exception details:")
             return None
     
     def create_weekly_content_posts(self, days_ahead: int = 7) -> Dict[str, int]:
