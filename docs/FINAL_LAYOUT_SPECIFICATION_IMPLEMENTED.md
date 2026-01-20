@@ -242,13 +242,18 @@ Reject renders if:
 ## Latest Updates (2026-01-20)
 
 ### Font Size Adjustments
-- **Word font**: 144pt (was 72pt) - user requested twice as big
+- **Scots content**: 50% larger
+  - **Word**: 324pt (was 216pt, originally 144pt)
+  - **Phrase/Insult**: 117pt (was 78pt, originally 52pt) - both use same size
+- **Translation**: 50% larger
+  - **Word**: 54pt (was 36pt)
+  - **Phrase/Insult**: 51pt (was 34pt)
 - **Examples quotes**: 48pt (50% bigger, was 32pt) with 1520px max width (was 760px)
 - **Provenance**: 39pt (50% bigger, was 26pt) with 1440px max width (was 720px)
 
 ### Position Adjustments
-- **Translation**: Moved up 100px
-- **Examples**: Moved up 100px
-- **Provenance**: Moved up 100px, then down 50px (net +50px from original)
+- **Translation**: Moved down 50px (from previous position)
+- **Provenance**: Moved down 50px (from previous position)
+- **Phrase/Insult alignment**: Both use same Y position (198px) to prevent overlap with title
 
 These changes improve readability and visual hierarchy while maintaining the two-tier layout structure.

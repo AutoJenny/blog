@@ -1,18 +1,24 @@
 # Changelog
 
-## 2026-01-20 - Weekly Content Image Font & Layout Adjustments
+## 2026-01-20 - Weekly Content Image Font & Layout Adjustments (Final)
 
 ### Changed
-- **Weekly Word Font Size**: Increased to 144pt (was 72pt) for better visual impact
-- **Examples Quotes**: Increased to 48pt (50% bigger, was 32pt) with max width 1520px (was 760px) to reduce wrapping
-- **Provenance Text**: Increased to 39pt (50% bigger, was 26pt) with max width 1440px (was 720px) to reduce wrapping
-- **Translation Position**: Moved up 100px
-- **Examples Position**: Moved up 100px
-- **Provenance Position**: Moved up 100px, then down 50px (net +50px from original)
+- **Scots Content Font Sizes**: Increased by 50%
+  - **Word**: 324pt (was 216pt, originally 144pt)
+  - **Phrase/Insult**: 117pt (was 78pt, originally 52pt) - both use same size for consistency
+- **Translation Font Sizes**: Increased by 50%
+  - **Word**: 54pt (was 36pt)
+  - **Phrase/Insult**: 51pt (was 34pt)
+- **Examples Quotes**: 48pt (50% bigger, was 32pt) with max width 1520px (was 760px) to reduce wrapping
+- **Provenance Text**: 39pt (50% bigger, was 26pt) with max width 1440px (was 720px) to reduce wrapping
+- **Translation Position**: Moved down 50px
+- **Provenance Position**: Moved down 50px
+- **Phrase/Insult Alignment**: Both use same Y position (198px) to prevent title overlap
 
 ### Technical Details
 - File: `utils/weekly_content_image_renderer_v2.py`
 - All changes maintain the two-tier layout structure while improving readability
+- Phrase and Insult now use fixed Y position (198px) instead of vertical centering to ensure consistent alignment
 
 ---
 
