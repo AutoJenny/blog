@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-01-20 - Weekly Content Image Font & Layout Adjustments
+
+### Changed
+- **Weekly Word Font Size**: Increased to 144pt (was 72pt) for better visual impact
+- **Examples Quotes**: Increased to 48pt (50% bigger, was 32pt) with max width 1520px (was 760px) to reduce wrapping
+- **Provenance Text**: Increased to 39pt (50% bigger, was 26pt) with max width 1440px (was 720px) to reduce wrapping
+- **Translation Position**: Moved up 100px
+- **Examples Position**: Moved up 100px
+- **Provenance Position**: Moved up 100px, then down 50px (net +50px from original)
+
+### Technical Details
+- File: `utils/weekly_content_image_renderer_v2.py`
+- All changes maintain the two-tier layout structure while improving readability
+
+---
+
 ## 2026-01-20 - Automated Posting Control System
 
 ### Added

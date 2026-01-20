@@ -572,31 +572,38 @@ def render_weekly_content_image(
         logger.info(f"Lower half: {lower_height}px (Translation: {translation_area_height}px, Examples: {examples_area_height}px, Provenance: {provenance_area_height}px)")
         
         # Step 5: Measure and fit Scots text (fixed font sizes with reduction)
-        # Word: 144pt max (TWICE as big as 72pt - user requested 2x taller)
-        # Phrase/Insult: 52pt max
+        # Word: 324pt max (50% bigger than 216pt)
+        # Phrase/Insult: 117pt max (50% bigger than 78pt)
         if category == 'weekly_word':
-            initial_scots_size = 144
-            min_scots_size = 100
+            initial_scots_size = 324  # 50% bigger (was 216pt)
+            min_scots_size = 225  # Proportional minimum
         else:  # phrase or insult
-            initial_scots_size = 52
-            min_scots_size = 36
+            initial_scots_size = 117  # 50% bigger (was 78pt)
+            min_scots_size = 81  # Proportional minimum
         
-        scots_font_size = initial_scots_size
-        while True:
+        # For phrase/insult, use the same size (117pt) - don't reduce for phrase/insult
+        if category == 'weekly_word':
+            scots_font_size = initial_scots_size
+            while True:
+                _, scots_height, scots_lines = _measure_text_dimensions(
+                    scots_text, BODY_FONT, scots_font_size, max_width=800
+                )
+                if scots_height <= scots_area_height or scots_font_size <= min_scots_size:
+                    break
+                scots_font_size -= 2
+        else:  # phrase or insult - use same size, allow wrapping
+            scots_font_size = initial_scots_size  # Always 117pt for both
             _, scots_height, scots_lines = _measure_text_dimensions(
                 scots_text, BODY_FONT, scots_font_size, max_width=800
             )
-            if scots_height <= scots_area_height or scots_font_size <= min_scots_size:
-                break
-            scots_font_size -= 2
         
         logger.info(f"Scots: {scots_font_size}pt, height={scots_height}px ({len(scots_lines)} lines)")
         logger.info(f"VERIFY: Scots font size for {category} is {scots_font_size}pt (initial was {initial_scots_size}pt)")
         
         # Step 6: Measure and fit translation
         translation_text = f'→ {translation}'
-        # Word: 36pt, Phrase/Insult: 34pt
-        initial_trans_size = 36 if category == 'weekly_word' else 34
+        # Word: 54pt (50% bigger, was 36pt), Phrase/Insult: 51pt (50% bigger, was 34pt)
+        initial_trans_size = 54 if category == 'weekly_word' else 51
         trans_font_size = initial_trans_size
         while True:
             _, trans_height, _ = _measure_text_dimensions(
@@ -663,19 +670,23 @@ def render_weekly_content_image(
             logger.info("Provenance: none")
         
         # Step 9: Compute Y positions
-        # Scots: All categories vertically centered in upper half (pushes content lower)
-        scots_y = available_top + (scots_area_height - scots_height) // 2
+        # Scots: Word vertically centered, Phrase/Insult use same fixed Y position (198px)
+        if category == 'weekly_word':
+            scots_y = available_top + (scots_area_height - scots_height) // 2
+        else:  # phrase or insult - use same fixed Y position (198px) so they align
+            # Both phrase and insult should start at Y=198px (phrase's correct position)
+            scots_y = 198  # Fixed Y position - same for both phrase and insult
         
-        # Translation: In lower half, positioned 100px higher than before
-        translation_y = available_top + upper_height + 20 - 100  # Start of lower half + buffer - 100px up
+        # Translation: In lower half, positioned 100px higher than before, then pushed down 50px more
+        translation_y = available_top + upper_height + 20 - 100 + 50 + 50  # Start of lower half + buffer - 100px up + 50px down + 50px more
         
         # Examples: Below translation in lower half, moved up 100px
         if has_examples:
             ex_y = available_top + upper_height + translation_area_height + 20 - 100  # Below translation area - 100px up
-            prov_y = available_top + upper_height + translation_area_height + examples_area_height + 20 - 100 + 50  # Below examples - 100px up + 50px lower
+            prov_y = available_top + upper_height + translation_area_height + examples_area_height + 20 - 100 + 50 + 50  # Below examples - 100px up + 50px lower + 50px more
         else:
             ex_y = 0
-            prov_y = available_top + upper_height + translation_area_height + 20 - 100 + 50  # Below translation - 100px up + 50px lower
+            prov_y = available_top + upper_height + translation_area_height + 20 - 100 + 50 + 50  # Below translation - 100px up + 50px lower + 50px more
         
         logger.info(f"Y positions:")
         logger.info(f"  Scots: {scots_y}px (top of upper half, ~1/4 of page)")

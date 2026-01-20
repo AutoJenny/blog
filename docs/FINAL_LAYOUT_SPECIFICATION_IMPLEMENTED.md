@@ -236,3 +236,19 @@ Reject renders if:
 
 **File:** `utils/weekly_content_image_renderer_v2.py`  
 **Last Updated:** 2026-01-20 (Final Layout Specification Implementation)
+
+---
+
+## Latest Updates (2026-01-20)
+
+### Font Size Adjustments
+- **Word font**: 144pt (was 72pt) - user requested twice as big
+- **Examples quotes**: 48pt (50% bigger, was 32pt) with 1520px max width (was 760px)
+- **Provenance**: 39pt (50% bigger, was 26pt) with 1440px max width (was 720px)
+
+### Position Adjustments
+- **Translation**: Moved up 100px
+- **Examples**: Moved up 100px
+- **Provenance**: Moved up 100px, then down 50px (net +50px from original)
+
+These changes improve readability and visual hierarchy while maintaining the two-tier layout structure.
