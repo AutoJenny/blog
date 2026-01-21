@@ -1025,6 +1025,9 @@
             const container = document.getElementById('posts-timeline-container');
             if (!container) return;
             
+            // Clear container first to prevent duplicates
+            container.innerHTML = '';
+            
             if (!posts || posts.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -1035,9 +1038,21 @@
                 return;
             }
             
+            // Remove duplicates by queue_id (defensive)
+            const seen = new Set();
+            const uniquePosts = posts.filter(post => {
+                const queueId = post.queue_id;
+                if (seen.has(queueId)) {
+                    console.warn(`Duplicate post detected: queue_id=${queueId}, skipping`);
+                    return false;
+                }
+                seen.add(queueId);
+                return true;
+            });
+            
             const html = `
                 <div class="posts-timeline">
-                    ${posts.map(post => renderPostItem(post)).join('')}
+                    ${uniquePosts.map(post => renderPostItem(post)).join('')}
                 </div>
             `;
             container.innerHTML = html;
