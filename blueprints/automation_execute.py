@@ -1126,7 +1126,7 @@ def execute_optimize_for_facebook(post_id, data):
     try:
         from utils.posting_queue_helpers import get_posting_queue_row
         from utils.weekly_content_data_extractor import extract_weekly_content_data
-        from utils.weekly_content_image_renderer import render_weekly_content_image
+        from utils.weekly_content_image_renderer_v2 import render_weekly_content_image  # Use v2 renderer with new font sizes
         import json
         
         # Get posting_queue row
@@ -1149,7 +1149,7 @@ def execute_optimize_for_facebook(post_id, data):
             else:
                 formatted_data = json.loads(formatted_data_json)
             
-            # Render image
+            # Render image using v2 renderer (with new font sizes and layout)
             result = render_weekly_content_image(
                 category=formatted_data['category'],
                 title=formatted_data['title'],

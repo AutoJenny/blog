@@ -201,7 +201,6 @@ class ScheduledPostingExecutor:
                 for post in candidate_posts:
                     if self.validate_scheduled_date(post):
                         valid_posts.append(post)
-                        scheduled_str = post.get('scheduled_timestamp') or f"{post.get('scheduled_date')} {post.get('scheduled_time')}"
                         logger.debug(f"Validated post: ID={post['id']}, scheduled={scheduled_str}, platform={post['platform']}")
                     else:
                         logger.warning(f"BLOCKED post {post['id']} - failed failsafe date validation")

@@ -8,7 +8,7 @@ import os
 import sys
 import time
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time as time_type
 from typing import List, Dict, Optional
 
 # Add project root to path
@@ -30,6 +30,138 @@ logger = logging.getLogger(__name__)
 class PostingExecutor:
     def __init__(self):
         self.db_manager = db_manager
+    
+    def is_automated_posting_enabled(self) -> bool:
+        """
+        Check if automated posting is enabled in system_config.
+        
+        Returns
+        -------
+        bool: True if enabled, False if disabled.
+              Defaults to True if config not found (safer - allows posting).
+        """
+        try:
+            with self.db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT config_value
+                    FROM system_config
+                    WHERE config_key = 'automated_posting_enabled'
+                """)
+                result = cursor.fetchone()
+                
+                if result:
+                    value = result.get('config_value', 'true').lower()
+                    return value == 'true' or value == '1'
+                
+                # Default to enabled if not found
+                return True
+        except Exception as e:
+            logger.error(f"Error checking automated posting config: {e}")
+                # Default to enabled on error (safer - allows posting)
+            return True
+    
+    def validate_scheduled_date(self, post: Dict) -> bool:
+        """
+        Failsafe: Ensure scheduled date/time has actually passed.
+        
+        This is a CRITICAL safety check that validates dates in Python,
+        not just relying on SQL queries. This prevents future-dated posts
+        from being published even if there's a bug in the SQL query.
+        """
+        now = datetime.now()
+        
+        # Check scheduled_timestamp if available
+        if post.get('scheduled_timestamp'):
+            scheduled = post['scheduled_timestamp']
+            if isinstance(scheduled, str):
+                scheduled = datetime.fromisoformat(scheduled.replace('Z', '+00:00')).replace(tzinfo=None) if 'Z' in scheduled else datetime.fromisoformat(scheduled)
+            elif isinstance(scheduled, datetime):
+                scheduled = scheduled.replace(tzinfo=None) if scheduled.tzinfo else scheduled
+            
+            if scheduled > now:
+                logger.error(f"BLOCKED: Post {post['id']} scheduled_timestamp {scheduled} is in the future (now: {now})")
+                return False
+            return True
+        
+        # Check scheduled_date + scheduled_time
+        scheduled_date = post.get('scheduled_date')
+        scheduled_time = post.get('scheduled_time')
+        
+        if not scheduled_date or not scheduled_time:
+            logger.warning(f"Post {post['id']} missing scheduled_date or scheduled_time")
+            return False
+        
+        # Parse and combine
+        if isinstance(scheduled_date, str):
+            scheduled_date = date.fromisoformat(scheduled_date)
+        if isinstance(scheduled_time, str):
+            time_parts = scheduled_time.split(':')
+            hour = int(time_parts[0])
+            minute = int(time_parts[1]) if len(time_parts) > 1 else 0
+            scheduled_time = time_type(hour, minute)
+        
+        scheduled_datetime = datetime.combine(scheduled_date, scheduled_time)
+        
+        # Failsafe: Only publish if scheduled time has passed
+        if scheduled_datetime > now:
+            logger.error(f"BLOCKED: Post {post['id']} scheduled for {scheduled_datetime} is in the future (now: {now})")
+            return False
+        
+        return True
+    
+    def validate_weekly_content_schedule(self, post: Dict) -> bool:
+        """
+        Validate that weekly content posts follow the correct schedule:
+        - weekly_word: Monday
+        - weekly_phrase: Wednesday  
+        - weekly_insult: Friday
+        - Only one post per weekday
+        - Posts should be on alternating weeks (not all three in same week)
+        """
+        content_type = post.get('content_type', '').lower()
+        if content_type not in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            return True  # Not weekly content, skip validation
+        
+        scheduled_date = post.get('scheduled_date')
+        if not scheduled_date:
+            logger.warning(f"Post {post['id']} ({content_type}) missing scheduled_date, cannot validate weekday")
+            return False
+        
+        if isinstance(scheduled_date, str):
+            scheduled_date = date.fromisoformat(scheduled_date)
+        
+        # Get weekday (0=Monday, 6=Sunday in Python, but ISO uses 1=Monday)
+        weekday = scheduled_date.isoweekday()  # 1=Monday, 7=Sunday
+        
+        # Expected weekdays
+        expected_weekday = {
+            'weekly_word': 1,    # Monday
+            'weekly_phrase': 3,  # Wednesday
+            'weekly_insult': 5   # Friday
+        }.get(content_type)
+        
+        if weekday != expected_weekday:
+            logger.error(f"BLOCKED: Post {post['id']} ({content_type}) scheduled for weekday {weekday} (expected {expected_weekday})")
+            return False
+        
+        # Check if another post of same type was already published this week
+        year, week_number, _ = scheduled_date.isocalendar()
+        with self.db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM posting_queue
+                WHERE content_type = %s
+                AND status = 'published'
+                AND scheduled_date IS NOT NULL
+                AND EXTRACT(YEAR FROM scheduled_date) = %s
+                AND EXTRACT(WEEK FROM scheduled_date) = %s
+                AND id != %s
+            """, (content_type, year, week_number, post['id']))
+            existing = cursor.fetchone()
+            if existing:
+                logger.error(f"BLOCKED: Post {post['id']} ({content_type}) - another {content_type} already published in week {year}-W{week_number:02d}")
+                return False
+        
+        return True
         
     def get_pending_posts(self) -> List[Dict]:
         """
@@ -46,7 +178,7 @@ class PostingExecutor:
                     SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
                            pq.generated_content, pq.status, pq.product_id, pq.section_id,
                            pq.scheduled_timestamp, pq.schedule_name, pq.timezone,
-                           pq.scheduled_date, pq.scheduled_time,
+                           pq.scheduled_date, pq.scheduled_time, pq.idea_id,
                            cp.name as product_name, cp.sku, cp.image_url as product_image,
                            ps.section_heading as section_title
                     FROM posting_queue pq
@@ -211,7 +343,10 @@ class PostingExecutor:
         
     def process_pending_posts(self) -> Dict[str, int]:
         """
-        Process all pending posts that are due for publishing
+        Process all pending posts that are due for publishing.
+        
+        CRITICAL: Checks automated_posting_enabled switch before publishing.
+        If disabled, logs and returns without publishing.
         """
         stats = {
             'total_found': 0,
@@ -221,6 +356,15 @@ class PostingExecutor:
         }
         
         try:
+            # CRITICAL: Check if automated posting is enabled
+            if not self.is_automated_posting_enabled():
+                logger.info("Automated posting is DISABLED - skipping all publishing in posting_executor")
+                # Still get count for stats
+                pending_posts = self.get_pending_posts()
+                stats['total_found'] = len(pending_posts)
+                stats['skipped'] = len(pending_posts)
+                return stats
+            
             # Get pending posts
             pending_posts = self.get_pending_posts()
             stats['total_found'] = len(pending_posts)
@@ -272,7 +416,13 @@ class PostingExecutor:
                             stats['skipped'] += 1
                             continue
                     
-                    # For weekly content, ensure workflow has been run
+                    # CRITICAL: Validate scheduled date (failsafe check)
+                    if not self.validate_scheduled_date(post):
+                        logger.warning(f"Post {post['id']} failed date validation, skipping")
+                        stats['skipped'] += 1
+                        continue
+                    
+                    # CRITICAL: For weekly content, validate weekday schedule
                     content_type = post.get('content_type', '').lower()
                     if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
                         # Check if image and caption exist
@@ -288,6 +438,12 @@ class PostingExecutor:
                                 logger.warning(f"Weekly content post {post['id']} missing image or caption, skipping")
                                 stats['skipped'] += 1
                                 continue
+                        
+                        # Validate weekday schedule
+                        if not self.validate_weekly_content_schedule(post):
+                            logger.warning(f"Post {post['id']} failed weekly schedule validation, skipping")
+                            stats['skipped'] += 1
+                            continue
                     
                     # Execute the post
                     result = self.execute_post(post)

@@ -142,7 +142,6 @@ class WeeklyContentCreator:
             # Final verification and logging
             final_iso_year, final_iso_week, final_iso_weekday = target_date.isocalendar()
             logger.info(f"Calculated publication date for {year}-W{week_number:02d} {content_type}: {target_date.date()} (ISO: {final_iso_year}-W{final_iso_week:02d}-{final_iso_weekday}, day_offset={day_offset})")
-            
             return target_date.date().isoformat()
         except Exception as e:
             logger.error(f"Error calculating publication date for {year}-W{week_number:02d} {content_type}: {e}")
