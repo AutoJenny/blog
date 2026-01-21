@@ -176,6 +176,21 @@ class WeeklyContentCreator:
                 
                 for content_type in content_types:
                     try:
+                        # Get publication date (with correct day based on content type)
+                        scheduled_date = self.get_publication_date_for_week(year, week_number, content_type)
+                        if not scheduled_date:
+                            logger.warning(f"Could not calculate publication date for week {year}-W{week_number:02d}")
+                            continue
+                        
+                        # CRITICAL: Skip if scheduled_date is today or in the past
+                        # Only create posts for future dates
+                        from datetime import date
+                        scheduled_date_obj = date.fromisoformat(scheduled_date) if isinstance(scheduled_date, str) else scheduled_date
+                        today = date.today()
+                        if scheduled_date_obj <= today:
+                            logger.info(f"Skipping {content_type} for week {year}-W{week_number:02d}: scheduled_date {scheduled_date} is today or in the past")
+                            continue
+                        
                         # Resolve item for this week
                         item = resolve_item_for_week(
                             content_type, 
@@ -194,12 +209,6 @@ class WeeklyContentCreator:
                         
                         if not idea_id:
                             logger.warning(f"No idea_id found for {content_type} in week {year}-W{week_number:02d}")
-                            continue
-                        
-                        # Get publication date (with correct day based on content type)
-                        scheduled_date = self.get_publication_date_for_week(year, week_number, content_type)
-                        if not scheduled_date:
-                            logger.warning(f"Could not calculate publication date for week {year}-W{week_number:02d}")
                             continue
                         
                         # Check if post already exists (with better error handling)
