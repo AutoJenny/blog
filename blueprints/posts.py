@@ -478,10 +478,11 @@ def api_posts_timeline():
             # Filter to only show posts scheduled from today onwards (not old past posts)
             query += " AND pq.scheduled_date >= CURRENT_DATE"
             
-            # Order by scheduled time: upcoming first (ASC)
+            # Order by scheduled date and time (same as calendar uses) - chronological order
             query += """
                 ORDER BY 
-                    COALESCE(pq.scheduled_timestamp, (pq.scheduled_date::date + pq.scheduled_time::time)::timestamp) ASC NULLS LAST
+                    pq.scheduled_date ASC,
+                    pq.scheduled_time ASC NULLS LAST
                 LIMIT %s
             """
             params.append(limit)
