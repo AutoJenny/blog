@@ -154,6 +154,60 @@ class ScheduledPostingExecutor:
         
         return True
     
+    def validate_weekly_content_schedule(self, post: Dict) -> bool:
+        """
+        Validate that weekly content posts follow the correct schedule:
+        - weekly_word: Monday
+        - weekly_phrase: Wednesday  
+        - weekly_insult: Friday
+        - Only one post per weekday
+        - Posts should be on alternating weeks (not all three in same week)
+        """
+        content_type = post.get('content_type', '').lower()
+        if content_type not in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            return True  # Not weekly content, skip validation
+        
+        scheduled_date = post.get('scheduled_date')
+        if not scheduled_date:
+            logger.warning(f"Post {post['id']} ({content_type}) missing scheduled_date, cannot validate weekday")
+            return False
+        
+        if isinstance(scheduled_date, str):
+            scheduled_date = date.fromisoformat(scheduled_date)
+        
+        # Get weekday (0=Monday, 6=Sunday in Python, but ISO uses 1=Monday)
+        weekday = scheduled_date.isoweekday()  # 1=Monday, 7=Sunday
+        
+        # Expected weekdays
+        expected_weekday = {
+            'weekly_word': 1,    # Monday
+            'weekly_phrase': 3,  # Wednesday
+            'weekly_insult': 5   # Friday
+        }.get(content_type)
+        
+        if weekday != expected_weekday:
+            logger.error(f"BLOCKED: Post {post['id']} ({content_type}) scheduled for weekday {weekday} (expected {expected_weekday})")
+            return False
+        
+        # Check if another post of same type was already published this week
+        year, week_number, _ = scheduled_date.isocalendar()
+        with self.db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM posting_queue
+                WHERE content_type = %s
+                AND status = 'published'
+                AND scheduled_date IS NOT NULL
+                AND EXTRACT(YEAR FROM scheduled_date) = %s
+                AND EXTRACT(WEEK FROM scheduled_date) = %s
+                AND id != %s
+            """, (content_type, year, week_number, post['id']))
+            existing = cursor.fetchone()
+            if existing:
+                logger.error(f"BLOCKED: Post {post['id']} ({content_type}) - another {content_type} already published in week {year}-W{week_number:02d}")
+                return False
+        
+        return True
+    
     def get_due_posts(self) -> List[Dict]:
         """
         Get posts that are due to be published now.
@@ -196,14 +250,22 @@ class ScheduledPostingExecutor:
                 candidate_posts = cursor.fetchall()
                 logger.info(f"Found {len(candidate_posts)} candidate posts from SQL query")
                 
-                # Failsafe: Validate each post with Python date checking
+                # Failsafe: Validate each post with Python date checking AND weekly content schedule
                 valid_posts = []
                 for post in candidate_posts:
-                    if self.validate_scheduled_date(post):
-                        valid_posts.append(post)
-                        logger.debug(f"Validated post: ID={post['id']}, scheduled={scheduled_str}, platform={post['platform']}")
-                    else:
+                    # First check: date validation
+                    if not self.validate_scheduled_date(post):
                         logger.warning(f"BLOCKED post {post['id']} - failed failsafe date validation")
+                        continue
+                    
+                    # Second check: weekly content schedule validation (for weekly_word/phrase/insult)
+                    if post.get('content_type') in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                        if not self.validate_weekly_content_schedule(post):
+                            logger.warning(f"BLOCKED post {post['id']} - failed weekly content schedule validation")
+                            continue
+                    
+                    valid_posts.append(post)
+                    logger.debug(f"Validated post: ID={post['id']}, scheduled={scheduled_str}, platform={post['platform']}")
                 
                 logger.info(f"After failsafe validation: {len(valid_posts)} posts ready for publishing")
                 return valid_posts

@@ -419,6 +419,7 @@ def api_posts_timeline():
     try:
         limit = request.args.get('limit', type=int, default=50)
         status_filter = request.args.get('status')  # Optional: 'pending', 'ready', 'published', etc.
+        show_published = request.args.get('show_published', 'false').lower() == 'true'  # Hide published by default
         
         with db_manager.get_cursor() as cursor:
             # Build query
@@ -465,15 +466,24 @@ def api_posts_timeline():
             """
             params = []
             
+            # Hide published posts by default unless explicitly requested
+            if not show_published:
+                query += " AND pq.status != 'published'"
+            
             # Add status filter if provided
             if status_filter:
                 query += " AND pq.status = %s"
                 params.append(status_filter)
             
-            # Order by scheduled time (past first, then future), then by created_at
+            # Order by scheduled time: upcoming first (ASC), then past (DESC), excluding published by default
+            # Show upcoming posts first, then past posts, but prioritize non-published
             query += """
                 ORDER BY 
-                    COALESCE(pq.scheduled_timestamp, (pq.scheduled_date::date + pq.scheduled_time::time)::timestamp) DESC NULLS LAST,
+                    CASE 
+                        WHEN pq.status = 'published' THEN 2
+                        ELSE 1
+                    END,
+                    COALESCE(pq.scheduled_timestamp, (pq.scheduled_date::date + pq.scheduled_time::time)::timestamp) ASC NULLS LAST,
                     pq.created_at DESC
                 LIMIT %s
             """

@@ -777,10 +777,18 @@
                     
                     <!-- Posts Timeline -->
                     <div class="card-dark rounded-xl p-6 mt-6">
-                        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-clock text-blue-400"></i>
-                            <span>Recent & Upcoming Posts</span>
-                        </h3>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-clock text-blue-400"></i>
+                                <span>Upcoming Posts</span>
+                            </h3>
+                            <div class="flex items-center gap-2">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="show-published-toggle" class="w-4 h-4">
+                                    <span class="text-sm text-dark-accent">Show published</span>
+                                </label>
+                            </div>
+                        </div>
                         <div id="posts-timeline-container">
                             <div class="empty-state">
                                 <i class="fas fa-spinner fa-spin"></i>
@@ -992,7 +1000,9 @@
         
         async function loadPostsTimeline() {
             try {
-                const response = await fetch('/api/posts/timeline?limit=20');
+                const showPublished = document.getElementById('show-published-toggle')?.checked || false;
+                const url = `/api/posts/timeline?limit=20&show_published=${showPublished}`;
+                const response = await fetch(url);
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
@@ -1161,6 +1171,14 @@
             
             // Load posts timeline
             loadPostsTimeline();
+            
+            // Set up published toggle handler
+            const showPublishedToggle = document.getElementById('show-published-toggle');
+            if (showPublishedToggle) {
+                showPublishedToggle.addEventListener('change', () => {
+                    loadPostsTimeline();
+                });
+            }
             
             // Refresh timeline every 60 seconds
             setInterval(loadPostsTimeline, 60000);
