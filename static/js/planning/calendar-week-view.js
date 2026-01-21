@@ -180,7 +180,11 @@ function renderItems(container, items, type, year, week) {
                      type === 'event' ? (item.event_recurrence_type === 'one_off' ? 'Special' : 'Annual') :
                      type === 'scheduled' ? 'Syndication' : type;
     
-    const title = item.title || item.theme_title || item.recipe_title || item.post_title || 'Untitled';
+    let title = item.title || item.theme_title || item.recipe_title || item.post_title || 'Untitled';
+    // If multiple product posts for this day, add count indicator
+    if (type === 'product' && item._multiple_count && item._multiple_count > 1) {
+      title = `${title} (+${item._multiple_count - 1} more)`;
+    }
     const description = item.description || item.theme_description || item.recipe_description || null;
     
     // Store year/week in item for info button
@@ -938,15 +942,45 @@ async function loadWeek(year, weekNumber) {
         renderItems(insultTarget, [selectedInsult], 'weekly-insult', year, weekNumber);
       }
     }
-    // Product posts - render on available days (Tuesday, Thursday, Saturday, Sunday)
-    // Distribute product posts across available days
+    // Product posts - render on their actual scheduled_date
+    // Group by day and show only one per day (the first one scheduled for that day)
     if (productPosts.length > 0) {
-      const productPostDays = [2, 4, 6, 7]; // Tue, Thu, Sat, Sun
-      productPosts.forEach((productPost, index) => {
-        const dayIndex = productPostDays[index % productPostDays.length];
-        const productTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
-        if (productTarget) {
-          renderItems(productTarget, [productPost], 'product', year, weekNumber);
+      // Group product posts by scheduled_date
+      const postsByDay = {};
+      productPosts.forEach((productPost) => {
+        if (productPost.scheduled_date) {
+          if (!postsByDay[productPost.scheduled_date]) {
+            postsByDay[productPost.scheduled_date] = [];
+          }
+          postsByDay[productPost.scheduled_date].push(productPost);
+        }
+      });
+      
+      // Render one product post per day (the first one for that day)
+      Object.keys(postsByDay).forEach((scheduledDate) => {
+        const dayPosts = postsByDay[scheduledDate];
+        if (dayPosts.length > 0) {
+          // Use the first post for this day
+          const productPost = dayPosts[0];
+          
+          try {
+            const dateObj = new Date(scheduledDate + 'T00:00:00');
+            // Get ISO weekday (1=Monday, 7=Sunday)
+            // JavaScript getDay() returns 0=Sunday, 1=Monday, etc.
+            const jsDay = dateObj.getDay();
+            const dayIndex = jsDay === 0 ? 7 : jsDay; // Convert to ISO weekday (1=Mon, 7=Sun)
+            
+            const productTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+            if (productTarget) {
+              // If multiple posts for this day, show count in title
+              if (dayPosts.length > 1) {
+                productPost._multiple_count = dayPosts.length;
+              }
+              renderItems(productTarget, [productPost], 'product', year, weekNumber);
+            }
+          } catch (e) {
+            console.warn('Error parsing scheduled_date for product post:', scheduledDate, e);
+          }
         }
       });
     }
