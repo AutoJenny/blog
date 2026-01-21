@@ -269,7 +269,7 @@ def main():
         creator = WeeklyContentCreator()
         
         # Create posts for next 7 days (1 week ahead)
-        stats = creator.create_weekly_content_posts(days_ahead=7)
+        stats = creator.create_weekly_content_posts(days_ahead=14)  # Create posts 2 weeks ahead
         
         logger.info(f"Weekly content creator complete: {stats}")
         
