@@ -410,6 +410,197 @@ def api_posts():
         return jsonify({"error": str(e)}), 500
 
 
+@bp.route('/api/posts/timeline')
+def api_posts_timeline():
+    """
+    Get posts timeline in chronological order (recent/pending/upcoming).
+    Returns posts from posting_queue sorted by scheduled date/time.
+    """
+    try:
+        limit = request.args.get('limit', type=int, default=50)
+        status_filter = request.args.get('status')  # Optional: 'pending', 'ready', 'published', etc.
+        
+        with db_manager.get_cursor() as cursor:
+            # Build query
+            query = """
+                SELECT 
+                    pq.id as queue_id,
+                    pq.idea_id,
+                    pq.product_id,
+                    pq.content_type,
+                    pq.platform,
+                    pq.channel_type,
+                    pq.generated_caption,
+                    pq.image_path,
+                    pq.status,
+                    pq.scheduled_date,
+                    pq.scheduled_time,
+                    pq.scheduled_timestamp,
+                    pq.platform_post_id,
+                    pq.created_at,
+                    pq.updated_at,
+                    -- Product details
+                    cp.name as product_name,
+                    cp.sku as product_sku,
+                    cp.image_url as product_image,
+                    -- Idea details (for language posts)
+                    ci.idea_title,
+                    ci.idea_description,
+                    -- Display image URL
+                    CASE 
+                        WHEN pq.content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult') 
+                             AND pq.image_path IS NOT NULL 
+                             AND pq.image_path LIKE '/Users/%%/static/%%' 
+                        THEN REPLACE(pq.image_path, '/Users/autojenny/Documents/projects/blog', '')
+                        WHEN pq.content_type = 'product' AND cp.image_url IS NOT NULL
+                        THEN cp.image_url
+                        WHEN pq.content_type = 'product' AND pq.image_path IS NOT NULL
+                        THEN pq.image_path
+                        ELSE NULL
+                    END as display_image_url
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                LEFT JOIN calendar_ideas ci ON pq.idea_id = ci.id
+                WHERE 1=1
+            """
+            params = []
+            
+            # Add status filter if provided
+            if status_filter:
+                query += " AND pq.status = %s"
+                params.append(status_filter)
+            
+            # Order by scheduled time (past first, then future), then by created_at
+            query += """
+                ORDER BY 
+                    COALESCE(pq.scheduled_timestamp, (pq.scheduled_date::date + pq.scheduled_time::time)::timestamp) DESC NULLS LAST,
+                    pq.created_at DESC
+                LIMIT %s
+            """
+            params.append(limit)
+            
+            cursor.execute(query, tuple(params))
+            posts = cursor.fetchall()
+            
+            # Format posts for response
+            timeline = []
+            for post in posts:
+                post_dict = dict(post)
+                
+                # Format dates
+                for key in ['created_at', 'updated_at', 'scheduled_date', 'scheduled_timestamp']:
+                    if post_dict.get(key) and hasattr(post_dict[key], 'isoformat'):
+                        post_dict[key] = post_dict[key].isoformat()
+                if post_dict.get('scheduled_time'):
+                    post_dict['scheduled_time'] = str(post_dict['scheduled_time'])
+                
+                # Determine title
+                if post_dict.get('product_name'):
+                    post_dict['title'] = post_dict['product_name']
+                elif post_dict.get('idea_title'):
+                    post_dict['title'] = post_dict['idea_title']
+                else:
+                    post_dict['title'] = f"{post_dict.get('content_type', 'Post')} #{post_dict['queue_id']}"
+                
+                # Determine if post is due (scheduled time has passed)
+                scheduled_ts = post_dict.get('scheduled_timestamp')
+                if scheduled_ts:
+                    try:
+                        # Parse ISO format datetime string
+                        if isinstance(scheduled_ts, str):
+                            # Handle ISO format with or without timezone
+                            if 'T' in scheduled_ts:
+                                scheduled_dt = datetime.fromisoformat(scheduled_ts.replace('Z', '+00:00'))
+                            else:
+                                scheduled_dt = datetime.fromisoformat(scheduled_ts)
+                        else:
+                            scheduled_dt = scheduled_ts
+                        now = datetime.now(scheduled_dt.tzinfo) if scheduled_dt.tzinfo else datetime.now()
+                        post_dict['is_due'] = scheduled_dt <= now
+                    except Exception as e:
+                        logger.debug(f"Error parsing scheduled_timestamp {scheduled_ts}: {e}")
+                        post_dict['is_due'] = False
+                else:
+                    post_dict['is_due'] = False
+                
+                timeline.append(post_dict)
+            
+            return jsonify({
+                'success': True,
+                'posts': timeline,
+                'total': len(timeline)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in api_posts_timeline: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route('/api/posts/<int:queue_id>/publish', methods=['POST'])
+def api_publish_post(queue_id):
+    """
+    Manually publish a single post from posting_queue.
+    Bypasses automated posting switch for one-off publishing.
+    """
+    try:
+        from utils.platform_publishers import publish_to_facebook
+        
+        # Get post details
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, status, platform, content_type, scheduled_timestamp, platform_post_id
+                FROM posting_queue
+                WHERE id = %s
+            """, (queue_id,))
+            post = cursor.fetchone()
+            
+            if not post:
+                return jsonify({
+                    'success': False,
+                    'error': 'Post not found'
+                }), 404
+            
+            # Check if already published
+            if post['status'] == 'published':
+                return jsonify({
+                    'success': False,
+                    'error': 'Post already published'
+                }), 400
+            
+            if post['platform_post_id']:
+                return jsonify({
+                    'success': False,
+                    'error': 'Post already has platform_post_id, may be duplicate'
+                }), 400
+            
+            # Only support Facebook for now
+            if post['platform'] != 'facebook':
+                return jsonify({
+                    'success': False,
+                    'error': f'Platform {post["platform"]} not supported for manual publishing'
+                }), 400
+            
+            # Publish the post
+            result = publish_to_facebook(queue_id)
+            
+            if result.get('success'):
+                return jsonify({
+                    'success': True,
+                    'message': 'Post published successfully',
+                    'platform_post_id': result.get('platform_post_id'),
+                    'platform_post_ids': result.get('platform_post_ids', [])
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': result.get('error', 'Publishing failed')
+                }), 500
+            
+    except Exception as e:
+        logger.error(f"Error in api_publish_post: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @bp.route('/api/posts/create-profile', methods=['POST'])
 def api_create_profile_post():
     """Create a new profile post from a product"""

@@ -449,6 +449,134 @@
         .status-text {
             white-space: nowrap;
         }
+        
+        /* Posts Timeline Styles */
+        .posts-timeline {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .timeline-post {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .timeline-post:hover {
+            background: #334155;
+            border-color: #475569;
+        }
+        
+        .timeline-post.published {
+            opacity: 0.7;
+        }
+        
+        .timeline-post.due {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .timeline-post-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #334155;
+        }
+        
+        .timeline-post-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .timeline-post-title {
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+        
+        .timeline-post-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        
+        .timeline-post-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .timeline-post-status {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .timeline-post-status.pending {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        
+        .timeline-post-status.ready {
+            background: #10b981;
+            color: white;
+        }
+        
+        .timeline-post-status.published {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .timeline-post-status.failed {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .timeline-post-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .btn-send-now {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-send-now:hover:not(:disabled) {
+            background: #2563eb;
+        }
+        
+        .btn-send-now:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-send-now.loading {
+            opacity: 0.7;
+            cursor: wait;
+        }
     </style>
 {% endblock %}
 
@@ -643,6 +771,20 @@
                             <div class="kpi-card">
                                 <div class="kpi-value" id="homepage-queue-health">0</div>
                                 <div class="kpi-label">Queue Health</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Posts Timeline -->
+                    <div class="card-dark rounded-xl p-6 mt-6">
+                        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-clock text-blue-400"></i>
+                            <span>Recent & Upcoming Posts</span>
+                        </h3>
+                        <div id="posts-timeline-container">
+                            <div class="empty-state">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Loading posts...</p>
                             </div>
                         </div>
                     </div>
@@ -842,6 +984,171 @@
         // INITIALIZATION
         // ============================================================================
         
+        // ============================================================================
+        // POSTS TIMELINE FUNCTIONS
+        // ============================================================================
+        
+        let automatedPostingEnabled = false;
+        
+        async function loadPostsTimeline() {
+            try {
+                const response = await fetch('/api/posts/timeline?limit=20');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        renderPostsTimeline(data.posts);
+                    } else {
+                        console.error('Failed to load posts timeline:', data.error);
+                        showTimelineError('Failed to load posts');
+                    }
+                } else {
+                    console.error('Failed to load posts timeline:', response.status);
+                    showTimelineError('Failed to load posts');
+                }
+            } catch (error) {
+                console.error('Error loading posts timeline:', error);
+                showTimelineError('Error loading posts');
+            }
+        }
+        
+        function renderPostsTimeline(posts) {
+            const container = document.getElementById('posts-timeline-container');
+            if (!container) return;
+            
+            if (!posts || posts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No posts found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = `
+                <div class="posts-timeline">
+                    ${posts.map(post => renderPostItem(post)).join('')}
+                </div>
+            `;
+            container.innerHTML = html;
+            
+            // Attach event listeners to Send Now buttons
+            posts.forEach(post => {
+                const btn = document.getElementById(`send-now-${post.queue_id}`);
+                if (btn) {
+                    btn.addEventListener('click', () => publishPost(post.queue_id));
+                }
+            });
+        }
+        
+        function renderPostItem(post) {
+            const scheduledDate = post.scheduled_date ? new Date(post.scheduled_date).toLocaleDateString() : 'Not scheduled';
+            const scheduledTime = post.scheduled_time ? post.scheduled_time.substring(0, 5) : '';
+            const scheduledDisplay = scheduledTime ? `${scheduledDate} ${scheduledTime}` : scheduledDate;
+            
+            const statusClass = post.status ? post.status.toLowerCase() : 'unknown';
+            const dueClass = post.is_due && post.status !== 'published' ? 'due' : '';
+            const publishedClass = post.status === 'published' ? 'published' : '';
+            
+            const imageUrl = post.display_image_url || '/static/images/placeholder.png';
+            const imageSrc = imageUrl.startsWith('http') ? imageUrl : imageUrl;
+            
+            // Show Send Now button only if automated posting is disabled and post is not published
+            const showSendNow = !automatedPostingEnabled && post.status !== 'published' && post.status !== 'failed';
+            
+            return `
+                <div class="timeline-post ${dueClass} ${publishedClass}" data-queue-id="${post.queue_id}">
+                    <img src="${imageSrc}" alt="${post.title}" class="timeline-post-image" onerror="this.src='/static/images/placeholder.png'">
+                    <div class="timeline-post-content">
+                        <div class="timeline-post-title">${escapeHtml(post.title)}</div>
+                        <div class="timeline-post-meta">
+                            <span class="timeline-post-meta-item">
+                                <i class="fas fa-tag"></i>
+                                <span>${post.content_type || 'unknown'}</span>
+                            </span>
+                            <span class="timeline-post-meta-item">
+                                <i class="fas fa-calendar"></i>
+                                <span>${scheduledDisplay}</span>
+                            </span>
+                            <span class="timeline-post-status ${statusClass}">${post.status || 'unknown'}</span>
+                            ${post.platform_post_id ? `<span class="timeline-post-meta-item"><i class="fas fa-check-circle"></i> Published</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="timeline-post-actions">
+                        ${showSendNow ? `
+                            <button id="send-now-${post.queue_id}" class="btn-send-now" data-queue-id="${post.queue_id}">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Send Now</span>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function showTimelineError(message) {
+            const container = document.getElementById('posts-timeline-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function publishPost(queueId) {
+            const btn = document.getElementById(`send-now-${queueId}`);
+            if (!btn) return;
+            
+            // Disable button and show loading state
+            btn.disabled = true;
+            btn.classList.add('loading');
+            const originalText = btn.querySelector('span').textContent;
+            btn.querySelector('span').textContent = 'Publishing...';
+            
+            try {
+                const response = await fetch(`/api/posts/${queueId}/publish`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload timeline to show updated status
+                    await loadPostsTimeline();
+                    // Show success message
+                    const postItem = document.querySelector(`.timeline-post[data-queue-id="${queueId}"]`);
+                    if (postItem) {
+                        postItem.style.borderLeft = '4px solid #10b981';
+                    }
+                } else {
+                    alert('Error publishing post: ' + (data.error || 'Unknown error'));
+                    // Re-enable button
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    btn.querySelector('span').textContent = originalText;
+                }
+            } catch (error) {
+                console.error('Error publishing post:', error);
+                alert('Error publishing post: ' + error.message);
+                // Re-enable button
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btn.querySelector('span').textContent = originalText;
+            }
+        }
+        
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             loadTimelineData();
@@ -851,6 +1158,12 @@
             
             // Load automated posting control state
             loadAutomatedPostingState();
+            
+            // Load posts timeline
+            loadPostsTimeline();
+            
+            // Refresh timeline every 60 seconds
+            setInterval(loadPostsTimeline, 60000);
             
             // Set up toggle handler
             const toggle = document.getElementById('automated-posting-toggle');
@@ -896,6 +1209,12 @@
                         statusDot.className = 'status-dot ' + (enabled ? 'enabled' : 'disabled');
                         statusText.textContent = enabled ? 'Enabled' : 'Disabled';
                     }
+                    
+                    // Store state for timeline rendering
+                    automatedPostingEnabled = enabled;
+                    
+                    // Reload timeline to show/hide Send Now buttons
+                    loadPostsTimeline();
                 }
             } catch (error) {
                 console.error('Error loading automated posting state:', error);
@@ -933,6 +1252,12 @@
                         statusDot.className = 'status-dot ' + (enabled ? 'enabled' : 'disabled');
                         statusText.textContent = enabled ? 'Enabled' : 'Disabled';
                     }
+                    
+                    // Store state for timeline rendering
+                    automatedPostingEnabled = enabled;
+                    
+                    // Reload timeline to show/hide Send Now buttons
+                    loadPostsTimeline();
                 } else {
                     // Revert toggle on error
                     const toggle = document.getElementById('automated-posting-toggle');
