@@ -1052,9 +1052,26 @@
         }
         
         function renderPostItem(post) {
-            const scheduledDate = post.scheduled_date ? new Date(post.scheduled_date).toLocaleDateString() : 'Not scheduled';
-            const scheduledTime = post.scheduled_time ? post.scheduled_time.substring(0, 5) : '';
-            const scheduledDisplay = scheduledTime ? `${scheduledDate} ${scheduledTime}` : scheduledDate;
+            // Format scheduled date/time properly
+            let scheduledDisplay = 'Not scheduled';
+            if (post.scheduled_date) {
+                const dateObj = new Date(post.scheduled_date + 'T00:00:00');
+                const dateStr = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                if (post.scheduled_time) {
+                    const timeStr = post.scheduled_time.substring(0, 5); // HH:MM
+                    scheduledDisplay = `${dateStr} ${timeStr}`;
+                } else {
+                    scheduledDisplay = dateStr;
+                }
+            }
+            
+            // Format content type for display
+            const contentTypeDisplay = {
+                'weekly_word': 'Word',
+                'weekly_phrase': 'Phrase',
+                'weekly_insult': 'Insult',
+                'product': 'Product'
+            }[post.content_type] || post.content_type || 'unknown';
             
             const statusClass = post.status ? post.status.toLowerCase() : 'unknown';
             const dueClass = post.is_due && post.status !== 'published' ? 'due' : '';
@@ -1068,13 +1085,13 @@
             
             return `
                 <div class="timeline-post ${dueClass} ${publishedClass}" data-queue-id="${post.queue_id}">
-                    <img src="${imageSrc}" alt="${post.title}" class="timeline-post-image" onerror="this.src='/static/images/placeholder.png'">
+                    <img src="${imageSrc}" alt="${escapeHtml(post.title)}" class="timeline-post-image" onerror="this.src='/static/images/placeholder.png'">
                     <div class="timeline-post-content">
                         <div class="timeline-post-title">${escapeHtml(post.title)}</div>
                         <div class="timeline-post-meta">
                             <span class="timeline-post-meta-item">
                                 <i class="fas fa-tag"></i>
-                                <span>${post.content_type || 'unknown'}</span>
+                                <span>${contentTypeDisplay}</span>
                             </span>
                             <span class="timeline-post-meta-item">
                                 <i class="fas fa-calendar"></i>

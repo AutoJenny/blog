@@ -475,16 +475,13 @@ def api_posts_timeline():
                 query += " AND pq.status = %s"
                 params.append(status_filter)
             
-            # Order by scheduled time: upcoming first (ASC), then past (DESC), excluding published by default
-            # Show upcoming posts first, then past posts, but prioritize non-published
+            # Filter to only show posts scheduled from today onwards (not old past posts)
+            query += " AND pq.scheduled_date >= CURRENT_DATE"
+            
+            # Order by scheduled time: upcoming first (ASC)
             query += """
                 ORDER BY 
-                    CASE 
-                        WHEN pq.status = 'published' THEN 2
-                        ELSE 1
-                    END,
-                    COALESCE(pq.scheduled_timestamp, (pq.scheduled_date::date + pq.scheduled_time::time)::timestamp) ASC NULLS LAST,
-                    pq.created_at DESC
+                    COALESCE(pq.scheduled_timestamp, (pq.scheduled_date::date + pq.scheduled_time::time)::timestamp) ASC NULLS LAST
                 LIMIT %s
             """
             params.append(limit)
