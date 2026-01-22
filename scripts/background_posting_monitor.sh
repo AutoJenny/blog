@@ -66,11 +66,11 @@ main() {
         log "Executing product post workflows..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_product_post_workflow.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_product_post_workflow.py exited with error (continuing)"
         
-        # Step 5: Run the automated posting scheduler (for product posts)
+        # Step 6: Run the automated posting scheduler (for product posts)
         log "Running automated posting scheduler..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_posting.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_posting.py exited with error (continuing)"
         
-        # Step 6: Run the scheduled posting executor (centralized date-sensitive scheduler)
+        # Step 7: Run the scheduled posting executor (centralized date-sensitive scheduler)
         log "Running scheduled posting executor..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/scheduled_posting_executor.py" >> "$LOG_FILE" 2>&1 || log "Warning: scheduled_posting_executor.py exited with error (continuing)"
         
