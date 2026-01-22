@@ -1,0 +1,259 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Vector Search System</h1>
+    
+    {{ get_status_badge('complete')|safe }}
+    
+    <p class="kb-intro">
+        The <strong>Vector Search System</strong> provides semantic similarity matching across all content types in the system.
+        It enables intelligent content discovery, context retrieval for LLM generation, and automatic matching of related content.
+    </p>
+    
+    <h2>What Is Vector Search?</h2>
+    <p>Vector search uses <strong>embeddings</strong> (numerical representations of text) to find content based on <em>meaning</em>, not just keywords.
+    This allows the system to understand semantic relationships between products, categories, knowledge base articles, and blog posts.</p>
+    
+    <div class="kb-info" style="background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>Example:</strong> Searching for "Scottish tartan scarves" will find products, categories, and KB articles related to tartans, 
+        scarves, Scottish heritage, and similar concepts - even if those exact words aren't in the content.
+    </div>
+    
+    <h2>How It Works</h2>
+    
+    <h3>1. Content Chunking</h3>
+    <p>Content from different sources is processed into <strong>chunks</strong> - normalized text ready for embedding:</p>
+    <ul>
+        <li><strong>Products</strong> - Name, description, specs, supplier info</li>
+        <li><strong>Categories</strong> - Name, description, heritage data</li>
+        <li><strong>KB Articles</strong> - Article content (some articles split into multiple chunks)</li>
+        <li><strong>Producers</strong> - Supplier/producer information</li>
+        <li><strong>Posts</strong> - Blog post content (theme posts)</li>
+    </ul>
+    
+    <h3>2. Embedding Generation</h3>
+    <p>Each chunk is converted to a <strong>1024-dimensional vector</strong> using the <code>intfloat/e5-large-v2</code> model:</p>
+    <ul>
+        <li>Model: E5-large-v2 (HuggingFace Transformers)</li>
+        <li>Dimensions: 1024</li>
+        <li>Optimized for semantic search and retrieval</li>
+    </ul>
+    
+    <h3>3. FAISS Index</h3>
+    <p>All embeddings are stored in a <strong>FAISS index</strong> for fast similarity search:</p>
+    <ul>
+        <li>Type: HNSW (Hierarchical Navigable Small World)</li>
+        <li>Location: <code>data/vector_index/products_categories.faiss</code></li>
+        <li>Total Vectors: 2,117 (as of 2026-01-22)</li>
+        <li>Search Speed: &lt;100ms for top-10 results</li>
+    </ul>
+    
+    <h3>4. Similarity Search</h3>
+    <p>When searching, the system:</p>
+    <ol>
+        <li>Generates an embedding for the query text</li>
+        <li>Searches the FAISS index for nearest neighbors</li>
+        <li>Retrieves metadata from the database</li>
+        <li>Returns results with similarity scores</li>
+    </ol>
+    
+    <h2>Database Schema</h2>
+    
+    <h3>Primary Table: <code>content_chunks</code></h3>
+    <p>Stores all chunked content with embedding metadata:</p>
+    <ul>
+        <li><strong>chunk_type</strong> - Type: 'product', 'category', 'kb', 'producer', or 'post'</li>
+        <li><strong>source_id</strong> - Reference to the source (product_id, category_id, etc.)</li>
+        <li><strong>chunk_text</strong> - Normalized text content</li>
+        <li><strong>metadata</strong> - JSONB with context (names, IDs, paths, etc.)</li>
+        <li><strong>embedding_model</strong> - Model used (e.g., 'e5-large-v2')</li>
+        <li><strong>embedding_dim</strong> - Vector dimensions (1024)</li>
+        <li><strong>faiss_index_id</strong> - Position in FAISS index</li>
+        <li><strong>last_embedded_at</strong> - Timestamp of last embedding generation</li>
+    </ul>
+    
+    <h3>Current Data (2026-01-22)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+            <tr style="background: #f1f5f9;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #cbd5e1;">Chunk Type</th>
+                <th style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">Chunks</th>
+                <th style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">Sources</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>Products</strong></td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">1,157</td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">1,157</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>KB Articles</strong></td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">696</td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">629</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>Categories</strong></td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">259</td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">259</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>Producers</strong></td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">3</td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">3</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>Posts</strong></td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">2</td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">2</td>
+            </tr>
+            <tr style="background: #f8fafc; font-weight: bold;">
+                <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>Total</strong></td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">2,117</td>
+                <td style="padding: 10px; text-align: right; border: 1px solid #cbd5e1;">2,050</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>Use Cases</h2>
+    
+    <h3>1. Profile Post Theme Matching ✅</h3>
+    <p><strong>Status:</strong> Fully implemented</p>
+    <p>Automatically matches theme posts to products, categories, and suppliers for profile post generation:</p>
+    <ul>
+        <li>Extracts content from theme post</li>
+        <li>Generates embedding for the theme</li>
+        <li>Searches for similar products, categories, and suppliers</li>
+        <li>Uses weighted selection algorithm to choose best match</li>
+        <li>Allows manual override if needed</li>
+    </ul>
+    <p><strong>Location:</strong> SEO Meta page → Vector Embeddings panel</p>
+    
+    <h3>2. Content Generation ✅</h3>
+    <p><strong>Status:</strong> Active</p>
+    <p>Retrieves relevant context for LLM-based content generation:</p>
+    <ul>
+        <li>User selects product or category</li>
+        <li>System finds similar products/categories via vector search</li>
+        <li>Retrieves KB articles related to the topic</li>
+        <li>Provides context to LLM for content generation</li>
+    </ul>
+    <p><strong>Location:</strong> Content Generation modal</p>
+    
+    <h3>3. Product Discovery ✅</h3>
+    <p><strong>Status:</strong> Active</p>
+    <p>Finds similar products based on semantic similarity:</p>
+    <ul>
+        <li>Product recommendations</li>
+        <li>Alternative product suggestions</li>
+        <li>Cross-category product discovery</li>
+    </ul>
+    
+    <h3>4. Knowledge Base Search ✅</h3>
+    <p><strong>Status:</strong> Active</p>
+    <p>Semantic search across KB articles:</p>
+    <ul>
+        <li>Find relevant KB articles for content generation</li>
+        <li>Automatic linking between content and KB</li>
+        <li>Context retrieval for LLM prompts</li>
+    </ul>
+    
+    <h2>Key Files & Scripts</h2>
+    
+    <h3>Core Infrastructure</h3>
+    <ul>
+        <li><code>utils/vector_search/chunking.py</code> - Content chunking logic</li>
+        <li><code>utils/vector_search/embeddings.py</code> - Embedding generation</li>
+        <li><code>utils/vector_search/faiss_index.py</code> - FAISS index management</li>
+        <li><code>utils/vector_search/retrieval.py</code> - Semantic search/retrieval</li>
+        <li><code>utils/vector_search/post_extractor.py</code> - Post content extraction</li>
+    </ul>
+    
+    <h3>Scripts</h3>
+    <ul>
+        <li><code>scripts/generate_embeddings.py</code> - Batch embedding generation
+            <ul>
+                <li><code>--products</code> - Generate product embeddings</li>
+                <li><code>--categories</code> - Generate category embeddings</li>
+                <li><code>--kb</code> - Generate KB article embeddings</li>
+                <li><code>--producers</code> - Generate producer embeddings</li>
+                <li><code>--posts</code> - Generate post embeddings</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h3>API Endpoints</h3>
+    <ul>
+        <li><code>POST /api/content/search</code> - Vector search endpoint</li>
+        <li><code>POST /header/api/posts/&lt;post_id&gt;/generate-embeddings</code> - Generate post embeddings and find matches</li>
+        <li><code>POST /header/api/posts/&lt;post_id&gt;/save-embedding-overrides</code> - Save manual overrides</li>
+        <li><code>GET /header/api/posts/&lt;post_id&gt;/get-embedding-overrides</code> - Get saved overrides</li>
+    </ul>
+    
+    <h2>Maintenance</h2>
+    
+    <h3>Regenerating Embeddings</h3>
+    <p>To regenerate embeddings for specific content types:</p>
+    <pre style="background: #f1f5f9; padding: 15px; border-radius: 5px; overflow-x: auto;"><code># Products
+python3 scripts/generate_embeddings.py --products
+
+# Categories
+python3 scripts/generate_embeddings.py --categories
+
+# KB Articles
+python3 scripts/generate_embeddings.py --kb
+
+# Producers
+python3 scripts/generate_embeddings.py --producers
+
+# Posts
+python3 scripts/generate_embeddings.py --posts</code></pre>
+    
+    <h3>Incremental Updates</h3>
+    <p>The system tracks <code>last_embedded_at</code> timestamps to support incremental updates. Changed content can be detected and re-embedded without full regeneration.</p>
+    
+    <h2>Technical Details</h2>
+    
+    <h3>Embedding Model</h3>
+    <ul>
+        <li><strong>Model:</strong> intfloat/e5-large-v2</li>
+        <li><strong>Dimensions:</strong> 1024</li>
+        <li><strong>Provider:</strong> HuggingFace Transformers</li>
+        <li><strong>Library:</strong> sentence-transformers</li>
+    </ul>
+    
+    <h3>FAISS Index Configuration</h3>
+    <ul>
+        <li><strong>Type:</strong> HNSW (Hierarchical Navigable Small World)</li>
+        <li><strong>M Parameter:</strong> 32 (connectivity)</li>
+        <li><strong>efConstruction:</strong> 200 (construction quality)</li>
+        <li><strong>efSearch:</strong> 50 (search quality vs speed)</li>
+    </ul>
+    
+    <h3>Similarity Calculation</h3>
+    <p>Similarity scores are calculated as: <code>1.0 / (1.0 + distance)</code></p>
+    <ul>
+        <li><strong>Range:</strong> 0.0 (no similarity) to 1.0 (perfect match)</li>
+        <li><strong>Typical Good Match:</strong> &gt;0.7 similarity</li>
+        <li><strong>Excellent Match:</strong> &gt;0.85 similarity</li>
+    </ul>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='generated') }}">Generated Posts</a> - Uses vector search for context</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='profile') }}">Profile Posts</a> - Uses vector search for theme matching</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='backend', page='database') }}">Database Architecture</a> - Database schema details</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='backend', page='apis') }}">API Endpoints</a> - Vector search APIs</li>
+        </ul>
+    </div>
+    
+    <div class="kb-info" style="background: #d1fae5; border-left: 4px solid #10b981; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #065f46;">
+            <strong>📚 Full Documentation:</strong> See <code>docs/VECTOR_TABLES_SUMMARY.md</code> for comprehensive technical details, 
+            migration files, and implementation history.
+        </p>
+    </div>
+</div>
+{% endblock %}

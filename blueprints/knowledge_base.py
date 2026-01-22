@@ -252,6 +252,11 @@ KB_STRUCTURE = {
                 'title': 'Services & Utilities',
                 'template': 'knowledge_base/backend/services.html',
                 'status': 'planned'
+            },
+            'vector_search': {
+                'title': 'Vector Search System',
+                'template': 'knowledge_base/backend/vector_search.html',
+                'status': 'complete'
             }
         }
     },
