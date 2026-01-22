@@ -16,6 +16,7 @@
     - year: Override for current_year
     - week: Override for current_week
 #}
+{# Remove the recursive include that was causing issues #}
 
 {# Get year and week from context, with fallbacks #}
 {% set display_year = year|default(current_year|default(2025)) %}

@@ -161,7 +161,10 @@ def api_calendar_schedule(year, week_number):
                 '_from_cyclic_system': True
             })
         
-        # Add product posts from posting_queue for this week
+        # Add automated Facebook posts (products and messages) from posting_queue for this week
+        # CRITICAL: Use post_type_channel_config as authoritative source to determine what should be displayed
+        # - Products: Exclude Saturday (day 6) - Messages replace Saturday product posts
+        # - Messages: Only Saturday (day 6)
         try:
             from datetime import date, timedelta
             
@@ -171,9 +174,39 @@ def api_calendar_schedule(year, week_number):
             week_start = date(year, 1, 4) + timedelta(days=(week_number - 1) * 7 - jan4_day)
             week_end = week_start + timedelta(days=6)
             
-            logger.info(f"Loading product posts for week {year}-W{week_number:02d}: {week_start} to {week_end}")
+            logger.info(f"Loading automated Facebook posts for week {year}-W{week_number:02d}: {week_start} to {week_end}")
             
             with db_manager.get_cursor() as cursor:
+                # First, check post_type_channel_config to see what should be displayed
+                # This is the authoritative source - same as publication schedule view
+                cursor.execute("""
+                    SELECT 
+                        post_type,
+                        channel,
+                        publication_day
+                    FROM post_type_channel_config
+                    WHERE is_active = TRUE
+                    AND publication_day IS NOT NULL
+                    AND channel = 'facebook'
+                    AND post_type IN ('product', 'message')
+                """)
+                configs = cursor.fetchall()
+                
+                # Determine which days should show products vs messages
+                product_days = set()
+                message_days = set()
+                for config in configs:
+                    day = config['publication_day']
+                    if config['post_type'] == 'product':
+                        product_days.add(day)
+                    elif config['post_type'] == 'message':
+                        message_days.add(day)
+                
+                logger.info(f"Product days from config: {sorted(product_days)}, Message days: {sorted(message_days)}")
+                
+                # Query product posts - EXCLUDE Saturday (day 6) in SQL query
+                # Messages replace Saturday product posts, so we filter them out at the database level
+                # Use ISODOW for ISO weekday (1=Monday, 7=Sunday), not DOW (0=Sunday, 6=Saturday)
                 cursor.execute("""
                     SELECT 
                         pq.id as posting_queue_id,
@@ -181,21 +214,28 @@ def api_calendar_schedule(year, week_number):
                         pq.scheduled_date,
                         pq.scheduled_time,
                         pq.status,
+                        EXTRACT(ISODOW FROM pq.scheduled_date) as weekday,
                         cp.name as product_name,
                         cp.sku
                     FROM posting_queue pq
                     LEFT JOIN clan_products cp ON pq.product_id = cp.id
                     WHERE pq.content_type = 'product'
+                      AND pq.platform = 'facebook'
                       AND pq.scheduled_date >= %s
                       AND pq.scheduled_date <= %s
                       AND pq.scheduled_timestamp IS NOT NULL
+                      AND EXTRACT(ISODOW FROM pq.scheduled_date) != 6  -- Exclude Saturday (day 6)
                     ORDER BY pq.scheduled_date, pq.scheduled_time
                 """, (week_start, week_end))
                 product_posts = cursor.fetchall()
                 
-                logger.info(f"Found {len(product_posts)} product posts in database")
+                # No need to filter in Python - already filtered in SQL
+                filtered_product_posts = product_posts
                 
-                for idx, post in enumerate(product_posts):
+                logger.info(f"Found {len(product_posts)} product posts, {len(filtered_product_posts)} after excluding Saturday")
+                
+                # Add product posts (excluding Saturday)
+                for idx, post in enumerate(filtered_product_posts):
                     if post['scheduled_date']:
                         schedule.append({
                             'type': 'product',
@@ -209,10 +249,54 @@ def api_calendar_schedule(year, week_number):
                             'position': idx + 1
                         })
                 
-                logger.info(f"Added {len([s for s in schedule if s.get('type') == 'product'])} product posts to schedule")
+                # Query message posts - ONLY Saturday (day 6)
+                # Use ISODOW for ISO weekday (1=Monday, 7=Sunday)
+                cursor.execute("""
+                    SELECT 
+                        pq.id as posting_queue_id,
+                        pq.scheduled_date,
+                        pq.scheduled_time,
+                        pq.status,
+                        pq.generated_content,
+                        EXTRACT(ISODOW FROM pq.scheduled_date) as weekday
+                    FROM posting_queue pq
+                    WHERE pq.content_type = 'message'
+                      AND pq.platform = 'facebook'
+                      AND pq.scheduled_date >= %s
+                      AND pq.scheduled_date <= %s
+                      AND pq.scheduled_timestamp IS NOT NULL
+                      AND EXTRACT(ISODOW FROM pq.scheduled_date) = 6  -- Only Saturday (day 6)
+                    ORDER BY pq.scheduled_date, pq.scheduled_time
+                """, (week_start, week_end))
+                message_posts = cursor.fetchall()
+                
+                # Already filtered in SQL - no need to filter in Python
+                saturday_messages = message_posts
+                
+                logger.info(f"Found {len(message_posts)} message posts, {len(saturday_messages)} for Saturday")
+                
+                # Add message posts (Saturday only)
+                for idx, post in enumerate(saturday_messages):
+                    if post['scheduled_date']:
+                        # Extract first line of message for title
+                        content = post['generated_content'] or ''
+                        title = content.split('\n')[0][:50] if content else 'Message'
+                        
+                        schedule.append({
+                            'type': 'message',
+                            'item_id': post['posting_queue_id'],
+                            'posting_queue_id': post['posting_queue_id'],
+                            'title': title,
+                            'scheduled_date': str(post['scheduled_date']),
+                            'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
+                            'status': post['status'] or 'ready',
+                            'position': idx + 1
+                        })
+                
+                logger.info(f"Added {len([s for s in schedule if s.get('type') == 'product'])} product posts and {len([s for s in schedule if s.get('type') == 'message'])} message posts to schedule")
         except Exception as e:
-            logger.error(f"Error loading product posts for week view: {e}", exc_info=True)
-            # Continue without product posts if there's an error
+            logger.error(f"Error loading automated Facebook posts for week view: {e}", exc_info=True)
+            # Continue without posts if there's an error
         
         # Return response with new cyclic system data
         selected_theme_id = theme.get('id') if theme else None
