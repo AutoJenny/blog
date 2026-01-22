@@ -252,7 +252,8 @@ def api_dashboard_schedule():
             'weekly_word': 'Word',
             'weekly_phrase': 'Phrase',
             'weekly_insult': 'Insult',
-            'product': 'Product'
+            'product': 'Product',
+            'message': 'Message'
         }
         
         # Get all active post type configurations
@@ -298,9 +299,9 @@ def api_dashboard_schedule():
                             time_str = publication_time.strftime('%H:%M')
                     
                     # Determine if this post type is automated
-                    # Automated: weekly content (word/phrase/insult) and product posts
+                    # Automated: weekly content (word/phrase/insult), product posts, and message posts
                     # Manual/Development: blog posts (theme, recipe, profiles)
-                    is_automated = post_type in ('weekly_word', 'weekly_phrase', 'weekly_insult', 'product')
+                    is_automated = post_type in ('weekly_word', 'weekly_phrase', 'weekly_insult', 'product', 'message')
                     
                     # Build item data - TYPE ONLY, no details
                     item_data = {
@@ -369,8 +370,9 @@ def api_dashboard_schedule():
                             weekdays = json.loads(days)
                     
                     # Add one Product entry for each weekday in the schedule
+                    # EXCLUDE Saturday (day 6) - Messages replace Saturday product posts
                     for weekday in weekdays:
-                        if 1 <= weekday <= 7:
+                        if 1 <= weekday <= 7 and weekday != 6:  # Skip Saturday
                             item_data = {
                                 'post_type': 'product',
                                 'type_name': 'Product',
@@ -415,7 +417,7 @@ def api_dashboard_schedule():
                         END as priority
                     FROM posting_queue pq
                     WHERE pq.platform = 'facebook'
-                    AND pq.content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult', 'product')
+                    AND pq.content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult', 'product', 'message')
                     AND pq.scheduled_date >= %s
                     AND pq.scheduled_date <= %s
                     AND pq.status != 'failed'
@@ -475,7 +477,8 @@ def api_dashboard_schedule():
                         'weekly_word': 'weekly_word',
                         'weekly_phrase': 'weekly_phrase',
                         'weekly_insult': 'weekly_insult',
-                        'product': 'product'
+                        'product': 'product',
+                        'message': 'message'
                     }
                     content_type = content_type_map.get(post_type)
                     
@@ -572,7 +575,7 @@ def api_update_schedule():
                     """, (time, post_type, channel))
                 
                 # For automated items, also update posting_queue entries for this week
-                if year and week and post_type in ('weekly_word', 'weekly_phrase', 'weekly_insult', 'product'):
+                if year and week and post_type in ('weekly_word', 'weekly_phrase', 'weekly_insult', 'product', 'message'):
                     # Calculate week dates
                     from datetime import timedelta
                     jan4 = date(year, 1, 4)

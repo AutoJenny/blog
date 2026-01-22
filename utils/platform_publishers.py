@@ -57,6 +57,141 @@ def publish_to_facebook(queue_id: int) -> Dict:
         
         content_type = queue_row.get('content_type')
         
+        # For message posts, use text-only posting
+        if content_type == 'message':
+            # Get message text (preserve line breaks)
+            message_text = queue_row.get('generated_content', '')
+            if not message_text:
+                return {
+                    "success": False,
+                    "error": "Message content not found"
+                }
+            
+            # Get Facebook credentials for both pages
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT credential_key, credential_value
+                    FROM platform_credentials 
+                    WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                    AND is_active = true
+                """)
+                credentials = cursor.fetchall()
+            
+            # Convert to dictionary
+            creds = {}
+            for cred in credentials:
+                creds[cred['credential_key']] = cred['credential_value']
+            
+            # Define both pages to post to
+            pages_to_post = []
+            
+            # Page 1 (Scotweb CLAN)
+            if creds.get('page_access_token') and creds.get('page_id'):
+                pages_to_post.append({
+                    'page_id': creds['page_id'],
+                    'access_token': creds['page_access_token'],
+                    'name': 'Scotweb CLAN'
+                })
+            
+            # Page 2 (CLAN by Scotweb) - only add if different from Page 1
+            if (creds.get('page_access_token_2') and creds.get('page_id_2') and 
+                creds.get('page_id_2') != creds.get('page_id')):
+                pages_to_post.append({
+                    'page_id': creds['page_id_2'],
+                    'access_token': creds['page_access_token_2'],
+                    'name': 'CLAN by Scotweb'
+                })
+            elif creds.get('page_id_2') == creds.get('page_id'):
+                logger.warning("Both Facebook pages have the same page_id - skipping duplicate posting to prevent double posts")
+            
+            if not pages_to_post:
+                return {
+                    "success": False,
+                    "error": "No Facebook pages configured"
+                }
+            
+            # Post to both pages using /feed endpoint for text-only posts
+            results = []
+            successful_posts = []
+            failed_posts = []
+            
+            for page in pages_to_post:
+                feed_url = f"https://graph.facebook.com/v18.0/{page['page_id']}/feed"
+                feed_payload = {
+                    'message': message_text,  # Text-only, line breaks preserved
+                    'published': True,
+                    'access_token': page['access_token']
+                }
+                
+                logger.info(f"Posting text-only message to {page['name']} (Page ID: {page['page_id']})")
+                logger.info(f"Message: {message_text[:100]}...")
+                
+                try:
+                    response = requests.post(feed_url, data=feed_payload, timeout=30)
+                    logger.info(f"Facebook API response - Status: {response.status_code}")
+                    logger.info(f"Facebook API response - Content: {response.text}")
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        fb_post_id = result.get('id')
+                        successful_posts.append(fb_post_id)
+                        results.append({
+                            'page_name': page['name'],
+                            'page_id': page['page_id'],
+                            'post_id': fb_post_id,
+                            'success': True
+                        })
+                    else:
+                        error_data = response.json() if response.content else {}
+                        error_msg = error_data.get('error', {}).get('message', 'Unknown Facebook API error')
+                        failed_posts.append(f"{page['name']}: {error_msg}")
+                        results.append({
+                            'page_name': page['name'],
+                            'page_id': page['page_id'],
+                            'success': False,
+                            'error': error_msg
+                        })
+                except Exception as e:
+                    error_msg = str(e)
+                    failed_posts.append(f"{page['name']}: {error_msg}")
+                    logger.error(f"Error posting to {page['name']}: {e}")
+                    results.append({
+                        'page_name': page['name'],
+                        'page_id': page['page_id'],
+                        'success': False,
+                        'error': error_msg
+                    })
+            
+            # Return result (status update handled by scheduler)
+            if successful_posts:
+                platform_post_id_str = str(successful_posts[0])
+                
+                if len(failed_posts) == 0:
+                    return {
+                        "success": True,
+                        "message": f"Successfully posted to {len(successful_posts)} page(s)",
+                        "platform_post_id": platform_post_id_str,
+                        "platform_post_ids": successful_posts,
+                        "results": results
+                    }
+                else:
+                    return {
+                        "success": True,
+                        "message": f"Posted to {len(successful_posts)} page(s), failed on {len(failed_posts)}: {', '.join(failed_posts)}",
+                        "platform_post_id": platform_post_id_str,
+                        "platform_post_ids": successful_posts,
+                        "results": results,
+                        "warnings": failed_posts
+                    }
+            else:
+                # All posts failed
+                return {
+                    "success": False,
+                    "error": f"Failed to post to all pages: {', '.join(failed_posts)}",
+                    "results": results
+                }
+        
+        # For image posts (weekly content, products)
         # Get generated image and caption
         image_path = queue_row.get('image_path')
         caption = queue_row.get('generated_caption')
