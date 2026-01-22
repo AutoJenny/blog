@@ -491,10 +491,80 @@ def api_posts_timeline():
             cursor.execute(query, tuple(params))
             posts = cursor.fetchall()
             
-            # Format posts for response
-            timeline = []
+            # Filter out non-compliant posts and duplicates
+            # Rules:
+            # - weekly_word: Monday only (weekday 1)
+            # - weekly_phrase: Wednesday only (weekday 3)
+            # - weekly_insult: Friday only (weekday 5)
+            # - Only one post per content_type per day (keep oldest)
+            from datetime import date
+            
+            compliant_posts = []
+            seen_by_type_date = {}  # (content_type, scheduled_date) -> post
+            
             for post in posts:
                 post_dict = dict(post)
+                content_type = post_dict.get('content_type', '')
+                scheduled_date = post_dict.get('scheduled_date')
+                
+                # Skip if no scheduled_date
+                if not scheduled_date:
+                    continue
+                
+                # Parse date if string
+                if isinstance(scheduled_date, str):
+                    scheduled_date = date.fromisoformat(scheduled_date.split('T')[0])
+                elif hasattr(scheduled_date, 'date'):
+                    scheduled_date = scheduled_date.date()
+                
+                # Check weekday compliance for weekly content
+                if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                    weekday = scheduled_date.isoweekday()  # 1=Monday, 7=Sunday
+                    expected_weekday = {
+                        'weekly_word': 1,    # Monday
+                        'weekly_phrase': 3,  # Wednesday
+                        'weekly_insult': 5   # Friday
+                    }.get(content_type)
+                    
+                    if weekday != expected_weekday:
+                        logger.debug(f"Skipping non-compliant post {post_dict.get('queue_id')}: {content_type} on weekday {weekday} (expected {expected_weekday})")
+                        continue
+                
+                # Deduplicate: keep only one post per content_type per day (prefer oldest)
+                key = (content_type, scheduled_date.isoformat())
+                if key in seen_by_type_date:
+                    # Keep the one with earlier created_at
+                    existing = seen_by_type_date[key]
+                    existing_created = existing.get('created_at')
+                    current_created = post_dict.get('created_at')
+                    
+                    if existing_created and current_created:
+                        # Compare timestamps
+                        if isinstance(existing_created, str):
+                            existing_created = datetime.fromisoformat(existing_created.replace('Z', '+00:00'))
+                        if isinstance(current_created, str):
+                            current_created = datetime.fromisoformat(current_created.replace('Z', '+00:00'))
+                        
+                        if current_created < existing_created:
+                            # Current is older, replace
+                            seen_by_type_date[key] = post_dict
+                            logger.debug(f"Replacing duplicate post {existing.get('queue_id')} with older {post_dict.get('queue_id')} for {content_type} on {scheduled_date}")
+                        else:
+                            # Existing is older, skip current
+                            logger.debug(f"Skipping duplicate post {post_dict.get('queue_id')} (keeping older {existing.get('queue_id')}) for {content_type} on {scheduled_date}")
+                            continue
+                    else:
+                        # Can't compare, keep existing
+                        logger.debug(f"Skipping duplicate post {post_dict.get('queue_id')} for {content_type} on {scheduled_date}")
+                        continue
+                else:
+                    seen_by_type_date[key] = post_dict
+                
+                compliant_posts.append(post_dict)
+            
+            # Format posts for response
+            timeline = []
+            for post_dict in compliant_posts:
                 
                 # Format dates
                 for key in ['created_at', 'updated_at', 'scheduled_date', 'scheduled_timestamp']:
