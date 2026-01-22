@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-01-22 - Timeline Filtering & Message Posts Display Fixes
+
+### Fixed
+- **Timeline Non-Compliant Posts**: Fixed Upcoming Posts timeline showing non-compliant and duplicate posts
+  - **Root Cause**: Timeline API was showing all posts from `posting_queue` without filtering for schedule compliance
+  - **Solution**: 
+    - Filter out weekly content posts on wrong weekdays (weekly_word must be Monday, weekly_phrase must be Wednesday, weekly_insult must be Friday)
+    - Deduplicate posts: keep only one post per content_type per day (prefers oldest when duplicates exist)
+    - Log filtered posts for debugging
+- **Message Posts Display**: Fixed message posts showing "message #4630" instead of actual message text
+  - **Root Cause**: Timeline API wasn't including `generated_content` field and title logic didn't handle message posts
+  - **Solution**: 
+    - Added `generated_content` to timeline API query
+    - Use first line of `generated_content` as title for message posts (up to 60 chars)
+    - Added 'message' to content type display mapping
+
+### Changed
+- **Timeline API** (`blueprints/posts.py::api_posts_timeline()`):
+  - Added weekday compliance filtering for weekly content posts
+  - Added deduplication logic (one post per content_type per day)
+  - Added `generated_content` field to query for message posts
+  - Enhanced title determination to handle message posts
+- **Status Display Consistency**: Removed status display for message posts (like language posts)
+  - Messages are automated and don't need status shown (redundant)
+  - Keeps UI consistent across all automated post types
+- **Message Post Status**: Changed message posts to be created as 'ready' instead of 'draft'
+  - Messages are text-only and don't need workflow (no image generation)
+  - Updated existing draft message posts to 'ready' status
+
+### Technical Details
+- File: `blueprints/posts.py`
+- API endpoint: `GET /api/posts/timeline`
+- Filtering rules:
+  - `weekly_word`: Monday only (weekday 1)
+  - `weekly_phrase`: Wednesday only (weekday 3)
+  - `weekly_insult`: Friday only (weekday 5)
+  - Deduplication: keeps oldest post when multiple exist for same type/day
+- File: `static/js/planning/unified-item-card.js` - Removed status display for messages
+- File: `scripts/automated_message_post_creator.py` - Create messages as 'ready' status
+
+### Status
+✅ **PRODUCTION READY** - Timeline now only shows compliant posts following schedule rules
+
+---
+
 ## 2026-01-22 - Publication Schedule Scheduled Time Display Fix
 
 ### Fixed
