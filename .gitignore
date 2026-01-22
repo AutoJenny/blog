@@ -10,4 +10,4 @@ blog-core/blog_test_backup_*.sql
 *.log
 *.safetensors
 logs/*.out
-logs/*.err
+logs/*.errunified_app.out
