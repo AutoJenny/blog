@@ -126,6 +126,8 @@ function renderSchedule(channels) {
                         week: item.week,
                         channel: item.channel,
                         scheduled_time: item.scheduled_time,  // Pass scheduled time for display
+                        postExists: item.post_exists !== undefined ? item.post_exists : false,  // Pass post_exists flag
+                        postStatus: item.post_status || null,  // Pass post_status for status display
                         dataset: {
                             contentFormat: item.content_format,
                             typeName: item.type_name || '',

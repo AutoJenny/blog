@@ -247,8 +247,16 @@ function createUnifiedItemCard(item, options = {}) {
     
     const description = (isLanguageItem || isProductPost) ? null : getItemDescription(item, options.description);
     
+    // Merge options into item for status determination (options override item properties)
+    const itemForStatus = {
+        ...item,
+        post_exists: options.postExists !== undefined ? options.postExists : item.post_exists,
+        post_status: options.postStatus !== undefined ? options.postStatus : item.post_status,
+        post_id: options.postId !== undefined ? options.postId : item.post_id
+    };
+    
     // Determine post status
-    const { postExists, postId, postStatus } = determinePostStatus(item);
+    const { postExists, postId, postStatus } = determinePostStatus(itemForStatus);
     
     // Create card element
     const card = document.createElement('div');

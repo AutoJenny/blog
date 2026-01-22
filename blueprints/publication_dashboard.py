@@ -400,16 +400,17 @@ def api_dashboard_schedule():
                 week_start = date(year, 1, 4) + timedelta(days=(week - 1) * 7 - jan4_day)
                 week_end = week_start + timedelta(days=6)
                 
-                # Get scheduled times from posting_queue for Facebook automated items
+                # Get scheduled times and status from posting_queue for Facebook automated items
                 # Include ALL posts (including published) to get the actual scheduled times
                 # We'll prefer non-published posts if multiple exist for the same type/day
+                # Use ISODOW for correct weekday calculation (1=Monday, 6=Saturday, 7=Sunday)
                 cursor.execute("""
                     SELECT 
                         pq.content_type,
                         pq.scheduled_date,
                         pq.scheduled_time,
                         pq.status,
-                        EXTRACT(DOW FROM pq.scheduled_date) + 1 as weekday,
+                        EXTRACT(ISODOW FROM pq.scheduled_date) as weekday,
                         CASE 
                             WHEN pq.status = 'published' THEN 2
                             WHEN pq.status = 'failed' THEN 3
@@ -427,9 +428,10 @@ def api_dashboard_schedule():
                 
                 queue_times = cursor.fetchall()
                 
-                # Create a lookup: (content_type, weekday) -> scheduled_time
+                # Create lookups: (content_type, weekday) -> (scheduled_time, status)
                 # Prefer non-published posts, and prefer "normal" times (09:00, 11:00, etc.) over weird times (00:04)
                 time_lookup = {}
+                status_lookup = {}  # Track status for post_exists determination
                 seen_keys = set()
                 for row in queue_times:
                     content_type = row['content_type']
@@ -451,20 +453,23 @@ def api_dashboard_schedule():
                         
                         # If we already have an entry for this key
                         if key in seen_keys:
-                            existing_time = time_lookup[key]
-                            existing_hour = int(existing_time.split(':')[0]) if ':' in existing_time else 0
+                            existing_time = time_lookup.get(key, {}).get('time') if isinstance(time_lookup.get(key), dict) else time_lookup.get(key)
+                            existing_hour = int(existing_time.split(':')[0]) if existing_time and ':' in existing_time else 0
                             existing_is_normal = existing_hour >= 8
                             
                             # Prefer normal times over weird times
                             if is_normal_time and not existing_is_normal:
-                                time_lookup[key] = time_str
+                                time_lookup[key] = {'time': time_str, 'status': status}
+                                status_lookup[key] = status
                             # Prefer non-published over published if times are similar
                             elif status != 'published' and existing_time == time_str:
-                                time_lookup[key] = time_str
+                                time_lookup[key] = {'time': time_str, 'status': status}
+                                status_lookup[key] = status
                             # Otherwise keep existing
                             continue
                         
-                        time_lookup[key] = time_str
+                        time_lookup[key] = {'time': time_str, 'status': status}
+                        status_lookup[key] = status
                         seen_keys.add(key)
                 
                 # Update Facebook channel items with actual queue times
@@ -485,11 +490,34 @@ def api_dashboard_schedule():
                     # If we have a time from the queue, use it (overrides config time)
                     # But ignore "weird" times (like 00:04) and use default instead
                     # Otherwise, use config time, or default to 09:00 for weekly content if config is None
+                    # Also check if post exists in queue to set post_exists and post_status
                     if content_type and day:
-                        queue_time = time_lookup.get((content_type, day))
-                        if queue_time:
+                        queue_data = time_lookup.get((content_type, day))
+                        queue_status = status_lookup.get((content_type, day))
+                        
+                        # Check if post exists in queue
+                        if queue_data or queue_status:
+                            item['post_exists'] = True
+                            # Map posting_queue status to post_status
+                            if queue_status:
+                                post_status_map = {
+                                    'draft': 'draft',
+                                    'ready': 'ready',
+                                    'published': 'published',
+                                    'failed': 'failed'
+                                }
+                                item['post_status'] = post_status_map.get(queue_status, 'draft')
+                            else:
+                                item['post_status'] = 'draft'
+                        else:
+                            # No post in queue - check if one should exist
+                            item['post_exists'] = False
+                            item['post_status'] = None
+                        
+                        if queue_data:
+                            queue_time = queue_data.get('time') if isinstance(queue_data, dict) else queue_data
                             # Check if this is a "normal" time (hour >= 8, not midnight-ish)
-                            hour = int(queue_time.split(':')[0]) if ':' in queue_time else 0
+                            hour = int(queue_time.split(':')[0]) if queue_time and ':' in queue_time else 0
                             is_normal_time = hour >= 8
                             
                             if is_normal_time:
@@ -500,7 +528,7 @@ def api_dashboard_schedule():
                                 item['scheduled_time'] = '09:00'
                                 item['queue_time_source'] = 'default'
                             else:
-                                # For products, use the queue time even if weird
+                                # For products and messages, use the queue time even if weird
                                 item['scheduled_time'] = queue_time
                                 item['queue_time_source'] = 'queue'
                         elif not item.get('scheduled_time') and post_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
