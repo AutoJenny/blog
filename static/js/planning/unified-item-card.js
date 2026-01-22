@@ -313,11 +313,7 @@ function createUnifiedItemCard(item, options = {}) {
     titleEl.appendChild(titleText);
     
     // Show scheduled time for automated items (Facebook only)
-    const isAutomated = item.is_automated !== undefined 
-        ? item.is_automated 
-        : (options.dataset && options.dataset.isAutomated !== undefined 
-            ? options.dataset.isAutomated 
-            : false);
+    // isAutomated is already declared above (line 286), reuse it
     const isFacebook = (item.channel || options.channel) === 'facebook';
     
     if (isAutomated && isFacebook && scheduledTime) {
