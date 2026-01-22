@@ -108,7 +108,7 @@ function renderSchedule(channels) {
             }
             if (item.is_automated === undefined) {
                 // Determine automation status based on post_type
-                const automatedTypes = ['weekly_word', 'weekly_phrase', 'weekly_insult', 'product'];
+                const automatedTypes = ['weekly_word', 'weekly_phrase', 'weekly_insult', 'product', 'message'];
                 item.is_automated = automatedTypes.includes(item.post_type || item.category);
             }
             
@@ -118,31 +118,31 @@ function renderSchedule(channels) {
             if (typeof window.createUnifiedItemCard === 'function') {
                 try {
                     itemCard = window.createUnifiedItemCard(item, {
-                    category: item.category || item.post_type,
-                    typeName: item.type_name,
-                    title: item.title,
-                    description: item.description,
-                    year: item.year,
-                    week: item.week,
-                    channel: item.channel,
-                    scheduled_time: item.scheduled_time,  // Pass scheduled time for display
-                    dataset: {
-                        contentFormat: item.content_format,
-                        typeName: item.type_name || '',
-                        isAutomated: item.is_automated || false
-                    },
-                    onInfo: (e, item, card) => {
-                        // Open schedule edit modal
-                        if (window.openScheduleEditModal) {
-                            window.openScheduleEditModal(item, card);
+                        category: item.category || item.post_type,
+                        typeName: item.type_name,
+                        title: item.title,
+                        description: item.description,
+                        year: item.year,
+                        week: item.week,
+                        channel: item.channel,
+                        scheduled_time: item.scheduled_time,  // Pass scheduled time for display
+                        dataset: {
+                            contentFormat: item.content_format,
+                            typeName: item.type_name || '',
+                            isAutomated: item.is_automated || false
+                        },
+                        onInfo: (e, item, card) => {
+                            // Open schedule edit modal
+                            if (window.openScheduleEditModal) {
+                                window.openScheduleEditModal(item, card);
+                            }
+                        },
+                        onClick: (e, item, card) => {
+                            // Open schedule edit modal on card click
+                            if (window.openScheduleEditModal) {
+                                window.openScheduleEditModal(item, card);
+                            }
                         }
-                    },
-                    onClick: (e, item, card) => {
-                        // Open schedule edit modal on card click
-                        if (window.openScheduleEditModal) {
-                            window.openScheduleEditModal(item, card);
-                        }
-                    }
                     });
                 } catch (error) {
                     console.error('Error creating unified item card:', error, item);

@@ -507,6 +507,10 @@ def api_dashboard_schedule():
                             # Default to 09:00 for weekly content if no config time is set
                             item['scheduled_time'] = '09:00'
                             item['queue_time_source'] = 'default'
+                        elif not item.get('scheduled_time') and post_type == 'message':
+                            # Default to 14:30 for messages if no config time is set
+                            item['scheduled_time'] = '14:30'
+                            item['queue_time_source'] = 'default'
                         # If no queue time and config time exists, item['scheduled_time'] already has it from line 313
         
         # Sort items by day and time within each channel

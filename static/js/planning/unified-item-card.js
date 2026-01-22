@@ -54,6 +54,7 @@ function normalizeTypeForClass(category, type) {
         'insult': 'weekly-insult',
         'product': 'product',
         'product-post': 'product',
+        'message': 'message',
         'event': 'event'
     };
     
@@ -86,8 +87,9 @@ function normalizeTypeName(category, typeName, typeNameFromItem) {
         'word': 'Word',
         'phrase': 'Phrase',
         'insult': 'Insult',
-        'product': 'product',
-        'product-post': 'product',
+        'product': 'Product',
+        'product-post': 'Product',
+        'message': 'Message',
         'event': 'Event'
     };
     
