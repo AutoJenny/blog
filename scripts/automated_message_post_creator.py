@@ -175,7 +175,7 @@ class MessagePostCreator:
             logger.error(f"Error creating message post: {e}")
             return None
     
-    def create_message_posts(self, days_ahead: int = 14) -> Dict[str, int]:
+    def create_message_posts(self, days_ahead: int = 28) -> Dict[str, int]:
         """
         Create message posts for upcoming Saturdays.
         Posts sequentially, looping back to start when finished.
