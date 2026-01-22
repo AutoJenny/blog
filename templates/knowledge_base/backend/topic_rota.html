@@ -1,0 +1,151 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>KB Topic Rota System</h1>
+    
+    <div class="kb-status-badge complete">✅ Complete</div>
+    
+    <div class="kb-intro">
+        <p>
+            The KB Topic Rota System is a <strong>perpetual, data-driven system</strong> that discovers recurring themes 
+            from Knowledge Base articles and creates diverse weekly schedules for social media content production.
+        </p>
+    </div>
+    
+    <h2>Overview</h2>
+    <p>
+        This system automatically:
+    </p>
+    <ul>
+        <li><strong>Discovers topics</strong> from KB articles using unsupervised clustering on semantic embeddings</li>
+        <li><strong>Generates diverse weekly schedules</strong> ensuring non-repetitive, interesting content</li>
+        <li><strong>Aggregates content</strong> from multiple KB articles for each topic</li>
+        <li><strong>Feeds social media production</strong> processes for channel-specific formatting</li>
+        <li><strong>Self-updates</strong> automatically when new KB content is added</li>
+    </ul>
+    
+    <h2>How It Works</h2>
+    
+    <h3>1. Topic Discovery</h3>
+    <p>
+        The system uses <strong>clustering algorithms</strong> (K-means, DBSCAN, or hierarchical) on KB article embeddings 
+        to discover recurring themes. Topics emerge organically from the data - no manual topic lists required.
+    </p>
+    <ul>
+        <li>Analyzes all KB article chunks (696 chunks from 629 articles)</li>
+        <li>Groups semantically similar articles into topics</li>
+        <li>Extracts keywords and generates topic names</li>
+        <li>Classifies topic types (practical, historical, cultural, design, product, etc.)</li>
+    </ul>
+    
+    <h3>2. Diversity Scheduling</h3>
+    <p>
+        The rota generator ensures <strong>non-repetitive, interesting schedules</strong> by:
+    </p>
+    <ul>
+        <li>Calculating similarity between topics using embedding cosine similarity</li>
+        <li>Scoring diversity based on similarity to recent topics</li>
+        <li>Giving bonuses for different topic types and category areas</li>
+        <li>Enforcing minimum gaps between similar topics</li>
+    </ul>
+    
+    <h3>3. Content Aggregation</h3>
+    <p>
+        For each scheduled topic, the system:
+    </p>
+    <ul>
+        <li>Retrieves all articles belonging to the topic</li>
+        <li>Ranks article chunks by relevance to topic centroid</li>
+        <li>Selects top chunks and combines them into aggregated content</li>
+        <li>Preserves article structure with clear separators</li>
+    </ul>
+    
+    <h3>4. Social Media Production</h3>
+    <p>
+        Topics and aggregated content are exposed via <strong>API endpoints</strong> for social media production processes:
+    </p>
+    <ul>
+        <li>Get weekly topic schedule</li>
+        <li>Retrieve aggregated content for formatting</li>
+        <li>Access topic metadata (keywords, type, articles)</li>
+    </ul>
+    <p>
+        Production processes can then format content for different channels (Facebook, Instagram, Twitter, Blog) 
+        while maintaining the core topic and aggregated knowledge.
+    </p>
+    
+    <h2>Database Schema</h2>
+    <p>The system uses 5 database tables:</p>
+    <ul>
+        <li><strong><code>kb_topics</code></strong> - Discovered topics with embeddings and metadata</li>
+        <li><strong><code>kb_topic_similarity</code></strong> - Pre-computed similarity matrix for diversity</li>
+        <li><strong><code>kb_topic_rota</code></strong> - Weekly schedule of topics</li>
+        <li><strong><code>kb_rota_history</code></strong> - History for diversity tracking</li>
+        <li><strong><code>kb_topic_content</code></strong> - Aggregated content for each topic</li>
+    </ul>
+    
+    <h2>API Endpoints</h2>
+    <p>All endpoints are under <code>/api/kb-topics</code>:</p>
+    <ul>
+        <li><strong><code>GET /rota</code></strong> - Get weekly rota schedule</li>
+        <li><strong><code>GET /&lt;topic_id&gt;/content</code></strong> - Get aggregated content for topic</li>
+        <li><strong><code>POST /discover</code></strong> - Trigger topic discovery</li>
+        <li><strong><code>POST /regenerate-rota</code></strong> - Regenerate rota schedule</li>
+        <li><strong><code>GET /topics</code></strong> - List all topics</li>
+    </ul>
+    
+    <h2>Usage</h2>
+    
+    <h3>Initial Setup</h3>
+    <ol>
+        <li>Run database migration: <code>migrations/20260122_create_kb_topic_rota_tables.sql</code></li>
+        <li>Run initial discovery: <code>python scripts/discover_kb_topics.py --method kmeans --compute-similarity</code></li>
+        <li>Generate rota: <code>POST /api/kb-topics/regenerate-rota</code></li>
+    </ol>
+    
+    <h3>Ongoing Operation</h3>
+    <p>
+        The system runs automatically:
+    </p>
+    <ul>
+        <li><strong>Weekly Discovery:</strong> Runs every Monday via background monitor</li>
+        <li><strong>Rota Maintenance:</strong> Automatically fills gaps and aggregates content</li>
+        <li><strong>Manual Triggers:</strong> Use API endpoints for manual discovery/regeneration</li>
+    </ul>
+    
+    <h2>Key Features</h2>
+    <ul>
+        <li><strong>Unsupervised Discovery:</strong> Topics emerge from data, not manual lists</li>
+        <li><strong>Cross-Category Topics:</strong> Identifies themes spanning multiple KB sections</li>
+        <li><strong>Diversity Algorithm:</strong> Ensures non-repetitive, interesting schedules</li>
+        <li><strong>Perpetual Operation:</strong> Self-updates as KB content changes</li>
+        <li><strong>Channel Agnostic:</strong> Topics are abstract - formatting happens downstream</li>
+    </ul>
+    
+    <h2>Technical Details</h2>
+    <ul>
+        <li><strong>Embedding Model:</strong> <code>intfloat/e5-large-v2</code> (1024 dimensions)</li>
+        <li><strong>Clustering:</strong> K-means (auto-detected k), DBSCAN, or hierarchical</li>
+        <li><strong>Similarity Metric:</strong> Cosine similarity between topic embeddings</li>
+        <li><strong>Diversity Constraints:</strong> Minimum similarity gap (0.7), 6-week lookback</li>
+    </ul>
+    
+    <div class="kb-related">
+        <h4>Related Sections</h4>
+        <ul>
+            <li><a href="{{ url_for('knowledge_base.page', section='backend', page='vector_search') }}">Vector Search System</a> - Underlying embedding infrastructure</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='content_types', page='generated') }}">Generated Posts</a> - Uses vector search for context</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='backend', page='database') }}">Database Architecture</a> - Database schema details</li>
+            <li><a href="{{ url_for('knowledge_base.page', section='backend', page='apis') }}">API Endpoints</a> - API documentation</li>
+        </ul>
+    </div>
+    
+    <div class="kb-info" style="background: #d1fae5; border-left: 4px solid #10b981; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #065f46;">
+            <strong>📚 Full Documentation:</strong> See <code>docs/KB_TOPIC_ROTA_SYSTEM.md</code> for comprehensive technical details, 
+            API reference, and implementation guide.
+        </p>
+    </div>
+</div>
+{% endblock %}

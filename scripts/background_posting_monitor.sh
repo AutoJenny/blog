@@ -74,6 +74,13 @@ main() {
         log "Running scheduled posting executor..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/scheduled_posting_executor.py" >> "$LOG_FILE" 2>&1 || log "Warning: scheduled_posting_executor.py exited with error (continuing)"
         
+        # Step 8: Run KB topic discovery (weekly, runs on Mondays)
+        DAY_OF_WEEK=$(date +%u)  # 1=Monday, 7=Sunday
+        if [ "$DAY_OF_WEEK" = "1" ]; then
+            log "Running KB topic discovery (weekly on Monday)..."
+            PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/kb_topic_discovery_runner.py" >> "$LOG_FILE" 2>&1 || log "Warning: kb_topic_discovery_runner.py exited with error (continuing)"
+        fi
+        
         # Wait 5 minutes
         log "Waiting 5 minutes until next check..."
         sleep 300

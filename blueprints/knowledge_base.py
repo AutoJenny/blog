@@ -257,6 +257,11 @@ KB_STRUCTURE = {
                 'title': 'Vector Search System',
                 'template': 'knowledge_base/backend/vector_search.html',
                 'status': 'complete'
+            },
+            'topic_rota': {
+                'title': 'KB Topic Rota System',
+                'template': 'knowledge_base/backend/topic_rota.html',
+                'status': 'complete'
             }
         }
     },

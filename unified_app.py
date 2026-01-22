@@ -178,6 +178,10 @@ def create_app(config_name=None):
     from blueprints.planning_api_themes import bp as planning_themes_api_bp
     app.register_blueprint(planning_themes_api_bp)
     
+    # Register KB topic rota API blueprint
+    from blueprints.kb_topic_rota_api import bp as kb_topic_rota_api_bp
+    app.register_blueprint(kb_topic_rota_api_bp)
+    
     # Register automated posting API blueprint
     from blueprints.automated_posting_api import bp as automated_posting_api_bp
     app.register_blueprint(automated_posting_api_bp)
