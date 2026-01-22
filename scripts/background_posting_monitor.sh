@@ -54,11 +54,15 @@ main() {
         log "Executing weekly content workflows..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_weekly_content_workflow.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_weekly_content_workflow.py exited with error (continuing)"
         
-        # Step 3: Create product posts (1 week in advance)
+        # Step 3: Create message posts for upcoming Saturdays (14 days ahead)
+        log "Creating message posts..."
+        PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_message_post_creator.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_message_post_creator.py exited with error (continuing)"
+        
+        # Step 4: Create product posts (1 week in advance)
         log "Creating product posts..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_product_post_creator.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_product_post_creator.py exited with error (continuing)"
         
-        # Step 4: Execute workflow for draft product posts
+        # Step 5: Execute workflow for draft product posts
         log "Executing product post workflows..."
         PYTHONPATH="$SCRIPT_DIR" /opt/homebrew/bin/python3 "$SCRIPT_DIR/scripts/automated_product_post_workflow.py" >> "$LOG_FILE" 2>&1 || log "Warning: automated_product_post_workflow.py exited with error (continuing)"
         
