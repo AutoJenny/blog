@@ -143,6 +143,11 @@ Returns all posts in queue with:
 ### **Homepage Timeline:**
 - Shows queue items filtered by status
 - Located on homepage (`/`)
+- **Filtering**: Automatically filters out non-compliant posts (weekly content on wrong weekdays) and duplicates
+  - `weekly_word`: Monday only (weekday 1)
+  - `weekly_phrase`: Wednesday only (weekday 3)
+  - `weekly_insult`: Friday only (weekday 5)
+  - Deduplication: keeps oldest post when multiple exist for same type/day
 
 ### **Publication Dashboard:**
 ```
