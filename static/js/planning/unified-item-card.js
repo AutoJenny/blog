@@ -372,12 +372,15 @@ function createUnifiedItemCard(item, options = {}) {
     const actionRow = document.createElement('div');
     actionRow.className = 'compact-action-row';
     
-    // Status line (non-clickable) - hide for language items and product posts
+    // Status line (non-clickable) - hide for automated posts (language items, product posts, message posts)
+    // These are all automated and don't need status display (redundant)
     const isLanguageItemForStatus = typeClass === 'weekly-word' || typeClass === 'weekly-phrase' || typeClass === 'weekly-insult' ||
                                     category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult' ||
                                     type === 'word' || type === 'phrase' || type === 'insult';
     const isProductPostForStatus = typeClass === 'product' || category === 'product' || type === 'product' || type === 'product-post';
-    if (!isLanguageItemForStatus && !isProductPostForStatus) {
+    const isMessagePostForStatus = typeClass === 'message' || category === 'message' || type === 'message' || 
+                                   item.post_type === 'message' || item.content_type === 'message';
+    if (!isLanguageItemForStatus && !isProductPostForStatus && !isMessagePostForStatus) {
         const statusLine = document.createElement('div');
         statusLine.className = 'status-line';
         const statusBadge = document.createElement('span');

@@ -148,6 +148,7 @@ class MessagePostCreator:
             
             # Insert into posting_queue
             # Store message text in generated_content (line breaks preserved)
+            # Messages are text-only and don't need workflow (no image generation), so create as 'ready'
             cursor.execute("""
                 INSERT INTO posting_queue (
                     content_type, platform, status,
@@ -155,7 +156,7 @@ class MessagePostCreator:
                     scheduled_date, scheduled_time, scheduled_timestamp,
                     created_at, updated_at
                 )
-                VALUES (%s, 'facebook', 'draft', %s, %s, %s, %s, NOW(), NOW())
+                VALUES (%s, 'facebook', 'ready', %s, %s, %s, %s, NOW(), NOW())
                 RETURNING id
             """, (
                 'message',

@@ -432,6 +432,7 @@ def api_posts_timeline():
                     pq.platform,
                     pq.channel_type,
                     pq.generated_caption,
+                    pq.generated_content,
                     pq.image_path,
                     pq.status,
                     pq.scheduled_date,
@@ -507,6 +508,12 @@ def api_posts_timeline():
                     post_dict['title'] = post_dict['product_name']
                 elif post_dict.get('idea_title'):
                     post_dict['title'] = post_dict['idea_title']
+                elif post_dict.get('content_type') == 'message' and post_dict.get('generated_content'):
+                    # For message posts, use first line of generated_content as title
+                    content = post_dict['generated_content'] or ''
+                    # Extract first line (up to 60 chars)
+                    first_line = content.split('\n')[0].strip()
+                    post_dict['title'] = first_line[:60] + ('...' if len(first_line) > 60 else '')
                 else:
                     post_dict['title'] = f"{post_dict.get('content_type', 'Post')} #{post_dict['queue_id']}"
                 
