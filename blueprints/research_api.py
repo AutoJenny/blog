@@ -383,22 +383,47 @@ def execute_research(post_id, topic_key):
         fact_extractor = FactExtractor(llm_service, post_id=post_id)
         content_synthesizer = ContentSynthesizer(llm_service, post_id=post_id)
         
-        # Step 1: Web search
+        # Step 1: Web search with multiple query variations
         logger.info(f"[Research] Step 1/6: Searching for: {research_query}")
         check_timeout()
-        search_results = web_researcher.search(research_query, max_results=10)
+        all_search_results = []
+        seen_urls = set()
         
-        if not search_results:
+        # Primary search query
+        primary_results = web_researcher.search(research_query, max_results=10)
+        for result in primary_results:
+            url = result.get('url', '')
+            if url and url not in seen_urls:
+                all_search_results.append(result)
+                seen_urls.add(url)
+        
+        # Additional search variations if configured
+        search_variations = topic_config.get('search_variations', [])
+        for variation_template in search_variations[:2]:  # Limit to 2 variations to avoid too many searches
+            try:
+                variation_query = variation_template.format(item_name=item_name)
+                logger.info(f"[Research] Additional search: {variation_query}")
+                check_timeout()
+                variation_results = web_researcher.search(variation_query, max_results=5)
+                for result in variation_results:
+                    url = result.get('url', '')
+                    if url and url not in seen_urls:
+                        all_search_results.append(result)
+                        seen_urls.add(url)
+            except Exception as e:
+                logger.warning(f"Error with search variation '{variation_template}': {e}")
+        
+        if not all_search_results:
             raise Exception("No search results found for query: " + research_query)
         
-        logger.info(f"[Research] Step 2/6: Found {len(search_results)} search results")
+        logger.info(f"[Research] Step 2/6: Found {len(all_search_results)} total search results")
         
         # Step 2: Prioritize sources
         check_timeout()
-        prioritized_results = source_evaluator.prioritize_sources(search_results)
+        prioritized_results = source_evaluator.prioritize_sources(all_search_results)
         
-        # Step 3: Filter to top 3-5 most reliable sources (reduced to speed up)
-        top_sources = prioritized_results[:5]
+        # Step 3: Process more sources (increased from 5 to 8, and process more before breaking)
+        top_sources = prioritized_results[:8]
         logger.info(f"[Research] Step 3/6: Processing top {len(top_sources)} sources")
         
         # Step 4: Fetch content from top sources
@@ -425,10 +450,15 @@ def execute_research(post_id, topic_key):
                     # Evaluate source
                     evaluation = source_evaluator.evaluate_reliability(url)
                     
-                    # Extract facts from content (limit content size to avoid long LLM processing)
+                    # Extract facts from content (increased limit for better detail extraction)
                     logger.info(f"[Research] Extracting facts from source {i} (content length: {len(content)})...")
-                    # Limit content to first 3000 chars to speed up processing
-                    content_to_analyze = content[:3000] if len(content) > 3000 else content
+                    # Increased from 3000 to 8000 chars to capture more detail
+                    # Process full article if reasonable size, otherwise first 8000 chars
+                    if len(content) <= 12000:
+                        content_to_analyze = content  # Process full article if not too long
+                    else:
+                        content_to_analyze = content[:8000]  # First 8000 chars for very long articles
+                    
                     check_timeout()
                     facts = fact_extractor.extract_facts(
                         content_to_analyze,
@@ -436,30 +466,35 @@ def execute_research(post_id, topic_key):
                         item_name,
                         topic_key=topic_key
                     )
-                    logger.info(f"[Research] Extracted facts from source {i}: {sum(len(facts.get(k, [])) for k in facts)} total facts")
+                    facts_count = sum(len(facts.get(k, [])) for k in facts)
+                    logger.info(f"[Research] Extracted {facts_count} facts from source {i}")
                     
-                    # Merge facts
-                    for key in all_extracted_facts:
-                        if key in facts:
-                            all_extracted_facts[key].extend(facts[key])
+                    # Only add source if it yielded useful facts (at least 3 facts)
+                    if facts_count >= 3:
+                        # Merge facts
+                        for key in all_extracted_facts:
+                            if key in facts:
+                                all_extracted_facts[key].extend(facts[key])
+                        
+                        sources_with_content.append({
+                            'title': source.get('title', ''),
+                            'url': url,
+                            'domain': evaluation['domain'],
+                            'domain_tier': evaluation['tier'],
+                            'reliability': evaluation['reliability'],
+                            'reliability_score': evaluation['reliability_score'],
+                            'is_academic': evaluation['is_academic'],
+                            'content_length': len(content),
+                            'facts_count': facts_count
+                        })
+                        
+                        logger.info(f"[Research] Source {i} processed: {len(sources_with_content)} sources with content so far")
+                    else:
+                        logger.info(f"[Research] Source {i} yielded only {facts_count} facts, skipping")
                     
-                    sources_with_content.append({
-                        'title': source.get('title', ''),
-                        'url': url,
-                        'domain': evaluation['domain'],
-                        'domain_tier': evaluation['tier'],
-                        'reliability': evaluation['reliability'],
-                        'reliability_score': evaluation['reliability_score'],
-                        'is_academic': evaluation['is_academic'],
-                        'content_length': len(content),
-                        'facts_count': sum(len(facts.get(k, [])) for k in facts)
-                    })
-                    
-                    logger.info(f"[Research] Source {i} processed: {len(sources_with_content)} sources with content so far")
-                    
-                    # Limit to 3 sources with content (reduced to speed up)
-                    if len(sources_with_content) >= 3:
-                        logger.info(f"[Research] Reached limit of 3 sources, stopping")
+                    # Process up to 6 sources with good content (increased from 3)
+                    if len(sources_with_content) >= 6:
+                        logger.info(f"[Research] Reached {len(sources_with_content)} sources with good content, stopping")
                         break
                         
             except TimeoutError:

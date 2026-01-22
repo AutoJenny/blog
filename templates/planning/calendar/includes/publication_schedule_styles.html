@@ -206,5 +206,56 @@
 .item-card.type-event { border-color: #10b981; background: rgba(16, 185, 129, 0.12); color: #f8fafc; }
 .item-card.type-scheduled { border-color: #3b82f6; background: rgba(59, 130, 246, 0.12); color: #f8fafc; }
 .item-card.type-product { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.12); color: #f8fafc; }
+
+/* Automation status indicators */
+.automation-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.automation-badge.automated {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.automation-badge.manual {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+.item-type-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Tooltip for automation badge */
+.automation-badge[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 4px;
+}
+
+.automation-badge {
+    position: relative;
+}
 </style>
 

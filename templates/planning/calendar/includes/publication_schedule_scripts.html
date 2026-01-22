@@ -4,6 +4,7 @@
 // Schedule Management
 async function loadSchedule() {
     try {
+        console.log('[loadSchedule] Starting...');
         // Get year/week from URL or use current week
         const urlParams = new URLSearchParams(window.location.search);
         const year = urlParams.get('year') || new Date().getFullYear();
@@ -15,10 +16,14 @@ async function loadSchedule() {
             return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         })();
         
+        console.log(`[loadSchedule] Fetching schedule for year=${year}, week=${week}`);
         const response = await fetch(`/publication/api/dashboard/schedule?year=${year}&week=${week}`);
         const data = await response.json();
         
+        console.log('[loadSchedule] API response:', data);
+        
         if (data.success) {
+            console.log('[loadSchedule] Rendering schedule...');
             renderSchedule(data.channels);
         } else {
             console.error('Error loading schedule:', data.error);
@@ -29,6 +34,14 @@ async function loadSchedule() {
 }
 
 function renderSchedule(channels) {
+    console.log('[renderSchedule] Starting render, channels:', Object.keys(channels));
+    console.log('[renderSchedule] Channel data:', channels);
+    
+    if (!channels || Object.keys(channels).length === 0) {
+        console.warn('[renderSchedule] No channels data provided');
+        return;
+    }
+    
     // Clear all existing item cards (but keep empty states)
     document.querySelectorAll('.day-column .item-card').forEach(el => {
         el.remove();
@@ -39,22 +52,42 @@ function renderSchedule(channels) {
         el.style.display = 'block';
     });
     
+    let totalRendered = 0;
+    
     // Render items for each channel
     Object.keys(channels).forEach(channel => {
         const channelSection = document.querySelector(`#channel-${channel}`);
-        if (!channelSection) return;
+        if (!channelSection) {
+            console.warn(`[renderSchedule] Channel section not found: #channel-${channel}`);
+            return;
+        }
         
         const items = channels[channel];
-        items.forEach(item => {
+        if (!items || items.length === 0) {
+            console.log(`[renderSchedule] No items for channel: ${channel}`);
+            return;
+        }
+        
+        console.log(`[renderSchedule] Rendering ${items.length} items for channel: ${channel}`);
+        items.forEach((item, index) => {
             const day = item.day;
-            if (!day || day < 1 || day > 7) return;
+            if (!day || day < 1 || day > 7) {
+                console.warn(`[renderSchedule] Invalid day for item ${index}:`, day, item);
+                return;
+            }
             
             // Find the day column for this channel
             const dayColumns = channelSection.querySelectorAll('.day-column');
-            if (dayColumns.length < day) return;
+            if (dayColumns.length < day) {
+                console.warn(`[renderSchedule] Not enough day columns (${dayColumns.length}) for day ${day}`);
+                return;
+            }
             
             const dayColumn = dayColumns[day - 1];
-            if (!dayColumn) return;
+            if (!dayColumn) {
+                console.warn(`[renderSchedule] Day column not found for day ${day}`);
+                return;
+            }
             
             // Hide empty state
             const emptyState = dayColumn.querySelector('.empty-state');
@@ -62,63 +95,111 @@ function renderSchedule(channels) {
                 emptyState.style.display = 'none';
             }
             
-            // Only skip if we have absolutely no data (no title, no item_id, no post_id)
-            if ((!item.title || item.title === 'Untitled') && !item.item_id && !item.post_id) {
+            // Items should always have a title (type name), so don't skip based on title
+            // Only skip if we have absolutely no identifying data
+            if (!item.title && !item.type_name && !item.item_id && !item.post_id) {
+                console.warn(`[renderSchedule] Skipping item with no data:`, item);
                 return; // Skip this item
             }
             
-            // Use unified item card component
-            const itemCard = window.createUnifiedItemCard(item, {
-                category: item.category,
-                typeName: item.type_name,
-                title: item.title,
-                description: item.description,
-                year: item.year,
-                week: item.week,
-                channel: item.channel,
-                dataset: {
-                    contentFormat: item.content_format,
-                    typeName: item.type_name || ''
-                },
-                onCreate: (e, item, card) => {
-                    createPostFromItem(item, card);
-                },
-                onWorkOn: (e, item, card) => {
-                    navigateToOneClick(item);
-                },
-                onInfo: (e, item, card) => {
-                    // For recipes with posts, navigate to pipeline instead of modal
-                    if (item.category === 'recipe' && item.post_id) {
-                        if (window.navigateToPipeline && typeof window.navigateToPipeline === 'function') {
-                            window.navigateToPipeline(item, item.post_id);
-                        } else {
-                            // Fallback: navigate directly
-                            const category = item.category || '';
-                            let url;
-                            if (category === 'recipe') {
-                                url = `/posts/${item.post_id}/sections/drafting`;
-                            } else if (category === 'theme') {
-                                url = `/planning/posts/${item.post_id}/calendar/ideas`;
-                            } else {
-                                url = `/planning/posts/${item.post_id}/calendar/taxonomy`;
-                            }
-                            if (item.year && item.week) {
-                                url += `?year=${item.year}&week=${item.week}`;
-                            }
-                            window.location.href = url;
+            // Ensure item has required fields for unified-item-card
+            if (!item.category && item.post_type) {
+                item.category = item.post_type;
+            }
+            if (item.is_automated === undefined) {
+                // Determine automation status based on post_type
+                const automatedTypes = ['weekly_word', 'weekly_phrase', 'weekly_insult', 'product'];
+                item.is_automated = automatedTypes.includes(item.post_type || item.category);
+            }
+            
+            // Use unified item card component or create simple fallback
+            let itemCard = null;
+            
+            if (typeof window.createUnifiedItemCard === 'function') {
+                try {
+                    itemCard = window.createUnifiedItemCard(item, {
+                    category: item.category || item.post_type,
+                    typeName: item.type_name,
+                    title: item.title,
+                    description: item.description,
+                    year: item.year,
+                    week: item.week,
+                    channel: item.channel,
+                    scheduled_time: item.scheduled_time,  // Pass scheduled time for display
+                    dataset: {
+                        contentFormat: item.content_format,
+                        typeName: item.type_name || '',
+                        isAutomated: item.is_automated || false
+                    },
+                    onInfo: (e, item, card) => {
+                        // Open schedule edit modal
+                        if (window.openScheduleEditModal) {
+                            window.openScheduleEditModal(item, card);
                         }
-                    } else {
-                        openItemModal(item);
+                    },
+                    onClick: (e, item, card) => {
+                        // Open schedule edit modal on card click
+                        if (window.openScheduleEditModal) {
+                            window.openScheduleEditModal(item, card);
+                        }
                     }
-                },
-                onClick: (e, item, card) => {
-                    openItemModal(item);
+                    });
+                } catch (error) {
+                    console.error('Error creating unified item card:', error, item);
+                    itemCard = null;
                 }
-            });
+            }
+            
+            // If unified card creation failed or isn't available, create simple fallback
+            if (!itemCard) {
+                console.log('[renderSchedule] Creating fallback card for:', item);
+                itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                
+                // Add automation badge
+                const isAutomated = item.is_automated || false;
+                const automationIcon = isAutomated ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-wrench"></i>';
+                const automationClass = isAutomated ? 'automated' : 'manual';
+                
+                // Build card HTML
+                const typeLabel = document.createElement('div');
+                typeLabel.className = 'item-type-label';
+                typeLabel.style.display = 'flex';
+                typeLabel.style.alignItems = 'center';
+                typeLabel.style.gap = '0.5rem';
+                typeLabel.innerHTML = `
+                    <span>${item.type_name || item.title || 'Item'}</span>
+                    <span class="automation-badge ${automationClass}" title="${isAutomated ? 'Automated' : 'Manual'}">${automationIcon}</span>
+                `;
+                itemCard.appendChild(typeLabel);
+                
+                const titleEl = document.createElement('div');
+                titleEl.className = 'item-title';
+                titleEl.innerHTML = `${item.title || item.type_name || 'Untitled'}${item.scheduled_time ? ` <span style="color: var(--text-secondary); font-size: 0.8em;">@ ${item.scheduled_time}</span>` : ''}`;
+                itemCard.appendChild(titleEl);
+                
+                const actionsEl = document.createElement('div');
+                actionsEl.className = 'item-actions';
+                const editBtn = document.createElement('button');
+                editBtn.className = 'icon-btn-compact btn-info';
+                editBtn.title = 'Edit schedule (day/time)';
+                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (window.openScheduleEditModal) {
+                        window.openScheduleEditModal(item, itemCard);
+                    }
+                };
+                actionsEl.appendChild(editBtn);
+                itemCard.appendChild(actionsEl);
+            }
             
             dayColumn.appendChild(itemCard);
+            totalRendered++;
         });
     });
+    
+    console.log(`[renderSchedule] Completed. Rendered ${totalRendered} items total.`);
 }
 
 function getTypeName(item) {
@@ -368,63 +449,247 @@ function updateItemCardAfterCreation(itemCard, item) {
     });
 }
 
+// Schedule Edit Modal
+function openScheduleEditModal(item, card) {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('schedule-edit-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'schedule-edit-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>Edit Schedule</h3>
+                    <button class="modal-close" onclick="closeScheduleEditModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="schedule-edit-form">
+                        <div class="form-group">
+                            <label>Post Type</label>
+                            <input type="text" id="edit-post-type" readonly style="background: var(--bg-tertiary);">
+                        </div>
+                        <div class="form-group">
+                            <label>Channel</label>
+                            <input type="text" id="edit-channel" readonly style="background: var(--bg-tertiary);">
+                        </div>
+                        <div class="form-group">
+                            <label>Day of Week</label>
+                            <select id="edit-day">
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                                <option value="7">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Scheduled Time (HH:MM)</label>
+                            <input type="time" id="edit-time" step="300">
+                        </div>
+                        <input type="hidden" id="edit-year" value="">
+                        <input type="hidden" id="edit-week" value="">
+                        <div class="form-actions">
+                            <button type="button" onclick="closeScheduleEditModal()">Cancel</button>
+                            <button type="submit">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Add styles
+        if (!document.getElementById('schedule-edit-modal-styles')) {
+            const style = document.createElement('style');
+            style.id = 'schedule-edit-modal-styles';
+            style.textContent = `
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                }
+                .modal-content {
+                    background: var(--bg-secondary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 12px;
+                    padding: 0;
+                    max-width: 500px;
+                    width: 90%;
+                }
+                .modal-header {
+                    padding: 1.5rem;
+                    border-bottom: 1px solid var(--border-color);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .modal-header h3 {
+                    margin: 0;
+                    color: var(--text-primary);
+                }
+                .modal-close {
+                    background: none;
+                    border: none;
+                    color: var(--text-secondary);
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    padding: 0;
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .modal-close:hover {
+                    color: var(--text-primary);
+                }
+                .modal-body {
+                    padding: 1.5rem;
+                }
+                .form-group {
+                    margin-bottom: 1.5rem;
+                }
+                .form-group label {
+                    display: block;
+                    margin-bottom: 0.5rem;
+                    color: var(--text-primary);
+                    font-weight: 600;
+                }
+                .form-group input,
+                .form-group select {
+                    width: 100%;
+                    padding: 0.75rem;
+                    background: var(--bg-tertiary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 6px;
+                    color: var(--text-primary);
+                    font-size: 0.875rem;
+                }
+                .form-actions {
+                    display: flex;
+                    gap: 0.75rem;
+                    justify-content: flex-end;
+                    margin-top: 1.5rem;
+                }
+                .form-actions button {
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 6px;
+                    border: 1px solid var(--border-color);
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                }
+                .form-actions button[type="button"] {
+                    background: var(--bg-tertiary);
+                    color: var(--text-secondary);
+                }
+                .form-actions button[type="button"]:hover {
+                    background: var(--bg-primary);
+                    color: var(--text-primary);
+                }
+                .form-actions button[type="submit"] {
+                    background: var(--accent-blue);
+                    color: white;
+                    border-color: var(--accent-blue);
+                }
+                .form-actions button[type="submit"]:hover {
+                    background: #2563eb;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Handle form submission
+        const form = document.getElementById('schedule-edit-form');
+        if (form) {
+            form.onsubmit = async function(e) {
+                e.preventDefault();
+                const postType = document.getElementById('edit-post-type').value;
+                const channel = document.getElementById('edit-channel').value;
+                const day = parseInt(document.getElementById('edit-day').value);
+                const time = document.getElementById('edit-time').value;
+                const year = parseInt(document.getElementById('edit-year').value);
+                const week = parseInt(document.getElementById('edit-week').value);
+                
+                try {
+                    // Update post_type_channel_config
+                    const response = await fetch('/publication/api/dashboard/schedule/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            post_type: postType,
+                            channel: channel,
+                            day: day,
+                            time: time,
+                            year: year,
+                            week: week
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        closeScheduleEditModal();
+                        loadSchedule(); // Reload schedule
+                    } else {
+                        alert('Error: ' + (result.error || 'Failed to update schedule'));
+                    }
+                } catch (error) {
+                    console.error('Error updating schedule:', error);
+                    alert('Error updating schedule. Please check console.');
+                }
+            };
+        }
+    }
+    
+    // Populate form
+    document.getElementById('edit-post-type').value = item.post_type || item.category || '';
+    document.getElementById('edit-channel').value = item.channel || 'facebook';
+    document.getElementById('edit-day').value = item.day || 1;
+    document.getElementById('edit-year').value = item.year || '';
+    document.getElementById('edit-week').value = item.week || '';
+    
+    // Set time - convert HH:MM to time input format
+    const timeValue = item.scheduled_time || '';
+    document.getElementById('edit-time').value = timeValue;
+    
+    // Show modal
+    modal.style.display = 'flex';
+}
+
+function closeScheduleEditModal() {
+    const modal = document.getElementById('schedule-edit-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close modal on overlay click
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('schedule-edit-modal');
+    if (modal && e.target === modal) {
+        closeScheduleEditModal();
+    }
+});
+
+// Expose globally
+window.openScheduleEditModal = openScheduleEditModal;
+window.closeScheduleEditModal = closeScheduleEditModal;
+
 function openItemModal(item) {
-    // Open appropriate modal based on item category
-    const category = item.category || '';
-    const itemId = item.item_id || item.id;
-    const postId = item.post_id;
-    
-    // For recipes, navigate to pipeline instead of opening modal
-    if (category === 'recipe' && postId) {
-        navigateToPipeline(item, postId);
-        return;
-    }
-    
-    if (category === 'theme' || category === 'theme_selection') {
-        if (itemId) {
-            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
-            if (ideaModal) {
-                ideaModal.openTheme(itemId);
-                return;
-            }
-        }
-    } else if (category === 'profile_product' || category === 'profile_surname') {
-        const profileId = postId || itemId;
-        if (profileId) {
-            const profileModal = window.getProfileModal ? window.getProfileModal() : null;
-            if (profileModal) {
-                profileModal.open(profileId);
-                return;
-            }
-        }
-    } else if (category === 'recipe') {
-        if (postId) {
-            // Navigate to pipeline (first workflow stage for recipes)
-            navigateToPipeline(item, postId);
-            return;
-        } else if (itemId) {
-            window.location.href = `/recipes`;
-            return;
-        }
-    } else if (category === 'weekly_word' || category === 'weekly_phrase' || category === 'weekly_insult') {
-        if (itemId) {
-            const ideaModal = window.getIdeaModal ? window.getIdeaModal() : null;
-            if (ideaModal) {
-                ideaModal.open(itemId);
-                return;
-            }
-        }
-    } else if (category === 'product') {
-        // Product posts: navigate to product post editing page
-        const queueId = item.queue_id || itemId;
-        if (queueId) {
-            window.location.href = `/launchpad/syndication/facebook/product_post?queue_id=${queueId}`;
-            return;
-        }
-    }
-    
-    // Fallback: navigate to week-view
-    openInCalendar(item);
+    // For publication schedule, info button opens edit modal
+    // This is handled by openScheduleEditModal above
+    return;
 }
 
 function openInCalendar(item) {
@@ -506,18 +771,47 @@ function navigateToPipeline(item, postId) {
     window.location.href = workflowUrl;
 }
 
-// Load schedule on initial page load or when tab becomes visible
-document.addEventListener('DOMContentLoaded', function() {
-    loadScheduleIfVisible();
-});
 
-// Also load when tab is shown (in case of dynamic tab switching)
+// Load schedule function - always try to load if on this tab
 function loadScheduleIfVisible() {
     const scheduleView = document.querySelector('.publication-schedule-view');
-    if (scheduleView && scheduleView.offsetParent !== null) {
+    console.log('[Publication Schedule] loadScheduleIfVisible, scheduleView:', scheduleView);
+    
+    if (scheduleView) {
+        console.log('[Publication Schedule] Loading schedule...');
         loadSchedule();
+    } else {
+        console.warn('[Publication Schedule] Schedule view not found in DOM');
     }
 }
+
+// Load schedule on initial page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Publication Schedule] DOMContentLoaded');
+    // Check if we're on the publication-schedule tab
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    console.log('[Publication Schedule] Active tab from URL:', activeTab);
+    
+    // Also check if the publication-schedule-view exists (means tab is active)
+    const scheduleView = document.querySelector('.publication-schedule-view');
+    if (scheduleView || activeTab === 'publication-schedule') {
+        console.log('[Publication Schedule] Tab is active, loading schedule...');
+        // Wait a bit for scripts to load, then load schedule
+        setTimeout(() => {
+            loadScheduleIfVisible();
+        }, 200);
+    }
+});
+
+// Also try loading after a delay to catch any edge cases
+setTimeout(() => {
+    const scheduleView = document.querySelector('.publication-schedule-view');
+    if (scheduleView) {
+        console.log('[Publication Schedule] Delayed load attempt');
+        loadScheduleIfVisible();
+    }
+}, 1500);
 
 // Expose function globally for tab switching
 window.loadPublicationSchedule = loadScheduleIfVisible;

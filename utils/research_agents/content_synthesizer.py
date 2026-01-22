@@ -195,10 +195,16 @@ Return ONLY the synthesized paragraph(s) in HTML format, no commentary."""
 - If locations are mentioned, prioritize them heavily in the synthesis"""
         elif topic_key == 'origins':
             return """FOCUS: This topic is about ORIGINS and EARLY HISTORY.
-- Prioritize specific dates, first mentions, original locations
-- Emphasize earliest documented evidence
-- Include origin stories and creation narratives
-- Focus on historical timeline and first appearances"""
+- Prioritize SPECIFIC dates, years, decades, centuries
+- Include FULL names of people, places, publications
+- Emphasize earliest documented evidence with exact references
+- Include competing origin stories if multiple exist
+- Include literary or historical references (e.g., "mentioned in JM Barrie's Sentimental Tommy")
+- Include specific publication names and dates (e.g., "Aberdeen Shaver, 1833")
+- Include specific locations: towns, regions, counties
+- Include specific people: bakers, creators, historical figures
+- Include recipe details if mentioned in historical context
+- Focus on historical timeline with specific dates"""
         elif topic_key == 'evolution':
             return """FOCUS: This topic is about EVOLUTION OVER TIME.
 - Prioritize changes: ingredient changes, method changes, when changes occurred

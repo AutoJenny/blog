@@ -227,6 +227,7 @@ function createUnifiedItemCard(item, options = {}) {
     const typeClass = normalizeTypeForClass(category, type);
     const typeName = normalizeTypeName(category, options.typeName, item.type_name);
     const title = getItemTitle(item, options.title);
+    const scheduledTime = options.scheduled_time || item.scheduled_time;
     
     // For language items, don't show description at all
     // Check all possible ways language items might be identified
@@ -267,16 +268,67 @@ function createUnifiedItemCard(item, options = {}) {
         });
     }
     
-    // Type label
+    // Type label with automation indicator
     const typeLabel = document.createElement('div');
     typeLabel.className = 'item-type-label';
-    typeLabel.textContent = typeName;
+    typeLabel.style.display = 'flex';
+    typeLabel.style.alignItems = 'center';
+    typeLabel.style.gap = '0.5rem';
+    
+    const typeLabelText = document.createElement('span');
+    typeLabelText.textContent = typeName;
+    typeLabel.appendChild(typeLabelText);
+    
+    // Add automation status indicator
+    // Check both item and dataset for is_automated
+    const isAutomated = item.is_automated !== undefined 
+        ? item.is_automated 
+        : (options.dataset && options.dataset.isAutomated !== undefined 
+            ? options.dataset.isAutomated 
+            : undefined);
+    
+    if (isAutomated !== undefined) {
+        const automationBadge = document.createElement('span');
+        automationBadge.className = 'automation-badge';
+        automationBadge.classList.add(isAutomated ? 'automated' : 'manual');
+        automationBadge.title = isAutomated 
+            ? 'Automated: Created and published automatically' 
+            : 'Manual: Requires creation via Start button';
+        automationBadge.innerHTML = isAutomated 
+            ? '<i class="fas fa-robot"></i>' 
+            : '<i class="fas fa-wrench"></i>';
+        typeLabel.appendChild(automationBadge);
+    }
+    
     card.appendChild(typeLabel);
     
-    // Title (clickable to navigate to pipeline if post exists)
+    // Title with scheduled time (for automated items)
     const titleEl = document.createElement('div');
     titleEl.className = 'item-title';
-    titleEl.textContent = title;
+    
+    const titleText = document.createElement('span');
+    titleText.textContent = title;
+    titleEl.appendChild(titleText);
+    
+    // Show scheduled time for automated items (Facebook only)
+    const isAutomated = item.is_automated !== undefined 
+        ? item.is_automated 
+        : (options.dataset && options.dataset.isAutomated !== undefined 
+            ? options.dataset.isAutomated 
+            : false);
+    const isFacebook = (item.channel || options.channel) === 'facebook';
+    
+    if (isAutomated && isFacebook && scheduledTime) {
+        const timeEl = document.createElement('span');
+        timeEl.className = 'scheduled-time';
+        timeEl.textContent = ` @ ${scheduledTime}`;
+        timeEl.style.color = 'var(--text-secondary)';
+        timeEl.style.fontSize = '0.8em';
+        timeEl.style.fontWeight = 'normal';
+        timeEl.style.marginLeft = '0.5rem';
+        titleEl.appendChild(timeEl);
+    }
+    
     if (postExists && postId) {
         titleEl.style.cursor = 'pointer';
         titleEl.style.textDecoration = 'underline';
@@ -333,90 +385,20 @@ function createUnifiedItemCard(item, options = {}) {
     const actions = document.createElement('div');
     actions.className = 'item-actions';
     
-    // Start button - shown when post doesn't exist (prominent text button)
-    if (!postExists) {
-        const startBtn = document.createElement('button');
-        startBtn.className = 'btn-start btn-primary';
-        startBtn.innerHTML = '<i class="fas fa-play" style="margin-right: 0.25rem;"></i> Start';
-        startBtn.title = 'Start work on this item';
-        startBtn.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 600; border-radius: 6px; background: #3b82f6; color: white; border: none; cursor: pointer; transition: all 0.2s; white-space: nowrap;';
-        startBtn.onmouseover = function() { this.style.background = '#2563eb'; this.style.transform = 'translateY(-1px)'; };
-        startBtn.onmouseout = function() { this.style.background = '#3b82f6'; this.style.transform = 'translateY(0)'; };
-        startBtn.onclick = (e) => {
-            e.stopPropagation();
-            if (options.onCreate) {
-                options.onCreate(e, item, card);
-            }
-        };
-        actions.appendChild(startBtn);
-    }
-    
-    // Pipeline button - shown when post exists (navigates to first workflow stage)
-    if (postExists && postId) {
-        const pipelineBtn = document.createElement('button');
-        pipelineBtn.className = 'icon-btn-compact btn-pipeline';
-        pipelineBtn.title = 'Open pipeline';
-        pipelineBtn.innerHTML = '<i class="fas fa-sitemap"></i>';
-        pipelineBtn.onclick = (e) => {
-            e.stopPropagation();
-            console.log('[Unified Item Card] Pipeline button clicked for item:', item, 'postId:', postId);
-            if (typeof navigateToPipeline === 'function') {
-                navigateToPipeline(item, postId);
-            } else if (window.navigateToPipeline && typeof window.navigateToPipeline === 'function') {
-                window.navigateToPipeline(item, postId);
-            } else {
-                console.error('[Unified Item Card] navigateToPipeline function not found');
-                // Fallback: navigate directly
-                const category = item.category || '';
-                let url;
-                if (category === 'recipe') {
-                    url = `/posts/${postId}/sections/drafting`;
-                } else if (category === 'theme') {
-                    url = `/planning/posts/${postId}/calendar/ideas`;
-                } else {
-                    url = `/planning/posts/${postId}/calendar/taxonomy`;
-                }
-                if (item.year && item.week) {
-                    url += `?year=${item.year}&week=${item.week}`;
-                }
-                window.location.href = url;
-            }
-        };
-        actions.appendChild(pipelineBtn);
-    }
-    
-    // Rocket button (work on / 1-click) - shown when post exists
-    if (postExists && postId) {
-        const rocketBtn = document.createElement('button');
-        rocketBtn.className = 'icon-btn-compact btn-work-on';
-        rocketBtn.title = 'Open 1‑click';
-        rocketBtn.innerHTML = '<i class="fas fa-rocket"></i>';
-        rocketBtn.onclick = (e) => {
-            e.stopPropagation();
-            if (options.onWorkOn) {
-                options.onWorkOn(e, item, card);
-            } else {
-                // Default: navigate to one-click
-                window.location.href = `/launchpad/one-click-publication?post_id=${postId}&output=blog`;
-            }
-        };
-        actions.appendChild(rocketBtn);
-    }
-    
-    // Info button - only show if post doesn't exist (pipeline button handles navigation when post exists)
-    if (!postExists) {
-        const infoBtn = document.createElement('button');
-        infoBtn.className = 'icon-btn-compact btn-info';
-        infoBtn.title = 'View details';
-        infoBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
-        infoBtn.onclick = (e) => {
-            e.stopPropagation();
-            if (options.onInfo) {
-                options.onInfo(e, item, card);
-            }
-        };
-        actions.appendChild(infoBtn);
-    }
+    // Info/Edit button - opens schedule edit modal
+    const infoBtn = document.createElement('button');
+    infoBtn.className = 'icon-btn-compact btn-info';
+    infoBtn.title = 'Edit schedule (day/time)';
+    infoBtn.innerHTML = '<i class="fas fa-edit"></i>';
+    infoBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (options.onInfo) {
+            options.onInfo(e, item, card);
+        } else if (window.openScheduleEditModal) {
+            window.openScheduleEditModal(item, card);
+        }
+    };
+    actions.appendChild(infoBtn);
     
     actionRow.appendChild(actions);
     card.appendChild(actionRow);

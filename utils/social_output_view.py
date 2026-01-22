@@ -162,6 +162,7 @@ def get_social_outputs_for_week(
         # Build query
         where_clauses = [
             "pq.scheduled_date BETWEEN %s AND %s",
+            "pq.status != 'failed'",  # Filter out failed posts
         ]
         params = [week_start, week_end]
 

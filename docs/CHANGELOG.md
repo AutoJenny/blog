@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-01-22 - Publication Schedule Scheduled Time Display Fix
+
+### Fixed
+- **Scheduled Time Display**: Fixed issue where Word and Phrase posts weren't showing scheduled times in publication schedule view
+  - **Root Cause**: Published posts were excluded from queue lookup, config had `publication_time = NULL` for weekly content, and weird times (00:04) from auto-publishing were being displayed
+  - **Solution**: 
+    - Include published posts in queue lookup to get historical times
+    - Prefer "normal" times (hour >= 8) over weird times (like 00:04 from auto-publishing)
+    - Default to 09:00 for weekly content if no time found in queue or config
+    - Filter out weird times in favor of intended times
+- **Time Resolution Logic**: Enhanced to check multiple sources in priority order:
+  1. `posting_queue` for non-published automated Facebook posts (prefer normal times)
+  2. `post_type_channel_config.publication_time` (config time)
+  3. Default 09:00 for weekly content (matches creation script default)
+
+### Changed
+- **Publication Schedule API** (`blueprints/publication_dashboard.py`):
+  - Query now includes published posts (not just non-published)
+  - Added logic to prefer normal times (hour >= 8) over weird times
+  - Added default fallback to 09:00 for weekly content
+  - Improved time lookup to handle multiple posts per type/day
+
+### Technical Details
+- File: `blueprints/publication_dashboard.py`
+- API endpoint: `GET /publication/api/dashboard/schedule`
+- All automated Facebook posts now show scheduled times correctly
+- Documentation: `docs/PUBLICATION_SCHEDULE_VIEW.md` - Complete reference guide
+
+### Status
+✅ **PRODUCTION READY** - All scheduled times now display correctly for Word, Phrase, Insult, and Product posts
+
+---
+
 ## 2026-01-20 - Weekly Content Image Font & Layout Adjustments (Final)
 
 ### Changed

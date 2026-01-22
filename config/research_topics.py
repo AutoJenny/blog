@@ -13,17 +13,28 @@ RESEARCH_TOPICS_CONFIG = {
             {
                 'key': 'origins',
                 'label': 'Origins & Early History',
-                'search_template': 'earliest mentions and recorded origins of {item_name} in Scotland',
+                'search_template': '{item_name} history origins Scotland',
+                'search_variations': [
+                    '{item_name} history and origins',
+                    '{item_name} earliest mentions Scotland',
+                    '{item_name} historical background',
+                    '{item_name} origin story Scotland',
+                    'history of {item_name} Scottish food'
+                ],
                 'focus_areas': [
                     'first documented appearance',
                     'original location/region',
                     'earliest written records',
                     'historical cookbook references',
                     'creator or inventor (if known)',
-                    'original purpose or context'
+                    'original purpose or context',
+                    'specific dates and years',
+                    'specific people and names',
+                    'specific locations and places',
+                    'literary or historical references'
                 ],
-                'source_priorities': ['academic', 'museum', 'heritage'],
-                'word_target': 150,
+                'source_priorities': ['academic', 'museum', 'heritage', 'news', 'cultural'],
+                'word_target': 200,
                 'description': 'Research the earliest documented history and origins of this recipe in Scotland'
             },
             {

@@ -132,16 +132,54 @@ class WebResearcher:
             response = requests.get(url, headers=headers, timeout=30)
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, 'html.parser')
-                # Remove script and style elements
-                for script in soup(["script", "style", "nav", "header", "footer"]):
-                    script.decompose()
-                # Get text
-                text = soup.get_text()
-                # Clean up whitespace
-                lines = (line.strip() for line in text.splitlines())
-                chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-                text = ' '.join(chunk for chunk in chunks if chunk)
-                return text
+                
+                # Try to find main article content first (better extraction)
+                article_content = None
+                # Common article content selectors
+                article_selectors = [
+                    'article',
+                    '[role="article"]',
+                    '.article-content',
+                    '.article-body',
+                    '.post-content',
+                    '.entry-content',
+                    '.content',
+                    'main article',
+                    'main .content'
+                ]
+                
+                for selector in article_selectors:
+                    article_elem = soup.select_one(selector)
+                    if article_elem:
+                        article_content = article_elem
+                        logger.debug(f"Found article content using selector: {selector}")
+                        break
+                
+                # If no article element found, use body but remove navigation/header/footer
+                if not article_content:
+                    article_content = soup.find('body') or soup
+                
+                # Remove unwanted elements
+                for element in article_content.select("script, style, nav, header, footer, .nav, .navigation, .sidebar, .ad, .advertisement, .social-share, .comments"):
+                    element.decompose()
+                
+                # Get text with better structure preservation
+                text = article_content.get_text(separator=' ', strip=True)
+                
+                # Clean up whitespace but preserve paragraph breaks
+                lines = []
+                for line in text.splitlines():
+                    line = line.strip()
+                    if line and len(line) > 10:  # Only keep substantial lines
+                        lines.append(line)
+                
+                text = ' '.join(lines)
+                
+                # Remove excessive whitespace
+                import re
+                text = re.sub(r'\s+', ' ', text)
+                
+                return text if len(text) > 100 else None  # Return None if too short
         except Exception as e:
             logger.warning(f"Error fetching {url}: {e}")
         return None

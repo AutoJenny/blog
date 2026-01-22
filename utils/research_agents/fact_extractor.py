@@ -64,13 +64,23 @@ Return a JSON object with this structure:
   ]
 }}
 
-Rules:
-- Only include facts that are clearly stated in the text
-- Mark uncertainty=true if text indicates doubt
-- Include source_hint (brief excerpt) for each fact
-- If dates/locations/events conflict, include in conflicts array
-- Only include quotations that are explicitly quoted in the text
-- Return ONLY valid JSON, no commentary"""
+CRITICAL EXTRACTION RULES:
+- Extract ALL specific details: names, dates, places, quotes, book titles, publication names
+- Include specific years, decades, centuries when mentioned
+- Extract full names of people, places, organizations, publications
+- Capture exact quotations with attribution
+- Include specific historical references (e.g., "JM Barrie's Sentimental Tommy")
+- Extract competing claims or origin stories as separate facts
+- Include specific recipe details, ingredients, methods if mentioned
+- Capture cultural practices, traditions, occasions
+- Include publication dates, book titles, article sources
+- Extract specific locations: towns, regions, counties, areas
+- Mark uncertainty only when text explicitly indicates doubt
+- Include source_hint with enough context to verify the fact
+- If multiple origin stories exist, extract ALL of them
+- Extract specific numbers, quantities, measurements if relevant
+
+Return ONLY valid JSON, no commentary"""
 
     def __init__(self, llm_service, post_id=None):
         """
@@ -99,15 +109,21 @@ Rules:
             logger.warning("Content too short for fact extraction")
             return self._empty_facts()
         
-        # Limit content size to avoid very long processing
-        # Use first 4000 chars max to speed up processing
-        if len(content) > 4000:
-            content = content[:4000] + "..."
-            logger.debug(f"Content truncated to 4000 chars for faster processing")
+        # Process more content for better detail extraction
+        # Increased from 4000 to 8000 chars, and process more chunks
+        max_content_length = 8000
+        if len(content) > max_content_length:
+            # Try to keep the beginning (often has key info) and some from middle/end
+            # Take first 5000 chars and last 3000 chars if article is very long
+            if len(content) > 12000:
+                content = content[:5000] + "\n\n[... middle section ...]\n\n" + content[-3000:]
+            else:
+                content = content[:max_content_length] + "..."
+            logger.debug(f"Content truncated to {len(content)} chars for processing")
         
         # Chunk content if too long (LLM context limits)
-        # Use smaller chunks to avoid timeout issues
-        chunks = chunk_text(content, chunk_size=2000)
+        # Increased chunk size from 2000 to 3000 for better context
+        chunks = chunk_text(content, chunk_size=3000)
         all_facts = {
             'dates': [],
             'locations': [],
@@ -122,8 +138,11 @@ Rules:
         # Get topic-specific extraction focus
         topic_extraction_focus, priority_fact_type = self._get_topic_extraction_focus(topic_key, topic_label)
         
-        # Extract facts from each chunk (limit to first 2 chunks to speed up)
-        for chunk in chunks[:2]:
+        # Extract facts from more chunks (increased from 2 to 4 chunks)
+        # Process up to 4 chunks to capture more detail
+        chunks_to_process = min(4, len(chunks))
+        logger.debug(f"Processing {chunks_to_process} chunks out of {len(chunks)} total")
+        for chunk in chunks[:chunks_to_process]:
             try:
                 system_prompt = self.FACT_EXTRACTION_SYSTEM_PROMPT.format(
                     topic_label=topic_label,
