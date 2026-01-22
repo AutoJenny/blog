@@ -167,9 +167,11 @@ function renderItems(container, items, type, year, week) {
   
   items.forEach((item) => {
     // Use compact card format for all items
-    const postId = item.post_id || item.id;
-    const postExists = !!(postId);
-    const postStatus = item.post_status ? item.post_status.toLowerCase() : null;
+    // For posting_queue items (product, message), use posting_queue_id and check post_exists flag
+    const postId = item.post_id || (item.post_exists ? item.posting_queue_id : null) || item.id;
+    const postExists = !!(item.post_exists !== undefined ? item.post_exists : postId);
+    // Use post_status if available, otherwise fall back to status field
+    const postStatus = (item.post_status || item.status) ? (item.post_status || item.status).toLowerCase() : null;
     const typeName = type === 'idea' ? 'Theme' : 
                      type === 'recipe' ? 'Recipe' :
                      type === 'profile' ? 'Profile' :
@@ -177,6 +179,7 @@ function renderItems(container, items, type, year, week) {
                      type === 'weekly-phrase' ? 'language: phrase' :
                      type === 'weekly-insult' ? 'language: insult' :
                      type === 'product' ? 'product' :
+                     type === 'message' ? 'Message' :
                      type === 'event' ? (item.event_recurrence_type === 'one_off' ? 'Special' : 'Annual') :
                      type === 'scheduled' ? 'Syndication' : type;
     
@@ -980,6 +983,31 @@ async function loadWeek(year, weekNumber) {
             }
           } catch (e) {
             console.warn('Error parsing scheduled_date for product post:', scheduledDate, e);
+          }
+        }
+      });
+    }
+    
+    // Message posts - render on Saturday (day 6) only
+    const messagePosts = schedule.filter(s => s.type === 'message');
+    if (messagePosts.length > 0) {
+      messagePosts.forEach((messagePost) => {
+        if (messagePost.scheduled_date) {
+          try {
+            const dateObj = new Date(messagePost.scheduled_date + 'T00:00:00');
+            // Get ISO weekday (1=Monday, 7=Sunday)
+            const jsDay = dateObj.getDay();
+            const dayIndex = jsDay === 0 ? 7 : jsDay; // Convert to ISO weekday (1=Mon, 7=Sun)
+            
+            // Messages should only be on Saturday (day 6)
+            if (dayIndex === 6) {
+              const messageTarget = document.getElementById(`social-posts-row-day-6`);
+              if (messageTarget) {
+                renderItems(messageTarget, [messagePost], 'message', year, weekNumber);
+              }
+            }
+          } catch (e) {
+            console.warn('Error parsing scheduled_date for message post:', messagePost.scheduled_date, e);
           }
         }
       });

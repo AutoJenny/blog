@@ -237,6 +237,16 @@ def api_calendar_schedule(year, week_number):
                 # Add product posts (excluding Saturday)
                 for idx, post in enumerate(filtered_product_posts):
                     if post['scheduled_date']:
+                        # Map posting_queue status to post_status for frontend
+                        queue_status = post['status'] or 'draft'
+                        post_status_map = {
+                            'draft': 'draft',
+                            'ready': 'ready',
+                            'published': 'published',
+                            'failed': 'failed'
+                        }
+                        post_status = post_status_map.get(queue_status, 'draft')
+                        
                         schedule.append({
                             'type': 'product',
                             'item_id': post['product_id'],
@@ -245,7 +255,9 @@ def api_calendar_schedule(year, week_number):
                             'title': post['product_name'] or f"Product {post['product_id']}",
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
-                            'status': post['status'] or 'ready',
+                            'status': queue_status,  # Keep original status field
+                            'post_status': post_status,  # Add post_status for frontend compatibility
+                            'post_exists': True,  # Product post exists in posting_queue
                             'position': idx + 1
                         })
                 
@@ -282,6 +294,18 @@ def api_calendar_schedule(year, week_number):
                         content = post['generated_content'] or ''
                         title = content.split('\n')[0][:50] if content else 'Message'
                         
+                        # Map posting_queue status to post_status for frontend
+                        queue_status = post['status'] or 'draft'
+                        # posting_queue status: draft -> ready -> published
+                        # Map to post_status format expected by frontend
+                        post_status_map = {
+                            'draft': 'draft',
+                            'ready': 'ready',
+                            'published': 'published',
+                            'failed': 'failed'
+                        }
+                        post_status = post_status_map.get(queue_status, 'draft')
+                        
                         schedule.append({
                             'type': 'message',
                             'item_id': post['posting_queue_id'],
@@ -289,7 +313,9 @@ def api_calendar_schedule(year, week_number):
                             'title': title,
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
-                            'status': post['status'] or 'ready',
+                            'status': queue_status,  # Keep original status field
+                            'post_status': post_status,  # Add post_status for frontend compatibility
+                            'post_exists': True,  # Message post exists in posting_queue
                             'position': idx + 1
                         })
                 
