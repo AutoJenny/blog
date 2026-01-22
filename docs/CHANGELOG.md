@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-01-22 - KB Topic Rota System Planning
+
+### Added
+- **KB Topic Rota System Design:** Comprehensive planning for perpetual topic discovery and weekly scheduling
+  - **Feasibility Analysis:** `docs/KB_TOPIC_EXTRACTION_FEASIBILITY.md` - Confirms vectorized KB data supports topic extraction
+  - **Implementation Plan:** `docs/KB_TOPIC_ROTA_SYSTEM_IMPLEMENTATION_PLAN.md` - Detailed 5-6 week implementation plan
+  - **System Goal:** Perpetual system that discovers new angles in KB data and distributes them in diverse weekly schedule
+  - **Integration:** Designed to feed separate social media production processes for channel-specific formatting
+
+### Key Features Planned
+- **Unsupervised Topic Discovery:** Clustering KB articles by semantic similarity (no manual topic lists)
+- **Diversity Scheduling:** Ensures non-repetitive, interesting weekly rota (avoids similar topics in consecutive weeks)
+- **Cross-Category Topics:** Identifies recurring themes that span multiple KB sections
+- **Content Aggregation:** Combines relevant content from multiple articles for each topic
+- **Social Media Interface:** Provides topics + aggregated content for channel-specific formatting (Facebook, Instagram, Twitter, Blog)
+
+### Technical Approach
+- **Clustering:** K-means, DBSCAN, or hierarchical clustering on KB embeddings
+- **Topic Naming:** LLM-based generation from cluster content
+- **Diversity Algorithm:** Similarity-based scoring to ensure variety
+- **Perpetual Operation:** Automatic discovery when new KB content added
+- **Database Schema:** 5 new tables (topics, similarity, rota, history, content)
+
+### Documentation
+- `docs/KB_TOPIC_EXTRACTION_FEASIBILITY.md` - Feasibility analysis and Q&A
+- `docs/KB_TOPIC_ROTA_SYSTEM_IMPLEMENTATION_PLAN.md` - Complete implementation plan
+- Updated `templates/knowledge_base/backend/vector_search.html` - Added future topic discovery section
+
+### Status
+📋 **PLANNING** - Ready for implementation, estimated 5-6 weeks
+
+---
+
 ## 2026-01-22 - Timeline Filtering & Message Posts Display Fixes
 
 ### Fixed
