@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-01-23 - KB Topic Display in Calendar Week View
+
+### Added
+- **Week Topic Display:** KB topic now displayed in calendar week view date bar
+  - Shows below week date range (Year, Week, dates)
+  - Centered display with topic name
+  - Includes "edit..." link to rota editor (`/kb-topics/editor`)
+  - Automatically loads topic for current week from rota
+  - Hides when no topic assigned to week
+  - API endpoint: `GET /api/kb-topics/rota?year=X&week=Y`
+
+### Fixed
+- **Navigation Robustness:** Changed week navigation to use URL updates instead of JavaScript handlers
+  - Navigation buttons now update URL directly and reload page
+  - More reliable - works even if JavaScript fails
+  - Week loading now reads from URL parameters first (not WeekContext)
+- **API Response:** Fixed `/api/kb-topics/rota` to return 200 OK instead of 404 when no topic exists
+  - Prevents browser console errors for weeks without topics
+  - Returns `{success: false}` in JSON body instead of 404 status
+
+### Technical Details
+- Topic display element: `#week-topic` in week view template
+- Function: `loadWeekTopic(year, weekNumber)` in `calendar-week-view.js`
+- Navigation: `navigateWeek(delta)` function updates URL parameters
+- Styling: Centered flex layout with border separator
+
+---
+
 ## 2026-01-22 - KB Topic Rota System: Hierarchical Discovery & Enhanced Rota
 
 ### Enhanced

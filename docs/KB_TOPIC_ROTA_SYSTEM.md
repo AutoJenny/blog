@@ -276,33 +276,61 @@ Get weekly rota schedule.
 - `year` (optional) - Year (default: current year)
 - `week` (optional) - ISO week number (default: current week)
 
-**Response:**
+**Response (when topic exists):**
 ```json
 {
   "success": true,
   "topic": {
-    "id": 5,
-    "name": "Tartan Design Principles",
-    "description": "...",
-    "keywords": ["design", "tartan", "pattern"],
-    "type": "design",
-    "article_ids": [12, 45],
-    "category_ids": [3, 7]
-  },
-  "content": {
-    "aggregated_text": "...",
-    "source_article_ids": [12, 45],
-    "word_count": 1250
+    "id": 277,
+    "name": "Kilt Identity for Men: Cultural Significance",
+    "description": "This topic covers...",
+    "keywords": ["kilts", "kilt", "wearing", ...],
+    "type": "cultural",
+    "article_ids": [640, 329, 641, 350],
+    "category_ids": [118, 123, 218]
   },
   "schedule": {
     "year": 2026,
     "week": 5,
     "date": "2026-01-26",
-    "diversity_score": 0.85,
-    "status": "scheduled"
-  }
+    "status": "scheduled",
+    "diversity_score": 1.0
+  },
+  "content": null
 }
 ```
+
+**Response (when no topic exists):**
+```json
+{
+  "success": false,
+  "message": "No rota entry found for year 2026, week 4",
+  "year": 2026,
+  "week": 4
+}
+```
+
+**Note:** Returns HTTP 200 OK in both cases (not 404) to prevent browser console errors.
+
+---
+
+### Calendar Week View Integration
+
+The KB topic is displayed in the calendar week view (`/planning/calendar?year=X&week=Y&tab=week-view`):
+
+**Location:** Below the week date bar (Year, Week, date range)
+
+**Display:**
+- Shows topic name centered
+- Includes "edit..." link to rota editor
+- Automatically loads topic for the displayed week
+- Hides when no topic is assigned
+
+**Implementation:**
+- Template: `templates/planning/calendar/includes/week_view_content.html`
+- JavaScript: `loadWeekTopic(year, weekNumber)` in `calendar-week-view.js`
+- API: `GET /api/kb-topics/rota?year=X&week=Y`
+
 
 #### `GET /api/kb-topics/<topic_id>/content`
 Get aggregated content for a topic.
