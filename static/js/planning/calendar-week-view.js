@@ -448,19 +448,24 @@ function escapeHtml(text) {
 }
 
 async function loadWeek(year, weekNumber) {
-  console.log('loadWeek called with year:', year, 'week:', weekNumber);
-  console.log('window.createUnifiedItemCard available:', typeof window.createUnifiedItemCard);
+  console.log('[loadWeek] ===== CALLED =====');
+  console.log('[loadWeek] Parameters:', { year, weekNumber });
+  console.log('[loadWeek] window.createUnifiedItemCard available:', typeof window.createUnifiedItemCard);
   
   const weekYearEl = document.getElementById('week-year');
   const weekNumberEl = document.getElementById('week-number');
   
   if (!weekYearEl || !weekNumberEl) {
-    console.error('Week view elements not found, cannot load week');
+    console.error('[loadWeek] Week view elements not found, cannot load week');
     return;
   }
   
+  console.log('[loadWeek] Setting week-year to:', year);
+  console.log('[loadWeek] Setting week-number to:', weekNumber);
   weekYearEl.textContent = String(year);
   weekNumberEl.textContent = String(weekNumber);
+  console.log('[loadWeek] After setting - week-year text:', weekYearEl.textContent);
+  console.log('[loadWeek] After setting - week-number text:', weekNumberEl.textContent);
   
   // SINGLE SOURCE OF TRUTH: Update URL using WeekContext
   if (window.WeekContext) {
@@ -510,6 +515,9 @@ async function loadWeek(year, weekNumber) {
   if (weekDatesEl) {
     weekDatesEl.textContent = `${formatDate(dates[0])} – ${formatDate(dates[6])}`;
   }
+  
+  // Load and display KB topic for this week
+  await loadWeekTopic(year, weekNumber);
 
   // Load data in parallel
   const ideasPromise = fetchJSON(`/planning/api/calendar/ideas/week/${weekNumber}`); // week-only
@@ -1096,7 +1104,89 @@ async function loadWeek(year, weekNumber) {
   renderSocialFocuses(socialFocuses);
 }
 
-// Module entry point - runs immediately when module loads
+/**
+ * Load and display KB topic for the current week
+ */
+async function loadWeekTopic(year, weekNumber) {
+  console.log('[loadWeekTopic] ===== START =====');
+  console.log('[loadWeekTopic] Loading topic for year:', year, 'week:', weekNumber);
+  
+  // Wait a bit for DOM to be ready if needed
+  let topicEl = document.getElementById('week-topic');
+  let topicNameEl = document.getElementById('week-topic-name');
+  
+  if (!topicEl || !topicNameEl) {
+    console.warn('[loadWeekTopic] Topic elements not found immediately, waiting 100ms...');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    topicEl = document.getElementById('week-topic');
+    topicNameEl = document.getElementById('week-topic-name');
+  }
+  
+  if (!topicEl || !topicNameEl) {
+    console.error('[loadWeekTopic] Topic elements STILL not found after wait', { 
+      topicEl: !!topicEl, 
+      topicNameEl: !!topicNameEl,
+      allElementsWithId: Array.from(document.querySelectorAll('[id*="topic"]')).map(el => el.id)
+    });
+    return; // Elements not found, skip
+  }
+  
+  console.log('[loadWeekTopic] Elements found:', { topicEl: !!topicEl, topicNameEl: !!topicNameEl });
+  
+  try {
+    // Construct URL - use relative path which should work from any page
+    const url = `/api/kb-topics/rota?year=${year}&week=${weekNumber}`;
+    const fullUrl = window.location.origin + url;
+    console.log('[loadWeekTopic] Fetching URL:', fullUrl);
+    console.log('[loadWeekTopic] Current page:', window.location.href);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+      credentials: 'same-origin'
+    });
+    
+    console.log('[loadWeekTopic] Response status:', response.status, response.statusText);
+    console.log('[loadWeekTopic] Response URL:', response.url);
+    
+    if (!response.ok) {
+      // 404 or other error - no topic for this week
+      const errorText = await response.text().catch(() => '');
+      console.log('[loadWeekTopic] No topic found (status:', response.status, ')', errorText);
+      topicEl.style.display = 'none';
+      return;
+    }
+    
+    const data = await response.json();
+    console.log('[loadWeekTopic] Response:', data);
+    
+    if (data.success && data.topic && data.topic.name) {
+      console.log('[loadWeekTopic] ✅ SUCCESS - Displaying topic:', data.topic.name);
+      console.log('[loadWeekTopic] Topic element before:', topicEl.style.display);
+      console.log('[loadWeekTopic] Topic element exists:', !!topicEl);
+      console.log('[loadWeekTopic] Topic name element exists:', !!topicNameEl);
+      
+      topicNameEl.textContent = data.topic.name;
+      topicEl.style.display = 'flex';
+      
+      console.log('[loadWeekTopic] Topic element after setting display:', topicEl.style.display);
+      console.log('[loadWeekTopic] Topic element inline style:', topicEl.getAttribute('style'));
+      console.log('[loadWeekTopic] Topic element computed style:', window.getComputedStyle(topicEl).display);
+      console.log('[loadWeekTopic] Topic element visible:', topicEl.offsetParent !== null);
+      console.log('[loadWeekTopic] Topic element textContent:', topicNameEl.textContent);
+    } else {
+      // No topic for this week
+      console.log('[loadWeekTopic] ❌ No topic in response', data);
+      topicEl.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('[loadWeekTopic] Error loading week topic:', error);
+    topicEl.style.display = 'none';
+  }
+}
+
 console.log('calendar-week-view.js module loaded');
 
 (function init() {
@@ -1135,31 +1225,34 @@ console.log('calendar-week-view.js module loaded');
   }
   
   console.log('Week view elements found, proceeding with initialization');
+  console.log('[init] Button check:', {
+    prevWeekBtn: !!prevWeekBtn,
+    nextWeekBtn: !!nextWeekBtn,
+    nextWeekBtnId: nextWeekBtn?.id,
+    nextWeekBtnVisible: nextWeekBtn ? window.getComputedStyle(nextWeekBtn).display !== 'none' : false
+  });
   
-  // SINGLE SOURCE OF TRUTH: Get week context from URL only
-  let state;
-  if (window.WeekContext) {
-    const weekContext = window.WeekContext.getWeekContextWithDefault();
-    state = {
-      year: weekContext.year,
-      weekNumber: weekContext.week
-    };
-    // If URL didn't have week params, update URL with default
-    const urlContext = window.WeekContext.getWeekContext();
-    if (!urlContext && window.WeekContext) {
-      window.WeekContext.setWeekContext(state.year, state.weekNumber);
-    }
-  } else {
-    // Fallback if WeekContext not loaded (shouldn't happen)
+  // SINGLE SOURCE OF TRUTH: Get week from URL parameters first
+  const urlParams = new URLSearchParams(window.location.search);
+  let year = parseInt(urlParams.get('year'));
+  let week = parseInt(urlParams.get('week'));
+  
+  // If not in URL, fall back to current week
+  if (!year || !week) {
     const now = new Date();
     const currentWeekInfo = getISOWeekInfo(now);
-    state = {
-      year: currentWeekInfo.year,
-      weekNumber: currentWeekInfo.weekNumber
-    };
+    year = year || currentWeekInfo.year;
+    week = week || currentWeekInfo.weekNumber;
   }
   
-  // SINGLE SOURCE OF TRUTH: Update URL using WeekContext
+  const state = {
+    year: year,
+    weekNumber: week
+  };
+  
+  console.log('[init] Week from URL:', { year, week, urlYear: urlParams.get('year'), urlWeek: urlParams.get('week') });
+  
+  // Update WeekContext to match URL
   if (window.WeekContext) {
     window.WeekContext.setWeekContext(state.year, state.weekNumber);
   }
@@ -1180,6 +1273,9 @@ console.log('calendar-week-view.js module loaded');
       blogPipelineHeader.attachWeekParameterToNavLinks();
     }
   }, 50);
+  
+  // Load initial week topic
+  loadWeekTopic(state.year, state.weekNumber);
 
   prevWeekBtn.addEventListener('click', () => {
     // SINGLE SOURCE OF TRUTH: Get current week from WeekContext
@@ -1190,14 +1286,36 @@ console.log('calendar-week-view.js module loaded');
     loadWeek(info.year, info.weekNumber);
   });
 
-  nextWeekBtn.addEventListener('click', () => {
-    // SINGLE SOURCE OF TRUTH: Get current week from WeekContext
-    const currentWeek = window.WeekContext ? window.WeekContext.getWeekContextWithDefault() : { year: state.year, week: state.weekNumber };
-    const start = getWeekStartDate(currentWeek.year, currentWeek.week);
-    start.setUTCDate(start.getUTCDate() + 7);
-    const info = getISOWeekInfo(start);
-    loadWeek(info.year, info.weekNumber);
-  });
+  // Add click handler with better error handling
+  if (nextWeekBtn) {
+    console.log('[init] Attaching click handler to next-week button');
+    nextWeekBtn.addEventListener('click', (e) => {
+      console.log('[nextWeekBtn] ===== CLICKED VIA ADDEVENTLISTENER =====');
+      console.log('[nextWeekBtn] Event:', e);
+      e.preventDefault();
+      e.stopPropagation();
+      window.nextWeekClick();
+    });
+    // Create a global function that can be called from onclick
+    window.nextWeekClick = function() {
+      console.log('[nextWeekBtn] ===== CLICKED VIA GLOBAL FUNCTION =====');
+      try {
+        const currentWeek = window.WeekContext ? window.WeekContext.getWeekContextWithDefault() : { year: state.year, week: state.weekNumber };
+        console.log('[nextWeekBtn] Current week:', currentWeek);
+        const start = getWeekStartDate(currentWeek.year, currentWeek.week);
+        start.setUTCDate(start.getUTCDate() + 7);
+        const info = getISOWeekInfo(start);
+        console.log('[nextWeekBtn] Navigating to:', info);
+        loadWeek(info.year, info.weekNumber);
+      } catch (error) {
+        console.error('[nextWeekBtn] Error:', error);
+      }
+    };
+    
+    console.log('[init] Click handler attached to next-week button');
+  } else {
+    console.error('[init] nextWeekBtn not found, cannot attach click handler');
+  }
 
   // "This week" button - recalculate current week from today's date
   const thisWeekBtn = document.getElementById('this-week-btn');
@@ -1460,9 +1578,12 @@ console.log('calendar-week-view.js module loaded');
   updateFilterVisuals();
 
   // Load the saved week (or current week if none saved)
-  console.log('Initializing week view with state:', state);
+  console.log('[init] ===== LOADING WEEK =====');
+  console.log('[init] State from URL:', state);
+  console.log('[init] URL params:', { year: urlParams.get('year'), week: urlParams.get('week') });
+  console.log('[init] Calling loadWeek with:', { year: state.year, week: state.weekNumber });
   loadWeek(state.year, state.weekNumber).catch(err => {
-    console.error('Error in loadWeek:', err);
+    console.error('[init] Error in loadWeek:', err);
   });
 })();
 

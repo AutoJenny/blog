@@ -144,21 +144,20 @@ class PostingExecutor:
             logger.error(f"BLOCKED: Post {post['id']} ({content_type}) scheduled for weekday {weekday} (expected {expected_weekday})")
             return False
         
-        # Check if another post of same type was already published this week
-        year, week_number, _ = scheduled_date.isocalendar()
+        # Check if another post of same type was already published on the same weekday
+        # Only block if a post was published on the correct weekday (not just any weekday in the week)
         with self.db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT id FROM posting_queue
                 WHERE content_type = %s
                 AND status = 'published'
                 AND scheduled_date IS NOT NULL
-                AND EXTRACT(YEAR FROM scheduled_date) = %s
-                AND EXTRACT(WEEK FROM scheduled_date) = %s
+                AND EXTRACT(ISODOW FROM scheduled_date) = %s
                 AND id != %s
-            """, (content_type, year, week_number, post['id']))
+            """, (content_type, expected_weekday, post['id']))
             existing = cursor.fetchone()
             if existing:
-                logger.error(f"BLOCKED: Post {post['id']} ({content_type}) - another {content_type} already published in week {year}-W{week_number:02d}")
+                logger.error(f"BLOCKED: Post {post['id']} ({content_type}) - another {content_type} already published on weekday {expected_weekday}")
                 return False
         
         return True
@@ -262,7 +261,7 @@ class PostingExecutor:
                     }
             else:
                 # Use product post workflow (existing logic)
-                from blueprints.launchpad import execute_facebook_post
+                from blueprints.launchpad.blog_post_syndication import execute_facebook_post
                 
                 result = execute_facebook_post(queue_id)
                 

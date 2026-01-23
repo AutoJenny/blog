@@ -6,7 +6,7 @@ Calculates similarity between topics for diversity scheduling.
 
 import logging
 import numpy as np
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from config.database import db_manager
 
 logger = logging.getLogger(__name__)

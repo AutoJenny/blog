@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title or 'KB Topic Rota Editor' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/kb_topics/rota_editor.css') }}">
+</head>
+<body>
+    <div class="rota-editor-container">
+        <!-- Header -->
+        <header class="editor-header">
+            <h1>KB Topic Rota Editor</h1>
+            <div class="header-actions">
+                <button id="btn-auto-arrange" class="btn btn-secondary">Auto-Arrange</button>
+                <button id="btn-save-draft" class="btn btn-secondary">Save Draft</button>
+                <button id="btn-apply" class="btn btn-primary">Apply to Schedule</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="editor-main">
+            <!-- Left Panel: Topic Library -->
+            <aside class="topic-library">
+                <div class="library-header">
+                    <h2>Topic Library</h2>
+                    <div class="library-controls">
+                        <input type="text" id="topic-search" placeholder="Search topics..." class="search-input">
+                        <select id="topic-filter-type" class="filter-select">
+                            <option value="">All Types</option>
+                            <option value="practical">Practical</option>
+                            <option value="historical">Historical</option>
+                            <option value="cultural">Cultural</option>
+                            <option value="design">Design</option>
+                            <option value="product">Product</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="topic-tree" id="topic-tree">
+                    <!-- Topics will be loaded here -->
+                </div>
+            </aside>
+
+            <!-- Right Panel: Weekly Schedule -->
+            <main class="schedule-timeline">
+                <div class="timeline-header">
+                    <h2>Weekly Schedule</h2>
+                    <div class="timeline-controls">
+                        <button id="btn-collapse-all" class="btn-icon">−</button>
+                        <button id="btn-expand-all" class="btn-icon">+</button>
+                        <input type="number" id="jump-to-week" placeholder="Jump to week..." min="1" max="144">
+                        <button id="btn-jump" class="btn-small">Go</button>
+                    </div>
+                </div>
+                <div class="timeline-container" id="timeline-container">
+                    <!-- Weeks will be loaded here -->
+                </div>
+            </main>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="editor-footer">
+            <div class="status-info">
+                <span id="status-text">Ready</span>
+            </div>
+            <div class="stats">
+                <span id="stats-topics">0 topics</span>
+                <span id="stats-scheduled">0 scheduled</span>
+                <span id="stats-unscheduled">0 unscheduled</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Topic Card Template (hidden) -->
+    <template id="topic-card-template">
+        <div class="topic-card" draggable="true" data-topic-id="">
+            <div class="topic-card-header">
+                <span class="topic-level-badge" data-level=""></span>
+                <span class="topic-type-badge" data-type=""></span>
+            </div>
+            <div class="topic-card-body">
+                <h4 class="topic-name"></h4>
+                <p class="topic-meta">
+                    <span class="article-count"></span> articles
+                </p>
+            </div>
+            <div class="topic-card-footer">
+                <span class="parent-indicator" data-parent-color=""></span>
+            </div>
+        </div>
+    </template>
+
+    <!-- Week Column Template (hidden) -->
+    <template id="week-column-template">
+        <div class="week-column" data-week="" data-year="">
+            <div class="week-header">
+                <div class="week-number">Week <span class="week-num"></span></div>
+                <div class="week-date"></div>
+            </div>
+            <div class="week-content" data-drop-zone="true">
+                <div class="week-placeholder">Drop topic here</div>
+            </div>
+        </div>
+    </template>
+
+    <script src="{{ url_for('static', filename='js/kb_topics/rota_editor.js') }}"></script>
+</body>
+</html>

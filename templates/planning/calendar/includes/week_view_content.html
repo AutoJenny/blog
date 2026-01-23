@@ -1,7 +1,7 @@
 {# Week View Content - extracted from week_view.html #}
 <div class="calendar-week-view">
     <div class="week-controls">
-        <button class="nav-btn" id="prev-week"><i class="fas fa-chevron-left"></i></button>
+        <a href="#" class="nav-btn" id="prev-week" onclick="navigateWeek(-1); return false;"><i class="fas fa-chevron-left"></i></a>
         <button class="nav-btn nav-btn-text" id="this-week-btn" title="Jump to current week">This week</button>
         <div class="week-meta">
             <div class="year">Year: <span id="week-year"></span></div>
@@ -26,7 +26,12 @@
                 </div>
             </div>
         </div>
-        <button class="nav-btn" id="next-week"><i class="fas fa-chevron-right"></i></button>
+        <a href="#" class="nav-btn" id="next-week" onclick="navigateWeek(1); return false;"><i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="week-topic" id="week-topic" style="display: none;">
+        <span class="week-topic-label">Topic:</span>
+        <span class="week-topic-name" id="week-topic-name"></span>
+        <a href="/kb-topics/editor" class="week-topic-edit">edit...</a>
     </div>
 
     <div class="week-filters week-filters-v2">

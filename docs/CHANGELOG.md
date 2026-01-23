@@ -1,5 +1,46 @@
 # Changelog
 
+## 2026-01-22 - KB Topic Rota System: Hierarchical Discovery & Enhanced Rota
+
+### Enhanced
+- **Hierarchical Topic Discovery:** ✅ **IMPLEMENTED** - Multi-level topic discovery system
+  - **Level 1:** Broad themes (e.g., "Tartan Patterns & Variations")
+  - **Level 2:** Granular sub-topics (e.g., "Line Widths and Balance in Tartan Design")
+  - Uses hierarchical clustering with configurable thresholds (0.80-0.90 for ultra-granular topics)
+  - Creates parent-child relationships in database schema
+  - New script: `scripts/discover_hierarchical_topics.py`
+  - New module: `utils/kb_topic_discovery/hierarchical_discovery.py`
+
+- **LLM-Based Semantic Topic Naming:** ✅ **IMPLEMENTED**
+  - Uses Ollama (llama3.2:latest) for semantic understanding
+  - Generates meaningful, contextualized topic names (not keyword-based)
+  - Understands concepts and relationships, not just word groups
+  - Examples: "Line Widths and Balance in Tartan Design" (semantic) vs "Tartan Kilt Your" (avoided)
+
+- **Enhanced Rota Generator:** ✅ **UPDATED**
+  - **Default behavior:** Includes all topics in rotation (2.8-year rotation for 144 topics)
+  - Auto-calculates weeks to include all topics when `include_all_topics=True`
+  - Prioritizes unused topics to ensure complete coverage
+  - Configurable: Can still generate shorter rotations (e.g., 52 weeks) if needed
+  - Parameters: `weeks=None` (auto-calculate), `include_all_topics=True` (default)
+
+- **Database Schema Updates:**
+  - Added hierarchical columns to `kb_topics`: `parent_id`, `level`, `is_broad`
+  - Supports parent-child relationships between broad and granular topics
+
+### Current System State
+- **144 topics discovered:** 8 broad themes (Level 1), 136 granular sub-topics (Level 2)
+- **2.8-year rota generated:** 144 weeks, includes all topics
+- **Semantic topic names:** LLM-generated, meaning-based
+- **Hierarchical structure:** Parent-child relationships established
+
+### Documentation Updates
+- Updated `docs/KB_TOPIC_ROTA_SYSTEM.md` with hierarchical discovery details
+- Updated `templates/knowledge_base/backend/topic_rota.html` with new features
+- Added hierarchical discovery script documentation
+
+---
+
 ## 2026-01-22 - KB Topic Rota System Implementation
 
 ### Added

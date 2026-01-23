@@ -182,6 +182,10 @@ def create_app(config_name=None):
     from blueprints.kb_topic_rota_api import bp as kb_topic_rota_api_bp
     app.register_blueprint(kb_topic_rota_api_bp)
     
+    # Register KB topic rota editor blueprint
+    from blueprints.kb_topic_rota_editor import bp as kb_topic_rota_editor_bp
+    app.register_blueprint(kb_topic_rota_editor_bp)
+    
     # Register automated posting API blueprint
     from blueprints.automated_posting_api import bp as automated_posting_api_bp
     app.register_blueprint(automated_posting_api_bp)

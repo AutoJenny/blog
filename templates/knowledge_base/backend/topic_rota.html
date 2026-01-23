@@ -27,16 +27,30 @@
     
     <h2>How It Works</h2>
     
-    <h3>1. Topic Discovery</h3>
+    <h3>1. Hierarchical Topic Discovery</h3>
     <p>
-        The system uses <strong>clustering algorithms</strong> (K-means, DBSCAN, or hierarchical) on KB article embeddings 
-        to discover recurring themes. Topics emerge organically from the data - no manual topic lists required.
+        The system uses <strong>multi-level clustering</strong> to discover topics at different levels of granularity:
     </p>
     <ul>
+        <li><strong>Level 1 - Broad Themes:</strong> Discovers major themes (e.g., "Tartan Patterns & Variations")</li>
+        <li><strong>Level 2 - Granular Sub-topics:</strong> Discovers specific sub-themes within broad topics (e.g., "Line Widths and Balance in Tartan Design")</li>
+        <li>Uses <strong>LLM-based semantic naming</strong> (Ollama/llama3.2) to understand meaning, not just keywords</li>
+        <li>Creates hierarchical parent-child relationships between broad and granular topics</li>
         <li>Analyzes all KB article chunks (696 chunks from 629 articles)</li>
         <li>Groups semantically similar articles into topics</li>
-        <li>Extracts keywords and generates topic names</li>
         <li>Classifies topic types (practical, historical, cultural, design, product, etc.)</li>
+    </ul>
+    <p>
+        <strong>Example Hierarchy:</strong>
+    </p>
+    <ul>
+        <li>📌 Tartan Patterns & Variations (Level 1, 119 articles)
+            <ul>
+                <li>└─ Tartan Pattern Design and Layout (Level 2, 2 articles)</li>
+                <li>└─ Tartan Sett Arrangement Principles (Level 2, 6 articles)</li>
+                <li>└─ Tartan Design Creation and Customization Process (Level 2, 16 articles)</li>
+            </ul>
+        </li>
     </ul>
     
     <h3>2. Diversity Scheduling</h3>
@@ -44,10 +58,19 @@
         The rota generator ensures <strong>non-repetitive, interesting schedules</strong> by:
     </p>
     <ul>
+        <li><strong>Includes all topics:</strong> By default, generates a 2.8-year rotation (144 weeks for 144 topics) ensuring all topics are used (via <code>include_all_topics=True</code> parameter)</li>
         <li>Calculating similarity between topics using embedding cosine similarity</li>
         <li>Scoring diversity based on similarity to recent topics</li>
         <li>Giving bonuses for different topic types and category areas</li>
         <li>Enforcing minimum gaps between similar topics</li>
+        <li>Prioritizing unused topics to ensure complete coverage</li>
+    </ul>
+    <p>
+        <strong>Rota Options:</strong>
+    </p>
+    <ul>
+        <li><strong>Full Rotation (Default):</strong> 144 weeks (2.8 years) - includes all 144 topics</li>
+        <li><strong>Custom Duration:</strong> Can generate shorter rotations (e.g., 52 weeks) if needed</li>
     </ul>
     
     <h3>3. Content Aggregation</h3>
@@ -78,7 +101,12 @@
     <h2>Database Schema</h2>
     <p>The system uses 5 database tables:</p>
     <ul>
-        <li><strong><code>kb_topics</code></strong> - Discovered topics with embeddings and metadata</li>
+        <li><strong><code>kb_topics</code></strong> - Discovered topics with embeddings and metadata
+            <ul>
+                <li>Includes hierarchical fields: <code>parent_id</code>, <code>level</code>, <code>is_broad</code></li>
+                <li>LLM-generated semantic names and descriptions</li>
+            </ul>
+        </li>
         <li><strong><code>kb_topic_similarity</code></strong> - Pre-computed similarity matrix for diversity</li>
         <li><strong><code>kb_topic_rota</code></strong> - Weekly schedule of topics</li>
         <li><strong><code>kb_rota_history</code></strong> - History for diversity tracking</li>
@@ -99,9 +127,23 @@
     
     <h3>Initial Setup</h3>
     <ol>
-        <li>Run database migration: <code>migrations/20260122_create_kb_topic_rota_tables.sql</code></li>
-        <li>Run initial discovery: <code>python scripts/discover_kb_topics.py --method kmeans --compute-similarity</code></li>
-        <li>Generate rota: <code>POST /api/kb-topics/regenerate-rota</code></li>
+        <li>Run database migration: <code>migrations/20260122_create_kb_topic_rota_tables.sql</code>
+            <ul>
+                <li>Note: Hierarchical columns (<code>parent_id</code>, <code>level</code>, <code>is_broad</code>) are added automatically if missing</li>
+            </ul>
+        </li>
+        <li>Run hierarchical discovery (recommended):
+            <ul>
+                <li><code>python scripts/discover_hierarchical_topics.py --broad-clusters 10 --granular-threshold 0.85 --compute-similarity</code></li>
+                <li>Or single-level: <code>python scripts/discover_kb_topics.py --method kmeans --compute-similarity</code></li>
+            </ul>
+        </li>
+        <li>Generate rota: <code>POST /api/kb-topics/regenerate-rota</code>
+            <ul>
+                <li>By default, generates 2.8-year rotation including all topics</li>
+                <li>Or specify: <code>{"weeks": 52}</code> for 1-year rotation</li>
+            </ul>
+        </li>
     </ol>
     
     <h3>Ongoing Operation</h3>
@@ -116,8 +158,11 @@
     
     <h2>Key Features</h2>
     <ul>
+        <li><strong>Hierarchical Discovery:</strong> Multi-level topic discovery (broad themes + granular sub-topics)</li>
+        <li><strong>Semantic Understanding:</strong> LLM-based topic naming understands meaning, not just keywords</li>
         <li><strong>Unsupervised Discovery:</strong> Topics emerge from data, not manual lists</li>
         <li><strong>Cross-Category Topics:</strong> Identifies themes spanning multiple KB sections</li>
+        <li><strong>Complete Coverage:</strong> Rota includes all topics (2.8-year rotation by default)</li>
         <li><strong>Diversity Algorithm:</strong> Ensures non-repetitive, interesting schedules</li>
         <li><strong>Perpetual Operation:</strong> Self-updates as KB content changes</li>
         <li><strong>Channel Agnostic:</strong> Topics are abstract - formatting happens downstream</li>
@@ -126,9 +171,16 @@
     <h2>Technical Details</h2>
     <ul>
         <li><strong>Embedding Model:</strong> <code>intfloat/e5-large-v2</code> (1024 dimensions)</li>
-        <li><strong>Clustering:</strong> K-means (auto-detected k), DBSCAN, or hierarchical</li>
+        <li><strong>Clustering:</strong> 
+            <ul>
+                <li>Level 1: K-means (auto-detected k, typically 8-15 clusters)</li>
+                <li>Level 2: Hierarchical clustering with tight thresholds (0.80-0.90 similarity)</li>
+            </ul>
+        </li>
+        <li><strong>Topic Naming:</strong> LLM-based (Ollama/llama3.2:latest) for semantic understanding</li>
         <li><strong>Similarity Metric:</strong> Cosine similarity between topic embeddings</li>
         <li><strong>Diversity Constraints:</strong> Minimum similarity gap (0.7), 6-week lookback</li>
+        <li><strong>Current State:</strong> 144 topics (8 broad, 136 granular), 2.8-year rota</li>
     </ul>
     
     <div class="kb-related">

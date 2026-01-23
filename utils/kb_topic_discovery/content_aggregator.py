@@ -89,7 +89,7 @@ class TopicContentAggregator:
         
         # Get source article IDs
         source_article_ids = list(set(chunk['article_id'] for chunk in selected_chunks))
-        source_chunk_ids = [chunk['chunk_id'] for chunk in selected_chunks]
+        source_chunk_ids = [chunk.get('chunk_id') or chunk.get('id') for chunk in selected_chunks]
         
         return {
             'aggregated_text': aggregated_text,

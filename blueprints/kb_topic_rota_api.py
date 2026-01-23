@@ -74,7 +74,7 @@ def get_rota():
                 'message': f'No rota entry found for year {year}, week {week}',
                 'year': year,
                 'week': week
-            }), 404
+            }), 200  # Return 200 OK with success: false, not 404
         
         # Get aggregated content if available
         content = None
@@ -295,9 +295,12 @@ def regenerate_rota():
                 days_until_monday = 7
             start_date = today + timedelta(days=days_until_monday)
         
-        weeks = data.get('weeks', 52)
+        weeks = data.get('weeks')
         lookback_weeks = data.get('lookback_weeks', 6)
         min_similarity_gap = data.get('min_similarity_gap', 0.7)
+        include_all_topics = data.get('include_all_topics', True)
+        
+        logger.info(f"Generating rota: start_date={start_date}, weeks={weeks}, include_all_topics={include_all_topics}")
         
         # Generate rota
         rota_gen = RotaGenerator()
@@ -305,8 +308,11 @@ def regenerate_rota():
             start_date=start_date,
             weeks=weeks,
             lookback_weeks=lookback_weeks,
-            min_similarity_gap=min_similarity_gap
+            min_similarity_gap=min_similarity_gap,
+            include_all_topics=include_all_topics
         )
+        
+        logger.info(f"Generated {len(rota)} rota entries")
         
         # Save rota
         if not rota_gen.save_rota(rota):
@@ -319,7 +325,8 @@ def regenerate_rota():
             'success': True,
             'rota_entries': len(rota),
             'start_date': start_date.isoformat(),
-            'weeks': weeks,
+            'weeks': len(rota) if weeks is None else weeks,
+            'message': f'Generated {len(rota)} rota entries',
             'rota': [
                 {
                     'topic_id': entry['topic_id'],
@@ -400,6 +407,258 @@ def list_topics():
     
     except Exception as e:
         logger.error(f"Error listing topics: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@bp.route('/rota-editor/data', methods=['GET'])
+def get_rota_editor_data():
+    """
+    Get all data needed for rota editor UI.
+    
+    Returns:
+        JSON with topics (hierarchical), current rota, and validation data
+    """
+    try:
+        # Get all topics with hierarchy
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    t1.id, t1.topic_name, t1.topic_description, t1.topic_type,
+                    t1.level, t1.is_broad, t1.parent_id,
+                    array_length(t1.article_ids, 1) as article_count,
+                    t2.topic_name as parent_name,
+                    t2.id as parent_topic_id
+                FROM kb_topics t1
+                LEFT JOIN kb_topics t2 ON t1.parent_id = t2.id
+                WHERE t1.is_active = TRUE
+                ORDER BY COALESCE(t1.parent_id, t1.id), t1.level, t1.id
+            """)
+            topics = cursor.fetchall()
+        
+        # Get current rota
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    r.id as rota_id,
+                    r.topic_id,
+                    r.scheduled_year,
+                    r.scheduled_week,
+                    r.scheduled_date,
+                    r.diversity_score,
+                    r.status,
+                    t.topic_name,
+                    t.parent_id,
+                    t.level
+                FROM kb_topic_rota r
+                JOIN kb_topics t ON r.topic_id = t.id
+                ORDER BY r.scheduled_date, r.scheduled_week
+            """)
+            rota_entries = cursor.fetchall()
+        
+        # Get similarity matrix for validation
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT topic1_id, topic2_id, similarity_score
+                FROM kb_topic_similarity
+            """)
+            similarities = cursor.fetchall()
+        
+        # Organize topics hierarchically
+        topics_dict = {}
+        
+        for topic in topics:
+            topic_id = topic['id']
+            topic_data = {
+                'id': topic_id,
+                'name': topic['topic_name'],
+                'description': topic.get('topic_description'),
+                'type': topic['topic_type'],
+                'level': topic['level'],
+                'is_broad': topic['is_broad'],
+                'article_count': topic['article_count'] or 0,
+                'parent_id': topic.get('parent_id'),
+                'parent_name': topic.get('parent_name'),
+                'parent_topic_id': topic.get('parent_topic_id')
+            }
+            topics_dict[topic_id] = topic_data
+        
+        # Organize rota by week
+        rota_by_week = {}
+        for entry in rota_entries:
+            week_key = f"{entry['scheduled_year']}_W{entry['scheduled_week']}"
+            if week_key not in rota_by_week:
+                rota_by_week[week_key] = []
+            rota_by_week[week_key].append({
+                'rota_id': entry['rota_id'],
+                'topic_id': entry['topic_id'],
+                'topic_name': entry['topic_name'],
+                'year': entry['scheduled_year'],
+                'week': entry['scheduled_week'],
+                'date': entry['scheduled_date'].isoformat() if entry['scheduled_date'] else None,
+                'diversity_score': float(entry['diversity_score']) if entry['diversity_score'] else None,
+                'status': entry['status'],
+                'parent_id': entry.get('parent_id'),
+                'level': entry['level']
+            })
+        
+        # Build similarity map
+        similarity_map = {}
+        for sim in similarities:
+            t1 = sim['topic1_id']
+            t2 = sim['topic2_id']
+            score = float(sim['similarity_score'])
+            similarity_map[f"{t1}_{t2}"] = score
+            similarity_map[f"{t2}_{t1}"] = score
+        
+        return jsonify({
+            'success': True,
+            'topics': list(topics_dict.values()),
+            'rota': rota_by_week,
+            'similarity_map': similarity_map
+        })
+    
+    except Exception as e:
+        logger.error(f"Error getting rota editor data: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@bp.route('/rota-editor/save', methods=['POST'])
+def save_rota_editor():
+    """
+    Save rota arrangement from editor.
+    
+    Body (JSON):
+        rota: Array of {topic_id, year, week, date} objects
+        validate: Whether to validate placements (default: true)
+    
+    Returns:
+        JSON with success status and validation warnings
+    """
+    try:
+        data = request.get_json() or {}
+        rota_entries = data.get('rota', [])
+        validate = data.get('validate', True)
+        
+        warnings = []
+        
+        # Validate if requested
+        if validate and rota_entries:
+            # Get similarity map
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT topic1_id, topic2_id, similarity_score
+                    FROM kb_topic_similarity
+                """)
+                similarities = cursor.fetchall()
+            
+            similarity_map = {}
+            for sim in similarities:
+                t1 = sim['topic1_id']
+                t2 = sim['topic2_id']
+                score = float(sim['similarity_score'])
+                similarity_map[f"{t1}_{t2}"] = score
+                similarity_map[f"{t2}_{t1}"] = score
+            
+            # Get topic parent info
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, parent_id, topic_name
+                    FROM kb_topics
+                    WHERE is_active = TRUE
+                """)
+                topics = {t['id']: t for t in cursor.fetchall()}
+            
+            # Check for issues
+            for i, entry in enumerate(rota_entries):
+                topic_id = entry['topic_id']
+                week = entry['week']
+                year = entry['year']
+                
+                # Check adjacent weeks for same parent
+                for j, other_entry in enumerate(rota_entries):
+                    if i == j:
+                        continue
+                    if other_entry['year'] != year:
+                        continue
+                    other_week = other_entry['week']
+                    other_topic_id = other_entry['topic_id']
+                    
+                    # Same parent in consecutive weeks
+                    if abs(week - other_week) == 1:
+                        topic = topics.get(topic_id)
+                        other_topic = topics.get(other_topic_id)
+                        if topic and other_topic:
+                            topic_parent = topic.get('parent_id') or topic_id
+                            other_parent = other_topic.get('parent_id') or other_topic_id
+                            if topic_parent == other_parent:
+                                warnings.append({
+                                    'type': 'same_parent_consecutive',
+                                    'week1': week,
+                                    'week2': other_week,
+                                    'topic1': topic['topic_name'],
+                                    'topic2': other_topic['topic_name'],
+                                    'message': f'Same parent group in weeks {week} and {other_week}'
+                                })
+                    
+                    # Similar topics within 6 weeks
+                    if abs(week - other_week) <= 6:
+                        sim_key = f"{topic_id}_{other_topic_id}"
+                        similarity = similarity_map.get(sim_key, 0)
+                        if similarity > 0.7:
+                            warnings.append({
+                                'type': 'similar_topics_close',
+                                'week1': week,
+                                'week2': other_week,
+                                'similarity': similarity,
+                                'topic1': topics.get(topic_id, {}).get('topic_name', 'Unknown'),
+                                'topic2': topics.get(other_topic_id, {}).get('topic_name', 'Unknown'),
+                                'message': f'Similar topics in weeks {week} and {other_week} (similarity: {similarity:.2f})'
+                            })
+        
+        # Save to database
+        with db_manager.get_cursor() as cursor:
+            # Clear existing rota
+            cursor.execute("DELETE FROM kb_topic_rota")
+            
+            # Insert new rota entries
+            for entry in rota_entries:
+                scheduled_date = datetime.strptime(entry['date'], '%Y-%m-%d').date() if entry.get('date') else None
+                
+                cursor.execute("""
+                    INSERT INTO kb_topic_rota
+                        (topic_id, scheduled_year, scheduled_week, scheduled_date,
+                         diversity_score, status, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    ON CONFLICT (scheduled_year, scheduled_week)
+                    DO UPDATE SET
+                        topic_id = EXCLUDED.topic_id,
+                        scheduled_date = EXCLUDED.scheduled_date,
+                        diversity_score = EXCLUDED.diversity_score,
+                        status = EXCLUDED.status,
+                        updated_at = CURRENT_TIMESTAMP
+                """, (
+                    entry['topic_id'],
+                    entry['year'],
+                    entry['week'],
+                    scheduled_date,
+                    entry.get('diversity_score'),
+                    entry.get('status', 'scheduled')
+                ))
+        
+        return jsonify({
+            'success': True,
+            'warnings': warnings,
+            'message': f'Saved {len(rota_entries)} rota entries'
+        })
+    
+    except Exception as e:
+        logger.error(f"Error saving rota: {e}", exc_info=True)
         return jsonify({
             'success': False,
             'error': str(e)

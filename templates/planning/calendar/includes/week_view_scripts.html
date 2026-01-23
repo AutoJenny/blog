@@ -3,6 +3,49 @@
 window.postId = 0;  {# No post_id needed for unified calendar #}
 window.currentStage = 'calendar';
 window.currentSubstage = 'week-view';
+
+// Simple week navigation by updating URL
+function navigateWeek(delta) {
+  const urlParams = new URLSearchParams(window.location.search);
+  let year = parseInt(urlParams.get('year')) || new Date().getFullYear();
+  let week = parseInt(urlParams.get('week')) || getCurrentISOWeek();
+  
+  // Calculate new week
+  const date = getDateFromISOWeek(year, week);
+  date.setDate(date.getDate() + (delta * 7));
+  const newYear = date.getFullYear();
+  const newWeek = getISOWeek(date);
+  
+  // Update URL
+  urlParams.set('year', newYear);
+  urlParams.set('week', newWeek);
+  window.location.search = urlParams.toString();
+}
+
+function getCurrentISOWeek() {
+  const now = new Date();
+  return getISOWeek(now);
+}
+
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function getDateFromISOWeek(year, week) {
+  const simple = new Date(year, 0, 1 + (week - 1) * 7);
+  const dow = simple.getDay();
+  const ISOweekStart = simple;
+  if (dow <= 4) {
+    ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+  } else {
+    ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+  }
+  return ISOweekStart;
+}
 </script>
 <script src="{{ url_for('static', filename='js/planning/unified-item-card.js') }}"></script>
 <script type="module">

@@ -24,34 +24,46 @@ class RotaGenerator:
     
     def generate_rota(self,
                      start_date: date,
-                     weeks: int = 52,
+                     weeks: Optional[int] = None,
                      lookback_weeks: int = 6,
-                     min_similarity_gap: float = 0.7) -> List[Dict]:
+                     min_similarity_gap: float = 0.7,
+                     include_all_topics: bool = True) -> List[Dict]:
         """
         Generate weekly rota with diversity constraints.
         
         Args:
             start_date: First Monday of rota
-            weeks: Number of weeks to schedule
+            weeks: Number of weeks to schedule (None = auto-calculate to include all topics)
             lookback_weeks: How many recent weeks to check for diversity
             min_similarity_gap: Minimum similarity threshold to avoid (0.0-1.0)
+            include_all_topics: If True and weeks=None, generate rota to include all topics
         
         Returns:
             List of rota entry dictionaries
         """
-        logger.info(f"Generating rota for {weeks} weeks starting from {start_date}")
-        
-        # Get active topics
+        # Get active topics first to determine weeks if needed
         topics = self._get_active_topics()
         
         if not topics:
             logger.warning("No active topics found - cannot generate rota")
             return []
         
+        # Auto-calculate weeks to include all topics if requested
+        if weeks is None and include_all_topics:
+            weeks = len(topics)
+            logger.info(f"Auto-calculating weeks to include all {len(topics)} topics: {weeks} weeks ({weeks/52:.1f} years)")
+        elif weeks is None:
+            weeks = 52  # Default to 1 year
+        
+        logger.info(f"Generating rota for {weeks} weeks starting from {start_date}")
         logger.info(f"Found {len(topics)} active topics")
         
         # Get recent rota history
         recent_topics = self._get_recent_topics(lookback_weeks)
+        
+        # Track which topics have been used (for ensuring all topics are included)
+        used_topic_ids = set()
+        unused_topics = topics.copy()
         
         rota = []
         current_date = start_date
@@ -67,31 +79,65 @@ class RotaGenerator:
         for week_num in range(weeks):
             # Calculate diversity scores for all candidates
             candidates = []
-            for topic in topics:
-                # Skip if topic was used recently
-                if self._was_used_recently(topic['id'], recent_topics, lookback_weeks):
-                    continue
-                
-                # Calculate diversity score
-                diversity_score = self.diversity_manager.calculate_diversity(
-                    topic,
-                    recent_topics,
-                    min_similarity_gap
-                )
-                
-                candidates.append({
-                    'topic': topic,
-                    'diversity_score': diversity_score
-                })
+            
+            # If we want to include all topics, prioritize unused ones
+            if include_all_topics and unused_topics:
+                # First, try to use topics that haven't been used yet
+                for topic in unused_topics:
+                    # Skip if topic was used recently
+                    if self._was_used_recently(topic['id'], recent_topics, lookback_weeks):
+                        continue
+                    
+                    # Calculate diversity score
+                    diversity_score = self.diversity_manager.calculate_diversity(
+                        topic,
+                        recent_topics,
+                        min_similarity_gap
+                    )
+                    
+                    candidates.append({
+                        'topic': topic,
+                        'diversity_score': diversity_score,
+                        'is_unused': True
+                    })
+            
+            # If no unused candidates or we've used all topics, consider all topics
+            if not candidates or (include_all_topics and not unused_topics):
+                for topic in topics:
+                    # Skip if topic was used recently
+                    if self._was_used_recently(topic['id'], recent_topics, lookback_weeks):
+                        continue
+                    
+                    # Skip if we already have this in candidates
+                    if any(c['topic']['id'] == topic['id'] for c in candidates):
+                        continue
+                    
+                    # Calculate diversity score
+                    diversity_score = self.diversity_manager.calculate_diversity(
+                        topic,
+                        recent_topics,
+                        min_similarity_gap
+                    )
+                    
+                    candidates.append({
+                        'topic': topic,
+                        'diversity_score': diversity_score,
+                        'is_unused': False
+                    })
             
             if not candidates:
                 # Fallback: reset recent topics if no candidates
                 logger.warning(f"No candidates for week {week_num + 1}, resetting recent topics")
                 recent_topics = []
-                candidates = [{'topic': t, 'diversity_score': 1.0} for t in topics]
+                candidates = [{'topic': t, 'diversity_score': 1.0, 'is_unused': t['id'] not in used_topic_ids} for t in topics]
             
-            # Select topic (weighted random favoring diversity)
-            selected = self._select_topic(candidates)
+            # Select topic (weighted random favoring diversity and unused topics)
+            selected = self._select_topic(candidates, prefer_unused=include_all_topics)
+            
+            # Track usage
+            used_topic_ids.add(selected['topic']['id'])
+            if include_all_topics:
+                unused_topics = [t for t in unused_topics if t['id'] != selected['topic']['id']]
             
             # Get ISO week info
             iso_year, iso_week, _ = current_date.isocalendar()
@@ -117,6 +163,11 @@ class RotaGenerator:
             current_date += timedelta(days=7)
         
         logger.info(f"Generated {len(rota)} rota entries")
+        if include_all_topics:
+            logger.info(f"Used {len(used_topic_ids)} unique topics out of {len(topics)} available")
+            if len(used_topic_ids) < len(topics):
+                logger.warning(f"Not all topics were used ({len(topics) - len(used_topic_ids)} unused)")
+        
         return rota
     
     def _get_active_topics(self) -> List[Dict]:
@@ -176,7 +227,7 @@ class RotaGenerator:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     SELECT DISTINCT t.id, t.topic_name, t.topic_type,
-                           t.embedding_vector, t.category_ids
+                           t.embedding_vector, t.category_ids, r.scheduled_date
                     FROM kb_topic_rota r
                     JOIN kb_topics t ON r.topic_id = t.id
                     WHERE r.scheduled_date >= %s
@@ -218,12 +269,13 @@ class RotaGenerator:
         """
         return any(t.get('id') == topic_id for t in recent_topics)
     
-    def _select_topic(self, candidates: List[Dict]) -> Dict:
+    def _select_topic(self, candidates: List[Dict], prefer_unused: bool = False) -> Dict:
         """
-        Select topic from candidates using weighted random (favoring diversity).
+        Select topic from candidates using weighted random (favoring diversity and unused topics).
         
         Args:
-            candidates: List of candidate dicts with 'topic' and 'diversity_score'
+            candidates: List of candidate dicts with 'topic', 'diversity_score', and optionally 'is_unused'
+            prefer_unused: If True, give higher weight to unused topics
         
         Returns:
             Selected candidate dictionary
@@ -240,14 +292,20 @@ class RotaGenerator:
         max_score = max(scores)
         
         if max_score == min_score:
-            # All same score, pick randomly
-            return random.choice(candidates)
-        
-        # Normalize to [0, 1] range
-        normalized = [(s - min_score) / (max_score - min_score) for s in scores]
+            # All same score, normalize to 1.0
+            normalized = [1.0] * len(scores)
+        else:
+            # Normalize to [0, 1] range
+            normalized = [(s - min_score) / (max_score - min_score) for s in scores]
         
         # Square to favor higher scores more
         weights = [s ** 2 for s in normalized]
+        
+        # Boost weight for unused topics if requested
+        if prefer_unused:
+            for i, candidate in enumerate(candidates):
+                if candidate.get('is_unused', False):
+                    weights[i] *= 2.0  # Double the weight for unused topics
         
         # Weighted random selection
         selected = random.choices(candidates, weights=weights, k=1)[0]

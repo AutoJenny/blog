@@ -8,6 +8,7 @@ import logging
 import numpy as np
 from typing import List, Dict, Optional, Tuple
 from config.database import db_manager
+from config.database import db_manager
 from utils.vector_search.embeddings import EmbeddingGenerator
 from utils.vector_search.faiss_index import FAISSIndexManager
 
@@ -354,7 +355,7 @@ class KBTopicClusterer:
     def _extract_topic_info(self, cluster_id: int, cluster_data: Dict,
                            kb_data: List[Dict]) -> Dict:
         """
-        Extract topic name, keywords, and metadata from cluster.
+        Extract semantic topic information from cluster using meaning, not keywords.
         
         Args:
             cluster_id: Cluster identifier
@@ -362,27 +363,30 @@ class KBTopicClusterer:
             kb_data: Full KB data for context
         
         Returns:
-            Topic dictionary
+            Topic dictionary with semantic understanding
         """
         # Get article texts from cluster
         article_texts = self._get_cluster_article_texts(cluster_data['article_ids'], kb_data)
         
-        # Extract keywords (simple TF-IDF approach)
-        keywords = self._extract_keywords(article_texts)
+        # Generate semantic topic name using LLM (understands meaning)
+        topic_name = self._generate_topic_name(article_texts, [])
         
-        # Generate topic name (simple keyword-based for now, can be enhanced with LLM)
-        topic_name = self._generate_topic_name(article_texts, keywords)
+        # Generate topic description using LLM
+        topic_description = self._generate_topic_description(article_texts, topic_name)
+        
+        # Extract meaningful keywords (for search/reference, but not for naming)
+        keywords = self._extract_keywords(article_texts)
         
         # Get category IDs from articles
         category_ids = self._get_category_ids(cluster_data['article_ids'])
         
-        # Classify topic type
+        # Classify topic type based on semantic content
         topic_type = self._classify_topic_type(article_texts)
         
         return {
             'cluster_id': cluster_id,
             'topic_name': topic_name,
-            'topic_description': None,  # Can be enhanced with LLM
+            'topic_description': topic_description,
             'keywords': keywords,
             'article_ids': cluster_data['article_ids'],
             'category_ids': category_ids,
@@ -390,6 +394,63 @@ class KBTopicClusterer:
             'topic_type': topic_type,
             'article_count': len(cluster_data['article_ids'])
         }
+    
+    def _generate_topic_description(self, article_texts: List[Dict], topic_name: str) -> Optional[str]:
+        """
+        Generate a brief semantic description of the topic.
+        
+        Args:
+            article_texts: Article text data
+            topic_name: The topic name
+        
+        Returns:
+            Topic description or None
+        """
+        try:
+            from blueprints.llm_actions import LLMService
+            
+            # Get article titles for context
+            article_titles = [item.get('metadata', {}).get('article_name', '') 
+                            for item in article_texts[:8] 
+                            if item.get('metadata', {}).get('article_name')]
+            
+            if not article_titles:
+                return None
+            
+            context = "\n".join([f"- {title}" for title in article_titles[:8]])
+            
+            llm_service = LLMService()
+            messages = [
+                {
+                    'role': 'system',
+                    'content': """You are an expert at summarizing semantic themes. Generate a brief, 
+meaningful description (1-2 sentences) that explains what this topic covers."""
+                },
+                {
+                    'role': 'user',
+                    'content': f"""Topic: {topic_name}
+
+Articles in this topic:
+{context}
+
+What does this topic cover? Provide a brief description (1-2 sentences) of the theme or knowledge area."""
+                }
+            ]
+            
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'content' in result:
+                description = result['content'].strip()
+                # Clean up
+                description = description.split('\n')[0].strip()
+                description = description.strip('"\'')
+                if description and len(description) > 10:
+                    return description
+            
+        except Exception as e:
+            logger.warning(f"LLM description generation failed: {e}")
+        
+        return None
     
     def _get_cluster_article_texts(self, article_ids: List[int],
                                    kb_data: List[Dict]) -> List[Dict]:
@@ -450,29 +511,86 @@ class KBTopicClusterer:
     def _generate_topic_name(self, article_texts: List[Dict],
                             keywords: List[str]) -> str:
         """
-        Generate topic name from article texts and keywords.
+        Generate semantic topic name from article texts using LLM.
         
-        Simple keyword-based approach. Can be enhanced with LLM.
+        Understands the actual meaning and themes, not just keywords.
         
         Args:
             article_texts: Article text data
-            keywords: Extracted keywords
+            keywords: Extracted keywords (for context)
         
         Returns:
-            Topic name string
+            Semantic topic name string
         """
-        # Simple approach: use top keywords
-        if keywords:
-            # Capitalize and join top 2-3 keywords
-            name_parts = [kw.capitalize() for kw in keywords[:3]]
-            return ' '.join(name_parts)
+        try:
+            from blueprints.llm_actions import LLMService
+            
+            # Get article titles and summaries for context
+            article_summaries = []
+            for item in article_texts[:10]:  # Top 10 articles
+                title = item.get('metadata', {}).get('article_name', '')
+                text_preview = item.get('text', '')[:300]  # First 300 chars
+                if title:
+                    article_summaries.append(f"Article: {title}\n{text_preview}")
+            
+            context = "\n\n".join(article_summaries)
+            
+            # Use LLM to understand the semantic theme
+            llm_service = LLMService()
+            messages = [
+                {
+                    'role': 'system',
+                    'content': """You are an expert at identifying semantic themes and topics from collections of articles.
+Your task is to analyze articles and identify the underlying theme or topic that connects them.
+Focus on the MEANING and CONCEPTS, not just keywords.
+Generate a concise, meaningful topic name (2-5 words) that captures the semantic theme.
+Examples:
+- "Tartan Design Principles" (not "Tartan Design Your")
+- "Line Width and Balance in Tartan Design" (not "Line Width Balance")
+- "Choosing Pre-Made Tartans" (not "Tartan Your Choose")
+- "Scottish Clan Heritage and Identity" (not "Clan Scottish Your")
+Return ONLY the topic name, nothing else."""
+                },
+                {
+                    'role': 'user',
+                    'content': f"""Analyze these Knowledge Base articles and identify the semantic theme that connects them.
+
+Articles:
+{context}
+
+What is the underlying theme or topic that these articles discuss? Consider:
+- What concepts or ideas do they share?
+- What knowledge area do they cover?
+- What would be a meaningful topic name for social media content?
+
+Topic name (2-5 words, semantic and meaningful):"""
+                }
+            ]
+            
+            result = llm_service.execute_llm_request('ollama', 'llama3.2:latest', messages)
+            
+            if 'content' in result:
+                topic_name = result['content'].strip()
+                # Clean up any extra text
+                topic_name = topic_name.split('\n')[0].strip()
+                # Remove quotes if present
+                topic_name = topic_name.strip('"\'')
+                if topic_name and len(topic_name) > 3:
+                    return topic_name
+            
+        except Exception as e:
+            logger.warning(f"LLM topic naming failed: {e}, falling back to keyword-based")
         
-        # Fallback: use first article title if available
-        if article_texts and article_texts[0].get('metadata', {}).get('article_name'):
-            title = article_texts[0]['metadata']['article_name']
-            # Take first few words
-            words = title.split()[:4]
-            return ' '.join(words)
+        # Fallback: try to create meaningful name from article titles
+        if article_texts:
+            titles = [item.get('metadata', {}).get('article_name', '') 
+                     for item in article_texts[:5] if item.get('metadata', {}).get('article_name')]
+            if titles:
+                # Use first meaningful title as base
+                first_title = titles[0]
+                # Extract key concept (first 3-4 words usually)
+                words = first_title.split()[:4]
+                return ' '.join(words)
         
         return f"Topic {len(article_texts)}"
     
