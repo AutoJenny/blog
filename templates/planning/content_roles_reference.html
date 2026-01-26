@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Content Roles Reference - BlogForge{% endblock %}
+
+{% block css_assets %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/planning/content_control_board.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="control-board-container">
+    <!-- Header -->
+    <header class="board-header">
+        <div class="header-main">
+            <h1>Content Roles Reference</h1>
+            <p class="header-subtitle">Complete guide to content roles in the system</p>
+        </div>
+        <div class="header-controls">
+            <a href="/planning/content-control-board" class="btn btn-secondary">← Back to Control Board</a>
+        </div>
+    </header>
+
+    <!-- Roles Grid -->
+    <div class="roles-reference-grid" id="roles-reference">
+        <!-- Roles will be populated here -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/planning/content_roles_reference.js') }}"></script>
+{% endblock %}

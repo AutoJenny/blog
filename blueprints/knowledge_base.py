@@ -262,6 +262,11 @@ KB_STRUCTURE = {
                 'title': 'KB Topic Rota System',
                 'template': 'knowledge_base/backend/topic_rota.html',
                 'status': 'complete'
+            },
+            'content_roles': {
+                'title': 'Content Roles Framework',
+                'template': 'knowledge_base/backend/content_roles.html',
+                'status': 'in_progress'
             }
         }
     },

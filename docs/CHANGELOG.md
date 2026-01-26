@@ -1,5 +1,163 @@
 # Changelog
 
+## 2026-01-23 - Content Roles Framework (Foundation)
+
+### Database Schema
+- **Created `content_roles` table** with 5 canonical roles:
+  - `REASSURANCE` - Reduce anxiety and friction
+  - `AUTHORITY_SHORT` - Establish quiet credibility
+  - `DEPTH_LONG` - Demonstrate embedded knowledge (requires weekly topic)
+  - `CULTURE` - Provide personality and rhythm
+  - `COMMERCE` - Make products visible and concrete
+- **Extended `posting_queue` table** with role framework columns:
+  - `role` (VARCHAR(50)) - References `content_roles.role_code`
+  - `topic_id` (INTEGER) - References `kb_topics.id` (for topic-bound roles)
+  - `source_page_id` (INTEGER) - References specific KB article
+  - `rota_year` (INTEGER) - Year of rota week when post was generated
+  - `rota_week` (INTEGER) - ISO week number when post was generated
+- All new columns are **nullable** for backward compatibility
+- Created indexes for efficient role and topic queries
+
+### Documentation
+- **Created comprehensive framework documentation** (`docs/CONTENT_ROLES_FRAMEWORK.md`)
+  - Core concept and global rules
+  - Detailed role definitions with constraints
+  - Facebook Content Matrix (v1 - LOCKED)
+  - Database schema reference
+  - Implementation strategy (incremental)
+- **Created KB page** (`templates/knowledge_base/backend/content_roles.html`)
+  - User-facing documentation in Knowledge Base
+  - Accessible at `/kb/backend/content_roles`
+- **Added to KB navigation** in backend systems section
+
+### Framework Principles
+- **One post = one role only** - Roles are mutually exclusive
+- **Roles are channel-agnostic and format-agnostic**
+- **Roles are enforced by system logic**, not editorial habit
+- **Scheduling logic operates on roles** (role-first, not topic-first)
+- **QA logic validates against role constraints**
+
+### Facebook Content Matrix (v1 - LOCKED)
+- Defined 7 fixed schedule rails (Mon-Sun with specific times and roles)
+- Role → Topic binding rules (only DEPTH_LONG requires weekly topic)
+- Role quotas (soft constraints for validation)
+- Formatting constraints per role
+- Scheduler logic specification (role-first approach)
+
+### Implementation Status
+- ✅ **Phase 1: Foundation** - COMPLETE
+  - Database schema implemented
+  - Documentation created
+  - Framework defined
+- ⏳ **Phase 2: Facebook v1** - NEXT
+  - Facebook schedule rails implementation
+  - Role-specific prompt templates
+  - Scheduler logic
+  - Validation system
+
+**Note:** Existing post creation processes are **NOT changed** by this migration. Framework will be implemented incrementally.
+
+## 2026-01-25 - Content Roles Framework Phase 2: Sunday DEPTH_LONG Proof of Concept
+
+### Core Implementation ✅
+- **Schedule Rail Definition** (`config/content_roles_schedule_rails.py`)
+  - Sunday 15:00 UK time, DEPTH_LONG role
+  - Isolated from existing posting logic
+- **Generation Pipeline** (`utils/content_roles/depth_long_generator.py`)
+  - Fetches KB article text (bounded to ~2000 words)
+  - Calls LLM with role-specific system prompts
+  - Enforces topic_id and source_page_id requirements
+  - Returns generated content with validation issues
+- **Validation System** (`utils/content_roles/validator.py`)
+  - Word count validation (120-220 words)
+  - Paragraph count validation (≥3 paragraphs)
+  - Forbidden phrase detection
+  - Source page presence verification
+  - Stores validation report as JSONB
+- **API Endpoints** (`blueprints/content_roles_api.py`)
+  - `/api/content-roles/facebook/sunday/check` - Check rail existence
+  - `/api/content-roles/facebook/sunday/generate` - Generate post
+  - `/api/content-roles/facebook/sunday/<id>/validate` - Re-validate
+  - `/api/content-roles/facebook/sunday/<id>/approve` - Manual approval
+  - `/api/content-roles/facebook/sunday/<id>/schedule` - Schedule for Sunday 15:00 UK
+
+### Database Extensions
+- **Added approval fields** to `posting_queue`:
+  - `approved_at` (TIMESTAMP) - When post was approved
+  - `approved_by` (VARCHAR(100)) - Who approved it
+  - `validation_report_json` (JSONB) - Validation results
+
+### UI Components
+- **Sunday Slot Panel** in Topic Rota Editor (`/kb-topics/editor`)
+  - Week selector
+  - Topic and source article selection
+  - Generate, Regenerate, Approve, Schedule actions
+  - Status display and validation feedback
+- **Content Control Board** (`/planning/content-control-board`)
+  - Weekly matrix view (Days × Channels)
+  - Role badges with tooltips
+  - Status indicators (Empty, Generated, Validation failed, Approved, Scheduled, Published)
+  - Drill-down panel with full post details
+  - Role-centric view toggle
+- **Roles Reference Page** (`/planning/content-roles`)
+  - Detailed explanations of all 5 roles
+  - Progressive disclosure design
+
+### Workflow
+- **Manual Generation** - User selects week, topic, source article
+- **Automatic Validation** - Runs on generation, stores results
+- **Manual Approval** - Required before scheduling (blocks if validation fails)
+- **Scheduling** - Calculates Sunday date from rota week, sets scheduled_date/time
+- **Isolated Lane** - Parallel to existing posting, no conflicts
+
+### Status
+- ✅ **Core Implementation** - COMPLETE
+- ⏳ **Publishing Integration** - PENDING
+  - Scheduled posts don't publish automatically yet
+  - Need to extend `publish_to_facebook()` to handle `role='DEPTH_LONG'`
+  - Need to ensure `scheduled_posting_executor.py` picks up role-based posts
+
+**Note:** This is a proof of concept for one post type (Sunday DEPTH_LONG). All other posting logic remains unchanged.
+
+## 2026-01-23 - KB Topic Rota System Enhancements
+
+### Diversity Algorithm Improvements
+- **Enhanced consecutive week penalties:**
+  - Same topic type: 70% penalty (diversity_score × 0.3)
+  - Same parent topic: 80% penalty (diversity_score × 0.2)
+  - High similarity (>0.75): 60% penalty
+  - Moderate similarity (>0.65): 40% penalty
+- **Improved diversity checks:**
+  - Most recent week checked more strictly
+  - Includes parent_id and level in recent topics
+  - Caps diversity score at 0.3 for consecutive similar topics
+- **Better selection:**
+  - Recent topics ordered most-recent-first
+  - Lookback reduced to 4 weeks (from 6)
+  - Similarity threshold lowered to 0.65 (from 0.7)
+
+### Topic Exclusion & Usage Tracking
+- Added `is_excluded` flag to prevent topics from appearing in rota generation
+- Added `is_used` flag to track when topics have been used for content generation
+- Used topics only reused after all unused topics have been used
+- UI controls to exclude/include topics from library and timeline
+- Group-level exclusion (exclude parent + all children at once)
+- Reset Used button to clear all used flags when cycle completes
+
+### Granular Topic Discovery
+- Created `discover_hierarchical_topics_granular.py` script with improved parameters:
+  - `broad_clusters=25` (increased from 15)
+  - `min_broad_size=6` (lowered from 10)
+  - `granular_threshold=0.82` (increased from 0.75)
+  - `min_granular_size=2` (lowered from 3)
+- Results: 25 Level 1 topics (instead of 8), average 27.8 articles per topic (instead of 86.4)
+
+### UI Integration
+- Topic Rota Editor integrated into BlogForge house style (extends base.html)
+- Added to header navigation (Content dropdown)
+- Added to homepage (Calendar & Planning section)
+- Filter improvements: hides parent groups when all topics filtered out
+
 ## 2026-01-23 - KB Topic Display in Calendar Week View
 
 ### Added

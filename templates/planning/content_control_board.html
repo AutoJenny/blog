@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Content Control Board - BlogForge{% endblock %}
+
+{% block css_assets %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/planning/content_control_board.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="control-board-container">
+    <!-- Header -->
+    <header class="board-header">
+        <div class="header-main">
+            <h1>Content Control Board</h1>
+            <p class="header-subtitle">Role-driven social posting planning surface</p>
+        </div>
+        <div class="header-controls">
+            <div class="week-selector">
+                <label>Week:</label>
+                <input type="number" id="week-year" value="{{ current_year }}" min="2026" max="2030">
+                <input type="number" id="week-number" value="{{ current_week }}" min="1" max="53">
+                <button id="btn-load-week" class="btn btn-primary">Load Week</button>
+            </div>
+            <div class="header-actions">
+                <a href="/planning/content-roles" class="btn btn-secondary">Roles Reference</a>
+                <div class="view-toggle">
+                    <button id="btn-view-day" class="btn btn-secondary active">View by Day</button>
+                    <button id="btn-view-role" class="btn btn-secondary">View by Role</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Active Topic Display -->
+    <div class="topic-info" id="topic-info">
+        <div class="topic-label">Active Topic:</div>
+        <div class="topic-details" id="topic-details">
+            <span class="topic-name" id="topic-name">Loading...</span>
+            <span class="topic-source" id="topic-source"></span>
+        </div>
+    </div>
+
+
+    <!-- Main Matrix View (Day View) -->
+    <div class="matrix-view" id="day-view">
+        <div class="matrix-container">
+            <table class="control-matrix">
+                <thead>
+                    <tr>
+                        <th class="day-header">Day</th>
+                        <th class="channel-header active">
+                            <div class="channel-name">Facebook</div>
+                            <div class="channel-status">Active</div>
+                        </th>
+                        <th class="channel-header disabled">
+                            <div class="channel-name">Instagram</div>
+                            <div class="channel-status">Coming Soon</div>
+                        </th>
+                        <th class="channel-header disabled">
+                            <div class="channel-name">X</div>
+                            <div class="channel-status">Coming Soon</div>
+                        </th>
+                        <th class="channel-header disabled">
+                            <div class="channel-name">TikTok</div>
+                            <div class="channel-status">Coming Soon</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="matrix-body">
+                    <!-- Days will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Role View (Hidden by default) -->
+    <div class="role-view" id="role-view" style="display: none;">
+        <div class="role-groups" id="role-groups">
+            <!-- Role groups will be populated here -->
+        </div>
+    </div>
+
+    <!-- Drill-Down Panel (Side Panel) -->
+    <div class="drill-down-panel" id="drill-down-panel">
+        <div class="panel-header">
+            <h3 id="panel-title">Post Details</h3>
+            <button id="btn-close-panel" class="btn-icon">×</button>
+        </div>
+        <div class="panel-content" id="panel-content">
+            <!-- Details will be populated here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/planning/content_control_board.js') }}"></script>
+{% endblock %}

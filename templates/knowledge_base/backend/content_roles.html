@@ -1,0 +1,389 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Content Roles Framework</h1>
+    
+    <div class="kb-status-badge in-progress">🚧 Framework Defined</div>
+    
+    <div class="kb-intro">
+        <p>
+            The Content Roles Framework is the <strong>control system</strong> for automated social media content generation. 
+            It separates <strong>what a post is for</strong> (its role/purpose) from <strong>where or how it is published</strong> (platform/channel/format), 
+            enabling scale without loss of tone, accuracy, or brand integrity.
+        </p>
+    </div>
+    
+    <h2>Core Concept</h2>
+    <p>
+        <strong>Every piece of social content must perform one job only.</strong> That job is called its <strong>Content Role</strong>.
+    </p>
+    <p>
+        Roles are:
+    </p>
+    <ul>
+        <li>✅ <strong>Channel-agnostic</strong> - Work across Facebook, Instagram, Twitter, etc.</li>
+        <li>✅ <strong>Format-agnostic</strong> - Can be text, image, video, carousel, etc.</li>
+        <li>✅ <strong>Mutually exclusive</strong> - One post = one role only</li>
+        <li>✅ <strong>Enforced by system logic</strong> - Not editorial habit</li>
+    </ul>
+    <p>
+        <strong>If a post appears to do two jobs, it is incorrectly specified.</strong>
+    </p>
+    
+    <h2>Why This Exists</h2>
+    <p>
+        <strong>Without formal roles:</strong>
+    </p>
+    <ul>
+        <li>❌ LLM outputs blur reassurance, selling, and authority</li>
+        <li>❌ Tone drifts over time</li>
+        <li>❌ Automation becomes unsafe</li>
+        <li>❌ QA becomes subjective</li>
+    </ul>
+    <p>
+        <strong>With formal roles:</strong>
+    </p>
+    <ul>
+        <li>✅ Prompts are deterministic</li>
+        <li>✅ Scheduling is mechanical</li>
+        <li>✅ Validation is possible</li>
+        <li>✅ Content scales without dilution</li>
+    </ul>
+    
+    <h2>Canonical Content Roles</h2>
+    <p>
+        Roles are implemented as a fixed lookup table in the database. Each generated post must reference exactly one role.
+    </p>
+    
+    <h3>1. REASSURANCE / PERMISSION</h3>
+    <p><strong>Role Code:</strong> <code>REASSURANCE</code></p>
+    <p><strong>Purpose:</strong> Reduce anxiety and friction. Give people permission to engage comfortably.</p>
+    <p><strong>Primary user questions answered:</strong></p>
+    <ul>
+        <li>Is it safe to contact you?</li>
+        <li>Will I be pressured or rushed?</li>
+        <li>Can I do this in a way that suits me?</li>
+    </ul>
+    <p><strong>Characteristics:</strong> Human, patient, calm. Mentions availability, time, flexibility. Often references phone or conversation.</p>
+    <p><strong>Hard Constraints:</strong></p>
+    <ul>
+        <li>❌ Must not promote products</li>
+        <li>❌ Must not contain sales language</li>
+        <li>❌ Must not provide technical depth</li>
+    </ul>
+    <p><strong>Typical Length:</strong> Short (1–3 short paragraphs, 50-300 words)</p>
+    <p><strong>Typical Sources:</strong> Service principles, customer interaction philosophy, reassurance pool</p>
+    <p><strong>Requires Topic:</strong> ❌ No</p>
+    
+    <h3>2. AUTHORITY / CONTEXT (SHORT)</h3>
+    <p><strong>Role Code:</strong> <code>AUTHORITY_SHORT</code></p>
+    <p><strong>Purpose:</strong> Establish quiet credibility through factual context or reframing.</p>
+    <p><strong>Primary user questions answered:</strong></p>
+    <ul>
+        <li>Do these people know what they're talking about?</li>
+        <li>Is this more nuanced than I assumed?</li>
+    </ul>
+    <p><strong>Characteristics:</strong> Declarative, calm and factual. Usually avoids first-person ("we"). Often myth-correcting or context-setting.</p>
+    <p><strong>Hard Constraints:</strong></p>
+    <ul>
+        <li>❌ No reassurance language</li>
+        <li>❌ No service mentions</li>
+        <li>❌ No calls to action</li>
+        <li>✅ One idea only</li>
+    </ul>
+    <p><strong>Typical Length:</strong> Very short (1–3 lines, 20-150 words)</p>
+    <p><strong>Typical Sources:</strong> Clan Info Centre (single article/page), historical or practical assertions</p>
+    <p><strong>Requires Topic:</strong> ❌ No (optional, but can use weekly topic)</p>
+    <p><strong>Requires Source Page:</strong> ✅ Yes</p>
+    
+    <h3>3. DEPTH / EXPERTISE (LONG FORM)</h3>
+    <p><strong>Role Code:</strong> <code>DEPTH_LONG</code></p>
+    <p><strong>Purpose:</strong> Demonstrate embedded knowledge and judgement.</p>
+    <p><strong>Primary user questions answered:</strong></p>
+    <ul>
+        <li>How does this actually work?</li>
+        <li>Why is this more complex than it looks?</li>
+        <li>What does experience teach here?</li>
+    </ul>
+    <p><strong>Characteristics:</strong> Narrow scope, explanatory (not summarising), structured with white space, reflective close (not a conclusion).</p>
+    <p><strong>Hard Constraints:</strong></p>
+    <ul>
+        <li>❌ No selling</li>
+        <li>❌ No service mentions</li>
+        <li>❌ No product mentions</li>
+        <li>✅ Must be grounded in Clan Info Centre source material</li>
+        <li>✅ Must not introduce facts beyond the source</li>
+    </ul>
+    <p><strong>Typical Length:</strong> 120–220 words</p>
+    <p><strong>Typical Sources:</strong> Clan Info Centre (single page or section), weekly topic from KB Topic Rota</p>
+    <p><strong>Requires Topic:</strong> ✅ <strong>YES</strong> (must use active weekly topic)</p>
+    <p><strong>Requires Source Page:</strong> ✅ Yes</p>
+    <p><strong>Critical Rule:</strong> Generation should <strong>block</strong> if no active weekly topic is set.</p>
+    
+    <h3>4. CULTURE / TEXTURE</h3>
+    <p><strong>Role Code:</strong> <code>CULTURE</code></p>
+    <p><strong>Purpose:</strong> Provide personality, rhythm, and familiarity.</p>
+    <p><strong>Primary user questions answered:</strong></p>
+    <ul>
+        <li>What kind of place is this?</li>
+        <li>Does this feel human and distinctive?</li>
+    </ul>
+    <p><strong>Characteristics:</strong> Light, repeatable formats, familiar cadence.</p>
+    <p><strong>Hard Constraints:</strong></p>
+    <ul>
+        <li>❌ No selling</li>
+        <li>❌ No authority claims</li>
+        <li>❌ No deep explanation</li>
+    </ul>
+    <p><strong>Typical Length:</strong> Very short (10-100 words)</p>
+    <p><strong>Typical Sources:</strong> Word / Phrase / Insult formats, fixed pools</p>
+    <p><strong>Requires Topic:</strong> ❌ No</p>
+    
+    <h3>5. COMMERCE / VISIBILITY</h3>
+    <p><strong>Role Code:</strong> <code>COMMERCE</code></p>
+    <p><strong>Purpose:</strong> Make products visible and concrete.</p>
+    <p><strong>Primary user questions answered:</strong></p>
+    <ul>
+        <li>What do you sell?</li>
+        <li>What does this look like in practice?</li>
+    </ul>
+    <p><strong>Characteristics:</strong> Visual or descriptive, straightforward, non-educational.</p>
+    <p><strong>Hard Constraints:</strong></p>
+    <ul>
+        <li>❌ No deep heritage explanation</li>
+        <li>❌ No reassurance language</li>
+        <li>❌ No long-form content</li>
+    </ul>
+    <p><strong>Typical Length:</strong> Short to medium (50-200 words)</p>
+    <p><strong>Typical Sources:</strong> Product catalogue</p>
+    <p><strong>Requires Topic:</strong> ❌ No</p>
+    
+    <h2>Global Rules</h2>
+    <ul>
+        <li>✅ One post = one role only</li>
+        <li>✅ Roles must never be mixed</li>
+        <li>✅ Roles are mandatory metadata (once framework is fully implemented)</li>
+        <li>✅ Scheduling logic operates on roles</li>
+        <li>✅ QA logic validates against role constraints</li>
+    </ul>
+    
+    <h2>Relationship to KB Topic Rota</h2>
+    <p>
+        The Content Roles Framework integrates with the <a href="/kb/backend/topic_rota">KB Topic Rota System</a>:
+    </p>
+    <ul>
+        <li><strong>Weekly Topic Rules:</strong>
+            <ul>
+                <li>Exactly one active topic per week (from <code>kb_topic_rota</code>)</li>
+                <li><code>DEPTH_LONG</code> - <strong>MUST</strong> use weekly topic</li>
+                <li><code>AUTHORITY_SHORT</code> - <strong>CAN</strong> use weekly topic (optional)</li>
+                <li>Other roles (CULTURE, COMMERCE, REASSURANCE) are independent of weekly topic</li>
+            </ul>
+        </li>
+        <li><strong>Topic Changes Mid-Week:</strong>
+            <ul>
+                <li>Allowed - Topics can change mid-week</li>
+                <li>Warning Required - If <code>DEPTH_LONG</code> post already exists, warn user</li>
+                <li>Existing Posts Not Invalidated - Posts keep their original topic reference</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h2>Facebook Content Matrix (v1 - LOCKED)</h2>
+    <p>
+        Facebook is the first platform to be fully specified with role-based scheduling.
+    </p>
+    
+    <h3>Canonical Facebook Schedule Rails</h3>
+    <p>Fixed schedule unless explicitly changed:</p>
+    <table class="kb-table">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Time (UK)</th>
+                <th>Role</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Monday</td>
+                <td>09:00</td>
+                <td>CULTURE</td>
+                <td>Word</td>
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                <td>17:00</td>
+                <td>COMMERCE</td>
+                <td>Product</td>
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                <td>09:00</td>
+                <td>CULTURE</td>
+                <td>Phrase</td>
+            </tr>
+            <tr>
+                <td>Thursday</td>
+                <td>17:00</td>
+                <td>COMMERCE</td>
+                <td>Product</td>
+            </tr>
+            <tr>
+                <td>Friday</td>
+                <td>11:07</td>
+                <td>CULTURE</td>
+                <td>Insult</td>
+            </tr>
+            <tr>
+                <td>Saturday</td>
+                <td>14:30</td>
+                <td>REASSURANCE</td>
+                <td>Message</td>
+            </tr>
+            <tr>
+                <td>Sunday</td>
+                <td>15:00</td>
+                <td>DEPTH_LONG</td>
+                <td>Long-form</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><strong>Rules:</strong></p>
+    <ul>
+        <li>One post per day max</li>
+        <li>No role substitution by default</li>
+        <li>Scheduler requests role, not topic</li>
+    </ul>
+    
+    <h3>Role → Topic Binding Rules (Facebook)</h3>
+    <table class="kb-table">
+        <thead>
+            <tr>
+                <th>Role</th>
+                <th>Topic Required?</th>
+                <th>Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CULTURE</td>
+                <td>❌ No</td>
+                <td>Fixed pools / formats</td>
+            </tr>
+            <tr>
+                <td>COMMERCE</td>
+                <td>❌ No</td>
+                <td>Product catalogue</td>
+            </tr>
+            <tr>
+                <td>REASSURANCE</td>
+                <td>❌ No</td>
+                <td>Reassurance pool (CSV / generator)</td>
+            </tr>
+            <tr>
+                <td>DEPTH_LONG</td>
+                <td>✅ <strong>Yes</strong></td>
+                <td>Weekly topic (Info Centre / cluster)</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><strong>Hard Rule:</strong> <code>DEPTH_LONG</code> must reference the active weekly topic. Generation should <strong>block</strong> if no topic is set.</p>
+    
+    <h3>Facebook Role Quotas (Soft Constraints)</h3>
+    <p>Used for validation and warnings only:</p>
+    <table class="kb-table">
+        <thead>
+            <tr>
+                <th>Role</th>
+                <th>Target / Week</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CULTURE</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>COMMERCE</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>REASSURANCE</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>DEPTH_LONG</td>
+                <td>1</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><strong>If drift occurs:</strong> Show warning in UI, do not block scheduling.</p>
+    
+    <h2>Database Schema</h2>
+    <p>
+        The framework extends the <code>posting_queue</code> table with:
+    </p>
+    <ul>
+        <li><code>role</code> (VARCHAR(50)) - References <code>content_roles.role_code</code></li>
+        <li><code>topic_id</code> (INTEGER) - References <code>kb_topics.id</code> (for topic-bound roles)</li>
+        <li><code>source_page_id</code> (INTEGER) - References specific KB article (for AUTHORITY_SHORT, DEPTH_LONG)</li>
+        <li><code>rota_year</code> (INTEGER) - Year of rota week when post was generated</li>
+        <li><code>rota_week</code> (INTEGER) - ISO week number when post was generated</li>
+    </ul>
+    <p>
+        A new <code>content_roles</code> table stores the canonical role definitions with constraints, characteristics, and validation rules.
+    </p>
+    <p>
+        <strong>Important:</strong> All new columns are <strong>nullable</strong> to support existing posts. Framework will be implemented incrementally.
+    </p>
+    
+    <h2>Implementation Status</h2>
+    <p>
+        <strong>Phase 1: Foundation</strong> ✅ <strong>COMPLETE</strong>
+    </p>
+    <ul>
+        <li>✅ Define role enum/table (<code>content_roles</code>)</li>
+        <li>✅ Add role field to post records (<code>posting_queue.role</code>)</li>
+        <li>✅ Add topic linking (<code>posting_queue.topic_id</code>, <code>rota_year</code>, <code>rota_week</code>)</li>
+        <li>✅ Add source page linking (<code>posting_queue.source_page_id</code>)</li>
+        <li>✅ Add approval fields (<code>approved_at</code>, <code>approved_by</code>, <code>validation_report_json</code>)</li>
+        <li>✅ Document framework</li>
+    </ul>
+    <p>
+        <strong>Phase 2: Facebook Sunday DEPTH_LONG (Proof of Concept)</strong> ✅ <strong>PARTIALLY COMPLETE</strong>
+    </p>
+    <ul>
+        <li>✅ Schedule rail definition (Sunday 15:00 DEPTH_LONG)</li>
+        <li>✅ Topic requirement enforcement</li>
+        <li>✅ Generation pipeline with role-specific prompts</li>
+        <li>✅ Validation system (word count, paragraphs, forbidden phrases)</li>
+        <li>✅ API endpoints (generate, validate, approve, schedule)</li>
+        <li>✅ Manual approval & scheduling workflow</li>
+        <li>✅ Topic Rota Editor UI (Sunday slot panel)</li>
+        <li>✅ Content Control Board UI (read-only weekly matrix)</li>
+        <li>✅ Roles Reference page</li>
+        <li>⏳ <strong>Publishing integration</strong> (scheduled posts don't publish automatically yet)</li>
+    </ul>
+    <p>
+        <strong>Phase 3: Other Facebook Roles</strong> ⏳ <strong>PLANNED</strong>
+    </p>
+    <ul>
+        <li>⏳ Implement remaining Facebook schedule rails (Mon-Sat)</li>
+        <li>⏳ Create role-specific generators for CULTURE, COMMERCE, REASSURANCE</li>
+        <li>⏳ Build full Facebook weekly matrix</li>
+    </ul>
+    
+    <h2>Related Documentation</h2>
+    <ul>
+        <li><a href="/kb/backend/topic_rota">KB Topic Rota System</a> - Weekly topic discovery and scheduling</li>
+        <li><a href="/kb/channels/facebook">Facebook Channel</a> - Facebook-specific documentation</li>
+    </ul>
+    
+    <div class="kb-note">
+        <p><strong>Note:</strong> This framework is designed to be layered in gradually. Existing post creation processes are <strong>NOT changed</strong> by the initial migration. All new columns are nullable to support backward compatibility.</p>
+    </div>
+</div>
+{% endblock %}

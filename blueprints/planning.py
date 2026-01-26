@@ -59,6 +59,29 @@ def planning_dashboard():
     """Planning dashboard"""
     return dashboard_func()
 
+@bp.route('/content-control-board')
+def content_control_board():
+    """Content Control Board - read-only planning surface for role-driven social posting"""
+    from datetime import date
+    # Get current ISO week
+    today = date.today()
+    year, week, _ = today.isocalendar()
+    
+    # Get year/week from query params if provided
+    year = request.args.get('year', type=int) or year
+    week = request.args.get('week', type=int) or week
+    
+    return render_template('planning/content_control_board.html', 
+                         page_title='Content Control Board',
+                         current_year=year,
+                         current_week=week)
+
+@bp.route('/content-roles')
+def content_roles_reference():
+    """Content Roles Reference - complete guide to content roles"""
+    return render_template('planning/content_roles_reference.html',
+                         page_title='Content Roles Reference')
+
 @bp.route('/posts/<int:post_id>')
 def planning_post_overview(post_id):
     """Planning post overview"""
