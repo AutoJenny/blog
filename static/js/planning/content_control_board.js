@@ -658,8 +658,35 @@ class ContentControlBoard {
             </div>
         `;
         
+        // Phase 3.6: Angle section (if angle exists)
+        const angleSection = post.angle_id ? `
+            <div class="panel-section">
+                <h4>Angle</h4>
+                <div>
+                    <p><strong>Name:</strong> ${post.angle_name || 'N/A'}</p>
+                    ${post.angle_narrative_intent ? `<p style="font-size: 0.875rem; color: var(--color-text-light, #666); margin-top: 0.5rem;">${post.angle_narrative_intent}</p>` : ''}
+                    ${post.angle_usage_count !== undefined ? `
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">
+                            <strong>Usage:</strong> Used ${post.angle_usage_count} time(s)
+                            ${post.angle_last_used_year && post.angle_last_used_week ? 
+                                `, last used Week ${post.angle_last_used_week} of ${post.angle_last_used_year}` : ''}
+                        </p>
+                    ` : ''}
+                </div>
+            </div>
+        ` : (post.role === 'DEPTH_LONG' ? `
+            <div class="panel-section">
+                <h4>Angle</h4>
+                <div>
+                    <p style="color: var(--color-text-light, #666); font-size: 0.875rem;">Not selected</p>
+                </div>
+            </div>
+        ` : '');
+        
         panelContent.innerHTML = `
             ${roleSection}
+            
+            ${angleSection}
             
             <div class="panel-section">
                 <h4>Schedule</h4>

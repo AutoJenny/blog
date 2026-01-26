@@ -193,6 +193,10 @@ def create_app(config_name=None):
     from blueprints.content_roles_api import bp as content_roles_api_bp
     app.register_blueprint(content_roles_api_bp)
     
+    # Register Content Angles API blueprint (Phase 3: Editorial interpretation layer)
+    from blueprints.content_angles_api import bp as content_angles_api_bp
+    app.register_blueprint(content_angles_api_bp)
+    
     # Register automated posting API blueprint
     from blueprints.automated_posting_api import bp as automated_posting_api_bp
     app.register_blueprint(automated_posting_api_bp)

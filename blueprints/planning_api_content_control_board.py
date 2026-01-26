@@ -111,6 +111,7 @@ def get_week_data():
                     pq.scheduled_timestamp,
                     pq.topic_id,
                     pq.source_page_id,
+                    pq.angle_id,  -- Phase 3.6: Angle reference
                     pq.rota_year,
                     pq.rota_week,
                     pq.validation_report_json,
@@ -121,10 +122,17 @@ def get_week_data():
                     -- Topic info
                     t.topic_name,
                     -- Source article info
-                    kb.name as source_article_name
+                    kb.name as source_article_name,
+                    -- Phase 3.6: Angle info
+                    a.angle_name,
+                    a.narrative_intent,
+                    a.usage_count,
+                    a.last_used_year,
+                    a.last_used_week
                 FROM posting_queue pq
                 LEFT JOIN kb_topics t ON pq.topic_id = t.id
                 LEFT JOIN clan_kb_articles kb ON pq.source_page_id = kb.id
+                LEFT JOIN content_angles a ON pq.angle_id = a.id  -- Phase 3.6: Join angle
                 WHERE pq.scheduled_date >= %s
                 AND pq.scheduled_date <= %s
                 AND pq.platform = 'facebook'
@@ -210,7 +218,14 @@ def get_week_data():
                     'validation_report': post_dict['validation_report_json'],
                     'approved_at': post_dict['approved_at'].isoformat() if post_dict['approved_at'] else None,
                     'approved_by': post_dict['approved_by'],
-                    'is_framework': True
+                    'is_framework': True,
+                    # Phase 3.6: Angle information
+                    'angle_id': post_dict.get('angle_id'),
+                    'angle_name': post_dict.get('angle_name'),
+                    'angle_narrative_intent': post_dict.get('narrative_intent'),
+                    'angle_usage_count': post_dict.get('usage_count'),
+                    'angle_last_used_year': post_dict.get('last_used_year'),
+                    'angle_last_used_week': post_dict.get('last_used_week')
                 }
                 
                 posts_by_slot[slot_key].append(post_data)
@@ -336,11 +351,19 @@ def get_post_details(post_id):
                     kb.text as source_article_text,
                     cr.role_name,
                     cr.description as role_description,
-                    cr.characteristics as role_characteristics
+                    cr.characteristics as role_characteristics,
+                    -- Phase 3.6: Angle information
+                    a.id as angle_id,
+                    a.angle_name,
+                    a.narrative_intent,
+                    a.usage_count as angle_usage_count,
+                    a.last_used_year as angle_last_used_year,
+                    a.last_used_week as angle_last_used_week
                 FROM posting_queue pq
                 LEFT JOIN kb_topics t ON pq.topic_id = t.id
                 LEFT JOIN clan_kb_articles kb ON pq.source_page_id = kb.id
                 LEFT JOIN content_roles cr ON pq.role = cr.role_code
+                LEFT JOIN content_angles a ON pq.angle_id = a.id  -- Phase 3.6: Join angle
                 WHERE pq.id = %s
             """, (post_id,))
             

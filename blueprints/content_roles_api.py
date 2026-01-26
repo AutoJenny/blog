@@ -9,6 +9,7 @@ This is a proof of concept implementation - isolated from existing posting logic
 from flask import Blueprint, request, jsonify
 import logging
 from datetime import datetime, date, timedelta
+from typing import Optional
 import pytz
 import json
 from config.database import db_manager
@@ -68,11 +69,14 @@ def check_sunday_rail():
 @bp.route('/facebook/sunday/generate', methods=['POST'])
 def generate_sunday_depth_long():
     """
-    Phase 2.3: Generate a Sunday DEPTH_LONG post.
+    Phase 2.3/3.5: Generate a Sunday DEPTH_LONG post.
+    
+    Phase 3.5: Now supports optional angle_id for angle-aware generation.
     
     Body:
         topic_id: KB topic ID (required)
-        source_page_id: KB article ID (required)
+        source_page_id: KB article ID (optional if angle_id provided)
+        angle_id: Angle ID (optional, Phase 3)
         rota_year: Year of rota week (required)
         rota_week: ISO week number (required)
     
@@ -82,9 +86,10 @@ def generate_sunday_depth_long():
     try:
         data = request.get_json()
         
-        # Phase 2.2: Enforce topic and source requirements
+        # Phase 2.2: Enforce topic requirement
         topic_id = data.get('topic_id')
         source_page_id = data.get('source_page_id')
+        angle_id = data.get('angle_id')  # Phase 3.5: Optional
         rota_year = data.get('rota_year')
         rota_week = data.get('rota_week')
         
@@ -94,10 +99,11 @@ def generate_sunday_depth_long():
                 'error': 'topic_id is required for DEPTH_LONG posts'
             }), 400
         
-        if not source_page_id:
+        # Phase 3.5: source_page_id is optional if angle_id provided
+        if not angle_id and not source_page_id:
             return jsonify({
                 'success': False,
-                'error': 'source_page_id is required for DEPTH_LONG posts'
+                'error': 'Either source_page_id or angle_id is required'
             }), 400
         
         if not rota_year or not rota_week:
@@ -106,9 +112,15 @@ def generate_sunday_depth_long():
                 'error': 'rota_year and rota_week are required'
             }), 400
         
-        # Generate content
+        # Generate content (Phase 3.5: with optional angle_id)
         generator = DepthLongGenerator()
-        result = generator.generate(topic_id, source_page_id, rota_year, rota_week)
+        result = generator.generate(
+            topic_id, 
+            source_page_id, 
+            rota_year, 
+            rota_week,
+            angle_id=angle_id  # Phase 3.5: Pass angle_id
+        )
         
         if not result['success']:
             return jsonify(result), 400
@@ -116,6 +128,10 @@ def generate_sunday_depth_long():
         # Phase 2.4: Validate
         validator = ContentRoleValidator()
         validation = validator.validate_depth_long(result['content'], source_page_id)
+        
+        # Phase 3.5: Update angle usage tracking if angle was used
+        if angle_id and result.get('angle_id'):
+            _update_angle_usage(angle_id, rota_year, rota_week)
         
         # Store in posting_queue with status='generated'
         post_id = None
@@ -128,10 +144,11 @@ def generate_sunday_depth_long():
                 source_page_id=source_page_id,
                 rota_year=rota_year,
                 rota_week=rota_week,
-                validation_report=validation['validation_report_json']
+                validation_report=validation['validation_report_json'],
+                angle_id=angle_id  # Phase 3.5: Store angle reference
             )
         
-        return jsonify({
+        response = {
             'success': True,
             'post_id': post_id,
             'content': result['content'],
@@ -139,7 +156,13 @@ def generate_sunday_depth_long():
             'validation': validation,
             'topic_id': topic_id,
             'source_page_id': source_page_id
-        })
+        }
+        
+        # Phase 3.5: Include angle_id in response if used
+        if angle_id:
+            response['angle_id'] = angle_id
+        
+        return jsonify(response)
     
     except Exception as e:
         logger.error(f"Error generating Sunday DEPTH_LONG: {e}", exc_info=True)
@@ -376,9 +399,9 @@ def schedule_post(post_id: int):
 
 
 def _store_generated_post(role: str, platform: str, content: str,
-                         topic_id: int, source_page_id: int,
-                         rota_year: int, rota_week: int,
-                         validation_report: dict) -> int:
+                          topic_id: int, source_page_id: int,
+                          rota_year: int, rota_week: int,
+                          validation_report: dict, angle_id: Optional[int] = None) -> int:
     """
     Store generated post in posting_queue.
     
@@ -391,9 +414,9 @@ def _store_generated_post(role: str, platform: str, content: str,
                 role, platform, channel_type, content_type,
                 generated_content, topic_id, source_page_id,
                 rota_year, rota_week, validation_report_json,
-                status, created_at, updated_at
+                angle_id, status, created_at, updated_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id
         """, (
             role,
@@ -406,6 +429,7 @@ def _store_generated_post(role: str, platform: str, content: str,
             rota_year,
             rota_week,
             json.dumps(validation_report),
+            angle_id,  # Phase 3.5: Optional angle reference
             'generated'  # Status: generated (needs validation/approval)
         ))
         

@@ -11,6 +11,8 @@ class SundaySlotManager {
         this.currentWeek = null;
         this.currentTopicId = null;
         this.currentSourceId = null;
+        this.currentAngleId = null;  // Phase 3.4: Selected angle
+        this.currentAngle = null;  // Phase 3.4: Angle data
         
         this.init();
     }
@@ -51,8 +53,51 @@ class SundaySlotManager {
         if (topicSelect) {
             topicSelect.addEventListener('change', (e) => {
                 this.currentTopicId = parseInt(e.target.value);
+                // Phase 3.4: Show angle selector when topic is selected
+                if (this.currentTopicId) {
+                    document.getElementById('angle-selector').style.display = 'block';
+                    this.currentAngleId = null;  // Reset angle when topic changes
+                    this.currentAngle = null;
+                    this.updateSelectedAngleDisplay();
+                } else {
+                    document.getElementById('angle-selector').style.display = 'none';
+                }
                 this.loadSourceArticles();
                 this.updateGenerateButton();
+            });
+        }
+        
+        // Phase 3.4: Angle proposal button
+        const btnProposeAngles = document.getElementById('btn-propose-angles');
+        if (btnProposeAngles) {
+            btnProposeAngles.addEventListener('click', () => this.proposeAngles());
+        }
+        
+        // Phase 3.4: Angle selection modal
+        const btnCloseAngleModal = document.getElementById('btn-close-angle-modal');
+        const btnCancelAngleSelection = document.getElementById('btn-cancel-angle-selection');
+        const angleModal = document.getElementById('angle-selection-modal');
+        if (btnCloseAngleModal) {
+            btnCloseAngleModal.addEventListener('click', () => this.closeAngleModal());
+        }
+        if (btnCancelAngleSelection) {
+            btnCancelAngleSelection.addEventListener('click', () => this.closeAngleModal());
+        }
+        if (angleModal) {
+            angleModal.querySelector('.modal-overlay').addEventListener('click', () => this.closeAngleModal());
+        }
+        
+        // Phase 3.4: Change angle button
+        const btnChangeAngle = document.getElementById('btn-change-angle');
+        if (btnChangeAngle) {
+            btnChangeAngle.addEventListener('click', () => this.proposeAngles());
+        }
+        
+        // Phase 3.4: Create new angle button (placeholder - not implemented in Phase 3)
+        const btnCreateNewAngle = document.getElementById('btn-create-new-angle');
+        if (btnCreateNewAngle) {
+            btnCreateNewAngle.addEventListener('click', () => {
+                alert('Create New Angle feature not implemented in Phase 3. Please select from proposed candidates.');
             });
         }
         
@@ -211,10 +256,31 @@ class SundaySlotManager {
                 }
             }
             
-            // Auto-select first article if only one
-            if (articleIds.length === 1) {
-                sourceSelect.value = articleIds[0];
-                this.currentSourceId = articleIds[0];
+            // Phase 3.4: If angle is selected, pre-populate source articles from angle
+            if (this.currentAngle && this.currentAngle.source_article_ids) {
+                const angleArticleIds = this.currentAngle.source_article_ids;
+                // Pre-select articles from angle
+                angleArticleIds.forEach(articleId => {
+                    const option = sourceSelect.querySelector(`option[value="${articleId}"]`);
+                    if (option) {
+                        option.selected = true;
+                    }
+                });
+                // Auto-select first if only one
+                if (angleArticleIds.length === 1) {
+                    sourceSelect.value = angleArticleIds[0];
+                    this.currentSourceId = angleArticleIds[0];
+                } else if (angleArticleIds.length > 0) {
+                    // Select first available
+                    this.currentSourceId = angleArticleIds[0];
+                    sourceSelect.value = angleArticleIds[0];
+                }
+            } else {
+                // Auto-select first article if only one (original behavior)
+                if (articleIds.length === 1) {
+                    sourceSelect.value = articleIds[0];
+                    this.currentSourceId = articleIds[0];
+                }
             }
             
             this.updateGenerateButton();
@@ -226,8 +292,148 @@ class SundaySlotManager {
     
     updateGenerateButton() {
         const btnGenerate = document.getElementById('btn-generate-sunday');
+        // Phase 3.4: Angle is optional, so generation can proceed with or without angle
         const canGenerate = this.currentTopicId && this.currentSourceId && this.currentYear && this.currentWeek;
         btnGenerate.disabled = !canGenerate;
+    }
+    
+    // Phase 3.4: Angle proposal and selection methods
+    async proposeAngles() {
+        if (!this.currentTopicId) {
+            this.showError('Please select a topic first');
+            return;
+        }
+        
+        const modal = document.getElementById('angle-selection-modal');
+        const loading = document.getElementById('angle-proposal-loading');
+        const candidatesList = document.getElementById('angle-candidates-list');
+        
+        modal.style.display = 'flex';
+        loading.style.display = 'block';
+        candidatesList.style.display = 'none';
+        candidatesList.innerHTML = '';
+        
+        try {
+            const response = await fetch('/api/content-angles/propose', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    topic_id: this.currentTopicId,
+                    num_candidates: 5
+                })
+            });
+            
+            const data = await response.json();
+            
+            loading.style.display = 'none';
+            
+            if (!data.success) {
+                this.showError(data.error || 'Failed to propose angles');
+                return;
+            }
+            
+            if (!data.candidates || data.candidates.length === 0) {
+                candidatesList.innerHTML = '<p>No angle candidates generated. Please try again.</p>';
+                candidatesList.style.display = 'block';
+                return;
+            }
+            
+            // Render candidates
+            data.candidates.forEach((candidate, index) => {
+                const candidateDiv = document.createElement('div');
+                candidateDiv.className = 'angle-candidate';
+                candidateDiv.innerHTML = `
+                    <div class="angle-candidate-name">${candidate.angle_name}</div>
+                    <div class="angle-candidate-intent">${candidate.narrative_intent}</div>
+                    <div class="angle-candidate-sources">${candidate.source_article_ids.length} source article(s)</div>
+                    <button class="btn btn-primary btn-select-angle" data-index="${index}">Select</button>
+                `;
+                
+                const selectBtn = candidateDiv.querySelector('.btn-select-angle');
+                selectBtn.addEventListener('click', () => this.selectAngle(candidate, data.topic_id));
+                
+                candidatesList.appendChild(candidateDiv);
+            });
+            
+            candidatesList.style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error proposing angles:', error);
+            loading.style.display = 'none';
+            this.showError('Error proposing angles');
+        }
+    }
+    
+    async selectAngle(candidate, topicId) {
+        // Phase 3.4: Create or find existing angle
+        try {
+            // First, check if angle already exists (by name and topic)
+            const checkResponse = await fetch(`/api/content-angles/topic/${topicId}`);
+            const checkData = await checkResponse.json();
+            
+            let angleId = null;
+            if (checkData.success && checkData.angles) {
+                const existing = checkData.angles.find(a => a.angle_name === candidate.angle_name);
+                if (existing) {
+                    angleId = existing.id;
+                    this.currentAngle = existing;
+                }
+            }
+            
+            // If not found, create new angle
+            if (!angleId) {
+                const createResponse = await fetch('/api/content-angles/angle', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        angle_name: candidate.angle_name,
+                        narrative_intent: candidate.narrative_intent,
+                        topic_id: topicId,
+                        source_article_ids: candidate.source_article_ids
+                    })
+                });
+                
+                const createData = await createResponse.json();
+                
+                if (!createData.success) {
+                    this.showError(createData.error || 'Failed to create angle');
+                    return;
+                }
+                
+                angleId = createData.angle.id;
+                this.currentAngle = createData.angle;
+            }
+            
+            this.currentAngleId = angleId;
+            this.updateSelectedAngleDisplay();
+            this.closeAngleModal();
+            
+            // Reload source articles (will pre-populate from angle)
+            await this.loadSourceArticles();
+            
+        } catch (error) {
+            console.error('Error selecting angle:', error);
+            this.showError('Error selecting angle');
+        }
+    }
+    
+    updateSelectedAngleDisplay() {
+        const display = document.getElementById('selected-angle-display');
+        const nameSpan = document.getElementById('selected-angle-name');
+        const intentDiv = document.getElementById('selected-angle-intent');
+        
+        if (this.currentAngle) {
+            display.style.display = 'block';
+            nameSpan.textContent = this.currentAngle.angle_name;
+            intentDiv.textContent = this.currentAngle.narrative_intent || '';
+        } else {
+            display.style.display = 'none';
+        }
+    }
+    
+    closeAngleModal() {
+        const modal = document.getElementById('angle-selection-modal');
+        modal.style.display = 'none';
     }
     
     async generatePost() {
@@ -247,6 +453,7 @@ class SundaySlotManager {
                 body: JSON.stringify({
                     topic_id: this.currentTopicId,
                     source_page_id: this.currentSourceId,
+                    angle_id: this.currentAngleId,  // Phase 3.4: Include angle_id if selected
                     rota_year: this.currentYear,
                     rota_week: this.currentWeek
                 })

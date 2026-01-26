@@ -88,6 +88,18 @@
                             <option value="">Select topic...</option>
                         </select>
                     </div>
+                    <!-- Phase 3.4: Angle Selection -->
+                    <div class="angle-selector" id="angle-selector" style="display: none;">
+                        <label>Editorial Angle:</label>
+                        <button id="btn-propose-angles" class="btn btn-secondary">Propose Angles</button>
+                        <div id="selected-angle-display" style="display: none;">
+                            <div class="selected-angle-info">
+                                <strong>Selected Angle:</strong> <span id="selected-angle-name"></span>
+                                <button id="btn-change-angle" class="btn-link">Change</button>
+                            </div>
+                            <div class="selected-angle-intent" id="selected-angle-intent"></div>
+                        </div>
+                    </div>
                     <div class="source-selector">
                         <label>Source Article:</label>
                         <select id="sunday-source-select" class="source-select">
@@ -108,6 +120,29 @@
                         <div class="preview-content" id="sunday-preview-content"></div>
                         <div class="preview-meta" id="sunday-preview-meta"></div>
                         <div class="validation-results" id="sunday-validation-results"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 3.4: Angle Selection Modal -->
+        <div class="angle-selection-modal" id="angle-selection-modal" style="display: none;">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Select Editorial Angle</h3>
+                    <button id="btn-close-angle-modal" class="btn-icon">×</button>
+                </div>
+                <div class="modal-body">
+                    <div id="angle-proposal-loading" style="display: none;">
+                        <p>Generating angle candidates...</p>
+                    </div>
+                    <div id="angle-candidates-list" style="display: none;">
+                        <!-- Candidates will be populated here -->
+                    </div>
+                    <div class="modal-actions">
+                        <button id="btn-create-new-angle" class="btn btn-secondary">Create New Angle</button>
+                        <button id="btn-cancel-angle-selection" class="btn btn-secondary">Cancel</button>
                     </div>
                 </div>
             </div>
