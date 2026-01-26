@@ -23,6 +23,11 @@
                 <button id="btn-load-week" class="btn btn-primary">Load Week</button>
             </div>
             <div class="header-actions">
+                <div class="week-navigation">
+                    <button id="btn-prev-week" class="btn btn-secondary" title="Previous week">←</button>
+                    <button id="btn-current-week" class="btn btn-secondary" title="Jump to current week">Today</button>
+                    <button id="btn-next-week" class="btn btn-secondary" title="Next week">→</button>
+                </div>
                 <a href="/planning/content-roles" class="btn btn-secondary">Roles Reference</a>
                 <div class="view-toggle">
                     <button id="btn-view-day" class="btn btn-secondary active">View by Day</button>
@@ -38,6 +43,17 @@
         <div class="topic-details" id="topic-details">
             <span class="topic-name" id="topic-name">Loading...</span>
             <span class="topic-source" id="topic-source"></span>
+        </div>
+    </div>
+
+    <!-- Sunday Deep Dive Planning (Multi-Week View) -->
+    <div class="sunday-planning-section" id="sunday-planning-section">
+        <div class="sunday-planning-header">
+            <h2>Sunday Deep Dive Planning (Next 6 Weeks)</h2>
+            <p class="section-subtitle">Plan and preview upcoming Sunday DEPTH_LONG posts</p>
+        </div>
+        <div class="sunday-slots-grid" id="sunday-slots-grid">
+            <!-- Sunday slots will be populated here -->
         </div>
     </div>
 

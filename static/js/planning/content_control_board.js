@@ -4,12 +4,18 @@
  * Read-only planning surface for role-driven social posting.
  */
 
+// Global reference for onclick handlers
+let controlBoard;
+
 class ContentControlBoard {
     constructor() {
         this.currentYear = null;
         this.currentWeek = null;
         this.weekData = null;
         this.viewMode = 'day'; // 'day' or 'role'
+        
+        // Set global reference
+        controlBoard = this;
         
         this.init();
     }
@@ -26,12 +32,16 @@ class ContentControlBoard {
         
         // Event listeners
         document.getElementById('btn-load-week').addEventListener('click', () => this.loadWeek());
+        document.getElementById('btn-prev-week').addEventListener('click', () => this.navigateWeek(-1));
+        document.getElementById('btn-next-week').addEventListener('click', () => this.navigateWeek(1));
+        document.getElementById('btn-current-week').addEventListener('click', () => this.jumpToCurrentWeek());
         document.getElementById('btn-view-day').addEventListener('click', () => this.switchView('day'));
         document.getElementById('btn-view-role').addEventListener('click', () => this.switchView('role'));
         document.getElementById('btn-close-panel').addEventListener('click', () => this.closePanel());
         
         // Load initial data
         this.loadWeek();
+        this.loadSundayPlanning();
     }
     
     getISOWeek(date) {
@@ -83,6 +93,192 @@ class ContentControlBoard {
         } else {
             this.renderRoleView();
         }
+    }
+    
+    navigateWeek(delta) {
+        let newWeek = this.currentWeek + delta;
+        let newYear = this.currentYear;
+        
+        if (newWeek < 1) {
+            newWeek = 52;
+            newYear -= 1;
+        } else if (newWeek > 52) {
+            newWeek = 1;
+            newYear += 1;
+        }
+        
+        document.getElementById('week-year').value = newYear;
+        document.getElementById('week-number').value = newWeek;
+        this.loadWeek();
+    }
+    
+    jumpToCurrentWeek() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const week = this.getISOWeek(today);
+        
+        document.getElementById('week-year').value = year;
+        document.getElementById('week-number').value = week;
+        this.loadWeek();
+    }
+    
+    async loadSundayPlanning() {
+        try {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentWeek = this.getISOWeek(today);
+            
+            // Load next 6 Sundays
+            const sundaySlots = [];
+            for (let i = 0; i < 6; i++) {
+                const weekOffset = i;
+                let year = currentYear;
+                let week = currentWeek + weekOffset;
+                
+                // Handle year rollover
+                if (week > 52) {
+                    week = week - 52;
+                    year += 1;
+                }
+                
+                // Get Sunday date for this week
+                const sundayDate = this.getSundayDate(year, week);
+                
+                // Load week data for this Sunday
+                try {
+                    const response = await fetch(`/api/planning/content-control-board/week-data?year=${year}&week=${week}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Find Sunday slot (day 6 in 0-indexed, day 7 in ISO)
+                        const sundaySlot = data.schedule.find(s => s.day === 6 && s.role === 'DEPTH_LONG');
+                        const post = sundaySlot && sundaySlot.posts && sundaySlot.posts.length > 0 ? sundaySlot.posts[0] : null;
+                        
+                        sundaySlots.push({
+                            year: year,
+                            week: week,
+                            date: sundayDate,
+                            slot: sundaySlot,
+                            post: post,
+                            topic: data.active_topic
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error loading week ${year}-W${week}:`, error);
+                    // Add placeholder slot
+                    sundaySlots.push({
+                        year: year,
+                        week: week,
+                        date: sundayDate,
+                        slot: null,
+                        post: null,
+                        topic: null
+                    });
+                }
+            }
+            
+            this.renderSundayPlanning(sundaySlots);
+            
+        } catch (error) {
+            console.error('Error loading Sunday planning:', error);
+        }
+    }
+    
+    getSundayDate(year, week) {
+        // Get first day of ISO week (Monday)
+        const jan4 = new Date(year, 0, 4);
+        const jan4Day = jan4.getDay() || 7; // Convert 0 (Sunday) to 7
+        const weekStart = new Date(year, 0, 4 - jan4Day + 1);
+        weekStart.setDate(weekStart.getDate() + (week - 1) * 7);
+        
+        // Sunday is 6 days after Monday
+        const sunday = new Date(weekStart);
+        sunday.setDate(sunday.getDate() + 6);
+        
+        return sunday;
+    }
+    
+    renderSundayPlanning(sundaySlots) {
+        const grid = document.getElementById('sunday-slots-grid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        sundaySlots.forEach(slot => {
+            const card = document.createElement('div');
+            card.className = 'sunday-slot-card';
+            
+            const hasPost = slot.post !== null;
+            const hasTopic = slot.topic !== null;
+            const status = hasPost ? slot.post.status : 'empty';
+            const statusClass = this.getStatusClass(status);
+            
+            card.innerHTML = `
+                <div class="sunday-slot-header">
+                    <div class="sunday-date">
+                        <div class="sunday-date-main">${slot.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
+                        <div class="sunday-date-week">Week ${slot.week}, ${slot.year}</div>
+                    </div>
+                    <div class="sunday-status ${statusClass}">
+                        <span class="status-indicator ${statusClass}"></span>
+                        <span class="status-text">${this.getStatusDisplayName(status)}</span>
+                    </div>
+                </div>
+                <div class="sunday-slot-content">
+                    ${hasTopic ? `
+                        <div class="sunday-topic">
+                            <strong>Topic:</strong> ${slot.topic.topic_name || 'No topic name'}
+                        </div>
+                    ` : `
+                        <div class="sunday-topic no-topic">
+                            <em>No topic selected</em>
+                        </div>
+                    `}
+                    ${hasPost ? `
+                        <div class="sunday-post-preview">
+                            <div class="preview-text">${slot.post.preview || 'No preview'}</div>
+                        </div>
+                    ` : `
+                        <div class="sunday-post-preview empty">
+                            <em>No post generated</em>
+                        </div>
+                    `}
+                </div>
+                <div class="sunday-slot-actions">
+                    <button class="btn btn-sm btn-primary" onclick="controlBoard.loadWeekForSunday(${slot.year}, ${slot.week})">
+                        View Week
+                    </button>
+                    ${hasPost ? `
+                        <button class="btn btn-sm btn-secondary" onclick="controlBoard.showPostDetails(${slot.post.id})">
+                            View Post
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+            
+            grid.appendChild(card);
+        });
+    }
+    
+    getStatusClass(status) {
+        const statusMap = {
+            'empty': 'empty',
+            'generated': 'generated',
+            'validation_failed': 'failed',
+            'approved': 'approved',
+            'scheduled': 'scheduled',
+            'published': 'published'
+        };
+        return statusMap[status] || 'empty';
+    }
+    
+    loadWeekForSunday(year, week) {
+        document.getElementById('week-year').value = year;
+        document.getElementById('week-number').value = week;
+        this.loadWeek();
+        
+        // Scroll to matrix view
+        document.getElementById('day-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     
     renderTopicInfo() {
