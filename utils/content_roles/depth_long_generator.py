@@ -7,7 +7,7 @@ This is the core proof of concept for the Content Roles Framework.
 """
 
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from datetime import date
 from bs4 import BeautifulSoup
 import re

@@ -8,7 +8,6 @@ This is a read-only operation - candidates are not persisted until explicitly se
 
 import logging
 from typing import List, Dict, Optional
-import numpy as np
 from config.database import db_manager
 from utils.vector_search.embeddings import EmbeddingGenerator
 from blueprints.llm_actions import LLMService
