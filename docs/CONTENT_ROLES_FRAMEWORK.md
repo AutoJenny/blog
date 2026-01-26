@@ -558,5 +558,26 @@ It ensures:
 
 ---
 
+## Related Systems
+
+### Angles Layer (Phase 3)
+
+The **Angles Layer** provides an editorial interpretation layer between Topics and Roles. It enables reuse of storylines across channels and post types.
+
+**Key Relationship:**
+- **Topics** provide factual/semantic domains
+- **Angles** provide editorial interpretations of topics
+- **Roles** define post purposes (DEPTH_LONG, REASSURANCE, etc.)
+- **Angles feed Roles** - An angle can generate multiple role-specific outputs
+
+**Documentation:**
+- `docs/ANGLES_LAYER_IMPLEMENTATION.md` - Full technical documentation
+- `docs/ANGLES_LAYER_QUICK_REFERENCE.md` - Quick reference guide
+- `docs/ANGLES_LAYER_IMPLEMENTATION_DESIGN.md` - Design document
+
+**Current Status:** ✅ Implemented for Sunday Deep Dive (Facebook) only
+
+---
+
 **Last Updated:** 2026-01-25  
-**Status:** Framework defined, database schema implemented, Phase 2 (Sunday DEPTH_LONG PoC) partially complete
+**Status:** Framework defined, database schema implemented, Phase 2 (Sunday DEPTH_LONG PoC) complete, Phase 3 (Angles Layer) implemented

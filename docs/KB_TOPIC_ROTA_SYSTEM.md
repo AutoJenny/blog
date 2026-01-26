@@ -634,3 +634,29 @@ Rota can be regenerated:
 - **Hierarchical structure** (parent-child relationships)
 
 **Ready for production use.**
+
+---
+
+## Related Systems
+
+### Angles Layer (Phase 3)
+
+The **Angles Layer** builds upon the KB Topic Rota System by adding an editorial interpretation layer. Topics provide the factual foundation, while Angles provide reusable storylines.
+
+**Key Relationship:**
+- **KB Topics** (`kb_topics`) - Semantic topics from KB clustering
+- **Angles** (`content_angles`) - Editorial interpretations of topics
+- **Topic Rota** (`kb_topic_rota`) - Weekly schedule of topics
+- **Angles reference Topics** - Each angle belongs to one topic
+
+**Workflow:**
+1. Topic selected for week (via `kb_topic_rota`)
+2. System proposes angle candidates for that topic
+3. Human selects angle (or skips to topic-only mode)
+4. Generation uses angle's narrative intent + source bundle
+
+**Documentation:**
+- `docs/ANGLES_LAYER_IMPLEMENTATION.md` - Full technical documentation
+- `docs/ANGLES_LAYER_QUICK_REFERENCE.md` - Quick reference guide
+
+**Current Status:** ✅ Implemented for Sunday Deep Dive (Facebook) only
