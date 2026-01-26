@@ -18,6 +18,14 @@
 5. **No Channel Orchestration UI** - No existing UI for planning content across multiple channels simultaneously
 6. **No Angle Storage** - No database tables, fields, or code references to "angles" as defined
 
+**Verification of Alternative Names:** Comprehensive search confirmed no similar concept exists under alternative names:
+- ❌ No "storyline", "narrative", "interpretation", "approach", "perspective", "take", "spin" systems
+- ❌ No "campaign", "series", "story arc" systems
+- ❌ No "editorial bundle", "source bundle", "content bundle" systems
+- ❌ No "variant", "version", "alternative", "option" systems for content
+- ❌ JSONB fields (`calendar_themes.sources`, `calendar_week_items.metadata`) exist but are **empty/unused** for angle-like data
+- ❌ `post_development.expanded_idea` and `idea_seed` are **post-specific** planning data, not reusable angles
+
 **Recommendation:** Angles should be implemented as a **new first-class object**, reusing infrastructure from KB Topics (vector retrieval) and calendar_themes (week binding), but not replacing either.
 
 ---
@@ -742,9 +750,53 @@ posting_queue:
 
 ---
 
-## 5. Uncertainty & Gaps
+## 5. Verification: Alternative Names & Hidden Concepts
 
-### 5.1 Uncertain Areas
+### 5.1 Comprehensive Name Search
+
+**Searched Terms:**
+- `storyline`, `narrative`, `interpretation`, `approach`, `perspective`, `take`, `spin`
+- `campaign`, `series`, `story arc`, `narrative arc`
+- `editorial bundle`, `source bundle`, `content bundle`
+- `variant`, `version`, `alternative`, `option`, `candidate`
+- `concept`, `proposal`, `reuse`, `reusable`, `shared`
+
+**Results:**
+- ❌ **No matches found** for any of these terms as database tables, fields, or code concepts
+- ✅ **Only matches** were in documentation (this report) or in prompt text (e.g., "suggest clear angles" in `planning_steps.json` - but this is just prompt text, not a stored concept)
+
+### 5.2 JSONB Field Investigation
+
+**Checked JSONB Fields:**
+- `calendar_themes.sources` - **Empty/unused** (no data found)
+- `calendar_themes.important_notes` - **Empty/unused** (no data found)
+- `calendar_week_items.metadata` - **Empty/unused** (no data found)
+- `post_development.*` - Post-specific planning data, not reusable
+
+**Conclusion:** JSONB fields exist but are **not being used** to store angle-like editorial interpretations.
+
+### 5.3 Post-Specific Planning Data
+
+**Found:** `post_development.expanded_idea` and `idea_seed`
+- **What they are:** Post-specific planning fields for blog posts
+- **What they are NOT:** Reusable editorial interpretations
+- **Evidence:** 
+  - Stored per-post (not reusable)
+  - Blog-focused (not channel-agnostic)
+  - Generated from themes (not from topics)
+  - No "angle" concept - just expanded idea text
+
+**Conclusion:** These are **post-specific planning data**, not the reusable "angles" concept.
+
+### 5.4 Final Verification
+
+**Confirmed:** No similar concept exists under any alternative name. The "Angles" concept is **genuinely new** and requires new implementation.
+
+---
+
+## 6. Uncertainty & Gaps
+
+### 6.1 Uncertain Areas
 
 **1. Vector Retrieval for Angle Proposals**
 - **Question:** Should angle proposals use the same vector search as topic discovery?
@@ -768,7 +820,7 @@ posting_queue:
 
 ---
 
-### 5.2 Missing Systems (Expected but Not Found)
+### 6.2 Missing Systems (Expected but Not Found)
 
 **1. Channel Orchestration UI**
 - **Expected:** UI for planning content across multiple channels
@@ -792,7 +844,7 @@ posting_queue:
 
 ---
 
-## 6. Recommended Reuse vs Replace Decisions
+## 7. Recommended Reuse vs Replace Decisions
 
 ### 6.1 REUSE (Infrastructure)
 
@@ -891,7 +943,7 @@ posting_queue:
 
 ---
 
-## 7. Integration Architecture Proposal
+## 8. Integration Architecture Proposal
 
 ### 7.1 Data Model
 
@@ -985,7 +1037,7 @@ Topic → [Angle Candidates Proposed] → [Human Selects/Edits Angle]
 
 ---
 
-## 8. Specific Code Locations
+## 9. Specific Code Locations
 
 ### 8.1 Topic → Angle Proposal Logic
 
@@ -1035,7 +1087,7 @@ Topic → [Angle Candidates Proposed] → [Human Selects/Edits Angle]
 
 ---
 
-## 9. Overlaps with Vector Clustering
+## 10. Overlaps with Vector Clustering
 
 ### 9.1 Current Vector System
 
@@ -1058,7 +1110,7 @@ Topic → [Angle Candidates Proposed] → [Human Selects/Edits Angle]
 
 ---
 
-## 10. Summary & Recommendations
+## 11. Summary & Recommendations
 
 ### 10.1 What Exists (Reusable)
 
@@ -1101,7 +1153,7 @@ Topics (factual) → Angles (editorial) → Roles (purpose) → Channels (where)
 
 ---
 
-## 11. Evidence Summary
+## 12. Evidence Summary
 
 ### 11.1 Database Evidence
 
@@ -1147,7 +1199,7 @@ Topics (factual) → Angles (editorial) → Roles (purpose) → Channels (where)
 
 ---
 
-## 12. Acceptance Criteria Status
+## 13. Acceptance Criteria Status
 
 ✅ **All overlapping systems identified and documented**
 - 5 database tables assessed
@@ -1173,7 +1225,7 @@ Topics (factual) → Angles (editorial) → Roles (purpose) → Channels (where)
 
 ---
 
-## 13. Next Steps (After Discovery Acceptance)
+## 14. Next Steps (After Discovery Acceptance)
 
 Once this discovery is accepted, the next phase will create:
 
