@@ -142,7 +142,12 @@ class ContentControlBoard {
             const facebookSlot = daySlots.find(s => s.platform === 'facebook');
             
             if (facebookSlot) {
-                if (facebookSlot.posts && facebookSlot.posts.length > 0) {
+                // Check for conflicts
+                if (facebookSlot.has_conflict && facebookSlot.conflicts && facebookSlot.conflicts.length > 0) {
+                    facebookCell.className += ' has-conflict';
+                    facebookCell.innerHTML = this.renderConflictCell(facebookSlot);
+                    facebookCell.addEventListener('click', () => this.showConflictDetails(facebookSlot));
+                } else if (facebookSlot.posts && facebookSlot.posts.length > 0) {
                     const post = facebookSlot.posts[0]; // Take first post if multiple
                     facebookCell.className += ' has-post';
                     facebookCell.innerHTML = this.renderCellContent(post, facebookSlot);
@@ -226,6 +231,91 @@ class ContentControlBoard {
         `;
     }
     
+    renderConflictCell(slot) {
+        const roleClass = slot.role.toLowerCase().replace('_', '-');
+        const roleInfo = this.getRoleInfo(slot.role);
+        const roleDisplayName = this.getRoleDisplayName(slot.role);
+        const conflict = slot.conflicts[0]; // Show first conflict
+        
+        return `
+            <div class="cell-content conflict">
+                <a href="/planning/content-roles#${slot.role.toLowerCase()}" class="role-badge-link" onclick="event.stopPropagation();">
+                    <div class="role-badge ${roleClass}" title="${roleInfo.tooltip}">
+                        ${roleDisplayName}
+                    </div>
+                </a>
+                <div class="conflict-warning">
+                    <span class="conflict-icon">⚠️</span>
+                    <span class="conflict-text">Conflict: ${conflict.content_type} post scheduled</span>
+                </div>
+                <div class="post-time">${slot.time || ''}</div>
+                <div class="empty-message">Reserved for ${roleDisplayName}</div>
+            </div>
+        `;
+    }
+    
+    showConflictDetails(slot) {
+        const panelContent = document.getElementById('panel-content');
+        const panelTitle = document.getElementById('panel-title');
+        
+        panelTitle.textContent = `Conflict: ${slot.day_name} ${slot.time}`;
+        
+        const roleClass = slot.role.toLowerCase().replace('_', '-');
+        const roleDisplayName = this.getRoleDisplayName(slot.role);
+        
+        let conflictsHtml = '';
+        slot.conflicts.forEach(conflict => {
+            conflictsHtml += `
+                <div class="conflict-item" style="border: 1px solid #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: 4px; background: #fef2f2;">
+                    <h5 style="color: #dc2626; margin-top: 0;">Conflicting Post #${conflict.id}</h5>
+                    <p><strong>Type:</strong> ${conflict.content_type}</p>
+                    <p><strong>Status:</strong> ${this.getStatusDisplayName(conflict.status)}</p>
+                    <p><strong>Scheduled:</strong> ${conflict.scheduled_date} ${conflict.scheduled_time || ''}</p>
+                    ${conflict.product_name ? `<p><strong>Product:</strong> ${conflict.product_name}</p>` : ''}
+                    ${conflict.idea_title ? `<p><strong>Idea:</strong> ${conflict.idea_title}</p>` : ''}
+                    <p style="color: #dc2626; font-weight: 600; margin-top: 0.5rem;">${conflict.conflict_reason || 'This post conflicts with the Content Roles Framework.'}</p>
+                </div>
+            `;
+        });
+        
+        panelContent.innerHTML = `
+            <div class="panel-section">
+                <h4>Conflict Detected</h4>
+                <div style="background: #fef2f2; border: 2px solid #ef4444; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                    <p style="color: #dc2626; font-weight: 600; margin: 0;">
+                        ⚠️ This slot is reserved for <strong>${roleDisplayName}</strong> posts per the Content Roles Framework.
+                    </p>
+                    <p style="margin-top: 0.5rem; margin-bottom: 0;">
+                        Legacy posts scheduled for this slot conflict with the framework and should be rescheduled or removed.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h4>Reserved Slot</h4>
+                <div>
+                    <p><strong>Day:</strong> ${slot.day_name}</p>
+                    <p><strong>Time:</strong> ${slot.time}</p>
+                    <p><strong>Role:</strong> <span class="role-badge ${roleClass}">${roleDisplayName}</span></p>
+                    <p style="margin-top: 0.5rem;">
+                        <a href="/planning/content-roles#${slot.role.toLowerCase()}" style="color: var(--color-primary, #2563eb); text-decoration: underline;">
+                            Learn about ${roleDisplayName} →
+                        </a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h4>Conflicting Posts</h4>
+                <div>
+                    ${conflictsHtml}
+                </div>
+            </div>
+        `;
+        
+        this.openPanel();
+    }
+    
     renderRoleView() {
         const roleGroups = document.getElementById('role-groups');
         roleGroups.innerHTML = '';
@@ -242,11 +332,25 @@ class ContentControlBoard {
             });
         });
         
-        // Add legacy posts
+        // Add legacy posts (including conflicts)
         if (this.weekData.legacy_posts && this.weekData.legacy_posts.length > 0) {
             postsByRole['LEGACY'] = (postsByRole['LEGACY'] || []).concat(
                 this.weekData.legacy_posts.map(p => ({...p, day_name: this.getDayName(p.scheduled_date)}))
             );
+        }
+        
+        // Check for conflicts in legacy posts and add to Sunday slot if needed
+        if (this.weekData.legacy_posts) {
+            const conflicts = this.weekData.legacy_posts.filter(p => p.is_conflict);
+            if (conflicts.length > 0) {
+                // Find Sunday slot and add conflict indicator
+                const sundaySlot = this.weekData.schedule.find(s => s.day === 6); // Sunday is day 6 (0-indexed)
+                if (sundaySlot) {
+                    // Add conflict flag to slot
+                    sundaySlot.has_conflict = true;
+                    sundaySlot.conflicts = conflicts;
+                }
+            }
         }
         
         // Render each role group

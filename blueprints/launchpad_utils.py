@@ -72,7 +72,21 @@ def get_next_posting_slot(cursor, platform='facebook', content_type='product'):
         # If no existing slots available, find the next new slot
         for days_ahead in range(30):  # Look up to 30 days ahead
             check_date = start_date + timedelta(days=days_ahead)
-            day_of_week = check_date.isoweekday()  # 1=Monday, 7=Sunday
+            day_of_week = check_date.isoweekday()  # ISO: 1=Monday, 7=Sunday
+            
+            # CRITICAL: Exclude Sunday (day 7) - reserved for DEPTH_LONG posts
+            if day_of_week == 7:  # Sunday
+                # Check if Content Roles rail exists for Sunday 15:00
+                try:
+                    from config.content_roles_schedule_rails import get_rails_for_platform
+                    rails = get_rails_for_platform('facebook', role='DEPTH_LONG')
+                    # Check if any rail is for Sunday (day 7) at 15:00
+                    if rails and any(r['day'] == 7 and r['time'] == '15:00' for r in rails):
+                        logger.debug(f"Skipping Sunday {check_date} - reserved for DEPTH_LONG posts")
+                        continue
+                except Exception as e:
+                    logger.warning(f"Error checking Content Roles rails: {e}, skipping Sunday to be safe")
+                    continue
             
             for schedule in schedules:
                 schedule_days = schedule['days'] if isinstance(schedule['days'], list) else json.loads(schedule['days'])

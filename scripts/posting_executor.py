@@ -223,7 +223,7 @@ class PostingExecutor:
     def post_to_facebook(self, post: Dict) -> Dict:
         """
         Post content to Facebook using the appropriate posting function
-        Handles both product posts and weekly content posts
+        Handles weekly content posts, product posts, and message posts
         """
         try:
             content_type = post.get('content_type', '').lower()
@@ -258,6 +258,24 @@ class PostingExecutor:
                     return {
                         'success': False,
                         'error': result_dict.get('error', 'Unknown error')
+                    }
+            elif content_type == 'message':
+                # Use message post workflow (text-only posts)
+                logger.info(f"Using message post workflow for {content_type}")
+                from utils.platform_publishers import publish_to_facebook
+                
+                result = publish_to_facebook(queue_id)
+                
+                if result.get('success'):
+                    return {
+                        'success': True,
+                        'platform_post_id': result.get('platform_post_id'),
+                        'message': result.get('message', 'Published successfully')
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': result.get('error', 'Unknown error')
                     }
             else:
                 # Use product post workflow (existing logic)

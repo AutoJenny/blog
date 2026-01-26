@@ -413,211 +413,276 @@ def api_posts():
 @bp.route('/api/posts/timeline')
 def api_posts_timeline():
     """
-    Get posts timeline in chronological order (recent/pending/upcoming).
-    Returns posts from posting_queue sorted by scheduled date/time.
+    Get posts timeline in chronological order based on SCHEDULED OUTPUT ONLY.
+    
+    This endpoint uses post_type_channel_config as the source of truth to determine
+    what should be displayed. It only shows posts that match the configured schedule.
+    
+    Architecture:
+    1. Query post_type_channel_config to determine what SHOULD be scheduled
+    2. For each configured post type/day/time, look up the actual post in posting_queue
+    3. Only include posts that match the schedule configuration
+    4. One post per day maximum (the one matching the schedule)
     """
     try:
+        from datetime import date, datetime, timedelta, time as time_type
+        import json
+        
         limit = request.args.get('limit', type=int, default=50)
         status_filter = request.args.get('status')  # Optional: 'pending', 'ready', 'published', etc.
         show_published = request.args.get('show_published', 'false').lower() == 'true'  # Hide published by default
         
+        today = date.today()
+        end_date = today + timedelta(days=limit)  # Look ahead for configured limit
+        
+        timeline_posts = []
+        
         with db_manager.get_cursor() as cursor:
-            # Build query
-            query = """
+            # STEP 1: Get all active schedule configurations from post_type_channel_config
+            # This is the SOURCE OF TRUTH for what should be scheduled
+            cursor.execute("""
                 SELECT 
-                    pq.id as queue_id,
-                    pq.idea_id,
-                    pq.product_id,
-                    pq.content_type,
-                    pq.platform,
-                    pq.channel_type,
-                    pq.generated_caption,
-                    pq.generated_content,
-                    pq.image_path,
-                    pq.status,
-                    pq.scheduled_date,
-                    pq.scheduled_time,
-                    pq.scheduled_timestamp,
-                    pq.platform_post_id,
-                    pq.created_at,
-                    pq.updated_at,
-                    -- Product details
-                    cp.name as product_name,
-                    cp.sku as product_sku,
-                    cp.image_url as product_image,
-                    -- Idea details (for language posts)
-                    ci.idea_title,
-                    ci.idea_description,
-                    -- Display image URL
-                    CASE 
-                        WHEN pq.content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult') 
-                             AND pq.image_path IS NOT NULL 
-                             AND pq.image_path LIKE '/Users/%%/static/%%' 
-                        THEN REPLACE(pq.image_path, '/Users/autojenny/Documents/projects/blog', '')
-                        WHEN pq.content_type = 'product' AND cp.image_url IS NOT NULL
-                        THEN cp.image_url
-                        WHEN pq.content_type = 'product' AND pq.image_path IS NOT NULL
-                        THEN pq.image_path
-                        ELSE NULL
-                    END as display_image_url
-                FROM posting_queue pq
-                LEFT JOIN clan_products cp ON pq.product_id = cp.id
-                LEFT JOIN calendar_ideas ci ON pq.idea_id = ci.id
-                WHERE 1=1
-            """
-            params = []
+                    post_type,
+                    channel,
+                    publication_day,
+                    publication_time
+                FROM post_type_channel_config
+                WHERE is_active = TRUE
+                AND publication_day IS NOT NULL
+                AND channel = 'facebook'
+                ORDER BY publication_day, publication_time NULLS LAST
+            """)
+            schedule_configs = cursor.fetchall()
             
-            # Hide published posts by default unless explicitly requested
-            if not show_published:
-                query += " AND pq.status != 'published'"
+            # STEP 2: Get product schedules from daily_posts_schedule (recurring patterns)
+            cursor.execute("""
+                SELECT 
+                    days,
+                    time,
+                    platform
+                FROM daily_posts_schedule
+                WHERE is_active = TRUE
+                AND content_type = 'product'
+                AND platform = 'facebook'
+            """)
+            product_schedules = cursor.fetchall()
             
-            # Add status filter if provided
-            if status_filter:
-                query += " AND pq.status = %s"
-                params.append(status_filter)
+            # Build a map of what should be scheduled for each date
+            # Format: {(date, post_type): config}
+            scheduled_items = {}
             
-            # Filter to only show posts scheduled from today onwards (not old past posts)
-            query += " AND pq.scheduled_date >= CURRENT_DATE"
-            
-            # Order by scheduled date and time (same as calendar uses) - chronological order
-            query += """
-                ORDER BY 
-                    pq.scheduled_date ASC,
-                    pq.scheduled_time ASC NULLS LAST
-                LIMIT %s
-            """
-            params.append(limit)
-            
-            cursor.execute(query, tuple(params))
-            posts = cursor.fetchall()
-            
-            # Filter out non-compliant posts and duplicates
-            # Rules:
-            # - weekly_word: Monday only (weekday 1)
-            # - weekly_phrase: Wednesday only (weekday 3)
-            # - weekly_insult: Friday only (weekday 5)
-            # - Only one post per content_type per day (keep oldest)
-            from datetime import date
-            
-            compliant_posts = []
-            seen_by_type_date = {}  # (content_type, scheduled_date) -> post
-            
-            for post in posts:
-                post_dict = dict(post)
-                content_type = post_dict.get('content_type', '')
-                scheduled_date = post_dict.get('scheduled_date')
+            # Process fixed schedule configurations (weekly_word, weekly_phrase, weekly_insult, message)
+            for config in schedule_configs:
+                post_type = config['post_type']
+                publication_day = config['publication_day']  # 1=Monday, 7=Sunday
+                publication_time = config['publication_time']
                 
-                # Skip if no scheduled_date
-                if not scheduled_date:
+                # Skip product posts here - they're handled separately via daily_posts_schedule
+                if post_type == 'product':
                     continue
                 
-                # Parse date if string
-                if isinstance(scheduled_date, str):
-                    scheduled_date = date.fromisoformat(scheduled_date.split('T')[0])
-                elif hasattr(scheduled_date, 'date'):
-                    scheduled_date = scheduled_date.date()
-                
-                # Check weekday compliance for weekly content
-                if content_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
-                    weekday = scheduled_date.isoweekday()  # 1=Monday, 7=Sunday
-                    expected_weekday = {
-                        'weekly_word': 1,    # Monday
-                        'weekly_phrase': 3,  # Wednesday
-                        'weekly_insult': 5   # Friday
-                    }.get(content_type)
-                    
-                    if weekday != expected_weekday:
-                        logger.debug(f"Skipping non-compliant post {post_dict.get('queue_id')}: {content_type} on weekday {weekday} (expected {expected_weekday})")
-                        continue
-                
-                # Deduplicate: keep only one post per content_type per day (prefer oldest)
-                key = (content_type, scheduled_date.isoformat())
-                if key in seen_by_type_date:
-                    # Keep the one with earlier created_at
-                    existing = seen_by_type_date[key]
-                    existing_created = existing.get('created_at')
-                    current_created = post_dict.get('created_at')
-                    
-                    if existing_created and current_created:
-                        # Compare timestamps
-                        if isinstance(existing_created, str):
-                            existing_created = datetime.fromisoformat(existing_created.replace('Z', '+00:00'))
-                        if isinstance(current_created, str):
-                            current_created = datetime.fromisoformat(current_created.replace('Z', '+00:00'))
-                        
-                        if current_created < existing_created:
-                            # Current is older, replace
-                            seen_by_type_date[key] = post_dict
-                            logger.debug(f"Replacing duplicate post {existing.get('queue_id')} with older {post_dict.get('queue_id')} for {content_type} on {scheduled_date}")
-                        else:
-                            # Existing is older, skip current
-                            logger.debug(f"Skipping duplicate post {post_dict.get('queue_id')} (keeping older {existing.get('queue_id')}) for {content_type} on {scheduled_date}")
-                            continue
-                    else:
-                        # Can't compare, keep existing
-                        logger.debug(f"Skipping duplicate post {post_dict.get('queue_id')} for {content_type} on {scheduled_date}")
-                        continue
-                else:
-                    seen_by_type_date[key] = post_dict
-                
-                compliant_posts.append(post_dict)
+                # Calculate dates for this weekday within the date range
+                current_date = today
+                while current_date <= end_date:
+                    weekday = current_date.isoweekday()  # 1=Monday, 7=Sunday
+                    if weekday == publication_day:
+                        scheduled_items[(current_date, post_type)] = {
+                            'post_type': post_type,
+                            'scheduled_date': current_date,
+                            'scheduled_time': publication_time or time_type(9, 0),  # Default 09:00
+                            'from_config': True
+                        }
+                    current_date += timedelta(days=1)
             
-            # Format posts for response
-            timeline = []
-            for post_dict in compliant_posts:
+            # Process product schedules (recurring weekday patterns)
+            for schedule in product_schedules:
+                days = schedule['days']  # JSONB array of weekday numbers
+                scheduled_time = schedule['time']
                 
-                # Format dates
-                for key in ['created_at', 'updated_at', 'scheduled_date', 'scheduled_timestamp']:
-                    if post_dict.get(key) and hasattr(post_dict[key], 'isoformat'):
-                        post_dict[key] = post_dict[key].isoformat()
-                if post_dict.get('scheduled_time'):
-                    post_dict['scheduled_time'] = str(post_dict['scheduled_time'])
+                if not days:
+                    continue
                 
-                # Determine title
-                if post_dict.get('product_name'):
-                    post_dict['title'] = post_dict['product_name']
-                elif post_dict.get('idea_title'):
-                    post_dict['title'] = post_dict['idea_title']
-                elif post_dict.get('content_type') == 'message' and post_dict.get('generated_content'):
-                    # For message posts, use first line of generated_content as title
-                    content = post_dict['generated_content'] or ''
-                    # Extract first line (up to 60 chars)
-                    first_line = content.split('\n')[0].strip()
-                    post_dict['title'] = first_line[:60] + ('...' if len(first_line) > 60 else '')
-                else:
-                    post_dict['title'] = f"{post_dict.get('content_type', 'Post')} #{post_dict['queue_id']}"
+                # Parse days if it's a JSON string
+                if isinstance(days, str):
+                    days = json.loads(days)
                 
-                # Determine if post is due (scheduled time has passed)
-                scheduled_ts = post_dict.get('scheduled_timestamp')
-                if scheduled_ts:
-                    try:
-                        # Parse ISO format datetime string
-                        if isinstance(scheduled_ts, str):
-                            # Handle ISO format with or without timezone
-                            if 'T' in scheduled_ts:
-                                scheduled_dt = datetime.fromisoformat(scheduled_ts.replace('Z', '+00:00'))
+                # Calculate dates for matching weekdays
+                current_date = today
+                while current_date <= end_date:
+                    weekday = current_date.isoweekday()
+                    if weekday in days:
+                        # Use existing entry if present, otherwise create new
+                        key = (current_date, 'product')
+                        if key not in scheduled_items:
+                            # Parse time if string
+                            if isinstance(scheduled_time, str):
+                                time_parts = scheduled_time.split(':')
+                                time_obj = time_type(int(time_parts[0]), int(time_parts[1]) if len(time_parts) > 1 else 0)
                             else:
-                                scheduled_dt = datetime.fromisoformat(scheduled_ts)
-                        else:
-                            scheduled_dt = scheduled_ts
-                        now = datetime.now(scheduled_dt.tzinfo) if scheduled_dt.tzinfo else datetime.now()
-                        post_dict['is_due'] = scheduled_dt <= now
-                    except Exception as e:
-                        logger.debug(f"Error parsing scheduled_timestamp {scheduled_ts}: {e}")
-                        post_dict['is_due'] = False
-                else:
-                    post_dict['is_due'] = False
+                                time_obj = scheduled_time
+                            
+                            scheduled_items[key] = {
+                                'post_type': 'product',
+                                'scheduled_date': current_date,
+                                'scheduled_time': time_obj,
+                                'from_config': True
+                            }
+                    current_date += timedelta(days=1)
+            
+            # STEP 3: For each scheduled item, find the actual post in posting_queue
+            for (scheduled_date, post_type), schedule_info in scheduled_items.items():
+                # Skip if date is in the past (only show today onwards)
+                if scheduled_date < today:
+                    continue
                 
-                timeline.append(post_dict)
+                # Build query to find matching post
+                query = """
+                    SELECT 
+                        pq.id as queue_id,
+                        pq.idea_id,
+                        pq.product_id,
+                        pq.content_type,
+                        pq.platform,
+                        pq.channel_type,
+                        pq.generated_caption,
+                        pq.generated_content,
+                        pq.image_path,
+                        pq.status,
+                        pq.scheduled_date,
+                        pq.scheduled_time,
+                        pq.scheduled_timestamp,
+                        pq.platform_post_id,
+                        pq.created_at,
+                        pq.updated_at,
+                        -- Product details
+                        cp.name as product_name,
+                        cp.sku as product_sku,
+                        cp.image_url as product_image,
+                        -- Idea details (for language posts)
+                        ci.idea_title,
+                        ci.idea_description,
+                        -- Display image URL
+                        CASE 
+                            WHEN pq.content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult') 
+                                 AND pq.image_path IS NOT NULL 
+                                 AND pq.image_path LIKE '/Users/%%/static/%%' 
+                            THEN REPLACE(pq.image_path, '/Users/autojenny/Documents/projects/blog', '')
+                            WHEN pq.content_type = 'product' AND cp.image_url IS NOT NULL
+                            THEN cp.image_url
+                            WHEN pq.content_type = 'product' AND pq.image_path IS NOT NULL
+                            THEN pq.image_path
+                            ELSE NULL
+                        END as display_image_url
+                    FROM posting_queue pq
+                    LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                    LEFT JOIN calendar_ideas ci ON pq.idea_id = ci.id
+                    WHERE pq.content_type = %s
+                    AND pq.platform = 'facebook'
+                    AND pq.scheduled_date = %s
+                """
+                params = [post_type, scheduled_date]
+                
+                # Add status filters
+                if not show_published:
+                    query += " AND pq.status != 'published'"
+                
+                if status_filter:
+                    query += " AND pq.status = %s"
+                    params.append(status_filter)
+                
+                # For weekly content, verify weekday matches
+                if post_type in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+                    expected_weekday = {
+                        'weekly_word': 1,
+                        'weekly_phrase': 3,
+                        'weekly_insult': 5
+                    }.get(post_type)
+                    query += " AND EXTRACT(ISODOW FROM pq.scheduled_date) = %s"
+                    params.append(expected_weekday)
+                
+                # Order by created_at to get the oldest (first created) if duplicates exist
+                query += " ORDER BY pq.created_at ASC LIMIT 1"
+                
+                cursor.execute(query, tuple(params))
+                post = cursor.fetchone()
+                
+                if post:
+                    post_dict = dict(post)
+                    
+                    # Format dates
+                    for key in ['created_at', 'updated_at', 'scheduled_date', 'scheduled_timestamp']:
+                        if post_dict.get(key) and hasattr(post_dict[key], 'isoformat'):
+                            post_dict[key] = post_dict[key].isoformat()
+                    if post_dict.get('scheduled_time'):
+                        post_dict['scheduled_time'] = str(post_dict['scheduled_time'])
+                    
+                    # Determine title
+                    if post_dict.get('product_name'):
+                        post_dict['title'] = post_dict['product_name']
+                    elif post_dict.get('idea_title'):
+                        post_dict['title'] = post_dict['idea_title']
+                    elif post_dict.get('content_type') == 'message' and post_dict.get('generated_content'):
+                        content = post_dict['generated_content'] or ''
+                        first_line = content.split('\n')[0].strip()
+                        post_dict['title'] = first_line[:60] + ('...' if len(first_line) > 60 else '')
+                    else:
+                        post_dict['title'] = f"{post_dict.get('content_type', 'Post')} #{post_dict['queue_id']}"
+                    
+                    # Determine if post is due (scheduled time has passed)
+                    scheduled_ts = post_dict.get('scheduled_timestamp')
+                    if scheduled_ts:
+                        try:
+                            if isinstance(scheduled_ts, str):
+                                if 'T' in scheduled_ts:
+                                    scheduled_dt = datetime.fromisoformat(scheduled_ts.replace('Z', '+00:00'))
+                                else:
+                                    scheduled_dt = datetime.fromisoformat(scheduled_ts)
+                            else:
+                                scheduled_dt = scheduled_ts
+                            now = datetime.now(scheduled_dt.tzinfo) if scheduled_dt.tzinfo else datetime.now()
+                            post_dict['is_due'] = scheduled_dt <= now
+                        except Exception as e:
+                            logger.debug(f"Error parsing scheduled_timestamp {scheduled_ts}: {e}")
+                            post_dict['is_due'] = False
+                    else:
+                        # Fallback: check scheduled_date + scheduled_time
+                        try:
+                            sched_date = post_dict.get('scheduled_date')
+                            sched_time = post_dict.get('scheduled_time')
+                            if sched_date and sched_time:
+                                if isinstance(sched_date, str):
+                                    sched_date = date.fromisoformat(sched_date.split('T')[0])
+                                if isinstance(sched_time, str):
+                                    time_parts = sched_time.split(':')
+                                    sched_time = time_type(int(time_parts[0]), int(time_parts[1]) if len(time_parts) > 1 else 0)
+                                scheduled_dt = datetime.combine(sched_date, sched_time)
+                                post_dict['is_due'] = scheduled_dt <= datetime.now()
+                            else:
+                                post_dict['is_due'] = False
+                        except Exception as e:
+                            logger.debug(f"Error calculating is_due: {e}")
+                            post_dict['is_due'] = False
+                    
+                    timeline_posts.append(post_dict)
+            
+            # Sort by scheduled date and time
+            timeline_posts.sort(key=lambda p: (
+                p.get('scheduled_date', ''),
+                p.get('scheduled_time', '')
+            ))
+            
+            # Limit results
+            timeline_posts = timeline_posts[:limit]
             
             return jsonify({
                 'success': True,
-                'posts': timeline,
-                'total': len(timeline)
+                'posts': timeline_posts,
+                'total': len(timeline_posts)
             })
             
     except Exception as e:
         logger.error(f"Error in api_posts_timeline: {e}")
+        logger.exception("Full exception details:")
         return jsonify({"error": str(e)}), 500
 
 

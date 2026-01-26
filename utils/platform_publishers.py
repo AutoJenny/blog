@@ -23,6 +23,51 @@ from utils.posting_queue_helpers import get_posting_queue_row
 logger = logging.getLogger(__name__)
 
 
+def format_message_for_facebook(message_text: str) -> str:
+    """
+    Format message text with extra line breaks for better Facebook display.
+    
+    Adds line breaks:
+    - After em dashes (—) followed by text
+    - Between sentences (period followed by capital letter, with or without existing newline)
+    
+    Example:
+    "We answer the phone ourselves — via freephone in the UK and toll-free in the US.
+    There's no charge for calling, and no automated systems."
+    
+    Becomes:
+    "We answer the phone ourselves — 
+    
+    via freephone in the UK and toll-free in the US.
+    
+    There's no charge for calling, and no automated systems."
+    """
+    import re
+    
+    # Start with the original text
+    formatted = message_text
+    
+    # Add line break after em dash followed by space and lowercase letter
+    # Pattern: "— " followed by lowercase letter -> "— \n\n" 
+    formatted = re.sub(r'— ([a-z])', r'— \n\n\1', formatted)
+    
+    # Add line break after period followed by newline and capital letter
+    # Pattern: ".\n" followed by capital letter -> ".\n\n" followed by capital letter
+    formatted = re.sub(r'\.\n([A-Z])', r'.\n\n\1', formatted)
+    
+    # Add line break after period-space-capital letter (sentence boundary without newline)
+    # Pattern: ". " followed by capital letter -> ".\n\n" followed by capital letter
+    formatted = re.sub(r'\. ([A-Z])', r'.\n\n\1', formatted)
+    
+    # Clean up any triple or more newlines (normalize to double)
+    formatted = re.sub(r'\n{3,}', '\n\n', formatted)
+    
+    # Ensure it ends cleanly
+    formatted = formatted.strip()
+    
+    return formatted
+
+
 def publish_to_facebook(queue_id: int) -> Dict:
     """
     Publish post to Facebook (both pages).
@@ -66,6 +111,10 @@ def publish_to_facebook(queue_id: int) -> Dict:
                     "success": False,
                     "error": "Message content not found"
                 }
+            
+            # Format message text with extra line breaks for better Facebook display
+            # Add line breaks after em dashes and between sentences for better readability
+            formatted_message = format_message_for_facebook(message_text)
             
             # Get Facebook credentials for both pages
             with db_manager.get_cursor() as cursor:
@@ -118,7 +167,7 @@ def publish_to_facebook(queue_id: int) -> Dict:
             for page in pages_to_post:
                 feed_url = f"https://graph.facebook.com/v18.0/{page['page_id']}/feed"
                 feed_payload = {
-                    'message': message_text,  # Text-only, line breaks preserved
+                    'message': formatted_message,  # Formatted with extra line breaks for better display
                     'published': True,
                     'access_token': page['access_token']
                 }

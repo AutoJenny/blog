@@ -81,7 +81,23 @@ class ProductPostCreator:
             # Check each day in the lookahead period
             for day_offset in range(days_ahead):
                 check_date = today + timedelta(days=day_offset)
-                weekday = check_date.weekday() + 1  # 1=Monday, 7=Sunday
+                weekday = check_date.isoweekday()  # ISO: 1=Monday, 7=Sunday
+                
+                # CRITICAL: Exclude Sunday (day 7) - reserved for DEPTH_LONG posts
+                # Check if Content Roles rail exists for this day/time
+                if weekday == 7:  # Sunday
+                    # Check if DEPTH_LONG rail exists for Sunday 15:00
+                    try:
+                        from config.content_roles_schedule_rails import get_rails_for_platform
+                        rails = get_rails_for_platform('facebook', role='DEPTH_LONG')
+                        # Check if any rail is for Sunday (day 7) at 15:00
+                        schedule_time_str = schedule_time_obj.strftime('%H:%M') if hasattr(schedule_time_obj, 'strftime') else str(schedule_time_obj)
+                        if rails and any(r['day'] == 7 and r['time'] == '15:00' for r in rails):
+                            logger.debug(f"Skipping Sunday {check_date} - reserved for DEPTH_LONG posts")
+                            continue
+                    except Exception as e:
+                        logger.warning(f"Error checking Content Roles rails: {e}, skipping Sunday to be safe")
+                        continue
                 
                 # Check if this day matches the schedule
                 if schedule_days and weekday in schedule_days:

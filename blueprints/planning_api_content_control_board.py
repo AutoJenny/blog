@@ -81,11 +81,14 @@ def get_week_data():
         rails = get_rails_for_platform('facebook', is_active=True)
         
         # Build schedule map: (day, time) -> rail
+        # Rails use ISO 8601: 1=Monday, 7=Sunday
+        # Internal matching uses 0-indexed: 0=Monday, 6=Sunday
         schedule_map = {}
         for rail in rails:
-            day = rail['day']  # 0=Monday, 6=Sunday
+            day_iso = rail['day']  # ISO: 1=Monday, 7=Sunday
+            day_zero_indexed = day_iso - 1  # Convert to 0-6 for internal matching
             time = rail['time']
-            schedule_map[(day, time)] = rail
+            schedule_map[(day_zero_indexed, time)] = rail
         
         # Get posts for this week from posting_queue
         posts_by_slot = {}
@@ -212,13 +215,30 @@ def get_week_data():
                 
                 posts_by_slot[slot_key].append(post_data)
         
-        # Process legacy posts
+        # Process legacy posts and detect conflicts
         for post in legacy_posts_raw:
             post_dict = dict(post)
             scheduled_date = post_dict['scheduled_date']
             
             if not scheduled_date:
                 continue
+            
+            # Check for conflicts: legacy posts scheduled for Sunday 15:00 (reserved for DEPTH_LONG)
+            is_conflict = False
+            conflict_reason = None
+            weekday_iso = scheduled_date.isoweekday()  # ISO: 1=Monday, 7=Sunday
+            scheduled_time = post_dict['scheduled_time']
+            
+            if weekday_iso == 7:  # Sunday
+                # Check if time is 15:00 (or close to it)
+                if scheduled_time:
+                    time_str = str(scheduled_time)[:5] if isinstance(scheduled_time, str) else str(scheduled_time)[:5]
+                    if time_str == '15:00' or time_str.startswith('15:'):
+                        # Check if DEPTH_LONG rail exists for Sunday 15:00
+                        sunday_rail = schedule_map.get((6, '15:00'))  # 6 = Sunday in 0-indexed
+                        if sunday_rail and sunday_rail.get('role') == 'DEPTH_LONG':
+                            is_conflict = True
+                            conflict_reason = f"Sunday 15:00 is reserved for DEPTH_LONG (Deep Dive) posts. This {post_dict['content_type']} post conflicts with the Content Roles Framework."
             
             legacy_posts.append({
                 'id': post_dict['id'],
@@ -232,7 +252,9 @@ def get_week_data():
                 'product_name': post_dict['product_name'],
                 'idea_title': post_dict['idea_title'],
                 'is_framework': False,
-                'is_legacy': True
+                'is_legacy': True,
+                'is_conflict': is_conflict,
+                'conflict_reason': conflict_reason
             })
         
         # Build response with schedule rails and posts
@@ -242,7 +264,9 @@ def get_week_data():
         
         for day_num in range(7):
             day_name = days[day_num]
-            day_rails = [r for r in rails if r['day'] == day_num]
+            # Rails use ISO (1-7), convert to 0-indexed (0-6) for matching
+            day_iso = day_num + 1
+            day_rails = [r for r in rails if r['day'] == day_iso]
             
             for rail in day_rails:
                 slot_key = (day_num, rail['role'])

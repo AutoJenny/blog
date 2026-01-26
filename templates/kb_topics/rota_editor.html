@@ -1,12 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page_title or 'KB Topic Rota Editor' }}</title>
+{% extends "base.html" %}
+
+{% block title %}KB Topic Rota Editor - BlogForge{% endblock %}
+
+{% block css_assets %}
+    {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/kb_topics/rota_editor.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="rota-editor-container">
         <!-- Header -->
         <header class="editor-header">
@@ -15,6 +16,8 @@
                 <button id="btn-auto-arrange" class="btn btn-secondary">Auto-Arrange</button>
                 <button id="btn-save-draft" class="btn btn-secondary">Save Draft</button>
                 <button id="btn-apply" class="btn btn-primary">Apply to Schedule</button>
+                <button id="btn-reset-used" class="btn btn-secondary" title="Reset all topics' used status (when full cycle complete)">Reset Used</button>
+                <button id="btn-sunday-slot" class="btn btn-primary" title="Facebook Sunday DEPTH_LONG (Phase 2)">Sunday DEPTH_LONG</button>
             </div>
         </header>
 
@@ -58,6 +61,58 @@
             </main>
         </div>
 
+        <!-- Phase 2.6: Facebook Sunday DEPTH_LONG Slot (Proof UI) -->
+        <div class="sunday-slot-panel" id="sunday-slot-panel" style="display: none;">
+            <div class="sunday-slot-header">
+                <h3>Facebook Sunday DEPTH_LONG</h3>
+                <button id="btn-close-sunday-panel" class="btn-icon">×</button>
+            </div>
+            <div class="sunday-slot-content">
+                <div class="slot-info">
+                    <div class="slot-meta">
+                        <span class="slot-day">Sunday</span>
+                        <span class="slot-time">15:00 UK</span>
+                        <span class="slot-role">DEPTH_LONG</span>
+                    </div>
+                    <div class="week-selector">
+                        <label>Week:</label>
+                        <input type="number" id="sunday-week-year" placeholder="Year" min="2026" value="2026">
+                        <input type="number" id="sunday-week-number" placeholder="Week" min="1" max="53" value="1">
+                        <button id="btn-load-week" class="btn-small">Load Week</button>
+                    </div>
+                </div>
+                <div class="slot-details" id="sunday-slot-details">
+                    <div class="topic-selector">
+                        <label>Weekly Topic:</label>
+                        <select id="sunday-topic-select" class="topic-select">
+                            <option value="">Select topic...</option>
+                        </select>
+                    </div>
+                    <div class="source-selector">
+                        <label>Source Article:</label>
+                        <select id="sunday-source-select" class="source-select">
+                            <option value="">Select source article...</option>
+                        </select>
+                    </div>
+                    <div class="slot-status" id="sunday-slot-status">
+                        <span class="status-badge">Not generated</span>
+                    </div>
+                    <div class="slot-actions">
+                        <button id="btn-generate-sunday" class="btn btn-primary" disabled>Generate</button>
+                        <button id="btn-regenerate-sunday" class="btn btn-secondary" style="display: none;">Regenerate</button>
+                        <button id="btn-approve-sunday" class="btn btn-success" style="display: none;" disabled>Approve</button>
+                        <button id="btn-schedule-sunday" class="btn btn-primary" style="display: none;" disabled>Schedule</button>
+                    </div>
+                    <div class="slot-preview" id="sunday-slot-preview" style="display: none;">
+                        <h4>Generated Content:</h4>
+                        <div class="preview-content" id="sunday-preview-content"></div>
+                        <div class="preview-meta" id="sunday-preview-meta"></div>
+                        <div class="validation-results" id="sunday-validation-results"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Status Bar -->
         <footer class="editor-footer">
             <div class="status-info">
@@ -77,6 +132,10 @@
             <div class="topic-card-header">
                 <span class="topic-level-badge" data-level=""></span>
                 <span class="topic-type-badge" data-type=""></span>
+                <div class="topic-status-badges">
+                    <span class="status-badge status-excluded" style="display: none;" title="Excluded from rota">Excluded</span>
+                    <span class="status-badge status-used" style="display: none;" title="Used for content generation">Used</span>
+                </div>
             </div>
             <div class="topic-card-body">
                 <h4 class="topic-name"></h4>
@@ -86,6 +145,14 @@
             </div>
             <div class="topic-card-footer">
                 <span class="parent-indicator" data-parent-color=""></span>
+                <div class="topic-actions">
+                    <button class="btn-exclude" title="Exclude from rota" style="display: none;" type="button">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                    <button class="btn-include" title="Include in rota" style="display: none;" type="button">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </template>
@@ -103,6 +170,9 @@
         </div>
     </template>
 
+{% endblock %}
+
+{% block scripts %}
     <script src="{{ url_for('static', filename='js/kb_topics/rota_editor.js') }}"></script>
-</body>
-</html>
+    <script src="{{ url_for('static', filename='js/kb_topics/sunday_slot.js') }}"></script>
+{% endblock %}

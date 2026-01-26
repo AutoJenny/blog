@@ -205,11 +205,19 @@ Aggregated content from multiple KB articles for each topic.
   - Bonuses for different category areas
   - Penalties for too-similar topics
 
-**Diversity Scoring:**
+**Diversity Scoring (Enhanced 2026-01-23):**
 - Base score: `1.0 - min_similarity` (lower similarity = higher diversity)
-- Type bonus: +0.15 if different topic type
-- Category bonus: +0.1 * (1 - category_overlap)
-- Penalty: *0.5 if similarity > threshold
+- **Strong Penalties for Consecutive Weeks:**
+  - Same topic type: 70% penalty (diversity_score × 0.3)
+  - Same parent topic: 80% penalty (diversity_score × 0.2)
+  - High similarity (>0.75): 60% penalty (diversity_score × 0.4)
+  - Moderate similarity (>0.65): 40% penalty (diversity_score × 0.6)
+- **Bonuses:**
+  - Different topic type: +0.2 (increased from 0.15)
+  - Different parent topic: +0.15
+  - Different category areas: +0.1 × (1 - overlap)
+- **Safety Cap:** Diversity score capped at 0.3 for consecutive similar topics
+- **Overall Penalty:** *0.5 if min_similarity > threshold
 
 ### 4. Rota Generator (`utils/kb_topic_discovery/rota_generator.py`)
 
@@ -220,8 +228,8 @@ Aggregated content from multiple KB articles for each topic.
   - Parameters:
     - `start_date` - First Monday of rota
     - `weeks` - Number of weeks (None = auto-calculate to include all topics)
-    - `lookback_weeks` - How many recent weeks to check for diversity (default: 6)
-    - `min_similarity_gap` - Minimum similarity threshold to avoid (default: 0.7)
+    - `lookback_weeks` - How many recent weeks to check for diversity (default: 4, reduced for more focused diversity)
+    - `min_similarity_gap` - Minimum similarity threshold to avoid (default: 0.65, stricter to prevent repetition)
     - `include_all_topics` - If True and weeks=None, generates rota to include all topics (default: True)
   - Returns list of rota entry dictionaries
 - `save_rota()` - Save rota entries to database

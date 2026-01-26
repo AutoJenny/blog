@@ -428,6 +428,7 @@ def get_rota_editor_data():
                 SELECT 
                     t1.id, t1.topic_name, t1.topic_description, t1.topic_type,
                     t1.level, t1.is_broad, t1.parent_id,
+                    t1.is_excluded, t1.is_used, t1.used_at, t1.excluded_at,
                     array_length(t1.article_ids, 1) as article_count,
                     t2.topic_name as parent_name,
                     t2.id as parent_topic_id
@@ -481,7 +482,11 @@ def get_rota_editor_data():
                 'article_count': topic['article_count'] or 0,
                 'parent_id': topic.get('parent_id'),
                 'parent_name': topic.get('parent_name'),
-                'parent_topic_id': topic.get('parent_topic_id')
+                'parent_topic_id': topic.get('parent_topic_id'),
+                'is_excluded': topic.get('is_excluded', False),
+                'is_used': topic.get('is_used', False),
+                'used_at': topic.get('used_at').isoformat() if topic.get('used_at') else None,
+                'excluded_at': topic.get('excluded_at').isoformat() if topic.get('excluded_at') else None
             }
             topics_dict[topic_id] = topic_data
         
@@ -522,6 +527,148 @@ def get_rota_editor_data():
     
     except Exception as e:
         logger.error(f"Error getting rota editor data: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@bp.route('/topic/<int:topic_id>/exclude', methods=['POST'])
+def toggle_topic_exclusion(topic_id):
+    """
+    Toggle exclusion status of a topic.
+    
+    Body (JSON):
+        exclude: boolean - True to exclude, False to include
+    
+    Returns:
+        JSON with success status
+    """
+    try:
+        data = request.get_json() or {}
+        exclude = data.get('exclude', True)
+        
+        from datetime import datetime
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE kb_topics
+                SET is_excluded = %s,
+                    excluded_at = CASE WHEN %s THEN %s ELSE NULL END,
+                    last_updated = %s
+                WHERE id = %s
+                RETURNING id, topic_name, is_excluded
+            """, (exclude, exclude, datetime.now(), datetime.now(), topic_id))
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({
+                    'success': False,
+                    'error': f'Topic {topic_id} not found'
+                }), 404
+        
+        action = 'excluded' if exclude else 'included'
+        logger.info(f"Topic {topic_id} ({result['topic_name']}) {action}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Topic {action} successfully',
+            'topic_id': topic_id,
+            'is_excluded': exclude
+        })
+    
+    except Exception as e:
+        logger.error(f"Error toggling topic exclusion: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@bp.route('/topic/<int:topic_id>/mark-used', methods=['POST'])
+def mark_topic_used(topic_id):
+    """
+    Mark a topic as used for content generation.
+    
+    Returns:
+        JSON with success status
+    """
+    try:
+        from datetime import datetime
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE kb_topics
+                SET is_used = TRUE,
+                    used_at = %s,
+                    last_updated = %s
+                WHERE id = %s
+                RETURNING id, topic_name
+            """, (datetime.now(), datetime.now(), topic_id))
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({
+                    'success': False,
+                    'error': f'Topic {topic_id} not found'
+                }), 404
+        
+        logger.info(f"Topic {topic_id} ({result['topic_name']}) marked as used")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Topic marked as used',
+            'topic_id': topic_id
+        })
+    
+    except Exception as e:
+        logger.error(f"Error marking topic as used: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@bp.route('/topics/reset-used', methods=['POST'])
+def reset_used_topics():
+    """
+    Reset all topics' used status (when full cycle complete).
+    
+    Returns:
+        JSON with success status and count reset
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            # First count how many will be reset
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM kb_topics
+                WHERE is_used = TRUE
+            """)
+            count_result = cursor.fetchone()
+            count = count_result['count'] if count_result else 0
+            
+            # Then reset them
+            cursor.execute("""
+                UPDATE kb_topics
+                SET is_used = FALSE,
+                    used_at = NULL,
+                    last_updated = CURRENT_TIMESTAMP
+                WHERE is_used = TRUE
+            """)
+        
+        logger.info(f"Reset {count} topics' used status")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Reset {count} topics',
+            'count': count
+        })
+    
+    except Exception as e:
+        logger.error(f"Error resetting used topics: {e}", exc_info=True)
         return jsonify({
             'success': False,
             'error': str(e)

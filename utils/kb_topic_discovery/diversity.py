@@ -29,8 +29,8 @@ class DiversityManager:
         Higher score = more diverse.
         
         Args:
-            topic: Topic dictionary with 'id' and 'centroid_embedding'
-            recent_topics: List of recent topic dictionaries
+            topic: Topic dictionary with 'id', 'centroid_embedding', 'topic_type', 'parent_id', 'level'
+            recent_topics: List of recent topic dictionaries (most recent first)
             min_similarity_gap: Minimum similarity threshold to avoid (0.0-1.0)
         
         Returns:
@@ -39,27 +39,62 @@ class DiversityManager:
         if not recent_topics:
             return 1.0  # No recent topics = maximum diversity
         
-        # Get similarity scores to recent topics
+        # Get similarity scores to recent topics (most recent first)
         similarities = []
-        for recent in recent_topics:
+        for i, recent in enumerate(recent_topics):
             similarity = self._get_topic_similarity(topic['id'], recent['id'])
             if similarity is not None:
-                similarities.append(similarity)
+                similarities.append((similarity, i))  # Store with index for recency weighting
         
         if not similarities:
             # If we can't get similarities, assume moderate diversity
             return 0.5
         
         # Minimum similarity (worst case - most similar to recent)
-        min_similarity = min(similarities)
+        min_similarity = min(sim[0] for sim in similarities)
         
         # Diversity score: lower similarity = higher diversity
         diversity_score = 1.0 - min_similarity
         
-        # Bonus for different topic type
+        # STRONG PENALTY: Same topic type in immediate previous week (index 0)
+        if recent_topics and len(recent_topics) > 0:
+            most_recent = recent_topics[0]
+            if topic.get('topic_type') and most_recent.get('topic_type'):
+                if topic['topic_type'] == most_recent['topic_type']:
+                    # Strong penalty for same type in consecutive weeks
+                    diversity_score *= 0.3  # Reduce by 70%
+                    logger.debug(f"Penalty: Same topic type '{topic['topic_type']}' as previous week")
+        
+        # STRONG PENALTY: Same parent topic in immediate previous week
+        if recent_topics and len(recent_topics) > 0:
+            most_recent = recent_topics[0]
+            topic_parent = topic.get('parent_id') or topic.get('id')
+            recent_parent = most_recent.get('parent_id') or most_recent.get('id')
+            
+            if topic_parent == recent_parent:
+                # Very strong penalty for same parent in consecutive weeks
+                diversity_score *= 0.2  # Reduce by 80%
+                logger.debug(f"Penalty: Same parent topic {topic_parent} as previous week")
+        
+        # STRONG PENALTY: High similarity in immediate previous week
+        if similarities:
+            most_recent_similarity = similarities[0][0]  # First item is most recent
+            if most_recent_similarity > 0.75:  # Very similar
+                diversity_score *= 0.4  # Reduce by 60%
+                logger.debug(f"Penalty: High similarity ({most_recent_similarity:.2f}) to previous week")
+            elif most_recent_similarity > 0.65:  # Moderately similar
+                diversity_score *= 0.6  # Reduce by 40%
+        
+        # Bonus for different topic type (but only if not already penalized)
         recent_types = {r.get('topic_type') for r in recent_topics if r.get('topic_type')}
         if topic.get('topic_type') and topic['topic_type'] not in recent_types:
-            diversity_score += 0.15
+            diversity_score += 0.2  # Increased bonus
+        
+        # Bonus for different parent topic
+        recent_parents = {r.get('parent_id') or r.get('id') for r in recent_topics}
+        topic_parent = topic.get('parent_id') or topic.get('id')
+        if topic_parent not in recent_parents:
+            diversity_score += 0.15  # Bonus for different parent
         
         # Bonus for different category areas
         recent_categories = set()
@@ -73,11 +108,19 @@ class DiversityManager:
             category_bonus = (1.0 - category_overlap) * 0.1
             diversity_score += category_bonus
         
-        # Penalty if too similar
+        # Additional penalty if too similar overall
         if min_similarity > min_similarity_gap:
             diversity_score *= 0.5  # Reduce score if too similar
         
-        return min(diversity_score, 1.5)  # Cap at 1.5 to allow bonuses
+        # Ensure minimum diversity for consecutive weeks with same type/parent
+        if recent_topics and len(recent_topics) > 0:
+            most_recent = recent_topics[0]
+            if (topic.get('topic_type') == most_recent.get('topic_type') or
+                (topic.get('parent_id') or topic.get('id')) == (most_recent.get('parent_id') or most_recent.get('id'))):
+                # Cap diversity score for consecutive similar topics
+                diversity_score = min(diversity_score, 0.3)
+        
+        return max(0.0, min(diversity_score, 1.5))  # Cap at 1.5, floor at 0.0
     
     def _get_topic_similarity(self, topic1_id: int, topic2_id: int) -> Optional[float]:
         """

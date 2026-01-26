@@ -25,8 +25,8 @@ class RotaGenerator:
     def generate_rota(self,
                      start_date: date,
                      weeks: Optional[int] = None,
-                     lookback_weeks: int = 6,
-                     min_similarity_gap: float = 0.7,
+                     lookback_weeks: int = 4,
+                     min_similarity_gap: float = 0.65,
                      include_all_topics: bool = True) -> List[Dict]:
         """
         Generate weekly rota with diversity constraints.
@@ -61,9 +61,16 @@ class RotaGenerator:
         # Get recent rota history
         recent_topics = self._get_recent_topics(lookback_weeks)
         
-        # Track which topics have been used (for ensuring all topics are included)
-        used_topic_ids = set()
-        unused_topics = topics.copy()
+        # Separate topics by usage status
+        # is_used=True: Topics that have been used for content generation
+        # is_used=False: Topics that haven't been used yet
+        unused_topics = [t for t in topics if not t.get('is_used', False)]
+        used_topics = [t for t in topics if t.get('is_used', False)]
+        
+        # Track which topics have been used in THIS rota generation
+        used_in_this_rota = set()
+        
+        logger.info(f"Topic status: {len(unused_topics)} unused, {len(used_topics)} previously used")
         
         rota = []
         current_date = start_date
@@ -80,12 +87,17 @@ class RotaGenerator:
             # Calculate diversity scores for all candidates
             candidates = []
             
-            # If we want to include all topics, prioritize unused ones
-            if include_all_topics and unused_topics:
-                # First, try to use topics that haven't been used yet
+            # Priority 1: Use topics that haven't been used for content generation yet
+            # Only use previously-used topics after all unused topics have been used
+            if unused_topics:
+                # First, try to use topics that haven't been used for content generation
                 for topic in unused_topics:
-                    # Skip if topic was used recently
+                    # Skip if topic was used recently in rota
                     if self._was_used_recently(topic['id'], recent_topics, lookback_weeks):
+                        continue
+                    
+                    # Skip if already used in this rota generation
+                    if topic['id'] in used_in_this_rota:
                         continue
                     
                     # Calculate diversity score
@@ -98,13 +110,14 @@ class RotaGenerator:
                     candidates.append({
                         'topic': topic,
                         'diversity_score': diversity_score,
-                        'is_unused': True
+                        'is_unused': True,
+                        'is_previously_used': False
                     })
             
-            # If no unused candidates or we've used all topics, consider all topics
-            if not candidates or (include_all_topics and not unused_topics):
-                for topic in topics:
-                    # Skip if topic was used recently
+            # Priority 2: Only use previously-used topics if all unused topics have been used
+            if not unused_topics or (include_all_topics and len(used_in_this_rota) >= len(unused_topics)):
+                for topic in used_topics:
+                    # Skip if topic was used recently in rota
                     if self._was_used_recently(topic['id'], recent_topics, lookback_weeks):
                         continue
                     
@@ -122,21 +135,30 @@ class RotaGenerator:
                     candidates.append({
                         'topic': topic,
                         'diversity_score': diversity_score,
-                        'is_unused': False
+                        'is_unused': False,
+                        'is_previously_used': True
                     })
             
             if not candidates:
                 # Fallback: reset recent topics if no candidates
                 logger.warning(f"No candidates for week {week_num + 1}, resetting recent topics")
                 recent_topics = []
-                candidates = [{'topic': t, 'diversity_score': 1.0, 'is_unused': t['id'] not in used_topic_ids} for t in topics]
+                # Try unused topics first, then used topics
+                fallback_topics = unused_topics if unused_topics else used_topics
+                candidates = [{'topic': t, 'diversity_score': 1.0, 'is_unused': not t.get('is_used', False), 'is_previously_used': t.get('is_used', False)} for t in fallback_topics if t['id'] not in used_in_this_rota]
+            
+            if not candidates:
+                logger.error(f"No candidates available at all for week {week_num + 1}")
+                break
             
             # Select topic (weighted random favoring diversity and unused topics)
             selected = self._select_topic(candidates, prefer_unused=include_all_topics)
             
-            # Track usage
-            used_topic_ids.add(selected['topic']['id'])
-            if include_all_topics:
+            # Track usage in this rota
+            used_in_this_rota.add(selected['topic']['id'])
+            
+            # Remove from unused list if it was unused
+            if not selected['topic'].get('is_used', False):
                 unused_topics = [t for t in unused_topics if t['id'] != selected['topic']['id']]
             
             # Get ISO week info
@@ -154,25 +176,25 @@ class RotaGenerator:
             
             rota.append(rota_entry)
             
-            # Update recent topics
-            recent_topics.append(selected['topic'])
+            # Update recent topics (most recent first)
+            # Insert at beginning to maintain most-recent-first order
+            recent_topics.insert(0, selected['topic'])
             if len(recent_topics) > lookback_weeks:
-                recent_topics.pop(0)
+                recent_topics.pop()  # Remove oldest
             
             # Move to next week (Monday)
             current_date += timedelta(days=7)
         
         logger.info(f"Generated {len(rota)} rota entries")
-        if include_all_topics:
-            logger.info(f"Used {len(used_topic_ids)} unique topics out of {len(topics)} available")
-            if len(used_topic_ids) < len(topics):
-                logger.warning(f"Not all topics were used ({len(topics) - len(used_topic_ids)} unused)")
+        unused_count = len(unused_topics)
+        used_count = len(used_in_this_rota)
+        logger.info(f"Used {used_count} topics in this rota ({unused_count} unused topics remaining)")
         
         return rota
     
     def _get_active_topics(self) -> List[Dict]:
         """
-        Get all active topics from database.
+        Get all active topics from database (excluding manually excluded topics).
         
         Returns:
             List of topic dictionaries
@@ -183,9 +205,10 @@ class RotaGenerator:
                     SELECT 
                         id, topic_name, topic_description, topic_keywords,
                         embedding_vector, article_ids, category_ids,
-                        topic_type, priority, is_active
+                        topic_type, priority, is_active, is_excluded, is_used,
+                        parent_id, level
                     FROM kb_topics
-                    WHERE is_active = TRUE
+                    WHERE is_active = TRUE AND is_excluded = FALSE
                     ORDER BY priority DESC, id
                 """)
                 
@@ -203,6 +226,10 @@ class RotaGenerator:
                         topic_dict['centroid_embedding'] = np.array(topic_dict['embedding_vector']).tolist()
                     else:
                         topic_dict['centroid_embedding'] = None
+                    
+                    # Include exclusion and usage flags
+                    topic_dict['is_excluded'] = topic.get('is_excluded', False)
+                    topic_dict['is_used'] = topic.get('is_used', False)
                     
                     result.append(topic_dict)
                 
@@ -227,7 +254,8 @@ class RotaGenerator:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     SELECT DISTINCT t.id, t.topic_name, t.topic_type,
-                           t.embedding_vector, t.category_ids, r.scheduled_date
+                           t.embedding_vector, t.category_ids, t.parent_id, t.level,
+                           r.scheduled_date
                     FROM kb_topic_rota r
                     JOIN kb_topics t ON r.topic_id = t.id
                     WHERE r.scheduled_date >= %s

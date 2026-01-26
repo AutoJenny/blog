@@ -105,14 +105,60 @@ class RotaEditor {
             const header = document.createElement('div');
             header.className = 'parent-group-header expanded';
             const childCount = group.children.length;
+            
+            // Check if entire group is excluded (parent + all children)
+            const allGroupTopics = [parent, ...group.children];
+            const allExcluded = allGroupTopics.every(t => t.is_excluded);
+            const someExcluded = allGroupTopics.some(t => t.is_excluded);
+            
             header.innerHTML = `
                 <span style="color: ${color}">●</span>
                 <span style="flex: 1; margin-left: 0.5rem;">${parent.name}</span>
                 <span style="font-size: 0.75rem; color: var(--color-text-light);">
                     ${childCount > 0 ? `(${childCount} sub-topics)` : '(no sub-topics)'}
                 </span>
+                <button class="btn-group-exclude" title="Exclude entire group" style="display: ${allExcluded ? 'none' : 'flex'}; margin-left: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                    <i class="fas fa-ban"></i>
+                </button>
+                <button class="btn-group-include" title="Include entire group" style="display: ${allExcluded ? 'flex' : 'none'}; margin-left: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                    <i class="fas fa-check"></i>
+                </button>
             `;
-            header.onclick = () => this.toggleGroup(groupDiv);
+            
+            // Toggle group expand/collapse on header click (but not on button click)
+            header.addEventListener('click', (e) => {
+                if (e.target.closest('.btn-group-exclude, .btn-group-include')) {
+                    e.stopPropagation();
+                    return;
+                }
+                this.toggleGroup(groupDiv);
+            });
+            
+            // Setup group exclude/include buttons
+            const btnGroupExclude = header.querySelector('.btn-group-exclude');
+            const btnGroupInclude = header.querySelector('.btn-group-include');
+            
+            if (btnGroupExclude) {
+                btnGroupExclude.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.excludeGroup(parent.id, group.children.map(c => c.id));
+                });
+            }
+            
+            if (btnGroupInclude) {
+                btnGroupInclude.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.includeGroup(parent.id, group.children.map(c => c.id));
+                });
+            }
+            
+            // Style header if group is excluded
+            if (allExcluded) {
+                header.style.opacity = '0.4';
+                header.style.textDecoration = 'line-through';
+            } else if (someExcluded) {
+                header.style.opacity = '0.7';
+            }
             
             const childrenDiv = document.createElement('div');
             childrenDiv.className = 'parent-group-children';
@@ -141,6 +187,19 @@ class RotaEditor {
         card.dataset.parentId = topic.parent_id || topic.id;
         card.dataset.parentColor = parentColor;
         
+        // Set excluded/used status
+        const isExcluded = topic.is_excluded || false;
+        const isUsed = topic.is_used || false;
+        
+        if (isExcluded) {
+            card.classList.add('excluded');
+            card.draggable = false; // Excluded topics can't be dragged
+        } else {
+            card.draggable = true;
+            card.addEventListener('dragstart', (e) => this.handleDragStart(e, topic));
+            card.addEventListener('dragend', (e) => this.handleDragEnd(e));
+        }
+        
         card.querySelector('.topic-level-badge').textContent = `L${topic.level}`;
         card.querySelector('.topic-level-badge').dataset.level = topic.level;
         card.querySelector('.topic-type-badge').textContent = topic.type;
@@ -149,12 +208,94 @@ class RotaEditor {
         card.querySelector('.article-count').textContent = topic.article_count;
         card.querySelector('.parent-indicator').style.background = parentColor;
         
-        // Setup drag
-        card.draggable = true;
-        card.addEventListener('dragstart', (e) => this.handleDragStart(e, topic));
-        card.addEventListener('dragend', (e) => this.handleDragEnd(e));
+        // Show/hide status badges
+        const excludedBadge = card.querySelector('.status-excluded');
+        const usedBadge = card.querySelector('.status-used');
+        if (isExcluded) {
+            excludedBadge.style.display = 'inline-block';
+        }
+        if (isUsed) {
+            usedBadge.style.display = 'inline-block';
+        }
+        
+        // Setup exclude/include buttons
+        const btnExclude = card.querySelector('.btn-exclude');
+        const btnInclude = card.querySelector('.btn-include');
+        
+        if (!btnExclude || !btnInclude) {
+            console.warn('Exclude/include buttons not found in template for topic:', topic.id);
+        }
+        
+        if (isExcluded) {
+            if (btnExclude) btnExclude.style.display = 'none';
+            if (btnInclude) {
+                btnInclude.style.display = 'flex';
+                btnInclude.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleExclusion(topic.id, false);
+                });
+            }
+        } else {
+            if (btnExclude) {
+                btnExclude.style.display = 'flex';
+                btnExclude.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleExclusion(topic.id, true);
+                });
+            }
+            if (btnInclude) btnInclude.style.display = 'none';
+        }
         
         return card;
+    }
+    
+    async toggleExclusion(topicId, exclude) {
+        try {
+            const response = await fetch(`/api/kb-topics/topic/${topicId}/exclude`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ exclude })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update topic in local data
+                const topic = this.topics.find(t => t.id === topicId);
+                if (topic) {
+                    topic.is_excluded = exclude;
+                    topic.excluded_at = exclude ? new Date().toISOString() : null;
+                }
+                
+                // If excluding, remove from rota if scheduled
+                if (exclude) {
+                    Object.keys(this.rota).forEach(weekKey => {
+                        if (this.rota[weekKey] && this.rota[weekKey].length > 0) {
+                            this.rota[weekKey] = this.rota[weekKey].filter(
+                                entry => entry.topic_id !== topicId
+                            );
+                            // If no entries left, delete the week key
+                            if (this.rota[weekKey].length === 0) {
+                                delete this.rota[weekKey];
+                            }
+                        }
+                    });
+                }
+                
+                // Re-render the topic library and timeline
+                this.renderTopicLibrary();
+                this.renderTimeline();
+                this.updateStats();
+                this.showStatus(exclude ? 'Topic excluded' : 'Topic included', 'success');
+            } else {
+                this.showStatus(`Error: ${data.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('Error toggling exclusion:', error);
+            this.showStatus('Error toggling exclusion', 'error');
+        }
     }
     
     renderTimeline() {
@@ -210,7 +351,10 @@ class RotaEditor {
                 const color = this.colors[colorIndex];
                 
                 const card = this.createTopicCard(topicData, color);
-                card.draggable = true;
+                // Timeline topics should be draggable unless excluded
+                if (!topicData.is_excluded) {
+                    card.draggable = true;
+                }
                 content.innerHTML = '';
                 content.appendChild(card);
             } else {
@@ -384,15 +528,165 @@ class RotaEditor {
             this.applyToSchedule();
         });
         
+        // Reset used topics
+        document.getElementById('btn-reset-used').addEventListener('click', () => {
+            this.resetUsedTopics();
+        });
+        
         // Jump to week
         document.getElementById('btn-jump').addEventListener('click', () => {
             this.jumpToWeek();
         });
     }
     
+    async excludeGroup(parentId, childIds) {
+        const allIds = [parentId, ...childIds];
+        const count = allIds.length;
+        
+        if (!confirm(`Exclude entire group (${count} topics)? This will exclude the parent topic and all ${childIds.length} sub-topics.`)) {
+            return;
+        }
+        
+        try {
+            // Exclude all topics in the group
+            const promises = allIds.map(id => 
+                fetch(`/api/kb-topics/topic/${id}/exclude`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exclude: true })
+                })
+            );
+            
+            const results = await Promise.all(promises);
+            const dataResults = await Promise.all(results.map(r => r.json()));
+            
+            const successCount = dataResults.filter(r => r.success).length;
+            
+            if (successCount === allIds.length) {
+                // Update topics in local data
+                allIds.forEach(id => {
+                    const topic = this.topics.find(t => t.id === id);
+                    if (topic) {
+                        topic.is_excluded = true;
+                        topic.excluded_at = new Date().toISOString();
+                    }
+                });
+                
+                // Remove excluded topics from rota
+                Object.keys(this.rota).forEach(weekKey => {
+                    if (this.rota[weekKey] && this.rota[weekKey].length > 0) {
+                        this.rota[weekKey] = this.rota[weekKey].filter(
+                            entry => !allIds.includes(entry.topic_id)
+                        );
+                        if (this.rota[weekKey].length === 0) {
+                            delete this.rota[weekKey];
+                        }
+                    }
+                });
+                
+                // Re-render
+                this.renderTopicLibrary();
+                this.renderTimeline();
+                this.updateStats();
+                this.showStatus(`Excluded ${successCount} topics in group`, 'success');
+            } else {
+                this.showStatus(`Error: Only ${successCount} of ${allIds.length} topics excluded`, 'error');
+            }
+        } catch (error) {
+            console.error('Error excluding group:', error);
+            this.showStatus('Error excluding group', 'error');
+        }
+    }
+    
+    async includeGroup(parentId, childIds) {
+        const allIds = [parentId, ...childIds];
+        const count = allIds.length;
+        
+        if (!confirm(`Include entire group (${count} topics)? This will include the parent topic and all ${childIds.length} sub-topics.`)) {
+            return;
+        }
+        
+        try {
+            // Include all topics in the group
+            const promises = allIds.map(id => 
+                fetch(`/api/kb-topics/topic/${id}/exclude`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exclude: false })
+                })
+            );
+            
+            const results = await Promise.all(promises);
+            const dataResults = await Promise.all(results.map(r => r.json()));
+            
+            const successCount = dataResults.filter(r => r.success).length;
+            
+            if (successCount === allIds.length) {
+                // Update topics in local data
+                allIds.forEach(id => {
+                    const topic = this.topics.find(t => t.id === id);
+                    if (topic) {
+                        topic.is_excluded = false;
+                        topic.excluded_at = null;
+                    }
+                });
+                
+                // Re-render
+                this.renderTopicLibrary();
+                this.renderTimeline();
+                this.updateStats();
+                this.showStatus(`Included ${successCount} topics in group`, 'success');
+            } else {
+                this.showStatus(`Error: Only ${successCount} of ${allIds.length} topics included`, 'error');
+            }
+        } catch (error) {
+            console.error('Error including group:', error);
+            this.showStatus('Error including group', 'error');
+        }
+    }
+    
+    async resetUsedTopics() {
+        if (!confirm('Reset all topics\' used status? This should only be done when the full cycle has been completed and you want to start over.')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/kb-topics/topics/reset-used', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update topics in local data
+                this.topics.forEach(topic => {
+                    if (topic.is_used) {
+                        topic.is_used = false;
+                        topic.used_at = null;
+                    }
+                });
+                
+                // Re-render the topic library
+                this.renderTopicLibrary();
+                this.showStatus(`Reset ${data.count} topics' used status`, 'success');
+            } else {
+                this.showStatus(`Error: ${data.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('Error resetting used topics:', error);
+            this.showStatus('Error resetting used topics', 'error');
+        }
+    }
+    
     filterTopics(searchTerm) {
         const term = searchTerm.toLowerCase();
-        document.querySelectorAll('.topic-card').forEach(card => {
+        const cards = document.querySelectorAll('.topic-card');
+        
+        // Filter individual cards
+        cards.forEach(card => {
             const name = card.querySelector('.topic-name').textContent.toLowerCase();
             if (name.includes(term)) {
                 card.style.display = '';
@@ -400,15 +694,43 @@ class RotaEditor {
                 card.style.display = 'none';
             }
         });
+        
+        // Hide parent groups if all their topics are hidden
+        this._hideEmptyGroups();
     }
     
     filterByType(type) {
-        document.querySelectorAll('.topic-card').forEach(card => {
+        const cards = document.querySelectorAll('.topic-card');
+        
+        // Filter individual cards
+        cards.forEach(card => {
             const cardType = card.querySelector('.topic-type-badge').dataset.type;
             if (!type || cardType === type) {
                 card.style.display = '';
             } else {
                 card.style.display = 'none';
+            }
+        });
+        
+        // Hide parent groups if all their topics are hidden
+        this._hideEmptyGroups();
+    }
+    
+    _hideEmptyGroups() {
+        // Check each parent group
+        document.querySelectorAll('.parent-group').forEach(groupDiv => {
+            const childrenDiv = groupDiv.querySelector('.parent-group-children');
+            if (!childrenDiv) return;
+            
+            // Count visible cards in this group
+            const visibleCards = Array.from(childrenDiv.querySelectorAll('.topic-card'))
+                .filter(card => card.style.display !== 'none');
+            
+            // Hide the entire group if no cards are visible
+            if (visibleCards.length === 0) {
+                groupDiv.style.display = 'none';
+            } else {
+                groupDiv.style.display = '';
             }
         });
     }

@@ -254,10 +254,46 @@
     border: 2px solid var(--color-border, #334155);
 }
 
+.matrix-cell.has-conflict {
+    background: #fef2f2;
+    border: 2px dashed #ef4444;
+}
+
+.matrix-cell.has-conflict:hover {
+    background: #fee2e2;
+    border-color: #dc2626;
+}
+
 .cell-content {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+.cell-content.conflict {
+    color: #dc2626;
+}
+
+.conflict-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+    font-size: 0.75rem;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.conflict-icon {
+    font-size: 1rem;
+}
+
+.conflict-text {
+    flex: 1;
 }
 
 .cell-content.empty {

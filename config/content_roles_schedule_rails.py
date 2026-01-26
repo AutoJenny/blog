@@ -6,17 +6,19 @@ This is Phase 2.1 - Facebook Sunday DEPTH_LONG only.
 
 Each rail defines:
 - platform: Social media platform
-- day: Day of week (0=Monday, 6=Sunday)
+- day: Day of week (ISO 8601: 1=Monday, 7=Sunday)
 - time: Time in HH:MM format (UK timezone)
 - role: Content role code
 - max_posts: Maximum posts per slot (default: 1)
+
+NOTE: Day numbering standardized to ISO 8601 (1=Monday, 7=Sunday) for consistency.
 """
 
 # Facebook Schedule Rails (v1 - LOCKED)
 FACEBOOK_SCHEDULE_RAILS = [
     {
         'platform': 'facebook',
-        'day': 6,  # Sunday
+        'day': 7,  # Sunday (ISO: 1=Monday, 7=Sunday)
         'time': '15:00',  # 3:00 PM UK time
         'role': 'DEPTH_LONG',
         'max_posts': 1,
@@ -61,7 +63,7 @@ def get_rail_for_slot(platform: str, day: int, time: str, role: str = None):
     
     Args:
         platform: Platform name
-        day: Day of week (0=Monday, 6=Sunday)
+        day: Day of week (ISO 8601: 1=Monday, 7=Sunday)
         time: Time in HH:MM format
         role: Optional role code
     

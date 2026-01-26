@@ -53,17 +53,26 @@
         </li>
     </ul>
     
-    <h3>2. Diversity Scheduling</h3>
+    <h3>2. Diversity Scheduling (Enhanced 2026-01-23)</h3>
     <p>
-        The rota generator ensures <strong>non-repetitive, interesting schedules</strong> by:
+        The rota generator ensures <strong>non-repetitive, interesting schedules</strong> with strong penalties to prevent similar topics from appearing consecutively:
     </p>
     <ul>
-        <li><strong>Includes all topics:</strong> By default, generates a 2.8-year rotation (144 weeks for 144 topics) ensuring all topics are used (via <code>include_all_topics=True</code> parameter)</li>
+        <li><strong>Includes all topics:</strong> By default, generates a rotation including all topics (currently 71 topics)</li>
+        <li><strong>Strong Consecutive Week Penalties:</strong>
+            <ul>
+                <li>Same topic type (e.g., both "design"): 70% penalty</li>
+                <li>Same parent topic (e.g., both Level 2 under same parent): 80% penalty</li>
+                <li>High semantic similarity (>0.75): 60% penalty</li>
+                <li>Moderate similarity (>0.65): 40% penalty</li>
+            </ul>
+        </li>
         <li>Calculating similarity between topics using embedding cosine similarity</li>
-        <li>Scoring diversity based on similarity to recent topics</li>
-        <li>Giving bonuses for different topic types and category areas</li>
-        <li>Enforcing minimum gaps between similar topics</li>
+        <li>Scoring diversity based on similarity to recent topics (4-week lookback, most recent weighted more heavily)</li>
+        <li>Giving bonuses for different topic types (+0.2) and parent topics (+0.15)</li>
+        <li>Enforcing minimum gaps between similar topics (similarity threshold: 0.65)</li>
         <li>Prioritizing unused topics to ensure complete coverage</li>
+        <li><strong>Safety Cap:</strong> Diversity score capped at 0.3 for consecutive similar topics</li>
     </ul>
     <p>
         <strong>Rota Options:</strong>
@@ -113,6 +122,21 @@
         <li><strong><code>kb_topic_content</code></strong> - Aggregated content for each topic</li>
     </ul>
     
+    <h2>User Interface</h2>
+    <p>
+        <strong><a href="/kb-topics/editor">Topic Rota Editor</a></strong> - Visual interface for managing the weekly topic schedule:
+    </p>
+    <ul>
+        <li>View all topics organized by parent groups</li>
+        <li>Drag-and-drop topics to schedule weeks</li>
+        <li>Auto-arrange topics with diversity constraints</li>
+        <li>Exclude/include topics from rota generation</li>
+        <li>Exclude entire topic groups at once</li>
+        <li>Track topic usage status (used/unused for content generation)</li>
+        <li>Reset used status when full cycle completes</li>
+        <li>Filter topics by search term or type</li>
+    </ul>
+    
     <h2>API Endpoints</h2>
     <p>All endpoints are under <code>/api/kb-topics</code>:</p>
     <ul>
@@ -121,6 +145,9 @@
         <li><strong><code>POST /discover</code></strong> - Trigger topic discovery</li>
         <li><strong><code>POST /regenerate-rota</code></strong> - Regenerate rota schedule</li>
         <li><strong><code>GET /topics</code></strong> - List all topics</li>
+        <li><strong><code>POST /topic/&lt;id&gt;/exclude</code></strong> - Toggle topic exclusion</li>
+        <li><strong><code>POST /topic/&lt;id&gt;/mark-used</code></strong> - Mark topic as used</li>
+        <li><strong><code>POST /topics/reset-used</code></strong> - Reset all used flags</li>
     </ul>
     
     <h2>Usage</h2>
@@ -179,8 +206,9 @@
         </li>
         <li><strong>Topic Naming:</strong> LLM-based (Ollama/llama3.2:latest) for semantic understanding</li>
         <li><strong>Similarity Metric:</strong> Cosine similarity between topic embeddings</li>
-        <li><strong>Diversity Constraints:</strong> Minimum similarity gap (0.7), 6-week lookback</li>
-        <li><strong>Current State:</strong> 144 topics (8 broad, 136 granular), 2.8-year rota</li>
+        <li><strong>Diversity Constraints:</strong> Minimum similarity gap (0.65, stricter), 4-week lookback (more focused)</li>
+        <li><strong>Current State:</strong> 71 topics (25 Level 1, 46 Level 2), average 27.8 articles per Level 1 topic</li>
+        <li><strong>Editor Interface:</strong> <a href="/kb-topics/editor">Topic Rota Editor</a> - Visual drag-and-drop interface for managing topics and schedule</li>
     </ul>
     
     <div class="kb-related">
