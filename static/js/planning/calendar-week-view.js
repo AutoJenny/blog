@@ -172,16 +172,54 @@ function renderItems(container, items, type, year, week) {
     const postExists = !!(item.post_exists !== undefined ? item.post_exists : postId);
     // Use post_status if available, otherwise fall back to status field
     const postStatus = (item.post_status || item.status) ? (item.post_status || item.status).toLowerCase() : null;
-    const typeName = type === 'idea' ? 'Theme' : 
-                     type === 'recipe' ? 'Recipe' :
-                     type === 'profile' ? 'Profile' :
-                     type === 'weekly-word' ? 'language: word' :
-                     type === 'weekly-phrase' ? 'language: phrase' :
-                     type === 'weekly-insult' ? 'language: insult' :
-                     type === 'product' ? 'product' :
-                     type === 'message' ? 'Message' :
-                     type === 'event' ? (item.event_recurrence_type === 'one_off' ? 'Special' : 'Annual') :
-                     type === 'scheduled' ? 'Syndication' : type;
+
+    // Phase 5: Facebook Matrix v1 – Role-first, Angle-second labelling
+    // Primary intent comes from Role; language/product/deep dive appear as angles.
+    let primaryRole = item.role || null;
+    let angleLabel = null;
+    let typeName;
+
+    if (type === 'idea') {
+      typeName = 'Theme';
+    } else if (type === 'recipe') {
+      typeName = 'Recipe';
+    } else if (type === 'profile') {
+      typeName = 'Profile';
+    } else if (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult') {
+      // All weekly language content sits inside CULTURE slots for Matrix v1
+      primaryRole = primaryRole || 'CULTURE';
+      angleLabel = type === 'weekly-word'
+        ? 'Language: Word'
+        : type === 'weekly-phrase'
+          ? 'Language: Phrase'
+          : 'Language: Insult';
+      typeName = angleLabel ? `${primaryRole} — ${angleLabel}` : primaryRole;
+    } else if (type === 'product') {
+      // Product posts are COMMERCE in Matrix v1
+      primaryRole = primaryRole || 'COMMERCE';
+      angleLabel = 'Product';
+      typeName = `${primaryRole} — ${angleLabel}`;
+    } else if (type === 'message') {
+      // Messages are REASSURANCE in Matrix v1
+      primaryRole = primaryRole || 'REASSURANCE';
+      angleLabel = 'Message';
+      typeName = `${primaryRole} — ${angleLabel}`;
+    } else if (type === 'depth_long') {
+      // Sunday Deep Dive – DEPTH_LONG role
+      primaryRole = primaryRole || 'DEPTH_LONG';
+      angleLabel = 'Deep Dive';
+      typeName = `${primaryRole} — ${angleLabel}`;
+    } else if (type === 'event') {
+      typeName = item.event_recurrence_type === 'one_off' ? 'Special' : 'Annual';
+    } else if (type === 'scheduled') {
+      typeName = 'Syndication';
+    } else {
+      // Fallback: use role if present, otherwise raw type
+      if (!primaryRole && item.role) {
+        primaryRole = item.role;
+      }
+      typeName = primaryRole ? primaryRole.replace(/_/g, ' ') : type;
+    }
     
     let title = item.title || item.theme_title || item.recipe_title || item.post_title || 'Untitled';
     // If multiple product posts for this day, add count indicator
@@ -1020,6 +1058,30 @@ async function loadWeek(year, weekNumber) {
         }
       });
     }
+    
+    // Role-based posts (e.g., DEPTH_LONG Sunday Deep Dive) - render on their scheduled_date
+    const rolePosts = schedule.filter(s => s.role && s.posting_queue_id);
+    if (rolePosts.length > 0) {
+      rolePosts.forEach((rolePost) => {
+        if (rolePost.scheduled_date) {
+          try {
+            const dateObj = new Date(rolePost.scheduled_date + 'T00:00:00');
+            // Get ISO weekday (1=Monday, 7=Sunday)
+            const jsDay = dateObj.getDay();
+            const dayIndex = jsDay === 0 ? 7 : jsDay; // Convert to ISO weekday (1=Mon, 7=Sun)
+            
+            const roleTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+            if (roleTarget) {
+              // Use role as type (e.g., 'depth_long') for rendering
+              const roleType = rolePost.role.toLowerCase();
+              renderItems(roleTarget, [rolePost], roleType, year, weekNumber);
+            }
+          } catch (e) {
+            console.warn('Error parsing scheduled_date for role-based post:', rolePost.scheduled_date, e);
+          }
+        }
+      });
+    }
   }
   
   // Render consolidated Blog row: Theme (Mon), Recipe (Wed), Surname profile (Fri), Product profile (Sat)
@@ -1587,7 +1649,28 @@ console.log('calendar-week-view.js module loaded');
   });
 })();
 
-// Social Focus Functions
+// Facebook Matrix v1 – fixed Role/Angle hints per day (ISO 1=Mon..7=Sun)
+const FACEBOOK_MATRIX_ROLES = {
+  1: 'CULTURE',
+  2: 'CULTURE',
+  3: 'REASSURANCE',
+  4: 'CULTURE',
+  5: 'AUTHORITY_SHORT',
+  6: 'COMMERCE',
+  7: 'DEPTH_LONG',
+};
+
+const FACEBOOK_MATRIX_ANGLE_HINTS = {
+  1: 'Language: Word',
+  2: 'Language: Phrase',
+  3: null,
+  4: 'Language: Insult',
+  5: null,
+  6: 'Product Spotlight',
+  7: 'Deep Dive',
+};
+
+// Social Focus Functions (dates line)
 function renderSocialFocuses(focuses) {
   // Create a map of day_of_week -> focus for quick lookup
   const focusMap = {};
@@ -1599,13 +1682,23 @@ function renderSocialFocuses(focuses) {
   for (let day = 1; day <= 7; day++) {
     const focusEl = document.querySelector(`.social-focus[data-day="${day}"]`);
     if (focusEl) {
+      const role = FACEBOOK_MATRIX_ROLES[day] || '';
+      const angleHint = FACEBOOK_MATRIX_ANGLE_HINTS[day] || '';
       const focus = focusMap[day];
-      if (focus && focus.social_focus) {
-        focusEl.textContent = focus.social_focus;
+      const legacyLabel = focus && focus.social_focus ? focus.social_focus : null;
+
+      // Phase 5: Role-first, legacy labels as optional UI hints only
+      const parts = [];
+      if (role) parts.push(role);
+      if (angleHint) parts.push(angleHint);
+      if (legacyLabel) parts.push(legacyLabel);
+
+      focusEl.textContent = parts.join(' — ') || 'No focus set';
+
+      if (legacyLabel && focus && focus.id) {
         focusEl.classList.remove('empty');
         focusEl.dataset.focusId = focus.id;
       } else {
-        focusEl.textContent = 'No focus set';
         focusEl.classList.add('empty');
         focusEl.removeAttribute('data-focus-id');
       }

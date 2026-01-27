@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-01-25 - Phase 4: Unified Channel Preview System
+
+### Added
+- **Unified Channel Preview System** - Single preview system for all social media channels
+  - New API endpoint: `GET /api/preview/post/<post_id>` with channel/mode/variant parameters
+  - Preview renderer (`utils/channel_preview/preview_renderer.py`) - Channel-agnostic rendering engine
+  - Channel formatter registry with Facebook formatter (reuses publish formatting logic)
+  - Generic fallback formatter and stubs for Instagram/X/TikTok
+  - Channel preview templates (Facebook, Instagram, X, TikTok, Generic)
+  - Universal preview modal component (reusable across all planning surfaces)
+  - Preview buttons integrated into:
+    - Content Control Board drill-down panel
+    - Planning Calendar week view (unified item cards)
+    - Posting Queue view
+    - Sunday Slot panel (KB Topic Rota Editor)
+- **Documentation:**
+  - `docs/UNIFIED_CHANNEL_PREVIEW_SYSTEM.md` - Complete technical documentation
+  - Updated `docs/CONTENT_ROLES_FRAMEWORK.md` - Note about preview system
+  - Updated `docs/ANGLES_LAYER_FINAL_SPECIFICATION.md` - Note about preview as separate layer
+
+### Changed
+- `utils/platform_publishers.py::format_message_for_facebook()` - Now delegates to shared formatter function
+- Facebook formatting logic extracted to `utils/channel_preview/formatters/facebook.py::_format_facebook_text()`
+- Ensures consistency between preview and publish paths
+
+### Technical Details
+- Preview renderer is independent of Flask (uses standalone Jinja2 environment)
+- Follows blog preview architecture pattern (template-based rendering)
+- Formatters are reusable for both preview and publish paths
+- All previews use HTML-based rendering (no client-side formatting)
+- Blog preview system remains completely unchanged
+
+---
+
 ## 2026-01-23 - Content Roles Framework (Foundation)
 
 ### Database Schema
@@ -407,6 +441,24 @@
 - Default state: ENABLED (safer - allows posting)
 - Error handling: Defaults to ENABLED on database errors (safer)
 - Bypass flag: Only set via manual API trigger (intentional)
+
+---
+
+## 2026-01-27 - Facebook Matrix v1 Alignment (Planning UIs)
+
+### Added
+- **Facebook Matrix v1 Config:** New `utils/facebook_matrix_v1.py` module encoding the authoritative Mon–Sun mapping of ISO weekday → Role (+ fixed Angle and topic source hints) for Facebook.
+- **Matrix v1 Implementation Report:** `docs/FACEBOOK_MATRIX_V1_IMPLEMENTATION_REPORT.md` documenting the matrix, DRIVER/UI_ONLY/RETIRE classifications, and planning UI behaviour.
+
+### Changed
+- **Calendar Week View (Week Tab):**
+  - Updated `static/js/planning/calendar-week-view.js` so the “dates line” (day headers) shows **Role-first, Angle-second**, with optional legacy `weekly_social_focus` labels as a decorative suffix only (e.g. `CULTURE — Language: Word — From the Blog`).
+  - Updated Social Posts row card labelling so weekly language, product, message, and DEPTH_LONG items display Role as the primary label and language/product/deep dive as secondary Angle descriptors (e.g. `COMMERCE — Product`, `REASSURANCE — Message`, `DEPTH_LONG — Deep Dive`).
+- **Phase 5 Audit Doc:** Extended `docs/PHASE_5_FACEBOOK_MATRIX_AND_UI_SOURCE_OF_TRUTH_AUDIT.md` with an explicit DRIVER / UI_ONLY / RETIRE classification table for Facebook-related systems (roles, weekly_social_focus, weekly language types, product scheduling, calendar_themes, legacy Deep Dive flags).
+
+### Notes
+- Behaviour of Sunday DEPTH_LONG generation/validation/scheduling is unchanged and remains rota-authoritative.
+- Weekly language posts (Word, Phrase, Insult) still appear three times per week; they are now framed explicitly as CULTURE-role Angles in the planning UI rather than pseudo-roles.
 
 ---
 
