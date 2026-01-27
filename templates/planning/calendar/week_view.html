@@ -661,12 +661,16 @@
 <!-- Idea Modal Component Styles -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/planning/idea-modal.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/planning/profile-modal.css') }}">
+<!-- Phase 4: Channel Preview Modal Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/channel-preview-modal.css') }}">
 
 <script>
 window.postId = {{ post_id }};
 window.currentStage = 'calendar';
 window.currentSubstage = 'week-view';
 </script>
+<!-- Phase 4: Channel Preview Modal Script (load before calendar-week-view) -->
+<script src="{{ url_for('static', filename='js/channel-preview-modal.js') }}"></script>
 <script type="module" src="/static/js/planning/calendar-week-view.js"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-renderers.js') }}"></script>
 <script src="{{ url_for('static', filename='js/planning/idea-modal-forms.js') }}"></script>

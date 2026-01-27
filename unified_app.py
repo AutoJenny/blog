@@ -197,6 +197,14 @@ def create_app(config_name=None):
     from blueprints.content_angles_api import bp as content_angles_api_bp
     app.register_blueprint(content_angles_api_bp)
     
+    # Register Channel Preview API blueprint (Phase 4: Unified channel preview system)
+    from blueprints.channel_preview_api import bp as channel_preview_api_bp
+    app.register_blueprint(channel_preview_api_bp)
+    
+    # Register full-page preview views (Phase 4: canonical human preview surface)
+    from blueprints.preview_views import bp as preview_views_bp
+    app.register_blueprint(preview_views_bp)
+    
     # Register automated posting API blueprint
     from blueprints.automated_posting_api import bp as automated_posting_api_bp
     app.register_blueprint(automated_posting_api_bp)

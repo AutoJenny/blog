@@ -1,0 +1,85 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Unified Channel Preview System</h1>
+    
+    <div class="kb-status-badge completed">✅ Implemented</div>
+    
+    <div class="kb-intro">
+        <p>
+            The Unified Channel Preview System provides a <strong>single, reusable preview mechanism</strong> for all social media channels. 
+            Any post in Preview or Ready state can be previewed via a standard popup modal, using channel-specific templates and a shared formatter registry.
+        </p>
+    </div>
+    
+    <h2>Core Principle</h2>
+    <p>
+        <strong>One preview system, reused everywhere.</strong> Preview is HTML-based for all channels.
+    </p>
+    
+    <h2>How It Works</h2>
+    <ol>
+        <li><strong>Preview API</strong> - Single endpoint: <code>GET /api/preview/post/&lt;post_id&gt;?channel=facebook</code></li>
+        <li><strong>Full-Page Preview</strong> - Canonical route: <code>GET /preview/post/&lt;post_id&gt;?channel=facebook</code>, used by all Preview buttons (opens in a new tab)</li>
+        <li><strong>Channel Formatter</strong> - Formats content for specific channel (Facebook, Instagram, X, TikTok)</li>
+        <li><strong>Channel Template</strong> - Renders HTML mockup of how post will appear on channel</li>
+        <li><strong>Universal Modal (Optional)</strong> - Reusable modal component that can embed the same preview HTML if needed</li>
+    </ol>
+    
+    <h2>Where to Preview</h2>
+    <p>Preview buttons are available in:</p>
+    <ul>
+        <li>✅ <strong>Content Control Board</strong> - Drill-down panel and Sunday card (opens full-page preview)</li>
+        <li>✅ <strong>Planning Calendar</strong> - Week view item cards (opens full-page preview)</li>
+        <li>✅ <strong>Posting Queue</strong> - Actions column (can open full-page preview)</li>
+        <li>✅ <strong>Sunday Slot Panel</strong> - After generation (opens full-page preview)</li>
+    </ul>
+    
+    <h2>Supported Channels</h2>
+    <ul>
+        <li><strong>Facebook</strong> - Full implementation with Facebook-specific formatting</li>
+        <li><strong>Instagram</strong> - Stub (uses generic formatting)</li>
+        <li><strong>X/Twitter</strong> - Stub (generic + character limit warning)</li>
+        <li><strong>TikTok</strong> - Stub (uses generic formatting)</li>
+        <li><strong>Generic</strong> - Fallback for unknown channels</li>
+    </ul>
+    
+    <h2>Adding a New Channel Template</h2>
+    <ol>
+        <li>Create template: <code>templates/channel_previews/&lt;channel&gt;_&lt;type&gt;.html</code></li>
+        <li>Create formatter: <code>utils/channel_preview/formatters/&lt;channel&gt;.py</code></li>
+        <li>Register formatter in <code>utils/channel_preview/formatters/registry.py</code></li>
+        <li>Update template mapping in <code>preview_renderer.py::_get_template_name()</code></li>
+    </ol>
+    
+    <h2>Adding a New Formatter</h2>
+    <ol>
+        <li>Create formatter class inheriting from <code>GenericFormatter</code> or implementing <code>format()</code> method</li>
+        <li>Register in <code>formatters/registry.py</code></li>
+        <li>Formatter must return: <code>{'display_text': str, 'char_count': int, 'warnings': List[str], 'meta': Dict}</code></li>
+    </ol>
+    
+    <h2>Technical Details</h2>
+    <p>
+        <strong>Preview Renderer:</strong> <code>utils/channel_preview/preview_renderer.py</code><br>
+        <strong>Formatter Registry:</strong> <code>utils/channel_preview/formatters/registry.py</code><br>
+        <strong>API Endpoint:</strong> <code>blueprints/channel_preview_api.py</code><br>
+        <strong>Modal Component:</strong> <code>static/js/channel-preview-modal.js</code>
+    </p>
+    
+    <h2>How to Preview a Sunday Deep Dive</h2>
+    <ol>
+        <li>Generate a post in the <a href="/kb-topics/editor">KB Topic Rota Editor</a></li>
+        <li>Use the \"Preview\" button to open the full-page preview: <code>/preview/post/&lt;post_id&gt;?channel=facebook</code></li>
+        <li>Or preview from <a href="/planning/content-control-board">Content Control Board</a> or <a href="/planning/calendar">Planning Calendar</a> (week view) using the Preview icons</li>
+    </ol>
+    
+    <h2>Related Documentation</h2>
+    <ul>
+        <li><a href="/docs/UNIFIED_CHANNEL_PREVIEW_SYSTEM.md">Full Technical Documentation</a></li>
+        <li><a href="/kb/backend/content_roles">Content Roles Framework</a></li>
+        <li><a href="/kb/backend/topic_rota">KB Topic Rota System</a></li>
+    </ul>
+</div>
+{% endblock %}

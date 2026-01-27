@@ -510,6 +510,22 @@ class SundaySlotManager {
             validation.innerHTML = '<div class="validation-pass">✓ All validation checks passed</div>';
         }
         
+        // Phase 4: Add preview button if post_id exists
+        if (data.post_id) {
+            const existingPreviewBtn = preview.querySelector('.btn-preview-modal');
+            if (!existingPreviewBtn) {
+                const previewBtn = document.createElement('button');
+                previewBtn.className = 'btn btn-primary btn-sm btn-preview-modal';
+                previewBtn.style.marginTop = '0.5rem';
+                previewBtn.innerHTML = '<i class="fas fa-eye"></i> Preview in Modal';
+                previewBtn.onclick = () => {
+                    const url = `/preview/post/${data.post_id}?channel=facebook`;
+                    window.open(url, '_blank', 'noopener');
+                };
+                preview.appendChild(previewBtn);
+            }
+        }
+        
         preview.style.display = 'block';
     }
     

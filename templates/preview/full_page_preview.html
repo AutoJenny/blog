@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Facebook Preview – Post {{ post_id }}{% endblock %}
+
+{# Ensure channel preview card CSS is available and force high-contrast text on this page #}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/channel-preview-modal.css') }}">
+    <style>
+        /* Full-page preview: maximise legibility, regardless of global dark-theme defaults */
+        .preview-page-wrapper .channel-preview,
+        .preview-page-wrapper .facebook-preview,
+        .preview-page-wrapper .facebook-post-card,
+        .preview-page-wrapper .post-content,
+        .preview-page-wrapper .post-content p {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="preview-page-wrapper" style="background: #f3f4f6; min-height: 100vh; padding: 2rem 1rem;">
+    <div style="max-width: 820px; margin: 0 auto;">
+        <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="margin: 0; font-size: 1.5rem; color: #0f172a;">
+                    Facebook Preview (Internal)
+                </h1>
+                <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: #4b5563;">
+                    Post ID: {{ post_id }} • Channel: {{ channel }}
+                </p>
+            </div>
+            <div>
+                <a href="{{ back_url }}" style="text-decoration: none; font-size: 0.9rem; color: #2563eb;">
+                    ← Back to calendar
+                </a>
+            </div>
+        </div>
+
+        {% if error %}
+            <div style="background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; padding: 1rem; border-radius: 0.5rem;">
+                <strong>Preview error:</strong> {{ error }}
+            </div>
+        {% else %}
+            <div style="
+                background: #ffffff;
+                border-radius: 0.75rem;
+                padding: 1.5rem;
+                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+            ">
+                {{ html|safe }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

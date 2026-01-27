@@ -252,6 +252,9 @@ class ContentControlBoard {
                         <button class="btn btn-sm btn-secondary" onclick="controlBoard.showPostDetails(${slot.post.id})">
                             View Post
                         </button>
+                    <button class="btn btn-sm btn-primary" onclick="window.open('/preview/post/${slot.post.id}?channel=facebook', '_blank', 'noopener')">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
                     ` : ''}
                 </div>
             `;
@@ -744,6 +747,13 @@ class ContentControlBoard {
             <div class="panel-section">
                 <h4>Content</h4>
                 <div class="panel-content-text">${(post.generated_content || post.generated_caption || 'No content').replace(/\n/g, '<br>')}</div>
+                ${post.id ? `
+                <div style="margin-top: 0.5rem;">
+                    <button class="btn btn-primary btn-sm" onclick="window.open('/preview/post/${post.id}?channel=${(post.platform || 'facebook').toLowerCase()}', '_blank', 'noopener')">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                </div>
+                ` : ''}
             </div>
         `;
     }

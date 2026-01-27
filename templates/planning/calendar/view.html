@@ -616,5 +616,6 @@ window.currentStage = 'calendar';
 window.currentSubstage = 'view';
 </script>
 <script type="module" src="/static/js/planning/calendar-view.js"></script>
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/channel-preview-modal.css') }}">
+<script src="{{ url_for('static', filename='js/channel-preview-modal.js') }}"></script>
 {% endblock %}

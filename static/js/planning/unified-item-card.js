@@ -27,7 +27,9 @@ function normalizeTypeForClass(category, type) {
             'weekly-phrase': 'weekly-phrase',
             'weekly-insult': 'weekly-insult',
             'event': 'event',
-            'scheduled': 'scheduled'
+            'scheduled': 'scheduled',
+            'depth_long': 'depth-long',
+            'depth-long': 'depth-long'
         };
         return typeMap[type] || type;
     }
@@ -55,6 +57,8 @@ function normalizeTypeForClass(category, type) {
         'product': 'product',
         'product-post': 'product',
         'message': 'message',
+        'depth_long': 'depth-long',
+        'depth-long': 'depth-long',
         'event': 'event'
     };
     
@@ -393,6 +397,24 @@ function createUnifiedItemCard(item, options = {}) {
     // Action buttons
     const actions = document.createElement('div');
     actions.className = 'item-actions';
+    
+    // Phase 4: Add Preview button for posting_queue items (role-based posts)
+    // New behaviour: open dedicated full-page preview route in a new tab
+    const postingQueueId = item.posting_queue_id || (item.role && item.id ? item.id : null);
+    const platform = item.platform || 'facebook';
+    if (postingQueueId) {
+        const previewBtn = document.createElement('button');
+        previewBtn.className = 'icon-btn-compact btn-preview';
+        previewBtn.title = 'Preview';
+        previewBtn.innerHTML = '<i class="fas fa-eye"></i>';
+        previewBtn.onclick = (e) => {
+            e.stopPropagation();
+            const channel = (platform || 'facebook').toLowerCase();
+            const url = `/preview/post/${postingQueueId}?channel=${encodeURIComponent(channel)}`;
+            window.open(url, '_blank', 'noopener');
+        };
+        actions.appendChild(previewBtn);
+    }
     
     // Info/Edit button - opens schedule edit modal
     const infoBtn = document.createElement('button');

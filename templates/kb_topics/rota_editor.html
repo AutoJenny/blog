@@ -208,6 +208,13 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/channel-preview-modal.css') }}">
+    <script src="{{ url_for('static', filename='js/channel-preview-modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/kb_topics/rota_editor.js') }}"></script>
     <script src="{{ url_for('static', filename='js/kb_topics/sunday_slot.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+{{ super() }}
 {% endblock %}
