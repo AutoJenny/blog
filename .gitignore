@@ -11,3 +11,4 @@ blog-core/blog_test_backup_*.sql
 *.safetensors
 logs/*.out
 logs/*.errunified_app.out
+unified_app.out
