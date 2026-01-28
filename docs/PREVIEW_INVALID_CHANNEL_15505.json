@@ -1,0 +1,5 @@
+{
+  "error": "Invalid channel",
+  "error_code": "INVALID_CHANNEL",
+  "success": false
+}

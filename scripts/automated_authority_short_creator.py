@@ -31,11 +31,14 @@ Scope:
 import os
 import sys
 import logging
+import argparse
+import json
 from datetime import date, datetime, timedelta, time as time_type
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.database import db_manager
+from utils.content_roles.authority_short_generator import AuthorityShortGenerator
 
 logging.basicConfig(
     level=logging.INFO,
@@ -55,15 +58,31 @@ logger = logging.getLogger(__name__)
 
 
 class AuthorityShortCreator:
-    def __init__(self, days_ahead: int = 28):
+    def __init__(self, days_ahead: int = 28, dry_run: bool = False, force: bool = False, target_week: str | None = None):
         self.db_manager = db_manager
         self.days_ahead = days_ahead
+        self.dry_run = dry_run
+        self.force = force
+        self.target_week = target_week
         # Friday in ISO: 5 (Mon=1..Sun=7)
         self.iso_weekday_target = 5
         self.publication_time = "15:00"  # 3 PM UK time, consistent with Sunday rail
+        self.generator = AuthorityShortGenerator()
 
     def get_upcoming_fridays(self):
-        """Return list of upcoming Friday dates within days_ahead."""
+        """Return list of upcoming Friday dates within days_ahead, or a specific ISO week if provided."""
+        if self.target_week:
+            year_str, week_str = self.target_week.split("-W")
+            y, w = int(year_str), int(week_str)
+            # Find Monday of that ISO week
+            # ISO week 1 is the week with Jan 4; reuse same logic as calendar schedule
+            from datetime import timedelta as td
+            jan4 = date(y, 1, 4)
+            jan4_day = (jan4.isoweekday() + 6) % 7  # Monday = 0
+            week_monday = jan4 + td(days=(w - 1) * 7 - jan4_day)
+            friday = week_monday + td(days=4)  # Monday+4 = Friday
+            return [friday]
+
         today = date.today()
         fridays = []
 
@@ -107,60 +126,144 @@ class AuthorityShortCreator:
 
     def create_authority_short_post(self, target_date, cursor):
         """
-        Insert a minimal AUTHORITY_SHORT post for Facebook on the given Friday.
+        Insert or update AUTHORITY_SHORT post for Facebook on the given Friday.
         """
         scheduled_time = datetime.strptime(self.publication_time, "%H:%M").time()
         scheduled_dt = datetime.combine(target_date, scheduled_time)
-
-        placeholder = (
-            "AUTHORITY_SHORT placeholder: short factual context about clan, tartan "
-            "or provenance, scheduled for Friday per Matrix v1."
+        # Step 1: ensure a posting_queue row exists
+        cursor.execute(
+            """
+            SELECT id, generated_content, status
+            FROM posting_queue
+            WHERE platform = 'facebook'
+              AND role = 'AUTHORITY_SHORT'
+              AND scheduled_date = %s
+              AND content_type = 'authority_short'
+            ORDER BY id ASC
+            LIMIT 1
+            """,
+            (target_date,),
         )
+        row = cursor.fetchone()
+        if row:
+            queue_id = row["id"] if isinstance(row, dict) else row[0]
+            existing_content = row["generated_content"] if isinstance(row, dict) else None
+            existing_status = row["status"] if isinstance(row, dict) else None
+            # Detect placeholder
+            is_placeholder = bool(
+                existing_content and str(existing_content).startswith("AUTHORITY_SHORT placeholder")
+            )
+            if not self.force and not is_placeholder and existing_status in ("generated", "ready", "approved", "scheduled"):
+                logger.info("Existing AUTHORITY_SHORT %s for %s retained (status=%s)", queue_id, target_date, existing_status)
+                return queue_id
+        else:
+            # Create skeleton row
+            cursor.execute(
+                """
+                INSERT INTO posting_queue (
+                    role,
+                    platform,
+                    channel_type,
+                    content_type,
+                    generated_content,
+                    scheduled_date,
+                    scheduled_time,
+                    scheduled_timestamp,
+                    status,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    'AUTHORITY_SHORT',
+                    'facebook',
+                    'feed_post',
+                    'authority_short',
+                    '',
+                    %s,
+                    %s,
+                    %s,
+                    'draft',
+                    NOW(),
+                    NOW()
+                )
+                RETURNING id
+                """,
+                (
+                    target_date,
+                    scheduled_time,
+                    scheduled_dt,
+                ),
+            )
+            created_row = cursor.fetchone()
+            queue_id = created_row["id"] if isinstance(created_row, dict) else created_row[0]
+            logger.info("Created AUTHORITY_SHORT skeleton post: id=%s date=%s", queue_id, target_date)
+
+        if self.dry_run:
+            logger.info("Dry-run: would generate AUTHORITY_SHORT content for id=%s date=%s", queue_id, target_date)
+            return queue_id
+
+        # Step 2: generate real content using generator
+        result = self.generator.generate_for_friday(target_date, queue_id)
+        if not result.get("success"):
+            logger.error(
+                "AUTHORITY_SHORT generation failed for id=%s date=%s: %s",
+                queue_id,
+                target_date,
+                result.get("error"),
+            )
+            cursor.execute(
+                """
+                UPDATE posting_queue
+                SET status = 'failed',
+                    updated_at = NOW()
+                WHERE id = %s
+                """,
+                (queue_id,),
+            )
+            return queue_id
+
+        content = result["content"]
+        validation_report = result.get("validation_report_json", {"valid": True, "role": "AUTHORITY_SHORT"})
+        topic_id = result.get("topic_id")
+        source_page_id = result.get("source_page_id")
 
         cursor.execute(
             """
-            INSERT INTO posting_queue (
-                role,
-                platform,
-                channel_type,
-                content_type,
-                generated_content,
-                scheduled_date,
-                scheduled_time,
-                scheduled_timestamp,
-                status,
-                created_at,
-                updated_at
-            )
-            VALUES (
-                'AUTHORITY_SHORT',
-                'facebook',
-                'feed_post',
-                'authority_short',
-                %s,
-                %s,
-                %s,
-                %s,
-                'draft',
-                NOW(),
-                NOW()
-            )
-            RETURNING id
+            UPDATE posting_queue
+            SET generated_content = %s,
+                status = 'ready',
+                topic_id = COALESCE(%s, topic_id),
+                source_page_id = COALESCE(%s, source_page_id),
+                rota_year = COALESCE(%s, rota_year),
+                rota_week = COALESCE(%s, rota_week),
+                validation_report_json = COALESCE(%s, validation_report_json),
+                updated_at = NOW()
+            WHERE id = %s
             """,
             (
-                placeholder,
-                target_date,
-                scheduled_time,
-                scheduled_dt,
+                content,
+                topic_id,
+                source_page_id,
+                result.get("rota_year"),
+                result.get("rota_week"),
+                json.dumps(validation_report),
+                queue_id,
             ),
         )
-        row = cursor.fetchone()
-        queue_id = row["id"] if isinstance(row, dict) else row[0]
-        logger.info("Created AUTHORITY_SHORT post: id=%s date=%s", queue_id, target_date)
+
+        logger.info(
+            "Generated AUTHORITY_SHORT for id=%s date=%s (chars=%s, source_type=%s, topic_id=%s, source_page_id=%s)",
+            queue_id,
+            target_date,
+            result.get("char_count"),
+            result.get("source_type"),
+            topic_id,
+            source_page_id,
+        )
         return queue_id
 
     def run(self):
-        """Main entry: ensure upcoming Fridays have an AUTHORITY_SHORT post."""
+        """Main entry: ensure upcoming Fridays have an AUTHORITY_SHORT post with real content."""
         fridays = self.get_upcoming_fridays()
         stats = {
             "created": 0,
@@ -176,20 +279,20 @@ class AuthorityShortCreator:
             with self.db_manager.get_connection() as conn:
                 with conn.cursor() as cursor:
                     for target_date in fridays:
-                        if self.friday_has_authority_short(target_date, cursor):
-                            logger.info(
-                                "Skipping %s - AUTHORITY_SHORT already exists", target_date
-                            )
-                            stats["skipped_existing"] += 1
-                            continue
-
-                            # fall-through: create post if none exists
                         try:
-                            self.create_authority_short_post(target_date, cursor)
-                            stats["created"] += 1
+                            if self.friday_has_authority_short(target_date, cursor) and not (self.force or self.dry_run):
+                                logger.info(
+                                    "AUTHORITY_SHORT exists for %s and force/dry-run not set; skipping create() but may regenerate",
+                                    target_date,
+                                )
+                            pq_id = self.create_authority_short_post(target_date, cursor)
+                            if self.dry_run:
+                                stats["skipped_existing"] += 1
+                            else:
+                                stats["created"] += 1
                         except Exception as e:
                             logger.error(
-                                "Error creating AUTHORITY_SHORT for %s: %s",
+                                "Error creating/regenerating AUTHORITY_SHORT for %s: %s",
                                 target_date,
                                 e,
                             )
@@ -203,7 +306,19 @@ class AuthorityShortCreator:
 
 
 def main():
-    creator = AuthorityShortCreator(days_ahead=28)
+    parser = argparse.ArgumentParser(description="Automated AUTHORITY_SHORT creator for Facebook Fridays")
+    parser.add_argument("--days-ahead", type=int, default=28, help="Number of days ahead to scan for Fridays")
+    parser.add_argument("--dry-run", action="store_true", help="Log actions but do not write to database")
+    parser.add_argument("--force", action="store_true", help="Regenerate even if an AUTHORITY_SHORT exists")
+    parser.add_argument("--week", type=str, default=None, help="Target a specific ISO week, e.g. 2026-W5")
+    args = parser.parse_args()
+
+    creator = AuthorityShortCreator(
+        days_ahead=args.days_ahead,
+        dry_run=args.dry_run,
+        force=args.force,
+        target_week=args.week,
+    )
     stats = creator.run()
     print("AUTHORITY_SHORT creation results:")
     print(f"  Created: {stats['created']}")

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Preview – Post 15505</title>
+    
+    <!-- Static Assets -->
+    
+    
+    <!-- CDN Assets -->
+    
+    <!-- External CDN assets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    
+    <!-- CSS Assets -->
+    
+        <link rel="stylesheet" href="/static/css/shared/dark-theme.css">
+        
+    
+        <!-- Default CSS assets -->
+        <link rel="stylesheet" href="/static/css/dist/main.css">
+        <link rel="stylesheet" href="/static/css/nav.dist.css">
+    
+
+    
+    
+    <!-- Favicon -->
+    
+    <link rel="icon" type="image/x-icon" href="/static/images/site/favicon.ico">
+    <link rel="apple-touch-icon" href="/static/images/site/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/site/apple-touch-icon-180x180.png">
+
+    
+    <!-- Additional Head Content -->
+    
+    
+    <link rel="stylesheet" href="/static/css/channel-preview-modal.css">
+    <style>
+        /* Full-page preview: maximise legibility, regardless of global dark-theme defaults */
+        .preview-page-wrapper .channel-preview,
+        .preview-page-wrapper .facebook-preview,
+        .preview-page-wrapper .facebook-post-card,
+        .preview-page-wrapper .post-content,
+        .preview-page-wrapper .post-content p {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+    </style>
+
+    
+    <!-- Dark Theme Styles (moved to shared CSS includes to avoid overrides) -->
+</head>
+<body>
+    
+    
+
+<div id="channel-preview-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-60">
+  <div class="bg-slate-900 rounded-lg shadow-xl max-w-3xl w-full mx-4 border border-slate-700 relative">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+      <h2 id="channel-preview-modal-title" class="text-sm font-semibold text-slate-100">
+        Channel Preview
+      </h2>
+      <button type="button"
+              class="text-slate-400 hover:text-white"
+              onclick="window.closeChannelPreviewModal && window.closeChannelPreviewModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-4 py-4">
+      <!-- Loading state -->
+      <div id="channel-preview-loading" class="flex items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-200 mr-3"></div>
+        <span class="text-slate-300 text-sm">Loading preview…</span>

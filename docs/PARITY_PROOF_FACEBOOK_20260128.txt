@@ -1,0 +1,8 @@
+Facebook Preview/Publish Parity Proof
+Run at: 2026-01-28T14:58:21.950462Z
+
+post_id=15505 role=AUTHORITY_SHORT content_type=authority_short -> PASS
+
+post_id=11823 role=DEPTH_LONG content_type=depth_long -> PASS
+
+post_id=667 role=CULTURE content_type=weekly_word -> PASS

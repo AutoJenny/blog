@@ -1,0 +1,40 @@
+{# 
+  Facebook Feed Preview Template
+
+  Canonical channel template for Facebook previews.
+  Both:
+    - /api/preview/post/<id>?channel=facebook
+    - /preview/post/<id>?channel=facebook
+  must render via this template (using ChannelPreviewRenderer and the
+  FacebookFormatter).
+#}
+
+{% set meta = meta or {} %}
+
+<div class="channel-preview facebook-preview bg-slate-900 text-slate-100 rounded-lg border border-slate-700 p-4">
+  <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
+    <div>
+      <span class="font-semibold text-slate-200">Facebook · Preview</span>
+      {% if meta.role %}
+        <span class="ml-2 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-[10px] uppercase tracking-wide">
+          {{ meta.role }}
+        </span>
+      {% endif %}
+      {% if meta.status %}
+        <span class="ml-2 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-[10px] uppercase tracking-wide">
+          {{ meta.status }}
+        </span>
+      {% endif %}
+    </div>
+    <div>
+      {% if meta.char_count is not none %}
+        <span>{{ meta.char_count }} chars</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="bg-slate-800 rounded-md p-3 text-sm leading-relaxed">
+    {{ display_text | e | replace('\n', '<br>') | safe }}
+  </div>
+</div>
+
