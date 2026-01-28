@@ -355,3 +355,14 @@ For Facebook, after Phases 5–7:
 - **Sun:** DEPTH_LONG — Deep Dive, rota-authoritative.
 
 Weekly language now appears **once and only once** per Matrix day in the grid, Friday is no longer structurally empty, and `posting_queue.role` is consistently enforced and surfaced for all relevant Facebook posts.
+
+---
+
+## 6. Editorial hardening (2026-01-28)
+
+Friday AUTHORITY_SHORT is now **production-grade** and **preview parity** is locked:
+
+- **Mechanical validation:** Rule-enumerated checks (emoji, hashtag, CTA deny-list, 1–2 paragraphs, 200–400 chars, no list formatting); 3-attempt loop; on failure `status = 'failed'` with `validation_report_json` (attempts, failed_rules, source_used).
+- **Lifecycle:** Compliant output → `status = 'ready'`; week-view shows Friday as Ready.
+- **Provenance:** `topic_id`, `source_page_id`, `rota_year`, `rota_week`, `source_excerpt` in validation report; preview template shows collapsible Source and Validator warnings.
+- **Parity:** `docs/PARITY_PROOF_FACEBOOK_YYYYMMDD.txt` — 3/3 PASS (AUTHORITY_SHORT 15505, DEPTH_LONG 11823, weekly_word 667). Evidence artifacts in `docs/` (schedule excerpt, preview API/page, invalid-channel response).

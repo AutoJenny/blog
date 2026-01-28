@@ -45,8 +45,15 @@ def preview_post_page(post_id: int):
             error_code=error_code
         ), 404 if error_code == 'POST_NOT_FOUND' else 500
 
-    # Use the rendered HTML from the renderer
-    html = result.get('html', '')
+    # Use canonical channel template for Facebook (source provenance + validator warnings)
+    if channel_lower == 'facebook':
+        html = render_template(
+            'channel_previews/facebook_feed.html',
+            display_text=result.get('display_text', ''),
+            meta=result.get('meta', {}),
+        )
+    else:
+        html = result.get('html', '')
 
     # Compute a simple back URL (best-effort)
     back_url = request.referrer or '/planning/calendar'

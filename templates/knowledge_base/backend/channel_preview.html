@@ -60,12 +60,18 @@
         <li>Formatter must return: <code>{'display_text': str, 'char_count': int, 'warnings': List[str], 'meta': Dict}</code></li>
     </ol>
     
+    <h2>Facebook template (canonical)</h2>
+    <p>
+        <code>templates/channel_previews/facebook_feed.html</code> is used for both the preview API and full-page preview. It shows role/status/char count, formatted post text, and for AUTHORITY_SHORT (and similar) a collapsible <strong>Source</strong> block (type, topic ID, article ID, optional excerpt) and a <strong>Validator warnings</strong> block when validation rules were applied (e.g. failed_rules from <code>validation_report_json</code>).
+    </p>
+    
     <h2>Technical Details</h2>
     <p>
         <strong>Preview Renderer:</strong> <code>utils/channel_preview/preview_renderer.py</code><br>
         <strong>Formatter Registry:</strong> <code>utils/channel_preview/formatters/registry.py</code><br>
+        <strong>Facebook Formatter:</strong> <code>utils/channel_preview/formatters/facebook.py</code> (reuses <code>format_message_for_facebook</code> for preview/publish parity)<br>
         <strong>API Endpoint:</strong> <code>blueprints/channel_preview_api.py</code><br>
-        <strong>Modal Component:</strong> <code>static/js/channel-preview-modal.js</code>
+        <strong>Modal:</strong> <code>templates/includes/channel_preview_modal.html</code> (optional; full-page preview is the canonical surface)
     </p>
     
     <h2>How to Preview a Sunday Deep Dive</h2>

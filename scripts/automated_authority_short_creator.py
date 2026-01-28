@@ -211,14 +211,17 @@ class AuthorityShortCreator:
                 target_date,
                 result.get("error"),
             )
+            # Persist validation_report_json on failure for audit (attempts, failed_rules, source_used)
+            fail_report = result.get("validation_report_json")
             cursor.execute(
                 """
                 UPDATE posting_queue
                 SET status = 'failed',
+                    validation_report_json = COALESCE(%s, validation_report_json),
                     updated_at = NOW()
                 WHERE id = %s
                 """,
-                (queue_id,),
+                (json.dumps(fail_report) if fail_report else None, queue_id),
             )
             return queue_id
 
@@ -251,14 +254,16 @@ class AuthorityShortCreator:
             ),
         )
 
+        failed_rules = (validation_report or {}).get("failed_rules") or []
         logger.info(
-            "Generated AUTHORITY_SHORT for id=%s date=%s (chars=%s, source_type=%s, topic_id=%s, source_page_id=%s)",
+            "Generated AUTHORITY_SHORT for id=%s date=%s status=ready chars=%s source_type=%s topic_id=%s source_page_id=%s failed_rules_count=%s",
             queue_id,
             target_date,
             result.get("char_count"),
             result.get("source_type"),
             topic_id,
             source_page_id,
+            len(failed_rules),
         )
         return queue_id
 

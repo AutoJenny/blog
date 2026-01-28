@@ -1,5 +1,25 @@
 # Changelog
 
+## Facebook Matrix v1 — Friday AUTHORITY_SHORT editorial hardening (2026-01-28)
+
+### Objective
+Tighten AUTHORITY_SHORT content quality, provenance, and reviewer visibility without changing scheduling, Matrix rules, or formatter flow.
+
+### Changed
+- **AuthorityShortGenerator** (`utils/content_roles/authority_short_generator.py`): Mechanical validation with rule IDs (emoji/hashtag/CTA/paragraph/length/list); strip-and-record for emoji/hashtags; CTA deny-list; 1–2 paragraphs, 200–400 chars target, hard cap 600; `validation_report_json` includes `source_used`, `source_excerpt`, `failed_rules`; on failure after 3 attempts returns `attempts`, `failed_rules`, `source_used`.
+- **AuthorityShortCreator** (`scripts/automated_authority_short_creator.py`): On success sets `status = 'ready'`; on failure persists `validation_report_json` (attempts, failed_rules, source_used); logging includes `status=ready`, `source_type`, `failed_rules_count`.
+- **Preview** (`utils/channel_preview/preview_renderer.py`, `blueprints/channel_preview_api.py`, `blueprints/preview_views.py`): Load `validation_report_json`; merge `source_type`, `source_excerpt`, `validation_failed_rules` into meta; Facebook uses canonical template `templates/channel_previews/facebook_feed.html` for API and full-page preview.
+- **Facebook preview template** (`templates/channel_previews/facebook_feed.html`): Collapsible **Source** block (type, topic ID, article ID, optional excerpt); **Validator warnings** block when `validation_failed_rules` non-empty.
+
+### Added
+- **Parity proof** (`scripts/prove_preview_publish_parity.py`): Compares publish formatter vs preview formatter byte-for-byte; writes `docs/PARITY_PROOF_FACEBOOK_YYYYMMDD.txt`. Evidence: 3/3 PASS for AUTHORITY_SHORT (15505), DEPTH_LONG (11823), weekly_word (667).
+- **Evidence artifacts**: `docs/SCHEDULE_EXCERPT_2026_W5_FRIDAY_ONLY_15505.json`, `docs/PREVIEW_API_15505.json`, `docs/PREVIEW_PAGE_15505_HEAD.html`, `docs/PREVIEW_INVALID_CHANNEL_15505.json`.
+
+### Verification
+- Friday 2026-W5 (id 15505): status=ready, source_type=rota_topic_article, topic_id/source_page_id/rota_year/rota_week set; preview shows Source (details) and no validator warnings when compliant.
+
+---
+
 ## Phase 6 — Facebook Matrix v1 completion (role enforcement + REASSURANCE on Wed)
 
 ### Objective

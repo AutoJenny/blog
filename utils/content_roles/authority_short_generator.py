@@ -12,14 +12,30 @@ Design goals (v1):
 from __future__ import annotations
 
 import logging
+import re
 from datetime import date
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 from config.database import db_manager
 from modules.llm_service import LLMService
 from utils.content_roles.validator import ContentRoleValidator
 
 logger = logging.getLogger(__name__)
+
+# Rule IDs for mechanical validation (auditable, future-proof)
+AUTH_SHORT_EMOJI_PRESENT = "AUTH_SHORT_EMOJI_PRESENT"
+AUTH_SHORT_HASHTAG_PRESENT = "AUTH_SHORT_HASHTAG_PRESENT"
+AUTH_SHORT_CTA_PHRASE_PRESENT = "AUTH_SHORT_CTA_PHRASE_PRESENT"
+AUTH_SHORT_TOO_SHORT = "AUTH_SHORT_TOO_SHORT"
+AUTH_SHORT_TOO_LONG = "AUTH_SHORT_TOO_LONG"
+AUTH_SHORT_TOO_MANY_PARAGRAPHS = "AUTH_SHORT_TOO_MANY_PARAGRAPHS"
+AUTH_SHORT_LIST_FORMATTING = "AUTH_SHORT_LIST_FORMATTING"
+
+# CTA deny-list (case-insensitive); no marketing / calls to action
+CTA_DENYLIST = (
+    "shop", "buy", "discover", "learn more", "find out", "visit", "explore",
+    "check out", "order now", "get it", "click here", "sign up", "subscribe",
+)
 
 
 class AuthorityShortGenerator:
@@ -73,11 +89,20 @@ class AuthorityShortGenerator:
                 "error": "No suitable source text found for AUTHORITY_SHORT",
                 "topic_id": topic_id,
                 "source_page_id": source_page_id,
+                "validation_report_json": {
+                    "valid": False,
+                    "role": "AUTHORITY_SHORT",
+                    "source_used": {"type": "none", "topic_id": topic_id, "source_page_id": source_page_id},
+                },
             }
+
+        source_used = {"type": source_type, "topic_id": topic_id, "source_page_id": source_page_id}
+        source_excerpt = self._make_source_excerpt(source_text)
 
         # Call LLM with role-specific prompt, up to N attempts
         attempts = 0
         last_error: Optional[str] = None
+        last_failed_rules: List[str] = []
         content: Optional[str] = None
 
         while attempts < 3:
@@ -97,49 +122,55 @@ class AuthorityShortGenerator:
                 )
                 continue
 
-            content = self._clean_and_trim_text(llm_result.get("content", ""))
+            content, strip_rules = self._clean_strip_and_trim(llm_result.get("content", ""))
             if not content:
                 last_error = "LLM returned empty content"
                 continue
 
-            # For now, validator has no role-specific checks for AUTHORITY_SHORT,
-            # but we still call it to get a structured report.
+            failed_rules = list(strip_rules)
+            mechanical_ok, mechanical_rules = self._mechanical_validation(content)
+            failed_rules.extend(mechanical_rules)
+
             validation = self.validator.validate(
                 "AUTHORITY_SHORT", content, source_page_id=source_page_id
             )
-            ok = validation.get("valid", True)
+            validator_ok = validation.get("valid", True)
+            ok = mechanical_ok and validator_ok and len(failed_rules) == 0
 
-            # Basic hard constraints for this role
-            char_count = len(content)
-            if char_count < self.target_min_chars or char_count > self.max_chars:
-                ok = False
-                issues = validation.setdefault("validation_report_json", {}).setdefault(
-                    "issues", []
-                )
-                issues.append(
-                    f"Character count out of range: {char_count} "
-                    f"(target {self.target_min_chars}-{self.target_max_chars}, max {self.max_chars})"
-                )
+            validation_report = {
+                "valid": ok,
+                "role": "AUTHORITY_SHORT",
+                "source_used": source_used,
+                "source_excerpt": source_excerpt,
+                "failed_rules": failed_rules,
+            }
 
             if ok:
                 return {
                     "success": True,
                     "content": content,
-                    "char_count": char_count,
+                    "char_count": len(content),
                     "topic_id": topic_id,
                     "source_page_id": source_page_id,
                     "rota_year": rota_year,
                     "rota_week": rota_week,
                     "source_type": source_type,
-                    "validation_report_json": validation.get(
-                        "validation_report_json", {"valid": True, "role": "AUTHORITY_SHORT"}
-                    ),
+                    "source_excerpt": source_excerpt,
+                    "validation_report_json": validation_report,
                 }
 
-            # validation failed; try again
-            last_error = "; ".join(validation.get("issues", [])) or "Validation failed"
+            last_failed_rules = failed_rules
+            last_error = "; ".join(failed_rules) if failed_rules else "Validation failed"
 
-        # If all attempts failed
+        # All attempts failed: return structured failure with audit payload
+        validation_report = {
+            "valid": False,
+            "role": "AUTHORITY_SHORT",
+            "attempts": attempts,
+            "failed_rules": last_failed_rules,
+            "source_used": source_used,
+            "source_excerpt": source_excerpt,
+        }
         return {
             "success": False,
             "error": last_error or "AUTHORITY_SHORT generation failed after retries",
@@ -147,6 +178,8 @@ class AuthorityShortGenerator:
             "source_page_id": source_page_id,
             "rota_year": rota_year,
             "rota_week": rota_week,
+            "source_type": source_type,
+            "validation_report_json": validation_report,
         }
 
     # ---- source selection -----------------------------------------------
@@ -356,23 +389,101 @@ class AuthorityShortGenerator:
             logger.error("AUTHORITY_SHORT: LLM call failed: %s", e, exc_info=True)
             return {"error": str(e)}
 
-    # ---- text cleanup ---------------------------------------------------
+    # ---- mechanical validation -------------------------------------------
 
-    def _clean_and_trim_text(self, content: str) -> str:
-        """Normalize whitespace and enforce max length."""
-        if not content:
+    def _strip_emojis(self, text: str) -> Tuple[str, bool]:
+        """Remove emoji by explicit unicode ranges. Returns (cleaned, had_emoji)."""
+        # Common emoji / symbols / pictographs (ranges that cover most emoji)
+        emoji_pattern = re.compile(
+            "["
+            "\U0001F600-\U0001F64F"  # emoticons
+            "\U0001F300-\U0001F5FF"  # symbols & pictographs
+            "\U0001F680-\U0001F6FF"  # transport & map
+            "\U0001F1E0-\U0001F1FF"  # flags
+            "\U00002702-\U000027B0"
+            "\U000024C2-\U0001F251"
+            "\U0001f926-\U0001f937"
+            "\U00010000-\U0010ffff"
+            "]+",
+            flags=re.UNICODE,
+        )
+        cleaned = emoji_pattern.sub("", text)
+        return cleaned, cleaned != text
+
+    def _strip_hashtags(self, text: str) -> Tuple[str, bool]:
+        """Remove #word hashtags. Returns (cleaned, had_hashtag)."""
+        had = bool(re.search(r"#\w+", text))
+        cleaned = re.sub(r"#\w+", "", text)
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+        return cleaned, had
+
+    def _mechanical_validation(self, content: str) -> Tuple[bool, List[str]]:
+        """Apply mechanical rules; return (ok, list of failed rule IDs)."""
+        failed: List[str] = []
+
+        # CTA deny-list (case-insensitive)
+        lower = content.lower()
+        for phrase in CTA_DENYLIST:
+            if phrase in lower:
+                failed.append(AUTH_SHORT_CTA_PHRASE_PRESENT)
+                break
+
+        # Paragraph count: 1-2 only (split on double newline)
+        paragraphs = [p.strip() for p in content.split("\n\n") if p.strip()]
+        if len(paragraphs) < 1 or len(paragraphs) > 2:
+            failed.append(AUTH_SHORT_TOO_MANY_PARAGRAPHS)
+
+        # Length
+        char_count = len(content)
+        if char_count < self.target_min_chars:
+            failed.append(AUTH_SHORT_TOO_SHORT)
+        if char_count > self.max_chars:
+            failed.append(AUTH_SHORT_TOO_LONG)
+
+        # List formatting: lines starting with - , * , or N.
+        for line in content.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            if re.match(r"^[-*]\s", line) or re.match(r"^\d+\.\s", line):
+                failed.append(AUTH_SHORT_LIST_FORMATTING)
+                break
+
+        return (len(failed) == 0, failed)
+
+    def _make_source_excerpt(self, source_text: str, max_chars: int = 400) -> str:
+        """First max_chars of source, truncated at sentence boundary."""
+        if not source_text:
             return ""
+        text = re.sub(r"\s+", " ", source_text.strip())
+        if len(text) <= max_chars:
+            return text
+        truncated = text[:max_chars]
+        last_dot = max(truncated.rfind("."), truncated.rfind("!"), truncated.rfind("?"))
+        if last_dot > max_chars // 2:
+            return truncated[: last_dot + 1].strip()
+        return truncated.rstrip()
+
+    def _clean_strip_and_trim(self, content: str) -> Tuple[str, List[str]]:
+        """Normalize, strip emoji/hashtags (recording rules), enforce max length. Returns (text, rules_applied)."""
+        if not content:
+            return "", []
         text = content.strip()
-
-        # Normalise newlines: collapse 3+ down to 2
-        import re
-
         text = re.sub(r"\n{3,}", "\n\n", text)
+        rules: List[str] = []
 
-        # Enforce hard char cap; prefer not to truncate but allowed as last resort
+        text, had_emoji = self._strip_emojis(text)
+        if had_emoji:
+            rules.append(AUTH_SHORT_EMOJI_PRESENT)
+        text, had_hashtag = self._strip_hashtags(text)
+        if had_hashtag:
+            rules.append(AUTH_SHORT_HASHTAG_PRESENT)
+
         if len(text) > self.max_chars:
             text = self._truncate_at_sentence_boundary(text, self.max_chars)
-        return text
+        return text.strip(), rules
+
+    # ---- text cleanup ---------------------------------------------------
 
     def _truncate_at_sentence_boundary(self, text: str, max_chars: int) -> str:
         """Truncate text at or before max_chars, ideally at a sentence boundary."""

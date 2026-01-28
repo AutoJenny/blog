@@ -8,7 +8,7 @@ This wraps `ChannelPreviewRenderer` and returns JSON suitable for use by
 frontend preview modals and tools.
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 
 from utils.channel_preview.preview_renderer import ChannelPreviewRenderer
 
@@ -33,6 +33,14 @@ def preview_post_api(post_id: int):
 
     renderer = ChannelPreviewRenderer()
     result = renderer.render(post_id, channel, mode=mode, variant=variant)
+
+    # Use canonical channel template for Facebook (source provenance + validator warnings)
+    if result.get("success") and result.get("channel") == "facebook":
+        result["html"] = render_template(
+            "channel_previews/facebook_feed.html",
+            display_text=result.get("display_text", ""),
+            meta=result.get("meta", {}),
+        )
 
     status_code = 200
     if not result.get("success"):

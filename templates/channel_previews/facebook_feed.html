@@ -36,5 +36,32 @@
   <div class="bg-slate-800 rounded-md p-3 text-sm leading-relaxed">
     {{ display_text | e | replace('\n', '<br>') | safe }}
   </div>
+
+  {% if meta.validation_failed_rules and meta.validation_failed_rules|length > 0 %}
+  <div class="mt-2 text-xs text-amber-300 border border-amber-500/40 rounded px-2 py-1 bg-amber-900/20">
+    <strong>Validator warnings:</strong>
+    <ul class="list-disc list-inside mt-1">
+      {% for rule in meta.validation_failed_rules %}
+      <li>{{ rule }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if meta.source_type or meta.source_excerpt or meta.topic_id or meta.source_page_id %}
+  <div class="mt-3 text-xs text-slate-400 border-t border-slate-700 pt-2">
+    <details class="cursor-pointer">
+      <summary>Source</summary>
+      <div class="mt-1 text-slate-300">
+        {% if meta.source_type %}<div>Type: {{ meta.source_type }}</div>{% endif %}
+        {% if meta.topic_id is not none %}<div>Topic ID: {{ meta.topic_id }}</div>{% endif %}
+        {% if meta.source_page_id is not none %}<div>Article ID: {{ meta.source_page_id }}</div>{% endif %}
+        {% if meta.source_excerpt %}
+        <div class="mt-1 text-slate-400 italic">{{ meta.source_excerpt }}</div>
+        {% endif %}
+      </div>
+    </details>
+  </div>
+  {% endif %}
 </div>
 

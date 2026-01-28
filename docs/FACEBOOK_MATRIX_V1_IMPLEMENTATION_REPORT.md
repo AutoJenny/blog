@@ -349,3 +349,26 @@ Product and message queries in `planning_api_calendar_schedule` select `pq.role`
 - **Apply:** `python3 scripts/backfill_facebook_role_null.py` to set role on all Facebook rows where role IS NULL and content_type in (weekly_word, weekly_phrase, weekly_insult, product, message, depth_long).
 - **Verification:** After run, query `posting_queue` for `platform = 'facebook'` and `content_type IN (...)` and `role IS NULL` — result should be zero rows.
 
+---
+
+## 8. Friday AUTHORITY_SHORT — production-grade and preview parity (2026-01-28)
+
+**Objective:** Friday AUTHORITY_SHORT is editorially complete (rota/KB sourced, Ollama-generated, mechanically validated), lands as `status = 'ready'`, and preview shows source provenance and validator output. Preview and publish use the same formatter (parity proven).
+
+### 8.1 Friday slot (production-grade)
+
+- **Creation:** `scripts/automated_authority_short_creator.py` — one post per Friday (15:00), `role = 'AUTHORITY_SHORT'`, `content_type = 'authority_short'`. Source: rota topic for ISO week (preferred), then KB topic article, then fallback article. Generator: `utils/content_roles/authority_short_generator.py` (Ollama, mechanical validation, 3-attempt loop, hard fail with `validation_report_json`: attempts, failed_rules, source_used).
+- **Lifecycle:** On successful generation + validation → `status = 'ready'`. On failure → `status = 'failed'`; `validation_report_json` persisted for audit.
+- **Provenance:** `posting_queue` row stores `topic_id`, `source_page_id`, `rota_year`, `rota_week`, `validation_report_json` (including `source_used`, `source_excerpt`, `failed_rules`).
+
+### 8.2 Preview parity and reviewer visibility
+
+- **Parity:** Facebook preview uses the same formatter as publish (`utils.platform_publishers.format_message_for_facebook` via `utils/channel_preview/formatters/facebook.py`). Proof: `scripts/prove_preview_publish_parity.py` — 3/3 PASS for AUTHORITY_SHORT (15505), DEPTH_LONG (11823), weekly_word (667). Report: `docs/PARITY_PROOF_FACEBOOK_YYYYMMDD.txt`.
+- **Canonical template:** `templates/channel_previews/facebook_feed.html` used by `/api/preview/post/<id>?channel=facebook` and `/preview/post/<id>?channel=facebook`. Template shows: role/status/char count; formatted post text; **Validator warnings** (when `validation_failed_rules` non-empty); collapsible **Source** (type, topic ID, article ID, source excerpt from `validation_report_json`).
+- **No fallback snippet:** Invalid channel returns JSON `success: false`, `error_code: INVALID_CHANNEL`; no generic HTML.
+
+### 8.3 Evidence and regression guards
+
+- Schedule: `docs/SCHEDULE_EXCERPT_2026_W5_FRIDAY_ONLY_15505.json` — exactly one Friday AUTHORITY_SHORT (id 15505).
+- Preview: `docs/PREVIEW_API_15505.json`, `docs/PREVIEW_PAGE_15505_HEAD.html`, `docs/PREVIEW_INVALID_CHANNEL_15505.json`.
+

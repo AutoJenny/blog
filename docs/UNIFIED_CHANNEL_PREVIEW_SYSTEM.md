@@ -239,11 +239,12 @@ def format(self, post_data: Dict[str, Any], mode: str = 'preview',
 
 ### Template Files
 
-1. **`facebook_feed.html`**
+1. **`facebook_feed.html`** (canonical for Facebook)
    - Facebook post "card" mockup
-   - Shows: page name, timestamp, text content, image region, reaction row
-   - Includes "Preview" badge in preview mode
-   - Shows metadata (role, status, char count, warnings) in preview mode
+   - Shows: role, status, char count, formatted post text
+   - **Source** (collapsible): type, topic ID, article ID, optional excerpt from `validation_report_json` (e.g. AUTHORITY_SHORT provenance)
+   - **Validator warnings**: when `meta.validation_failed_rules` is non-empty, shows rule IDs (e.g. AUTH_SHORT_CTA_PHRASE_PRESENT)
+   - Used by both `/api/preview/post/<id>?channel=facebook` and `/preview/post/<id>?channel=facebook`
 
 2. **`generic_text.html`**
    - Generic text preview
