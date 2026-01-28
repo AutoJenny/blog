@@ -45,6 +45,8 @@ Implementation notes:
   - `topic_source_hint` (documentation-only hint for where content should draw from).
 - Helper function `get_facebook_day_config(iso_weekday)` returns the config for any day, providing a single, inspectable source of truth.
 
+**Indexing convention:** Matrix indexing uses **ISO weekday Mon=1 … Sun=7**. In JavaScript, `Date.getDay()` returns Sun=0 … Sat=6; the week-view converts via `getISOWeekday(date)`: `(date.getUTCDay() + 6) % 7 + 1` so that Mon=1 and Sun=7. The dates-line header and Social Posts row both derive the matrix key from the actual column date, not from column index alone.
+
 ---
 
 ## 2. DRIVER / UI_ONLY / RETIRE Classification
@@ -70,11 +72,13 @@ This table summarises where each relevant system now sits in the Facebook Matrix
 
 #### 3.1.1 “Dates Line” (Day Headers)
 
+**Phase 5.1 (2026-01-27):** Headers are driven only by Matrix v1 and the **actual column date**. Legacy labels (`weekly_social_focus`) are no longer read or displayed in the dates line. `renderMatrixHeaders(dates)` computes ISO weekday from each date via `getISOWeekday(date)` and shows only `ROLE` and Angle hint (e.g. `CULTURE — Language: Word`). Language placement was corrected so Phrase appears on Tuesday (day 2) and Insult on Thursday (day 4), matching the Matrix.
+
 Files:
 
 - `templates/planning/calendar/week_view.html`
 - `static/js/planning/calendar-week-view.js`
-- `blueprints/planning_api_calendar_social_focus.py` (unchanged logic; now UI-only)
+- `blueprints/planning_api_calendar_social_focus.py` (unchanged; not used for header rendering)
 
 Behaviour before:
 
@@ -265,4 +269,83 @@ This alignment ensures that any Facebook post can now be answered with one, cons
 > **“What Role is this serving, and why is it on this day?”**  
 
 and that answer comes from a **single Matrix and Role system**, not from a patchwork of legacy labels.
+
+---
+
+## 6. Addendum — Matrix v1 as scheduling source of truth (drift fix)
+
+**Date:** 2026 (post–Phase 5.1)  
+**Objective:** Make Facebook Matrix v1 the single source of truth for **what gets scheduled** each weekday, not only for headers/labels. Eliminate “truthy headers + messy reality” (extra product posts on Tue/Thu, message on Sat, empty Wed/Fri).
+
+### 6.1 Where legacy schedulers were changed
+
+| System | File(s) | Change |
+|--------|---------|--------|
+| **Schedule API (products)** | `blueprints/planning_api_calendar_schedule.py` | Product query: `ISODOW = 6` (Saturday only). Was `ISODOW != 6`. |
+| **Schedule API (messages)** | `blueprints/planning_api_calendar_schedule.py` | Message query: `ISODOW = 3` (Wednesday only). Was `ISODOW = 6`. |
+| **Message creator** | `scripts/automated_message_post_creator.py` | `publication_day = 3` (Wednesday); `get_next_publication_days()` replaces `get_next_saturdays()`; new message rows get `role = 'REASSURANCE'`. |
+| **Product creator** | `scripts/automated_product_post_creator.py` | For `platform == 'facebook'`, `get_active_schedules()` overrides `days` to `[6]` (Saturday only). New product rows get `role = 'COMMERCE'`. |
+| **Week-view message rendering** | `static/js/planning/calendar-week-view.js` | Message posts render on their `scheduled_date` weekday (Matrix v1: Wednesday), not hard-coded Saturday. |
+| **UI role masking removed** | `static/js/planning/calendar-week-view.js` | No overwriting of `primaryRole` for product/message/language/depth_long; display uses `item.role` or `"UNSET_ROLE"` plus content_type. See `docs/DELIVERABLE_C_UI_OVERRIDES_REMOVED.md`. |
+| **Backfill** | `scripts/backfill_matrix_v1_week.py` | For a given ISO week: move message Sat→Wed, products non-Sat→Sat, set roles, update `post_type_channel_config` message to `publication_day = 3`. See `docs/DELIVERABLE_D_BACKFILL.md`. |
+
+### 6.2 Matrix v1 scheduling source of truth (Facebook)
+
+- **Mon:** CULTURE (Language: Word) — 1 item. Driven by cyclic resolver + weekly language creator.
+- **Tue:** CULTURE (Language: Phrase) — 1 item. Same.
+- **Wed:** REASSURANCE (Message) — 1 item. Driven by `automated_message_post_creator` (publication_day=3) and schedule API `ISODOW = 3`.
+- **Thu:** CULTURE (Language: Insult) — 1 item. Same as Mon/Tue.
+- **Fri:** AUTHORITY_SHORT — 1 item. Schedule API returns role-based posts by `scheduled_date`; creation path (authority_short scheduler) is out of scope for this pass.
+- **Sat:** COMMERCE (Product) — 1 item. Driven by `automated_product_post_creator` (Facebook days overridden to [6]) and schedule API `ISODOW = 6`.
+- **Sun:** DEPTH_LONG (Deep Dive) — 1 item. Unchanged; rota-authoritative.
+
+No parallel “product days” or “message day” logic remains for Facebook: product/message scheduling is gated by Matrix v1 weekday mapping in the code paths above.
+
+### 6.3 Verification checklist
+
+1. **Week-view:** Screenshot of headers + Social Posts row for 2026-W5 showing one item per day and roles matching matrix (no Tue/Thu products, Sat product only, Wed message only). After backfill, Fri may still be empty until an authority_short creator exists.
+2. **Schedule API:** Capture `/planning/api/calendar/schedule/2026/5` and confirm each item has the expected `role` and `scheduled_date` (products on Sat, messages on Wed).
+3. **Docs:** This addendum; `DELIVERABLE_A_MATRIX_GROUND_TRUTH.md`, `DELIVERABLE_B_CALL_CHAIN_MAP.md`, `DELIVERABLE_C_UI_OVERRIDES_REMOVED.md`, `DELIVERABLE_D_BACKFILL.md`.
+
+---
+
+## 7. Role enforcement (Phase 6)
+
+**Objective:** Every Facebook social post must have an explicit `posting_queue.role`; no item should appear as "UNSET_ROLE". REASSURANCE (message) must appear on Wednesday.
+
+### 7.1 Canonical role assignment (Matrix v1)
+
+| content_type / source | Role |
+|------------------------|------|
+| weekly_word / weekly_phrase / weekly_insult | CULTURE |
+| message | REASSURANCE |
+| product | COMMERCE |
+| depth_long | DEPTH_LONG |
+
+No inference beyond this table.
+
+### 7.2 Enforcement at creation time
+
+- **Weekly language:** `utils/posting_queue_helpers.create_weekly_social_post` inserts `role = 'CULTURE'`. Schedule API appends `role: 'CULTURE'` for weekly_word/phrase/insult items (resolver-based).
+- **Message:** `scripts/automated_message_post_creator` inserts `role = 'REASSURANCE'`; `publication_day = 3` (Wednesday).
+- **Product:** `scripts/automated_product_post_creator` inserts `role = 'COMMERCE'`.
+- **depth_long:** Already set by content-roles / Sunday-slot path.
+
+### 7.3 Schedule API surfacing role
+
+Product and message queries in `planning_api_calendar_schedule` select `pq.role` and include `role` in the appended schedule item so the week-view receives it and does not show "UNSET_ROLE" when role is set.
+
+### 7.4 REASSURANCE on Wednesday
+
+- **Creation:** Message creator schedules on Wednesday and sets `role = 'REASSURANCE'`.
+- **Visibility:** Schedule API filters messages to `ISODOW = 3` (Wednesday). Week-view places message items by `scheduled_date` weekday. If an existing message is on Saturday, run `scripts/backfill_matrix_v1_week.py --week 2026-W5` to move it to Wednesday and set `role = 'REASSURANCE'`; it then appears in the calendar.
+- **Proof:** For 2026-W5, report `docs/PHASE6_ROLE_AND_MESSAGE_REPORT_2026W5.txt` shows one message (id 4631) with `scheduled_date` 2026-01-31 (Saturday), `status` ready, `role` NULL. After `backfill_matrix_v1_week.py --week 2026-W5`, that row has Wednesday date and role REASSURANCE and is returned by the schedule API.
+
+### 7.5 Backfill for existing NULL roles
+
+- **Script:** `scripts/backfill_facebook_role_null.py`
+- **Mapping:** content_type → role as in §7.1.
+- **Dry-run:** `python3 scripts/backfill_facebook_role_null.py --dry-run` to log every change without writing.
+- **Apply:** `python3 scripts/backfill_facebook_role_null.py` to set role on all Facebook rows where role IS NULL and content_type in (weekly_word, weekly_phrase, weekly_insult, product, message, depth_long).
+- **Verification:** After run, query `posting_queue` for `platform = 'facebook'` and `content_type IN (...)` and `role IS NULL` — result should be zero rows.
 

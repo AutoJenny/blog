@@ -195,8 +195,8 @@
         Facebook is the first platform to be fully specified with role-based scheduling.
     </p>
     
-    <h3>Canonical Facebook Schedule Rails</h3>
-    <p>Fixed schedule unless explicitly changed:</p>
+    <h3>Canonical Facebook Schedule Rails (Matrix v1)</h3>
+    <p>Fixed schedule unless explicitly changed. Matrix v1 is the single source of truth for day → role; workflow rails must not echo it.</p>
     <table class="kb-table">
         <thead>
             <tr>
@@ -211,37 +211,37 @@
                 <td>Monday</td>
                 <td>09:00</td>
                 <td>CULTURE</td>
-                <td>Word</td>
+                <td>Language: Word (weekly_word)</td>
             </tr>
             <tr>
                 <td>Tuesday</td>
-                <td>17:00</td>
-                <td>COMMERCE</td>
-                <td>Product</td>
+                <td>09:00</td>
+                <td>CULTURE</td>
+                <td>Language: Phrase (weekly_phrase)</td>
             </tr>
             <tr>
                 <td>Wednesday</td>
-                <td>09:00</td>
-                <td>CULTURE</td>
-                <td>Phrase</td>
-            </tr>
-            <tr>
-                <td>Thursday</td>
-                <td>17:00</td>
-                <td>COMMERCE</td>
-                <td>Product</td>
-            </tr>
-            <tr>
-                <td>Friday</td>
-                <td>11:07</td>
-                <td>CULTURE</td>
-                <td>Insult</td>
-            </tr>
-            <tr>
-                <td>Saturday</td>
                 <td>14:30</td>
                 <td>REASSURANCE</td>
                 <td>Message</td>
+            </tr>
+            <tr>
+                <td>Thursday</td>
+                <td>09:00</td>
+                <td>CULTURE</td>
+                <td>Language: Insult (weekly_insult)</td>
+            </tr>
+            <tr>
+                <td>Friday</td>
+                <td>15:00</td>
+                <td>AUTHORITY_SHORT</td>
+                <td>Short authority / context</td>
+            </tr>
+            <tr>
+                <td>Saturday</td>
+                <td>15:00</td>
+                <td>COMMERCE</td>
+                <td>Product Spotlight</td>
             </tr>
             <tr>
                 <td>Sunday</td>

@@ -34,7 +34,8 @@ class ProductPostCreator:
         
     def get_active_schedules(self, platform: str = 'facebook') -> List[Dict]:
         """
-        Get active schedules for product posts
+        Get active schedules for product posts.
+        For Facebook, Matrix v1 overrides: COMMERCE/product on Saturday (ISO 6) only.
         """
         try:
             with self.db_manager.get_cursor() as cursor:
@@ -48,6 +49,11 @@ class ProductPostCreator:
                 """, (platform,))
                 
                 schedules = cursor.fetchall()
+                if platform == 'facebook' and schedules:
+                    # Matrix v1: no parallel product-days logic for Facebook; Saturday only
+                    for s in schedules:
+                        s['days'] = [6]  # ISO Saturday
+                    logger.info("Facebook product schedules overridden to Matrix v1: Saturday (6) only")
                 logger.info(f"Found {len(schedules)} active schedules for product posts")
                 return schedules
                 
@@ -211,11 +217,11 @@ class ProductPostCreator:
                 # Insert into posting_queue
                 cursor.execute("""
                     INSERT INTO posting_queue (
-                        product_id, content_type, platform, status,
+                        product_id, content_type, platform, status, role,
                         scheduled_date, scheduled_time, scheduled_timestamp,
                         schedule_name, created_at, updated_at
                     )
-                    VALUES (%s, 'product', %s, 'draft', %s, %s, %s, %s, NOW(), NOW())
+                    VALUES (%s, 'product', %s, 'draft', 'COMMERCE', %s, %s, %s, %s, NOW(), NOW())
                     RETURNING id
                 """, (
                     product_id, platform, scheduled_date, scheduled_time,

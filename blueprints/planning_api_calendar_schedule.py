@@ -130,7 +130,7 @@ def api_calendar_schedule(year, week_number):
                 '_from_cyclic_system': True
             })
         
-        # Weekly content
+        # Weekly content — Matrix v1: CULTURE (language angles)
         if weekly_word:
             schedule.append({
                 'type': 'weekly_word',
@@ -138,9 +138,9 @@ def api_calendar_schedule(year, week_number):
                 'title': weekly_word.get('idea_title'),
                 'description': weekly_word.get('idea_description'),
                 'position': weekly_word.get('position'),
+                'role': 'CULTURE',
                 '_from_cyclic_system': True
             })
-        
         if weekly_phrase:
             schedule.append({
                 'type': 'weekly_phrase',
@@ -148,9 +148,9 @@ def api_calendar_schedule(year, week_number):
                 'title': weekly_phrase.get('idea_title'),
                 'description': weekly_phrase.get('idea_description'),
                 'position': weekly_phrase.get('position'),
+                'role': 'CULTURE',
                 '_from_cyclic_system': True
             })
-        
         if weekly_insult:
             schedule.append({
                 'type': 'weekly_insult',
@@ -158,6 +158,7 @@ def api_calendar_schedule(year, week_number):
                 'title': weekly_insult.get('idea_title'),
                 'description': weekly_insult.get('idea_description'),
                 'position': weekly_insult.get('position'),
+                'role': 'CULTURE',
                 '_from_cyclic_system': True
             })
         
@@ -204,13 +205,13 @@ def api_calendar_schedule(year, week_number):
                 
                 logger.info(f"Product days from config: {sorted(product_days)}, Message days: {sorted(message_days)}")
                 
-                # Query product posts - EXCLUDE Saturday (day 6) in SQL query
-                # Messages replace Saturday product posts, so we filter them out at the database level
-                # Use ISODOW for ISO weekday (1=Monday, 7=Sunday), not DOW (0=Sunday, 6=Saturday)
+                # Query product posts - Matrix v1: COMMERCE/product on Saturday (day 6) only
+                # Use ISODOW for ISO weekday (1=Monday, 7=Sunday)
                 cursor.execute("""
                     SELECT 
                         pq.id as posting_queue_id,
                         pq.product_id,
+                        pq.role,
                         pq.scheduled_date,
                         pq.scheduled_time,
                         pq.status,
@@ -224,15 +225,12 @@ def api_calendar_schedule(year, week_number):
                       AND pq.scheduled_date >= %s
                       AND pq.scheduled_date <= %s
                       AND pq.scheduled_timestamp IS NOT NULL
-                      AND EXTRACT(ISODOW FROM pq.scheduled_date) != 6  -- Exclude Saturday (day 6)
+                      AND EXTRACT(ISODOW FROM pq.scheduled_date) = 6  -- Matrix v1: Saturday only
                     ORDER BY pq.scheduled_date, pq.scheduled_time
                 """, (week_start, week_end))
                 product_posts = cursor.fetchall()
-                
-                # No need to filter in Python - already filtered in SQL
                 filtered_product_posts = product_posts
-                
-                logger.info(f"Found {len(product_posts)} product posts, {len(filtered_product_posts)} after excluding Saturday")
+                logger.info(f"Found {len(product_posts)} product posts (Matrix v1: Saturday only)")
                 
                 # Add product posts (excluding Saturday)
                 for idx, post in enumerate(filtered_product_posts):
@@ -252,6 +250,7 @@ def api_calendar_schedule(year, week_number):
                             'item_id': post['product_id'],
                             'product_id': post['product_id'],
                             'posting_queue_id': post['posting_queue_id'],
+                            'role': post.get('role'),  # Matrix v1: COMMERCE; surface for UI
                             'title': post['product_name'] or f"Product {post['product_id']}",
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
@@ -261,11 +260,12 @@ def api_calendar_schedule(year, week_number):
                             'position': idx + 1
                         })
                 
-                # Query message posts - ONLY Saturday (day 6)
+                # Query message posts - Matrix v1: REASSURANCE/message on Wednesday (day 3) only
                 # Use ISODOW for ISO weekday (1=Monday, 7=Sunday)
                 cursor.execute("""
                     SELECT 
                         pq.id as posting_queue_id,
+                        pq.role,
                         pq.scheduled_date,
                         pq.scheduled_time,
                         pq.status,
@@ -277,18 +277,15 @@ def api_calendar_schedule(year, week_number):
                       AND pq.scheduled_date >= %s
                       AND pq.scheduled_date <= %s
                       AND pq.scheduled_timestamp IS NOT NULL
-                      AND EXTRACT(ISODOW FROM pq.scheduled_date) = 6  -- Only Saturday (day 6)
+                      AND EXTRACT(ISODOW FROM pq.scheduled_date) = 3  -- Matrix v1: Wednesday only
                     ORDER BY pq.scheduled_date, pq.scheduled_time
                 """, (week_start, week_end))
                 message_posts = cursor.fetchall()
+                wednesday_messages = message_posts
+                logger.info(f"Found {len(message_posts)} message posts (Matrix v1: Wednesday only)")
                 
-                # Already filtered in SQL - no need to filter in Python
-                saturday_messages = message_posts
-                
-                logger.info(f"Found {len(message_posts)} message posts, {len(saturday_messages)} for Saturday")
-                
-                # Add message posts (Saturday only)
-                for idx, post in enumerate(saturday_messages):
+                # Add message posts (Matrix v1: Wednesday only)
+                for idx, post in enumerate(wednesday_messages):
                     if post['scheduled_date']:
                         # Extract first line of message for title
                         content = post['generated_content'] or ''
@@ -310,6 +307,7 @@ def api_calendar_schedule(year, week_number):
                             'type': 'message',
                             'item_id': post['posting_queue_id'],
                             'posting_queue_id': post['posting_queue_id'],
+                            'role': post.get('role'),  # Matrix v1: REASSURANCE; surface for UI
                             'title': title,
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
@@ -320,6 +318,74 @@ def api_calendar_schedule(year, week_number):
                         })
                 
                 logger.info(f"Added {len([s for s in schedule if s.get('type') == 'product'])} product posts and {len([s for s in schedule if s.get('type') == 'message'])} message posts to schedule")
+                
+                # Query role-based posts (e.g., DEPTH_LONG Sunday Deep Dive, AUTHORITY_SHORT Friday)
+                # Exclude:
+                #   - 'product' and 'message' (already returned by the product/message queries above)
+                #   - weekly language types ('weekly_word','weekly_phrase','weekly_insult')
+                #     which are already represented in the grid via the Matrix language resolver.
+                cursor.execute("""
+                    SELECT 
+                        pq.id as posting_queue_id,
+                        pq.role,
+                        pq.scheduled_date,
+                        pq.scheduled_time,
+                        pq.status,
+                        pq.generated_content,
+                        pq.generated_caption,
+                        EXTRACT(ISODOW FROM pq.scheduled_date) as weekday
+                    FROM posting_queue pq
+                    WHERE pq.role IS NOT NULL
+                      AND pq.platform = 'facebook'
+                      AND pq.scheduled_date >= %s
+                      AND pq.scheduled_date <= %s
+                      AND pq.scheduled_timestamp IS NOT NULL
+                      AND pq.content_type NOT IN ('product', 'message', 'weekly_word', 'weekly_phrase', 'weekly_insult')
+                    ORDER BY pq.scheduled_date, pq.scheduled_time
+                """, (week_start, week_end))
+                role_posts = cursor.fetchall()
+                
+                logger.info(f"Found {len(role_posts)} role-based posts")
+                
+                # Add role-based posts to schedule
+                for idx, post in enumerate(role_posts):
+                    if post['scheduled_date']:
+                        # Extract title from content
+                        content = post['generated_content'] or post['generated_caption'] or ''
+                        title = content.split('\n')[0][:50] if content else f"{post['role']} Post"
+                        
+                        # Map posting_queue status to post_status for frontend
+                        queue_status = post['status'] or 'draft'
+                        post_status_map = {
+                            'draft': 'draft',
+                            'generated': 'draft',
+                            'validated_pass': 'draft',
+                            'approved': 'ready',
+                            'scheduled': 'ready',
+                            'ready': 'ready',
+                            'published': 'published',
+                            'failed': 'failed'
+                        }
+                        post_status = post_status_map.get(queue_status, 'draft')
+                        
+                        # Determine type based on role
+                        schedule_type = post['role'].lower() if post['role'] else 'role_post'
+                        
+                        schedule.append({
+                            'type': schedule_type,
+                            'item_id': post['posting_queue_id'],
+                            'posting_queue_id': post['posting_queue_id'],
+                            'role': post['role'],
+                            'title': title,
+                            'scheduled_date': str(post['scheduled_date']),
+                            'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
+                            'status': queue_status,  # Keep original status field
+                            'post_status': post_status,  # Add post_status for frontend compatibility
+                            'post_exists': True,  # Role-based post exists in posting_queue
+                            'position': idx + 1
+                        })
+                
+                logger.info(f"Added {len([s for s in schedule if s.get('role')])} role-based posts to schedule")
         except Exception as e:
             logger.error(f"Error loading automated Facebook posts for week view: {e}", exc_info=True)
             # Continue without posts if there's an error

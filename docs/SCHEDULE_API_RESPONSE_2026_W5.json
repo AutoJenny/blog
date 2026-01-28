@@ -1,0 +1,19 @@
+{
+  "_from_cyclic_system": true,
+  "schedule": [
+    {"type": "theme_selection", "theme_id": 14, "theme_title": "Dark Skies"},
+    {"type": "recipe", "recipe_id": 2, "recipe_title": "Cock-a-Leekie Soup"},
+    {"type": "post", "item_type": "profile", "post_id": 98, "post_title": "Langlands"},
+    {"type": "weekly_word", "item_id": 1092, "title": "wee"},
+    {"type": "weekly_phrase", "item_id": 1188, "title": "Whit's the craic?"},
+    {"type": "weekly_insult", "item_id": 1295, "title": "Yer brain's awa for a daunder"},
+    {"type": "product", "posting_queue_id": 656, "scheduled_date": "2026-01-31", "title": "Celtic Oval Belt Buckle"},
+    {"type": "product", "posting_queue_id": 10727, "scheduled_date": "2026-01-31", "title": "Womens Tartan Tank Top"},
+    {"type": "product", "posting_queue_id": 13831, "scheduled_date": "2026-01-31", "title": "Womens Tartan Design Athletic T-Shirt"},
+    {"type": "commerce", "posting_queue_id": 13831, "role": "COMMERCE", "scheduled_date": "2026-01-31"},
+    {"type": "depth_long", "posting_queue_id": 11823, "role": "DEPTH_LONG", "scheduled_date": "2026-02-01"}
+  ],
+  "success": true,
+  "week_number": 5,
+  "year": 2026
+}

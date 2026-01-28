@@ -69,11 +69,12 @@ def create_weekly_social_post(
         close_cursor = True
 
     try:
-        # Build INSERT with idea_id explicitly set
+        # Build INSERT with idea_id explicitly set. Matrix v1: weekly_word/phrase/insult → role = 'CULTURE'.
         insert_fields = [
             "idea_id",
             "content_type",
             "platform",
+            "role",
             "generated_content",
             "status",
             "created_at",
@@ -83,6 +84,7 @@ def create_weekly_social_post(
             idea_id,
             content_type,
             platform,
+            "CULTURE",
             generated_content,
             status,
             "NOW()",

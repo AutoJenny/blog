@@ -17,6 +17,15 @@ function getWeekStartDate(year, weekNumber) {
   return simple; // Monday
 }
 
+/**
+ * JavaScript Date.getDay() => ISO weekday (Mon=1 … Sun=7).
+ * Matrix indexing uses ISO weekday everywhere.
+ */
+function getISOWeekday(date) {
+  const jsDay = date.getUTCDay(); // 0=Sun, 1=Mon, …, 6=Sat
+  return jsDay === 0 ? 7 : jsDay;
+}
+
 function formatDate(d) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
@@ -173,11 +182,12 @@ function renderItems(container, items, type, year, week) {
     // Use post_status if available, otherwise fall back to status field
     const postStatus = (item.post_status || item.status) ? (item.post_status || item.status).toLowerCase() : null;
 
-    // Phase 5: Facebook Matrix v1 – Role-first, Angle-second labelling
-    // Primary intent comes from Role; language/product/deep dive appear as angles.
+    // Phase 5 / Step 3: No UI-only role overrides. Show actual item.role or "UNSET_ROLE" + content_type.
+    // This surfaces items that are not yet scheduled with the correct Matrix role.
     let primaryRole = item.role || null;
     let angleLabel = null;
     let typeName;
+    const displayRole = primaryRole || 'UNSET_ROLE';
 
     if (type === 'idea') {
       typeName = 'Theme';
@@ -186,29 +196,21 @@ function renderItems(container, items, type, year, week) {
     } else if (type === 'profile') {
       typeName = 'Profile';
     } else if (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult') {
-      // All weekly language content sits inside CULTURE slots for Matrix v1
-      primaryRole = primaryRole || 'CULTURE';
       angleLabel = type === 'weekly-word'
         ? 'Language: Word'
         : type === 'weekly-phrase'
           ? 'Language: Phrase'
           : 'Language: Insult';
-      typeName = angleLabel ? `${primaryRole} — ${angleLabel}` : primaryRole;
+      typeName = angleLabel ? `${displayRole} — ${angleLabel}` : displayRole;
     } else if (type === 'product') {
-      // Product posts are COMMERCE in Matrix v1
-      primaryRole = primaryRole || 'COMMERCE';
       angleLabel = 'Product';
-      typeName = `${primaryRole} — ${angleLabel}`;
+      typeName = `${displayRole} — ${angleLabel}`;
     } else if (type === 'message') {
-      // Messages are REASSURANCE in Matrix v1
-      primaryRole = primaryRole || 'REASSURANCE';
       angleLabel = 'Message';
-      typeName = `${primaryRole} — ${angleLabel}`;
+      typeName = `${displayRole} — ${angleLabel}`;
     } else if (type === 'depth_long') {
-      // Sunday Deep Dive – DEPTH_LONG role
-      primaryRole = primaryRole || 'DEPTH_LONG';
       angleLabel = 'Deep Dive';
-      typeName = `${primaryRole} — ${angleLabel}`;
+      typeName = `${displayRole} — ${angleLabel}`;
     } else if (type === 'event') {
       typeName = item.event_recurrence_type === 'one_off' ? 'Special' : 'Annual';
     } else if (type === 'scheduled') {
@@ -966,30 +968,19 @@ async function loadWeek(year, weekNumber) {
   }
   
   // Render weekly words/phrases/insults and product posts into Social Posts row
+  // Phase 5.1: Matrix v1 fixed assignment — Mon=Word, Tue=Phrase, Thu=Insult (ISO day 1,2,4).
   if (showSocialPosts && socialPostsCells) {
-    // Word on Monday (day 1)
     if (selectedWord) {
       const wordTarget = document.getElementById('social-posts-row-day-1');
-      if (wordTarget) {
-        // Pass item as-is; renderItems will add "Word: " prefix and show description
-        renderItems(wordTarget, [selectedWord], 'weekly-word', year, weekNumber);
-      }
+      if (wordTarget) renderItems(wordTarget, [selectedWord], 'weekly-word', year, weekNumber);
     }
-    // Phrase on Wednesday (day 3)
     if (selectedPhrase) {
-      const phraseTarget = document.getElementById('social-posts-row-day-3');
-      if (phraseTarget) {
-        // Pass item as-is; renderItems will add "Phrase: " prefix and show description
-        renderItems(phraseTarget, [selectedPhrase], 'weekly-phrase', year, weekNumber);
-      }
+      const phraseTarget = document.getElementById('social-posts-row-day-2');
+      if (phraseTarget) renderItems(phraseTarget, [selectedPhrase], 'weekly-phrase', year, weekNumber);
     }
-    // Insult on Friday (day 5)
     if (selectedInsult) {
-      const insultTarget = document.getElementById('social-posts-row-day-5');
-      if (insultTarget) {
-        // Pass item as-is; renderItems will add "Insult: " prefix and show description
-        renderItems(insultTarget, [selectedInsult], 'weekly-insult', year, weekNumber);
-      }
+      const insultTarget = document.getElementById('social-posts-row-day-4');
+      if (insultTarget) renderItems(insultTarget, [selectedInsult], 'weekly-insult', year, weekNumber);
     }
     // Product posts - render on their actual scheduled_date
     // Group by day and show only one per day (the first one scheduled for that day)
@@ -1034,23 +1025,18 @@ async function loadWeek(year, weekNumber) {
       });
     }
     
-    // Message posts - render on Saturday (day 6) only
+    // Message posts - Matrix v1: REASSURANCE/message on Wednesday (day 3); render on scheduled_date day
     const messagePosts = schedule.filter(s => s.type === 'message');
     if (messagePosts.length > 0) {
       messagePosts.forEach((messagePost) => {
         if (messagePost.scheduled_date) {
           try {
             const dateObj = new Date(messagePost.scheduled_date + 'T00:00:00');
-            // Get ISO weekday (1=Monday, 7=Sunday)
             const jsDay = dateObj.getDay();
-            const dayIndex = jsDay === 0 ? 7 : jsDay; // Convert to ISO weekday (1=Mon, 7=Sun)
-            
-            // Messages should only be on Saturday (day 6)
-            if (dayIndex === 6) {
-              const messageTarget = document.getElementById(`social-posts-row-day-6`);
-              if (messageTarget) {
-                renderItems(messageTarget, [messagePost], 'message', year, weekNumber);
-              }
+            const dayIndex = jsDay === 0 ? 7 : jsDay; // ISO weekday (1=Mon, 7=Sun)
+            const messageTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+            if (messageTarget) {
+              renderItems(messageTarget, [messagePost], 'message', year, weekNumber);
             }
           } catch (e) {
             console.warn('Error parsing scheduled_date for message post:', messagePost.scheduled_date, e);
@@ -1060,7 +1046,8 @@ async function loadWeek(year, weekNumber) {
     }
     
     // Role-based posts (e.g., DEPTH_LONG Sunday Deep Dive) - render on their scheduled_date
-    const rolePosts = schedule.filter(s => s.role && s.posting_queue_id);
+    // Role-based posts (e.g. DEPTH_LONG, AUTHORITY_SHORT): exclude product/message — those are already rendered above
+    const rolePosts = schedule.filter(s => s.role && s.posting_queue_id && s.type !== 'product' && s.type !== 'message');
     if (rolePosts.length > 0) {
       rolePosts.forEach((rolePost) => {
         if (rolePost.scheduled_date) {
@@ -1162,8 +1149,24 @@ async function loadWeek(year, weekNumber) {
     }
   }
   
-  // Render social focuses under day headers
-  renderSocialFocuses(socialFocuses);
+  // Phase 5.1: Dates-line headers from Matrix v1 only (ISO Mon=1…Sun=7); no legacy labels.
+  if (dates && dates.length >= 7 && typeof getISOWeekday === 'function') {
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const rows = [];
+    for (let i = 0; i < 7; i++) {
+      const d = dates[i];
+      const ymd = d ? `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}` : '';
+      const getDay = d ? d.getUTCDay() : '';
+      const iso = d ? getISOWeekday(d) : '';
+      const role = (typeof FACEBOOK_MATRIX_ROLES !== 'undefined' && FACEBOOK_MATRIX_ROLES[iso]) || '';
+      const angle = (typeof FACEBOOK_MATRIX_ANGLE_HINTS !== 'undefined' && FACEBOOK_MATRIX_ANGLE_HINTS[iso]) || '';
+      rows.push(`${dayNames[i]} ${ymd} getDay=${getDay} iso=${iso} matrixKey=${iso} role=${role} angle=${angle || '(none)'}`);
+    }
+    console.log('[Matrix v1 dates-line] ISO weekday check (Mon=1…Sun=7):\n' + rows.join('\n'));
+    if (typeof renderMatrixHeaders === 'function') {
+      renderMatrixHeaders(dates);
+    }
+  }
 }
 
 /**
@@ -1670,40 +1673,34 @@ const FACEBOOK_MATRIX_ANGLE_HINTS = {
   7: 'Deep Dive',
 };
 
-// Social Focus Functions (dates line)
-function renderSocialFocuses(focuses) {
-  // Create a map of day_of_week -> focus for quick lookup
-  const focusMap = {};
-  focuses.forEach(focus => {
-    focusMap[focus.day_of_week] = focus;
-  });
-  
-  // Update each day header
-  for (let day = 1; day <= 7; day++) {
-    const focusEl = document.querySelector(`.social-focus[data-day="${day}"]`);
+/**
+ * Render the dates-line headers from the Facebook Matrix v1 only.
+ * Uses ISO weekday (Mon=1 … Sun=7) derived from the actual date per column.
+ * Legacy labels (weekly_social_focus) are not used or displayed.
+ */
+function renderMatrixHeaders(dates) {
+  if (!dates || dates.length < 7) return;
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  for (let i = 0; i < 7; i++) {
+    const date = dates[i];
+    const iso = getISOWeekday(date);
+    const role = FACEBOOK_MATRIX_ROLES[iso] || '';
+    const angleHint = FACEBOOK_MATRIX_ANGLE_HINTS[iso] || null;
+    const parts = [role];
+    if (angleHint) parts.push(angleHint);
+    const text = parts.join(' — ') || '';
+    const focusEl = document.querySelector(`.social-focus[data-day="${i + 1}"]`);
     if (focusEl) {
-      const role = FACEBOOK_MATRIX_ROLES[day] || '';
-      const angleHint = FACEBOOK_MATRIX_ANGLE_HINTS[day] || '';
-      const focus = focusMap[day];
-      const legacyLabel = focus && focus.social_focus ? focus.social_focus : null;
-
-      // Phase 5: Role-first, legacy labels as optional UI hints only
-      const parts = [];
-      if (role) parts.push(role);
-      if (angleHint) parts.push(angleHint);
-      if (legacyLabel) parts.push(legacyLabel);
-
-      focusEl.textContent = parts.join(' — ') || 'No focus set';
-
-      if (legacyLabel && focus && focus.id) {
-        focusEl.classList.remove('empty');
-        focusEl.dataset.focusId = focus.id;
-      } else {
-        focusEl.classList.add('empty');
-        focusEl.removeAttribute('data-focus-id');
-      }
+      focusEl.textContent = text;
+      focusEl.classList.add('empty');
+      focusEl.removeAttribute('data-focus-id');
     }
   }
+}
+
+// Legacy: kept for modal only; header is rendered by renderMatrixHeaders(dates).
+function renderSocialFocuses(focuses) {
+  (typeof focuses !== 'undefined' && focuses !== null) || (focuses = []);
 }
 
 // Social Focus Modal Management
