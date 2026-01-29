@@ -13,6 +13,12 @@
     
     <h2>How It Works</h2>
     
+    <div class="kb-info" style="background: #d1fae5; border-left: 4px solid #10b981; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #065f46; font-size: 0.9rem;">
+            <strong>Single gate:</strong> Facebook posts are published only through <code>scheduled_posting_executor.py</code>. The manual API and workflow action return 403 and do not publish. This ensures all posts go through Matrix v1.1 weekday validation (Phase C1).
+        </p>
+    </div>
+    
     <h3>Posting Process</h3>
     <p>Content is posted to Facebook using the Facebook Graph API:</p>
     <ol>

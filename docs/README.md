@@ -12,6 +12,7 @@ Welcome to the BlogForge CMS documentation. This directory contains comprehensiv
 ### Feature Documentation
 - **[Planning Area Roadmap](planning_area_roadmap.md)** - New collaborative planning system roadmap
 - **[Auto-Replenish System](auto-replenish-system.md)** - Automated queue management system
+- **Facebook Automated Posting (Phase C1 & C2):** Single gate and Matrix v1.1 validation ([REPORT_PHASE_C1_SAFETY_AND_ALIGNMENT.md](REPORT_PHASE_C1_SAFETY_AND_ALIGNMENT.md)); queue hygiene and unique index ([REPORT_PHASE_C2_EXECUTION.md](REPORT_PHASE_C2_EXECUTION.md), [REPORT_PHASE_C2_QUEUE_HYGIENE.md](REPORT_PHASE_C2_QUEUE_HYGIENE.md))
 - **[Image Storage Migration](image_storage_migration_summary.md)** - Image system migration details
 - **[Data Intelligence System](data_intelligence/README.md)** - Product/Category Profiles & Content Generation using LLMs and vector search
 - **[Product Posts Automation](PRODUCT_POSTS_DOCUMENTATION_INDEX.md)** - Automated product post creation and publishing system

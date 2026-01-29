@@ -90,7 +90,7 @@ The BlogForge CMS uses PostgreSQL as its primary database with 82+ tables organi
 | `content_processes` | Content processing workflows | `id`, `platform_id`, `channel_type_id`, `name` |
 | `content_priorities` | Content prioritization | `id`, `content_type`, `priority_score` |
 | `syndication_progress` | Syndication tracking | `post_id`, `platform_id`, `status`, `progress` |
-| `posting_queue` | Content posting queue | `id`, `post_id`, `platform_id`, `scheduled_at` |
+| `posting_queue` | Content posting queue | `id`, `post_id`, `platform_id`, `scheduled_at`, `status` (draft/ready/pending/published/cancelled). Partial unique index `idx_posting_queue_facebook_language_unique` on `(platform, content_type, idea_id, scheduled_date)` for Facebook language posts (Phase C2). |
 | `product_content_templates` | Product content templates | `id`, `platform_id`, `template_content` |
 | `process_configurations` | Process configuration | `process_id`, `config_key`, `config_value` |
 

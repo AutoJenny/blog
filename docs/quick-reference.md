@@ -86,7 +86,7 @@ with db_manager.get_cursor() as cursor:
 ```
 
 ### Key Tables
-- `posting_queue` - Content scheduling
+- `posting_queue` - Content scheduling. Facebook posts publish only via <code>scheduled_posting_executor.py</code> (single gate; Matrix v1.1 validation). Partial unique index on Facebook language posts prevents duplicates.
 - `clan_products` - Product data
 - `ui_session_state` - UI state
 - `workflow_stage_entity` - Workflows

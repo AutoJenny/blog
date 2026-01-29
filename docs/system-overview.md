@@ -47,7 +47,8 @@ blog/
 
 ### 3. Syndication Platform (Launchpad)
 - **Multi-Platform Support:** Facebook, Instagram, and more
-- **Queue Management:** Automated content scheduling
+- **Facebook single gate:** Facebook posts are published only through `scripts/scheduled_posting_executor.py`. Manual API and workflow publish return 403. The executor enforces Matrix v1.1 weekday rules (language Tuesday only; culture_fact Mon/Thu; etc.).
+- **Queue Management:** Automated content scheduling; `posting_queue` has a partial unique index (`idx_posting_queue_facebook_language_unique`) for Facebook language posts to prevent duplicate language rows.
 - **Auto-Replenish System:** Automatic queue maintenance
 - **Content Generation:** AI-powered social media posts
 
@@ -115,7 +116,7 @@ The system uses `config/queue_auto_replenish.json` for configuration:
 - **UI & Configuration** (interface settings, preferences)
 
 ### Key Tables
-- `posting_queue` - Content scheduling and management
+- `posting_queue` - Content scheduling and management. Partial unique index on Facebook language posts (`platform`, `content_type`, `idea_id`, `scheduled_date`) prevents duplicate language rows (Phase C2).
 - `clan_products` - External product data
 - `workflow_stage_entity` - Workflow management
 - `llm_prompts` - AI prompt templates

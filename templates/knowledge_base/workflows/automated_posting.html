@@ -40,13 +40,14 @@
     <h3>The Posting Queue: The Working Queue</h3>
     <p>The <code>posting_queue</code> table is where posts wait to be published. It tracks status:</p>
     <div class="kb-info" style="background: #f0f8e8; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <strong>draft</strong> → <strong>ready</strong> → <strong>pending</strong> → <strong>published</strong>
+        <strong>draft</strong> → <strong>ready</strong> → <strong>pending</strong> → <strong>published</strong> (or <strong>cancelled</strong> for hygiene)
     </div>
     <ul>
         <li><strong>draft</strong> - Post created, needs preparation</li>
         <li><strong>ready</strong> - Post prepared, ready to schedule</li>
         <li><strong>pending</strong> - Post scheduled, waiting for time</li>
         <li><strong>published</strong> - Post sent to Facebook ✅</li>
+        <li><strong>cancelled</strong> - Row neutralised (e.g. wrong-day language, duplicate product); not published</li>
     </ul>
     
     <h2>The 4-Step Automated Process</h2>
@@ -93,9 +94,15 @@
     
     <h3>Step 4: Actually Post</h3>
     <p><strong>Script:</strong> <code>scheduled_posting_executor.py</code> (replaces old <code>posting_executor.py</code>)</p>
+    <div class="kb-info" style="background: #d1fae5; border-left: 4px solid #10b981; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+        <p style="margin: 0; color: #065f46; font-size: 0.9rem;">
+            <strong>Single gate for Facebook:</strong> Only this script can publish to Facebook. The manual API and workflow action no longer call the publisher (they return 403). The executor enforces Matrix v1.1 weekday rules (language Tuesday only; culture_fact Mon/Thu; etc.).
+        </p>
+    </div>
     <p><strong>What it does:</strong></p>
     <ul>
         <li><strong>Checks automated posting switch</strong> (master control - see <a href="#automated-posting-control">Automated Posting Control</a> below)</li>
+        <li><strong>Validates content schedule (Matrix v1.1):</strong> Language Tuesday only; culture_fact Mon/Thu; message Wed; authority_short Fri; product Sat; depth_long Sun. Wrong-day posts (e.g. language on Thursday) are skipped.</li>
         <li>Validates scheduled dates (failsafe protection against future-dated posts)</li>
         <li>Finds <strong>pending</strong> or <strong>ready</strong> posts where <code>scheduled_timestamp <= now()</code></li>
         <li>Posts them to Facebook</li>

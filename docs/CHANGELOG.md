@@ -1,5 +1,61 @@
 # Changelog
 
+## Facebook Automated Posting — Phase C1 (Safety & Alignment) and Phase C2 (Queue Hygiene) (2026-01-29)
+
+### Phase C1 — Single gate and Matrix v1.1 validation
+- **Objective:** Facebook posts are published only through a single, validated gate; content adheres to Matrix v1.1 weekday schedule.
+- **blueprints/posts.py:** `api_publish_post(queue_id)` no longer calls `publish_to_facebook()`; returns 403. Manual publish disabled for date safety.
+- **blueprints/automation_execute.py:** `execute_publish_to_facebook()` no longer calls `publish_to_facebook()`; returns 403. Workflow cannot publish to Facebook.
+- **scripts/scheduled_posting_executor.py:** Sole code path for Facebook publishing. Added `validate_content_schedule()` enforcing Matrix v1.1: language (weekly_word/phrase/insult) Tuesday only; culture_fact Mon/Thu; message Wed; authority_short Fri; product Sat; depth_long Sun. Legacy language on non-Tuesday days are hard-blocked at execution time.
+- **Report:** `docs/REPORT_PHASE_C1_SAFETY_AND_ALIGNMENT.md`.
+
+### Phase C2 — Queue hygiene and prevention
+- **Objective:** Clean up data inconsistencies in `posting_queue` and prevent duplicate language posts.
+- **Cleanup:** `scripts/phase_c2_queue_cleanup.py` cancelled 338 non-Tuesday language rows (ready/pending) and 2 duplicate product rows; exported IDs to `docs/PHASE_C2_AFFECTED_IDS_*.csv`.
+- **Migration:** `migrations/20260129_add_unique_facebook_language_queue.sql` added partial unique index `idx_posting_queue_facebook_language_unique` on `(platform, content_type, idea_id, scheduled_date)` for Facebook language posts, preventing duplicate language rows at DB level.
+- **Reports:** `docs/REPORT_PHASE_C2_QUEUE_HYGIENE.md` (analysis), `docs/REPORT_PHASE_C2_EXECUTION.md` (execution and verification).
+
+---
+
+## CULTURE v1.1 Phase B (2026-01-29)
+
+### Objective
+Mon/Thu = library CULTURE (culture_fact), Tue = rotating language only; 90-day avoidance; no execution/preview/schema changes.
+
+### Changed
+- **utils/content_roles/culture_generator.py**: Added `category` to return of `pick_culture_for_slot()`.
+- **scripts/automated_culture_creator.py**: Default look-ahead 4 weeks (28 days); docstring updated.
+- **blueprints/planning_api_calendar_schedule.py**: Comment that Mon/Thu CULTURE (culture_fact) appear via role rail; Tuesday language resolver-only.
+
+### Added
+- **docs/CULTURE_V1_1_PHASE_B_REPORT.md**: Phase B report (schedule API excerpt, sample posting_queue rows, 90-day confirmation). Do not proceed beyond Phase B without new approval.
+
+### Non-scope (unchanged)
+Execution, preview, Facebook formatter, AUTHORITY_SHORT, DEPTH_LONG, schema/migrations, product/message logic.
+
+---
+
+## Centralized Date-Sensitive Posting Architecture (2026-01-29)
+
+### Objective
+Single source of truth for date validation; all publishing via centralized scheduler and platform publishers. No date logic in platform-specific code.
+
+### Changed
+- **scripts/scheduled_posting_executor.py**: Fixed undefined `scheduled_str` in debug log (use `scheduled_timestamp` or `scheduled_date` + `scheduled_time`).
+- **scripts/posting_executor.py**: Replaced with thin wrapper that runs `scheduled_posting_executor.main()` for backward compatibility (monitoring, legacy cron).
+- **blueprints/monitoring.py**: Added `scheduled_posting_executor` log file to posting log list.
+
+### Already in place (no code change)
+- **utils/platform_publishers.py**: `publish_to_facebook(queue_id)` handles weekly content, product, and message posts; stubs for Instagram/Twitter/LinkedIn. No date checking.
+- **blueprints/automation_execute.py**: `execute_publish_to_facebook()` deprecated; delegates to `platform_publishers.publish_to_facebook()`.
+- **scripts/automated_weekly_content_workflow.py**, **scripts/automated_product_post_workflow.py**: Only set status to `ready`; no direct publishing.
+- **scripts/background_posting_monitor.sh**: Step 7 runs `scheduled_posting_executor.py`.
+
+### Verification
+- `python3 scripts/posting_executor.py` and `python3 scripts/scheduled_posting_executor.py` run successfully; scheduler validates dates and routes to platform publishers.
+
+---
+
 ## Facebook Matrix v1 — Friday AUTHORITY_SHORT editorial hardening (2026-01-28)
 
 ### Objective

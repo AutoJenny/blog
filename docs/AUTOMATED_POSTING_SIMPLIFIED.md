@@ -32,12 +32,14 @@ The `posting_queue` table is where posts wait to be published. It's like a to-do
 ### Post Status Flow:
 ```
 draft → ready → pending → published
+         ↘ cancelled (e.g. Phase C2 hygiene: wrong-day or duplicate)
 ```
 
 1. **draft** - Post created, needs preparation
 2. **ready** - Post prepared, ready to schedule
 3. **pending** - Post scheduled, waiting for time
 4. **published** - Post sent to Facebook ✅
+5. **cancelled** - Row neutralised (e.g. non-Tuesday language, duplicate product); not published.
 
 ---
 
@@ -96,9 +98,12 @@ A background monitor runs every 5 minutes and does 4 steps:
 ### Step 4: Actually Post
 **Script:** `scheduled_posting_executor.py` (replaces old `posting_executor.py`)
 
+**Single gate for Facebook:** Only this script can publish to Facebook. The manual API (`POST /api/posts/<id>/publish`) and the workflow action `execute_publish_to_facebook` no longer call the publisher; they return 403. This ensures all Facebook posts go through Matrix v1.1 weekday validation.
+
 **What it does:**
 - **Checks automated posting switch** (master control - see below)
 - Finds **pending** or **ready** posts where `scheduled_timestamp <= now()`
+- **Validates content schedule (Matrix v1.1):** Language (weekly_word/phrase/insult) Tuesday only; culture_fact Mon/Thu; message Wed; authority_short Fri; product Sat; depth_long Sun. Wrong-day posts (e.g. language on Thursday) are skipped and never published.
 - Validates scheduled dates (failsafe protection)
 - Posts them to Facebook
 - Updates status to **published**
@@ -177,3 +182,10 @@ The automated system:
 4. Posts when time comes → Sends to Facebook
 
 All happens automatically every 5 minutes!
+
+---
+
+## Related documentation
+
+- **Phase C1 (Safety & Alignment):** Single gate for Facebook; Matrix v1.1 validation in executor. See `docs/REPORT_PHASE_C1_SAFETY_AND_ALIGNMENT.md`.
+- **Phase C2 (Queue Hygiene):** Cleanup of non-Tuesday language and duplicate product rows; partial unique index on `posting_queue` for Facebook language. See `docs/REPORT_PHASE_C2_EXECUTION.md` and `docs/REPORT_PHASE_C2_QUEUE_HYGIENE.md`.

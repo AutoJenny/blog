@@ -46,7 +46,8 @@ CREATE TABLE system_config (
 ### Core Components
 
 1. **Scheduled Posting Executor** (`scripts/scheduled_posting_executor.py`)
-   - Centralized date-sensitive scheduler
+   - **Single gate for Facebook:** Only this script can publish to Facebook. Manual API and workflow action `execute_publish_to_facebook` return 403 and do not call the publisher (Phase C1).
+   - Centralized date-sensitive scheduler; enforces Matrix v1.1 weekday rules (language Tuesday only; culture_fact Mon/Thu; etc.).
    - Checks `automated_posting_enabled` before publishing
    - Returns early with all posts marked as 'skipped' when disabled
 
