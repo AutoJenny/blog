@@ -1,5 +1,105 @@
 # Changelog
 
+## Friday AUTHORITY_SHORT generic content — report only (2026-01-29)
+
+### Objective
+Document why the week-view Friday slot still shows “AUTHORITY SHORT / Authority post / Draft” instead of actual generated content. No code changes.
+
+### Report
+- **docs/REPORT_FRIDAY_AUTHORITY_SHORT_GENERIC_CONTENT.md**: What is implemented (creator, generator, schedule API, week-view); why the UI shows generic labels (row has empty/placeholder `generated_content` and status draft/failed); likely causes (creator not run for that week, or generation failed — no source text or LLM/validation); no automation found for `automated_authority_short_creator.py`; recommended next steps (inspect row and `validation_report_json`, verify rota/KB for week, run creator with `--force`, consider scheduling the script).
+
+### Remaining known issues
+- No automated run of the authority-short creator; dependency on `kb_topic_rota` / `kb_topic_content` / `clan_kb_articles` for the target week — if empty, generation fails with “No suitable source text”.
+
+---
+
+## Week-View Distribution Fix to Approved Matrix (2026-01-29)
+
+### Objective
+Week view shows exactly the intended slots (Mon CULTURE, Tue Language, Wed Message, Thu HERITAGE, Fri AUTHORITY, Sat Commerce, Sun Depth) for current and future weeks.
+
+### Diagnosis (§1)
+- **Monday blank:** No culture_fact row for 2026-01-26; culture creator (a) didn’t cover past weeks, (b) treated “any CULTURE” (role) as slot filled, so didn’t create culture_fact.
+- **Tuesday blank:** 8 language rows existed; schedule API returned one Tuesday item but without scheduled_date/scheduled_time, so week-view couldn’t place it.
+- **Saturday:** 5 product rows returned; grid showed 5 cards (Option A: cap to 1 in grid).
+
+### Fixes
+- **scripts/automated_culture_creator.py:** culture_post_exists() now checks content_type='culture_fact' (not role CULTURE). Added --start-date for backfill. Default --weeks-ahead 12.
+- **scripts/automated_heritage_creator.py:** Default --weeks-ahead 12.
+- **blueprints/planning_api_calendar_schedule.py:** Tuesday language: query selects scheduled_date/scheduled_time; status IN (ready, pending, generated, published, scheduled); prefer ready then published then newest; schedule item includes scheduled_date and scheduled_time so week-view can place it. Saturday: cap product list to 1 for grid (Option A).
+
+### Backfill
+- Ran culture creator with --start-date 2026-01-01 --weeks-ahead 8; Monday 2026-01-26 now has one culture_fact (id 21247).
+
+### Report
+- **docs/REPORT_WEEK_VIEW_DISTRIBUTION_FIX.md**: Full diagnosis, root causes, predicate, verification, and option choice.
+
+---
+
+## Phase H1 — HERITAGE (Thursday) (2026-01-29)
+
+### Objective
+Bring heritage_fact to full parity with culture_fact, fixed to Thursday. Wiring + symmetry only; no invention, no refactors. Preview == publish; 90-day repeat avoidance.
+
+### Schema
+- **posting_queue.heritage_library_id**: Migration `migrations/20260129_add_heritage_library_id_to_posting_queue.sql` (FK to heritage_library; index). Applied if not present.
+- **content_roles**: Migration `migrations/20260129_add_heritage_to_content_roles.sql` — INSERT HERITAGE role so posting_queue.role = 'HERITAGE' is valid.
+
+### Generator
+- **utils/content_roles/heritage_generator.py**: Library-driven selection from heritage_library; 90-day exclusion via posting_queue.heritage_library_id; deterministic seed `{year}-W{week}-THU-HERITAGE`; returns heritage_library_id, title, body_text, category, source_note, generated_content.
+
+### Creator
+- **scripts/automated_heritage_creator.py**: Thursday-only; lookahead 4 weeks; one row per Thursday (platform=facebook, content_type=heritage_fact, role=HERITAGE, scheduled_time=15:00, status=ready); idempotent (no duplicate HERITAGE for same date).
+
+### Executor
+- **scripts/scheduled_posting_executor.py**: `culture_fact` → (1,) Monday only; `heritage_fact` → (4,) Thursday only. No other content types changed.
+
+### CULTURE creator (Monday only)
+- **scripts/automated_culture_creator.py**: CULTURE_DAYS = (1,); iter_monday_dates (no Thursday); added typing.Optional. Thursday reserved for HERITAGE.
+
+### Publish
+- **utils/platform_publishers.py**: heritage_fact in text-only path with message/culture_fact (generated_content, format_message_for_facebook, /feed; no CTA/hashtag).
+
+### Preview
+- **utils/channel_preview/preview_renderer.py**: SELECT heritage_library_id; for content_type=heritage_fact load category from heritage_library into post_data; existing template category label used.
+
+### Schedule API
+- **blueprints/planning_api_calendar_schedule.py**: Comment only — Thursday HERITAGE (heritage_fact), Monday CULTURE (culture_fact). Role-based query already returns both; no logic change.
+
+### Parity proof
+- **scripts/prove_preview_publish_parity.py**: Added `--heritage` → output `docs/PARITY_PROOF_FACEBOOK_HERITAGE_YYYYMMDD.txt`.
+- **docs/PARITY_PROOF_FACEBOOK_HERITAGE_20260129.txt**: All three (heritage_fact, culture_fact, weekly_language) = PASS.
+
+### Report
+- **docs/REPORT_PHASE_H1_HERITAGE_COMPLETE.md**: Phase H1 report-back (file list, confirmations, parity path).
+
+### Non-scope (unchanged)
+CULTURE generator, publish path, preview path; execution logic beyond weekday map; no angles, images, Instagram, analytics.
+
+---
+
+## CULTURE + Heritage library ingestion (2026-01-29)
+
+### Objective
+Populate culture_library and add heritage_library for publishing rotas (culture once weekly + heritage/clans slot; coding to follow).
+
+### Culture library ingestion
+- **Script:** `scripts/ingest_culture_library_csv.py` — reads CSV (category, title, body_text, source_note), inserts into `culture_library`. `--run-migration` creates table if missing.
+- **Source:** `docs/CULTURE_v1_1_FINAL_INGESTION.csv`
+- **Result:** 247 rows in `culture_library` (active). Used by CULTURE Mon/Thu rota (culture_fact).
+
+### Heritage library (new table + ingestion)
+- **Migration:** `migrations/20260129_create_heritage_library.sql` — creates `heritage_library` (same structure as culture_library: id, category, title, body_text, source_note, active, created_at).
+- **Script:** `scripts/ingest_heritage_library_csv.py` — same CSV format; `--run-migration` creates table if missing.
+- **Source:** `docs/HERITAGE_LINEAGE_v1_0_FINAL_INGESTION_PATCHED.csv`
+- **Result:** 216 rows in `heritage_library` (active). For heritage/clans slot in publishing rota (coding to follow).
+
+### Key tables
+- `culture_library` — CULTURE v1.1 Mon/Thu culture_fact posts; 90-day repeat via posting_queue.culture_library_id.
+- `heritage_library` — Heritage/clans rota; separate table for second slot (once weekly culture + once heritage).
+
+---
+
 ## Facebook Automated Posting — Phase C1 (Safety & Alignment) and Phase C2 (Queue Hygiene) (2026-01-29)
 
 ### Phase C1 — Single gate and Matrix v1.1 validation
@@ -14,6 +114,26 @@
 - **Cleanup:** `scripts/phase_c2_queue_cleanup.py` cancelled 338 non-Tuesday language rows (ready/pending) and 2 duplicate product rows; exported IDs to `docs/PHASE_C2_AFFECTED_IDS_*.csv`.
 - **Migration:** `migrations/20260129_add_unique_facebook_language_queue.sql` added partial unique index `idx_posting_queue_facebook_language_unique` on `(platform, content_type, idea_id, scheduled_date)` for Facebook language posts, preventing duplicate language rows at DB level.
 - **Reports:** `docs/REPORT_PHASE_C2_QUEUE_HYGIENE.md` (analysis), `docs/REPORT_PHASE_C2_EXECUTION.md` (execution and verification).
+
+---
+
+## CULTURE v1.1 Phase B.2 — Publish + Preview for culture_fact (2026-01-29)
+
+### Objective
+Enable `content_type='culture_fact'` to preview and publish to Facebook with parity (preview text === publish text byte-for-byte). No changes to scheduling, selection, or execution infrastructure.
+
+### Changed
+- **utils/platform_publishers.py**: `publish_to_facebook()` treats `culture_fact` like `message`: text-led feed post using `generated_content`, `format_message_for_facebook()`, `/feed`. No CTA, no hashtag injection.
+- **utils/channel_preview/formatters/facebook.py**: `FacebookFormatter.format()` includes `meta.category`. Same formatting as publish.
+- **utils/channel_preview/preview_renderer.py**: SELECT includes `culture_library_id`; for `culture_fact` with `culture_library_id`, derive `category` from `culture_library` for meta.
+- **templates/channel_previews/facebook_feed.html**: Optional small neutral label for `meta.category` (preview only; does not affect publish).
+- **scripts/prove_preview_publish_parity.py**: Added `--output` and `--culture`; `--culture` writes to `docs/PARITY_PROOF_FACEBOOK_CULTURE_YYYYMMDD.txt`.
+
+### Added
+- **docs/CULTURE_V1_1_PHASE_B2_REPORT.md**: Phase B.2 report and verification checklist. Parity proof is a hard gate for acceptance.
+
+### Non-scope (unchanged)
+Matrix logic, schedule API, generators/creators, execution scheduler, schema, non-Facebook channels.
 
 ---
 
