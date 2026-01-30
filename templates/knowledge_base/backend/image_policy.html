@@ -1,0 +1,67 @@
+{% extends "knowledge_base/base.html" %}
+
+{% block kb_content %}
+<div class="kb-page">
+    <h1>Image Policy Overview</h1>
+    
+    <div class="kb-intro">
+        <h2>Purpose</h2>
+        <p>
+            This page summarises how images are handled across CLAN content and channels.
+            It is <strong>not</strong> the authoritative policy.
+            The authoritative source is:
+        </p>
+        <p><code>docs/IMAGE_CAPABILITY_CHARTER.md</code></p>
+        <p>All channels, generators, previews, and publishers must comply with that Charter.</p>
+    </div>
+    
+    <h2>What this page is for</h2>
+    <ul>
+        <li>Help editors and operators understand what kinds of images exist</li>
+        <li>Explain why some images are generated, some sourced, some typographic</li>
+        <li>Point coders to the Charter for binding rules</li>
+    </ul>
+    
+    <h2>Core principles (summary)</h2>
+    <ul>
+        <li>Images support credibility, not spectacle</li>
+        <li>Preview always matches publish</li>
+        <li>Product imagery is never generated</li>
+        <li>Generated imagery is illustrative, not documentary</li>
+        <li>Attribution and disclosure are handled consistently</li>
+    </ul>
+    <p><em>See Image Capability Charter §2–§5.</em></p>
+    
+    <h2>Image classes used in the system</h2>
+    <p><em>See Image Capability Charter §3 for full definitions.</em></p>
+    <ul>
+        <li><strong>Product photography</strong> — Product catalogue images only; no generation.</li>
+        <li><strong>Public-domain historical images</strong> — Maps, engravings, archival material; attribution required.</li>
+        <li><strong>Generated editorial illustrations</strong> — Atmospheric or symbolic visuals; no named historical figures; disclosure required.</li>
+        <li><strong>Typographic cards</strong> — Text-first visuals for reassurance, language, or emphasis.</li>
+        <li><strong>Diagrammatic / abstract images</strong> — Maps, timelines, or symbolic layouts without historical claims.</li>
+    </ul>
+    
+    <h2>Channels and images (high level)</h2>
+    <ul>
+        <li><strong>Facebook:</strong> Uses product images, weekly generated squares, and formatted text previews. Preview exactly matches publish.</li>
+        <li><strong>Instagram:</strong> Image-first channel (in development). Uses the same image classes as other channels; format differs, policy does not.</li>
+        <li><strong>Blog / Newsletter:</strong> Use model-aware imaging and/or sourced images with attribution and disclosure.</li>
+    </ul>
+    
+    <h2>Where to find the rules</h2>
+    <ul>
+        <li><strong>Authoritative policy:</strong> <code>docs/IMAGE_CAPABILITY_CHARTER.md</code></li>
+        <li><strong>Preview behaviour:</strong> <code>docs/UNIFIED_CHANNEL_PREVIEW_SYSTEM.md</code></li>
+        <li><strong>Weekly image generation:</strong> <code>docs/WEEKLY_CONTENT_SYSTEM_TECHNICAL_REFERENCE.md</code></li>
+        <li><strong>Facebook parity:</strong> <code>docs/PREVIEW_FACEBOOK_MATCH_PUBLISH.md</code></li>
+    </ul>
+    
+    <h2>Important note</h2>
+    <p>
+        If this KB page and the Image Capability Charter ever conflict,
+        the <strong>Charter takes precedence</strong>.
+    </p>
+    <p>For implementation routing, see <code>docs/IMAGE_CAPABILITIES_INDEX.md</code>.</p>
+</div>
+{% endblock %}

@@ -1,5 +1,26 @@
 # Changelog
 
+## Image Capabilities Index — Phase-0B alignment (2026-01-29)
+
+- Expanded Image Capabilities Index to cover header/section images, watermarking, and diagnostics (Phase-0B alignment).
+- New doc: docs/IMAGE_CAPABILITIES_INDEX.md (sections 1–9). Sections 7–9: header and section images (blog/longform), watermarking and AI disclosure, image failures and diagnostics.
+- Cross-links added: IMAGE_CAPABILITY_CHARTER.md and KB Image Policy Overview now point to IMAGE_CAPABILITIES_INDEX.md for implementation routing.
+
+---
+
+## Image policy KB and Charter vs Instagram sanity check (2026-01-29)
+
+### A) KB summary page
+- **Location:** Backend → Image Policy Overview (`/kb/backend/image_policy`).
+- **Template:** `templates/knowledge_base/backend/image_policy.html`.
+- **Purpose:** Summarises how images are handled across CLAN content and channels; points to Charter as authoritative. Covers core principles, image classes, channels (Facebook, Instagram, Blog/Newsletter), and “Where to find the rules”. Explicit note: Charter takes precedence over this KB page.
+
+### B) Charter vs Instagram v1 sanity check
+- **Doc:** `docs/CHARTER_INSTAGRAM_V1_SANITY_CHECK.md`.
+- **Content:** Confirms Charter does not over-constrain Instagram (carousels, disclosure, no photorealism required); does not under-constrain (blocks fake historical, silent AI, ad-hoc types). Instagram v1 day-by-day mapping (Culture → Depth) with default image classes; no exceptions. Note: AI disclosure placement (caption footer/hashtag) to be added later to Instagram channel docs only.
+
+---
+
 ## Facebook preview/publish alignment and QA (2026-01-30)
 
 ### Scope (instruction doc: cleanup, QA, docs before next platform)

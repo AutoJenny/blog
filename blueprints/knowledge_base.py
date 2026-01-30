@@ -267,6 +267,10 @@ KB_STRUCTURE = {
                 'title': 'Content Roles Framework',
                 'template': 'knowledge_base/backend/content_roles.html',
                 'status': 'in_progress'
+            },
+            'image_policy': {
+                'title': 'Image Policy Overview',
+                'template': 'knowledge_base/backend/image_policy.html'
             }
         }
     },
