@@ -39,7 +39,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-PLATFORM = "facebook"
 CONTENT_TYPE = "culture_fact"
 ROLE = "CULTURE"
 VALID_STATUSES = ("ready", "approved", "scheduled", "published")
@@ -76,6 +75,123 @@ def iter_monday_dates(weeks_ahead: int, from_date: date):
         monday += timedelta(days=7)
 
 
+def get_slot_dates(weeks_ahead: int, from_date: date):
+    """Return list of (scheduled_date, weekday) for Mondays in range. For orchestrator."""
+    return list(iter_monday_dates(weeks_ahead, from_date))
+
+
+def select_for_slot(
+    target_date: date,
+    weekday: int,
+    year: int,
+    week_number: int,
+) -> Optional[Dict[str, Any]]:
+    """
+    Select once per slot (Approach A). Returns shared selection object for both platforms.
+    Keys: culture_library_id, scheduled_date, scheduled_time, generated_content.
+    """
+    payload = pick_culture_for_slot(target_date, weekday, year, week_number)
+    if not payload:
+        return None
+    return {
+        "culture_library_id": payload["culture_library_id"],
+        "scheduled_date": target_date,
+        "scheduled_time": CULTURE_SCHEDULED_TIME,
+        "generated_content": payload.get("generated_content", ""),
+    }
+
+
+def generate_for_slot(
+    platform: str,
+    slot_key: Dict[str, Any],
+    selection: Dict[str, Any],
+    dry_run: bool,
+    force: bool,
+) -> str:
+    """
+    Create or update one row for (platform, slot_key). Idempotent.
+    slot_key: {scheduled_date, role, content_type}.
+    selection: from select_for_slot (culture_library_id, scheduled_date, scheduled_time, generated_content).
+    Returns: 'created' | 'regenerated' | 'skipped' | 'failed'
+    """
+    target_date = slot_key["scheduled_date"]
+    if isinstance(target_date, str):
+        target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+    scheduled_time_str = selection.get("scheduled_time") or CULTURE_SCHEDULED_TIME
+    scheduled_time_obj = time(15, 0)
+    scheduled_timestamp = datetime.combine(target_date, scheduled_time_obj)
+
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, generated_content, status
+                FROM posting_queue
+                WHERE platform = %s AND content_type = %s AND scheduled_date = %s
+                LIMIT 1
+                """,
+                (platform, CONTENT_TYPE, target_date),
+            )
+            row = cursor.fetchone()
+
+            if row:
+                queue_id = row["id"] if isinstance(row, dict) else row[0]
+                row_dict = dict(row) if hasattr(row, "keys") else {"generated_content": row[1], "status": row[2]}
+                if not force and _row_is_valid(row_dict):
+                    logger.info("Culture slot %s %s valid, skip queue_id=%s", platform, target_date, queue_id)
+                    return "skipped"
+                if dry_run:
+                    logger.info("[DRY-RUN] Would regenerate culture %s queue_id=%s date=%s", platform, queue_id, target_date)
+                    return "regenerated"
+                cursor.execute(
+                    """
+                    UPDATE posting_queue
+                    SET culture_library_id = %s, generated_content = %s, status = 'ready', updated_at = NOW()
+                    WHERE id = %s
+                    """,
+                    (selection["culture_library_id"], selection["generated_content"], queue_id),
+                )
+                conn.commit()
+                logger.info("Regenerated culture_fact %s queue_id=%s date=%s", platform, queue_id, target_date)
+                return "regenerated"
+            else:
+                if dry_run:
+                    logger.info("[DRY-RUN] Would create culture_fact %s date=%s", platform, target_date)
+                    return "created"
+                cursor.execute(
+                    """
+                    INSERT INTO posting_queue (
+                        platform, role, content_type, culture_library_id,
+                        generated_content, status,
+                        scheduled_date, scheduled_time, scheduled_timestamp,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        %s, %s, %s, %s, %s, 'ready', %s, %s, %s, NOW(), NOW()
+                    )
+                    RETURNING id
+                    """,
+                    (
+                        platform,
+                        ROLE,
+                        CONTENT_TYPE,
+                        selection["culture_library_id"],
+                        selection["generated_content"],
+                        target_date,
+                        scheduled_time_str,
+                        scheduled_timestamp,
+                    ),
+                )
+                r = cursor.fetchone()
+                qid = r["id"] if r and isinstance(r, dict) else (r[0] if r else None)
+                conn.commit()
+                if qid:
+                    logger.info("Created culture_fact %s queue_id=%s date=%s", platform, qid, target_date)
+                    return "created"
+                return "failed"
+    return "failed"
+
+
 def ensure_culture_slot(
     target_date: date,
     weekday: int,
@@ -99,7 +215,7 @@ def ensure_culture_slot(
                 WHERE platform = %s AND content_type = %s AND scheduled_date = %s
                 LIMIT 1
                 """,
-                (PLATFORM, CONTENT_TYPE, target_date),
+                ("facebook", CONTENT_TYPE, target_date),
             )
             row = cursor.fetchone()
 
@@ -152,7 +268,7 @@ def ensure_culture_slot(
                     RETURNING id
                     """,
                     (
-                        PLATFORM,
+                        "facebook",
                         ROLE,
                         CONTENT_TYPE,
                         payload["culture_library_id"],

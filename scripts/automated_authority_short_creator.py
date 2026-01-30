@@ -24,8 +24,7 @@ Behaviour:
     status = 'draft'
 
 Scope:
-- Facebook only.
-- No backfill of historical weeks (script looks forward).
+- Approach A: orchestrator selects once per Friday (topic_id, source_page_id); creator(platform, selection) creates/updates both FB and IG.
 """
 
 import os
@@ -34,6 +33,7 @@ import logging
 import argparse
 import json
 from datetime import date, datetime, timedelta, time as time_type
+from typing import Dict, Any, List, Optional, Tuple
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -55,6 +55,184 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+
+ROLE = "AUTHORITY_SHORT"
+CONTENT_TYPE = "authority_short"
+PUBLICATION_TIME = "15:00"
+VALID_STATUSES = ("ready", "approved", "scheduled", "published", "generated")
+
+
+def _row_is_valid(row) -> bool:
+    content = (row.get("generated_content") or "").strip()
+    if not content:
+        return False
+    if content.startswith("AUTHORITY_SHORT placeholder"):
+        return False
+    status = (row.get("status") or "").strip()
+    return status in VALID_STATUSES
+
+
+def iter_friday_dates(weeks_ahead: int, from_date: date):
+    """Yield (target_date, weekday) for each Friday in the next weeks_ahead weeks, >= from_date."""
+    year, week_number, _ = from_date.isocalendar()
+    jan4 = date(year, 1, 4)
+    week1_monday = jan4 - timedelta(days=jan4.isoweekday() - 1)
+    monday = week1_monday + timedelta(weeks=week_number - 1)
+    if monday > from_date:
+        monday -= timedelta(days=7)
+    for _ in range(weeks_ahead):
+        d = monday + timedelta(days=4)  # Friday
+        if d >= from_date:
+            yield d, 5  # ISO Friday
+        monday += timedelta(days=7)
+
+
+def get_slot_dates(weeks_ahead: int, from_date: date) -> List[Tuple[date, int]]:
+    """Return list of (scheduled_date, weekday) for Fridays in range. For orchestrator."""
+    return list(iter_friday_dates(weeks_ahead, from_date))
+
+
+def select_for_slot(
+    target_date: date,
+    weekday: int,
+    year: int,
+    week_number: int,
+) -> Optional[Dict[str, Any]]:
+    """
+    Select once per slot (Approach A). Returns shared selection object for both platforms.
+    Keys: topic_id, source_page_id, angle_id (if any), scheduled_date, scheduled_time.
+    """
+    gen = AuthorityShortGenerator()
+    rota = gen._get_rota_for_week(target_date)
+    if not rota:
+        return None
+    topic_id = rota.get("topic_id")
+    source_text, source_type, source_page_id = gen._select_source_text(topic_id)
+    if not source_text:
+        return None
+    return {
+        "topic_id": topic_id,
+        "source_page_id": source_page_id,
+        "angle_id": None,
+        "scheduled_date": target_date,
+        "scheduled_time": PUBLICATION_TIME,
+    }
+
+
+def generate_for_slot(
+    platform: str,
+    slot_key: Dict[str, Any],
+    selection: Dict[str, Any],
+    dry_run: bool,
+    force: bool,
+) -> str:
+    """
+    Create or update one row for (platform, slot_key). Idempotent.
+    slot_key: {scheduled_date, role, content_type}.
+    selection: from select_for_slot (topic_id, source_page_id, scheduled_date, scheduled_time).
+    Uses generator.generate_for_friday to produce content (same rota for same date).
+    Returns: 'created' | 'regenerated' | 'skipped' | 'failed'
+    """
+    target_date = slot_key["scheduled_date"]
+    if isinstance(target_date, str):
+        target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+    scheduled_time = datetime.strptime(PUBLICATION_TIME, "%H:%M").time()
+    scheduled_dt = datetime.combine(target_date, scheduled_time)
+
+    generator = AuthorityShortGenerator()
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, generated_content, status
+                FROM posting_queue
+                WHERE platform = %s AND role = %s AND content_type = %s AND scheduled_date = %s
+                LIMIT 1
+                """,
+                (platform, ROLE, CONTENT_TYPE, target_date),
+            )
+            row = cursor.fetchone()
+            existed_before = False
+
+            if row:
+                existed_before = True
+                queue_id = row["id"] if isinstance(row, dict) else row[0]
+                row_dict = dict(row) if hasattr(row, "keys") else {"generated_content": row[1], "status": row[2]}
+                if not force and _row_is_valid(row_dict):
+                    logger.info("Authority_short slot %s %s valid, skip queue_id=%s", platform, target_date, queue_id)
+                    return "skipped"
+                if dry_run:
+                    logger.info("[DRY-RUN] Would regenerate authority_short %s queue_id=%s date=%s", platform, queue_id, target_date)
+                    return "regenerated"
+            else:
+                if dry_run:
+                    logger.info("[DRY-RUN] Would create authority_short %s date=%s", platform, target_date)
+                    return "created"
+                cursor.execute(
+                    """
+                    INSERT INTO posting_queue (
+                        role, platform, channel_type, content_type, generated_content,
+                        scheduled_date, scheduled_time, scheduled_timestamp, status,
+                        created_at, updated_at
+                    )
+                    VALUES (%s, %s, 'feed_post', %s, '', %s, %s, %s, 'draft', NOW(), NOW())
+                    RETURNING id
+                    """,
+                    (ROLE, platform, CONTENT_TYPE, target_date, PUBLICATION_TIME, scheduled_dt),
+                )
+                r = cursor.fetchone()
+                queue_id = (r["id"] if r and isinstance(r, dict) else (r[0] if r else None))
+                conn.commit()
+                if not queue_id:
+                    return "failed"
+                row = {"id": queue_id}
+
+            queue_id = row["id"] if isinstance(row, dict) else row[0]
+            result = generator.generate_for_friday(target_date, queue_id)
+            if not result.get("success"):
+                cursor.execute(
+                    """
+                    UPDATE posting_queue
+                    SET status = 'failed',
+                        validation_report_json = COALESCE(%s, validation_report_json),
+                        updated_at = NOW()
+                    WHERE id = %s
+                    """,
+                    (json.dumps(result.get("validation_report_json")) if result.get("validation_report_json") else None, queue_id),
+                )
+                conn.commit()
+                return "failed"
+            content = result["content"]
+            topic_id = result.get("topic_id")
+            source_page_id = result.get("source_page_id")
+            validation_report = result.get("validation_report_json", {})
+            cursor.execute(
+                """
+                UPDATE posting_queue
+                SET generated_content = %s, status = 'ready',
+                    topic_id = COALESCE(%s, topic_id),
+                    source_page_id = COALESCE(%s, source_page_id),
+                    rota_year = COALESCE(%s, rota_year),
+                    rota_week = COALESCE(%s, rota_week),
+                    validation_report_json = COALESCE(%s, validation_report_json),
+                    updated_at = NOW()
+                WHERE id = %s
+                """,
+                (
+                    content,
+                    topic_id,
+                    source_page_id,
+                    result.get("rota_year"),
+                    result.get("rota_week"),
+                    json.dumps(validation_report),
+                    queue_id,
+                ),
+            )
+            conn.commit()
+            logger.info("Generated authority_short %s queue_id=%s date=%s", platform, queue_id, target_date)
+            return "regenerated" if existed_before else "created"
+    return "failed"
 
 
 class AuthorityShortCreator:

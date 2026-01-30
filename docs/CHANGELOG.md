@@ -1,5 +1,70 @@
 # Changelog
 
+## Matrix generation: Instagram from shared sources (Approach A) (2026-01-30)
+
+- **Objective:** Extend Matrix pre-generation so Instagram rows are originated from the same upstream sources as Facebook (one row per slot per platform), with no cloning and no schema changes. Per docs/INSTAGRAM_MATRIX_GENERATION_PLAN.md.
+- **Approach A (shared selection):** Orchestrator selects upstream provenance once per slot (culture_library_id, idea_id, message_index, heritage_library_id, topic_id/source_page_id, product_id) and calls each creator twice (facebook, instagram) with the same selection. No creator reads the FB row for provenance.
+- **Slot key:** Non-product days `(scheduled_date, role, content_type)`; Saturday products `(scheduled_date, scheduled_time, role, content_type)`.
+- **Creators migrated:** All seven creators now expose `get_slot_dates(weeks_ahead, from_date)`, `select_for_slot(...)`, and `generate_for_slot(platform, slot_key, selection, dry_run, force)`. Legacy CLI behaviour retained (facebook-only when run standalone).
+- **Orchestrator:** `scripts/pregenerate_matrix.py` runs all creators in-process with Approach A; no subprocess calls. Report structure is per-slot and per-platform (`report["slots"][content_type]` with `slot_key`, `selection_summary`, `platforms: { facebook: { outcome }, instagram: { outcome } }`).
+- **Validator:** `scripts/validate_daily_cap_invariant.py` now validates per platform (`--platforms facebook instagram` default). At most one publishable row per (date, platform) for non-Saturday; Saturday product rules apply per platform. Exit non-zero on violation; report lists (date, platform, rule, row ids).
+- **Idempotency:** Creators locate existing row by platform + slot_key; regenerate-in-place only for failed/empty/placeholder; otherwise skip.
+- **Message provenance:** Wednesday message selection uses `message_index` (deterministic by year/week); no use of `generated_content` as provenance.
+- **Deliverables:** Generation report for 2–3 weeks, validator output (both platforms), changelog. Instagram image provisioning unchanged (Phase 1 placeholder rules). No publishing or visual enhancement.
+- **Evidence:** Live run with `--weeks-ahead 3` and `--report temp/matrix_generation_report_3weeks.json` completed with exit 0; all slot types show per-platform outcomes (skipped/created/regenerated). Validator `--weeks 3 --platforms facebook instagram` may report violations for dates that already had multiple publishable rows (e.g. 2026-01-30); resolve by cleaning duplicate/legacy rows or by validating a future-only window. Calendar: open planning week view and confirm both "FB:" and "IG:" entries per day; open IG preview for Mon, Tue, Sat.
+
+---
+
+## Planning calendar: channel-aware visibility and previews (2026-01-29)
+
+- **Objective:** Editors can see and distinguish Facebook and Instagram posts in the planning calendar week view and open the correct preview for each.
+- **Scope:** UI + routing only; no payload/image logic changes.
+- **1. Instagram rows in calendar:** `planning_api_calendar_schedule.py` now includes `posting_queue` rows for both `platform IN ('facebook', 'instagram')` for Tuesday language, product, message, and role-based posts. One row per slot per channel (no merge/dedupe). Each schedule item includes `platform`.
+- **2. Channel labels in UI:** Week view labels social post items with "FB: " or "IG: " prefix (e.g. "FB: CULTURE — Language: Word", "IG: COMMERCE — Product") so editors can tell which platform at a glance.
+- **3. Channel-aware preview:** Calendar item Preview button and click already use `item.platform` in unified-item-card.js (`/preview/post/<queue_id>?channel=<platform>`). Full-page preview route `preview_views.py` now renders `instagram_feed.html` when `channel=instagram` (parity with API).
+- **4. Row fallback:** Week view JS uses `social-posts-row` or `words-phrases-row` and `toggle-social-posts` or `toggle-words-phrases` so both template variants work.
+- **Files touched:** `blueprints/planning_api_calendar_schedule.py`, `static/js/planning/calendar-week-view.js`, `blueprints/preview_views.py`. No payload or image code modified.
+
+### Litmus test: one Instagram queue row (Option 1)
+- **Script (frozen, diagnostic-only):** `scripts/diagnostics/create_one_instagram_queue_row.py` — was used once to duplicate one Facebook row into an Instagram row for a given week (`platform = 'instagram'`, `status = 'ready'`). **Do not run again.** See script header and `scripts/diagnostics/README.md`.
+- **Test row:** One Instagram row was created for 2026-W07 (culture_fact, 2026-02-09) and is **left in place** as standing proof that the calendar shows IG and the preview path works. No creators or orchestrators changed. Can be cancelled later once real generation is in place.
+
+---
+
+## Instagram image provisioning Phase 1 (2026-01-29)
+
+- **Scope:** Feed posts only; 3-slide carousel; one post per day. No new systems, no schema changes.
+- **Single source of truth:** `utils/instagram_payload.get_instagram_payload(post_data)` used by Instagram preview formatter and `publish_to_instagram(queue_id)`. Carousel refs may be cached in existing `posting_queue.generated_content.instagram.*` (optional).
+- **Placeholder:** One generic typographic image: `static/images/site/instagram_typographic_placeholder.png` (1080×1350, "CLAN"). Referenced via `config/instagram_assets.py`. Used for Mon/Wed/Thu/Fri/Sun (CULTURE, REASSURANCE, HERITAGE, AUTHORITY_SHORT, DEPTH_LONG).
+- **Tuesday (LANGUAGE):** Existing weekly PNGs (`image_path`); same image 3×. **Saturday (PRODUCT):** Product URLs from clan_products; same image 3×.
+- **Preview:** Instagram formatter + `templates/channel_previews/instagram_feed.html` + channel_preview_api wired for `channel=instagram`. Shows 3 slides + caption + disclosure/attribution.
+- **Publish:** `utils/platform_publishers.publish_to_instagram(queue_id)` builds payload via same function, uploads 3 images via Instagram Graph API (reuses instagram_carousel_api helpers), updates queue status.
+- **Implementation notes:** docs/INSTAGRAM_IMAGE_PROVISION_IMPLEMENTATION_NOTES.md.
+
+---
+
+## Instagram Image Provision Phase 1 — Corrective addendum (2026-01-29)
+
+- **Doc:** docs/INSTAGRAM_IMAGE_PROVISION_PHASE1_ORDERS_ADDENDUM.md
+- Tightens Phase 1 orders per adviser: (0) No schema changes. (1) Single source of truth function for Instagram payload (preview + publish). (2) Store carousel refs in existing generated_content JSON (e.g. generated_content.instagram.carousel), not new columns. (3) Preview: instagram formatter + instagram_feed.html + channel_preview_api. (4) publish_to_instagram calls same function. (5) Phase 1 allowed: Tue language PNGs, Sat product URLs, typographic cards; PD/generated deferred — Slide 2 typographic fallback for Mon/Thu/Fri/Sun. (6) No new automation imaging pipeline in Phase 1; provision deterministically at preview/publish time. (7) Evidence: full week preview, Tue + Sat carousels, one forced fallback.
+
+---
+
+## Instagram Image Provision Phase 1 — Implementation orders (2026-01-29)
+
+- **Doc:** docs/INSTAGRAM_IMAGE_PROVISION_PHASE1_ORDERS.md
+- Implementation directive for coder: scope (feed only, 1/day, 3-image carousel), hard constraints, allowed image classes, mandatory carousel structure, Matrix→provisioning mapping (Mon–Sun), sourcing rules, storage/attachment (existing only), preview/publish parity, disclosure/attribution, fallback handling, prohibited implementations, deliverables (implementation notes, test evidence, changelog), acceptance criteria.
+
+---
+
+## Instagram Image Provision Plan v1 (2026-01-29)
+
+- **Doc:** docs/INSTAGRAM_IMAGE_PROVISION_PLAN.md
+- Feed posts only; 1/day; default 3-image carousel. Authority: Charter + Capabilities Index.
+- Matrix→image mapping (Mon–Sun): CULTURE, LANGUAGE, REASSURANCE, HERITAGE, AUTHORITY_SHORT, PRODUCT, DEPTH_LONG. All images map to existing classes; no new systems. Disclosure/attribution (caption footer); fallback typographic_card; explicit “must NOT do” list.
+
+---
+
 ## Image Capabilities Index — Phase-0B alignment (2026-01-29)
 
 - Expanded Image Capabilities Index to cover header/section images, watermarking, and diagnostics (Phase-0B alignment).

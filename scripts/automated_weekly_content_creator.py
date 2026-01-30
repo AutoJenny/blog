@@ -2,17 +2,18 @@
 """
 Automated Weekly Content Creator — CULTURE v1.1 (Phase P1.1 normalised)
 
-Exactly one posting_queue row per Tuesday (Facebook CULTURE language).
-Phase P1: One slot = one row. Insert if missing; regenerate in place if failed/empty/placeholder; skip if valid.
+Exactly one posting_queue row per Tuesday per platform (CULTURE language).
+Phase P1: One slot = one row per platform. Insert if missing; regenerate in place if failed/empty/placeholder; skip if valid.
 - Rotation: weekly_word → weekly_phrase → weekly_insult by (week_number - 1) % 3.
 - 90-day repeat avoidance; scheduled_time 15:00.
-- CLI: --weeks-ahead (default 12).
+- Approach A: orchestrator selects once per slot, calls generate_for_slot(platform, slot_key, selection) for both platforms.
+- CLI: --weeks-ahead (default 12). Legacy ensure_tuesday_slot targets facebook only.
 """
 
 import os
 import sys
 import logging
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 from typing import List, Dict, Optional, Set, Tuple, Any
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -38,6 +39,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 PLATFORM = "facebook"
+ROLE = "CULTURE"
 TUESDAY_SCHEDULED_TIME = "15:00"
 REPEAT_DAYS = 90
 LANGUAGE_TYPES = ["weekly_word", "weekly_phrase", "weekly_insult"]
@@ -131,6 +133,136 @@ def pick_idea_for_tuesday(
     except Exception as e:
         logger.error("Error picking eligible idea for %s: %s", content_type, e)
         return None
+
+
+def iter_tuesday_dates(weeks_ahead: int, from_date: date):
+    """Yield (target_date, weekday) for each Tuesday in the next weeks_ahead weeks, >= from_date."""
+    year, week_number, _ = from_date.isocalendar()
+    for _ in range(weeks_ahead):
+        tuesday_date = get_tuesday_date_for_week(year, week_number)
+        if tuesday_date and tuesday_date >= from_date:
+            yield tuesday_date, 2  # Tuesday is weekday 2
+        # advance to next week
+        if tuesday_date:
+            year, week_number, _ = (tuesday_date + timedelta(days=7)).isocalendar()
+        else:
+            year, week_number, _ = (from_date + timedelta(days=7)).isocalendar()
+
+
+def get_slot_dates(weeks_ahead: int, from_date: date) -> List[Tuple[date, int]]:
+    """Return list of (scheduled_date, weekday) for Tuesdays in range. For orchestrator."""
+    return list(iter_tuesday_dates(weeks_ahead, from_date))
+
+
+def select_for_slot(
+    target_date: date,
+    weekday: int,
+    year: int,
+    week_number: int,
+) -> Optional[Dict[str, Any]]:
+    """
+    Select once per slot (Approach A). Returns shared selection object for both platforms.
+    Keys: idea_id, content_type, scheduled_date, scheduled_time, generated_content.
+    """
+    content_type = LANGUAGE_TYPES[(week_number - 1) % 3]
+    exclude_idea_ids = get_idea_ids_used_in_last_90_days(target_date)
+    item = pick_idea_for_tuesday(content_type, year, week_number, exclude_idea_ids)
+    if not item:
+        return None
+    idea_title = item.get("idea_title", "")
+    idea_description = item.get("idea_description", "")
+    generated_content = (
+        f"{idea_title}\n\n{idea_description}".strip() if idea_description else idea_title
+    )
+    return {
+        "idea_id": item["id"],
+        "content_type": content_type,
+        "scheduled_date": target_date,
+        "scheduled_time": TUESDAY_SCHEDULED_TIME,
+        "generated_content": generated_content,
+    }
+
+
+def generate_for_slot(
+    platform: str,
+    slot_key: Dict[str, Any],
+    selection: Dict[str, Any],
+    dry_run: bool,
+    force: bool,
+) -> str:
+    """
+    Create or update one row for (platform, slot_key). Idempotent.
+    slot_key: {scheduled_date, role, content_type}.
+    selection: from select_for_slot (idea_id, content_type, scheduled_date, scheduled_time, generated_content).
+    Returns: 'created' | 'regenerated' | 'skipped' | 'failed'
+    """
+    target_date = slot_key["scheduled_date"]
+    if isinstance(target_date, str):
+        target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+    content_type = selection["content_type"]
+    scheduled_time_str = selection.get("scheduled_time") or TUESDAY_SCHEDULED_TIME
+    scheduled_time_obj = time(15, 0)
+    scheduled_timestamp = datetime.combine(target_date, scheduled_time_obj)
+
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, generated_content, status
+                FROM posting_queue
+                WHERE platform = %s AND role = %s AND content_type = %s AND scheduled_date = %s
+                LIMIT 1
+                """,
+                (platform, ROLE, content_type, target_date),
+            )
+            row = cursor.fetchone()
+
+            if row:
+                queue_id = row["id"] if isinstance(row, dict) else row[0]
+                row_dict = dict(row) if hasattr(row, "keys") else {"generated_content": row[1], "status": row[2]}
+                if not force and _row_is_valid(row_dict):
+                    logger.info("Tuesday slot %s %s valid, skip queue_id=%s", platform, target_date, queue_id)
+                    return "skipped"
+                if dry_run:
+                    logger.info("[DRY-RUN] Would regenerate Tuesday %s queue_id=%s date=%s", platform, queue_id, target_date)
+                    return "regenerated"
+                cursor.execute(
+                    """
+                    UPDATE posting_queue
+                    SET idea_id = %s, generated_content = %s, status = 'ready', updated_at = NOW()
+                    WHERE id = %s
+                    """,
+                    (selection["idea_id"], selection["generated_content"], queue_id),
+                )
+                conn.commit()
+                logger.info("Regenerated Tuesday %s queue_id=%s %s date=%s", platform, queue_id, content_type, target_date)
+                return "regenerated"
+            else:
+                if dry_run:
+                    logger.info("[DRY-RUN] Would create Tuesday %s %s date=%s", platform, content_type, target_date)
+                    return "created"
+                try:
+                    queue_id = create_weekly_social_post(
+                        idea_id=selection["idea_id"],
+                        content_type=content_type,
+                        platform=platform,
+                        generated_content=selection["generated_content"],
+                        status="ready",
+                        scheduled_date=target_date.isoformat(),
+                        scheduled_time=scheduled_time_str,
+                        cursor=cursor,
+                    )
+                    conn.commit()
+                    if queue_id:
+                        logger.info("Created Tuesday %s queue_id=%s %s date=%s", platform, queue_id, content_type, target_date)
+                        return "created"
+                except Exception as e:
+                    if "unique" in str(e).lower() or "duplicate" in str(e).lower():
+                        logger.info("Tuesday slot %s %s already exists (race?), treat as skipped", platform, target_date)
+                        return "skipped"
+                    logger.error("Error creating Tuesday post for %s: %s", target_date, e)
+                    return "failed"
+    return "failed"
 
 
 def ensure_tuesday_slot(

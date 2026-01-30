@@ -3,16 +3,18 @@
 Automated Message Post Creator (Phase P1.1 normalised)
 
 Creates posting_queue entries for Wednesday REASSURANCE (message) from facebook_messages.csv.
-Phase P1: One slot = one row. Insert if missing; regenerate in place with NEXT message in rotation if failed/empty/placeholder; skip if valid.
-- CLI: --days-ahead (default 28), --dry-run, --force.
+Phase P1: One slot = one row per platform. Insert if missing; regenerate in place if failed/empty/placeholder; skip if valid.
+- Approach A: orchestrator selects message_index once per Wednesday (deterministic by year/week); creator(platform, selection) creates both.
+- Provenance is message_index only; do not use generated_content as provenance.
+- CLI: --days-ahead (default 28), --dry-run, --force. Legacy ensure_message_slot targets facebook only.
 """
 
 import os
 import sys
 import csv
 import logging
-from datetime import datetime, date, timedelta
-from typing import List, Dict, Optional, Any
+from datetime import datetime, date, timedelta, time
+from typing import List, Dict, Optional, Any, Tuple
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -126,6 +128,142 @@ def get_upcoming_wednesdays(days_ahead: int) -> List[date]:
             out.append(current)
         current += timedelta(days=7)
     return out
+
+
+def iter_wednesday_dates(weeks_ahead: int, from_date: date):
+    """Yield (target_date, weekday) for each Wednesday in the next weeks_ahead weeks, >= from_date."""
+    year, week_number, _ = from_date.isocalendar()
+    wednesday_weekday = 3  # ISO Wednesday
+    jan4 = date(year, 1, 4)
+    week1_monday = jan4 - timedelta(days=jan4.isoweekday() - 1)
+    monday = week1_monday + timedelta(weeks=week_number - 1)
+    wednesday = monday + timedelta(days=2)
+    if wednesday < from_date:
+        wednesday += timedelta(days=7)
+    for _ in range(weeks_ahead):
+        yield wednesday, wednesday_weekday
+        wednesday += timedelta(days=7)
+
+
+def get_slot_dates(weeks_ahead: int, from_date: date) -> List[Tuple[date, int]]:
+    """Return list of (scheduled_date, weekday) for Wednesdays in range. For orchestrator."""
+    return list(iter_wednesday_dates(weeks_ahead, from_date))
+
+
+def select_for_slot(
+    target_date: date,
+    weekday: int,
+    year: int,
+    week_number: int,
+) -> Optional[Dict[str, Any]]:
+    """
+    Select once per slot (Approach A). Returns shared selection object for both platforms.
+    Provenance is message_index (deterministic by year/week); do not use generated_content.
+    Keys: message_index, scheduled_date, scheduled_time.
+    """
+    messages = load_messages()
+    if not messages:
+        return None
+    message_index = (year * 53 + week_number) % len(messages)
+    return {
+        "message_index": message_index,
+        "scheduled_date": target_date,
+        "scheduled_time": PUBLICATION_TIME,
+    }
+
+
+def generate_for_slot(
+    platform: str,
+    slot_key: Dict[str, Any],
+    selection: Dict[str, Any],
+    dry_run: bool,
+    force: bool,
+) -> str:
+    """
+    Create or update one row for (platform, slot_key). Idempotent.
+    slot_key: {scheduled_date, role, content_type}.
+    selection: from select_for_slot (message_index, scheduled_date, scheduled_time).
+    Resolves message text from message_index; never uses generated_content as provenance.
+    Returns: 'created' | 'regenerated' | 'skipped' | 'failed'
+    """
+    target_date = slot_key["scheduled_date"]
+    if isinstance(target_date, str):
+        target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+    messages = load_messages()
+    if not messages:
+        return "failed"
+    message_index = selection["message_index"] % len(messages)
+    message = messages[message_index].replace("\\n", "\n")
+    scheduled_time_str = selection.get("scheduled_time") or PUBLICATION_TIME
+    scheduled_time_obj = datetime.strptime(scheduled_time_str, "%H:%M").time()
+    scheduled_timestamp = datetime.combine(target_date, scheduled_time_obj)
+
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, generated_content, status
+                FROM posting_queue
+                WHERE platform = %s AND content_type = %s AND scheduled_date = %s
+                LIMIT 1
+                """,
+                (platform, CONTENT_TYPE, target_date),
+            )
+            row = cursor.fetchone()
+
+            if row:
+                queue_id = row["id"] if isinstance(row, dict) else row[0]
+                row_dict = dict(row) if hasattr(row, "keys") else {"generated_content": row[1], "status": row[2]}
+                if not force and _row_is_valid(row_dict):
+                    logger.info("Message slot %s %s valid, skip queue_id=%s", platform, target_date, queue_id)
+                    return "skipped"
+                if dry_run:
+                    logger.info("[DRY-RUN] Would regenerate message %s queue_id=%s date=%s", platform, queue_id, target_date)
+                    return "regenerated"
+                cursor.execute(
+                    """
+                    UPDATE posting_queue
+                    SET generated_content = %s, status = 'ready', updated_at = NOW()
+                    WHERE id = %s
+                    """,
+                    (message, queue_id),
+                )
+                conn.commit()
+                logger.info("Regenerated message %s queue_id=%s date=%s", platform, queue_id, target_date)
+                return "regenerated"
+            else:
+                if dry_run:
+                    logger.info("[DRY-RUN] Would create message %s date=%s", platform, target_date)
+                    return "created"
+                cursor.execute(
+                    """
+                    INSERT INTO posting_queue (
+                        content_type, platform, status, role,
+                        generated_content,
+                        scheduled_date, scheduled_time, scheduled_timestamp,
+                        created_at, updated_at
+                    )
+                    VALUES (%s, %s, 'ready', %s, %s, %s, %s, %s, NOW(), NOW())
+                    RETURNING id
+                    """,
+                    (
+                        CONTENT_TYPE,
+                        platform,
+                        ROLE,
+                        message,
+                        target_date,
+                        scheduled_time_str,
+                        scheduled_timestamp,
+                    ),
+                )
+                r = cursor.fetchone()
+                qid = r["id"] if r and isinstance(r, dict) else (r[0] if r else None)
+                conn.commit()
+                if qid:
+                    logger.info("Created message %s queue_id=%s date=%s index=%s", platform, qid, target_date, message_index)
+                    return "created"
+                return "failed"
+    return "failed"
 
 
 def ensure_message_slot(
