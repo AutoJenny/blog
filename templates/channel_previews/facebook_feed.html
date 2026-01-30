@@ -1,12 +1,11 @@
-{# 
+{#
   Facebook Feed Preview Template
 
-  Canonical channel template for Facebook previews.
-  Both:
-    - /api/preview/post/<id>?channel=facebook
-    - /preview/post/<id>?channel=facebook
-  must render via this template (using ChannelPreviewRenderer and the
-  FacebookFormatter).
+  Canonical channel template for Facebook previews. Renders exactly as publish:
+  - Culture/heritage: header + title + body in styled text block (emojis preserved).
+  - Product: image at top, then title, price, link, caption (no raw JSON).
+  Both /api/preview/post/<id>?channel=facebook and /preview/post/<id>?channel=facebook
+  use this template. UTF-8; do not strip emojis.
 #}
 
 {% set meta = meta or {} %}
@@ -25,6 +24,9 @@
           {{ meta.status }}
         </span>
       {% endif %}
+      {% if meta.category %}
+        <span class="ml-2 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-[10px] text-slate-400">{{ meta.category }}</span>
+      {% endif %}
     </div>
     <div>
       {% if meta.char_count is not none %}
@@ -33,9 +35,30 @@
     </div>
   </div>
 
-  <div class="bg-slate-800 rounded-md p-3 text-sm leading-relaxed">
-    {{ display_text | e | replace('\n', '<br>') | safe }}
+  {% if meta.content_type == 'product' %}
+  {# Product: image at top, then title, link, caption. Price never shown in preview (policy). #}
+  <div class="bg-slate-800 rounded-md overflow-hidden">
+    {% if meta.product_image_url %}
+    <div class="bg-slate-700">
+      <img src="{{ meta.product_image_url }}" alt="{{ meta.product_name or 'Product' }}" class="w-full max-h-80 object-contain" loading="lazy" />
+    </div>
+    {% endif %}
+    <div class="p-3 text-sm leading-relaxed space-y-2">
+      {% if meta.product_name %}
+      <div class="font-semibold text-slate-100">{{ meta.product_name }}</div>
+      {% endif %}
+      {% if meta.product_link %}
+      <div><a href="{{ meta.product_link }}" target="_blank" rel="noopener" class="text-blue-300 hover:underline">{{ meta.product_link }}</a></div>
+      {% endif %}
+      {% if display_text %}
+      <div class="pt-2 border-t border-slate-600 whitespace-pre-wrap">{{ display_text }}</div>
+      {% endif %}
+    </div>
   </div>
+  {% else %}
+  {# Culture/heritage/message/etc: styled text block, newlines preserved, emojis preserved #}
+  <div class="bg-slate-800 rounded-md p-3 text-sm leading-relaxed whitespace-pre-wrap">{{ display_text }}</div>
+  {% endif %}
 
   {% if meta.validation_failed_rules and meta.validation_failed_rules|length > 0 %}
   <div class="mt-2 text-xs text-amber-300 border border-amber-500/40 rounded px-2 py-1 bg-amber-900/20">

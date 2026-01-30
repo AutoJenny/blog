@@ -1,5 +1,21 @@
 # Changelog
 
+## Product price never in Facebook preview or publish (2026-01-30)
+
+### Policy
+Product price must never appear in Facebook preview text or in published product posts.
+
+### Implementation
+- **Helper:** `utils/formatting/product_caption.py` — `strip_price_from_caption(text)` removes £/$/bare decimal amounts (e.g. £43.99, $43.99, 43.99) from product caption text; collapses whitespace.
+- **Preview:** `utils/channel_preview/formatters/facebook.py` — for product posts, caption is passed through `strip_price_from_caption` before `format_message_for_facebook`; meta no longer includes `product_price`; template does not show price.
+- **Publish:** `utils/platform_publishers.py` — for product image posts, caption is passed through `strip_price_from_caption` before sending to Facebook API.
+- **Docs:** `docs/PREVIEW_FACEBOOK_MATCH_PUBLISH.md` updated (product caption policy, no price in template).
+
+### Verification
+- `/api/preview/post/<id>?channel=facebook` for product posts returns display_text and HTML without price; verified for post 21482.
+
+---
+
 ## Executor daily cap and idempotency (2026-01-30)
 
 ### Objective

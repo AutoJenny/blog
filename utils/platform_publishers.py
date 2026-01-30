@@ -19,6 +19,8 @@ from datetime import datetime
 
 from config.database import db_manager
 from utils.posting_queue_helpers import get_posting_queue_row
+from utils.formatting.culture_headers import apply_culture_or_heritage_header
+from utils.formatting.product_caption import strip_price_from_caption
 
 logger = logging.getLogger(__name__)
 
@@ -102,19 +104,19 @@ def publish_to_facebook(queue_id: int) -> Dict:
         
         content_type = queue_row.get('content_type')
         
-        # For message posts, use text-only posting
-        if content_type == 'message':
-            # Get message text (preserve line breaks)
+        # For message, culture_fact, heritage_fact: text-only posting (same path: /feed, no CTA, no hashtag injection)
+        if content_type in ('message', 'culture_fact', 'heritage_fact'):
+            # Get text content (preserve line breaks)
             message_text = queue_row.get('generated_content', '')
             if not message_text:
                 return {
                     "success": False,
-                    "error": "Message content not found"
+                    "error": "Content not found" if content_type in ('culture_fact', 'heritage_fact') else "Message content not found"
                 }
-            
-            # Format message text with extra line breaks for better Facebook display
-            # Add line breaks after em dashes and between sentences for better readability
-            formatted_message = format_message_for_facebook(message_text)
+            # Culture/heritage: apply authoritative header before message formatting (parity with preview)
+            content = apply_culture_or_heritage_header(content_type, message_text)
+            # Format text with same logic as publish (line breaks for display)
+            formatted_message = format_message_for_facebook(content)
             
             # Get Facebook credentials for both pages
             with db_manager.get_cursor() as cursor:
@@ -172,8 +174,8 @@ def publish_to_facebook(queue_id: int) -> Dict:
                     'access_token': page['access_token']
                 }
                 
-                logger.info(f"Posting text-only message to {page['name']} (Page ID: {page['page_id']})")
-                logger.info(f"Message: {message_text[:100]}...")
+                logger.info(f"Posting text-only post ({content_type}) to {page['name']} (Page ID: {page['page_id']})")
+                logger.info(f"Content: {message_text[:100]}...")
                 
                 try:
                     response = requests.post(feed_url, data=feed_payload, timeout=30)
@@ -244,7 +246,8 @@ def publish_to_facebook(queue_id: int) -> Dict:
         # Get generated image and caption
         image_path = queue_row.get('image_path')
         caption = queue_row.get('generated_caption')
-        
+        if content_type == 'product' and caption:
+            caption = strip_price_from_caption(caption)
         if not image_path or not caption:
             return {
                 "success": False,

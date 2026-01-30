@@ -2,13 +2,17 @@
 Facebook channel preview formatter.
 
 Reuses the same text formatting logic as the Facebook publish path
-(`utils.platform_publishers.format_message_for_facebook`) so that
-preview and publish remain in sync.
+(culture/heritage headers then utils.platform_publishers.format_message_for_facebook)
+so that preview and publish remain in sync. For product posts, returns
+display_text (caption, price stripped per policy) plus product_image_url,
+product_name, product_link for template to render image + caption. Emojis preserved (UTF-8).
 """
 
 from typing import Any, Dict
 
 from utils.platform_publishers import format_message_for_facebook
+from utils.formatting.culture_headers import apply_culture_or_heritage_header
+from utils.formatting.product_caption import strip_price_from_caption
 
 
 class FacebookFormatter:
@@ -24,14 +28,45 @@ class FacebookFormatter:
     ) -> Dict[str, Any]:
         """
         Return formatted display text and metadata for preview.
+        For culture/heritage: header + title + body (same as publish).
+        For product: caption as display_text (price stripped per policy); product_image_url,
+        product_name, product_link in meta for template to show image + caption.
         """
+        content_type = (post_data.get("content_type") or "").strip()
+
+        if content_type == "product":
+            # Product: display_text = caption (what publishes); strip price per policy
+            caption = (post_data.get("generated_caption") or "").strip()
+            caption_no_price = strip_price_from_caption(caption) if caption else ""
+            display_text = format_message_for_facebook(caption_no_price) if caption_no_price else ""
+            char_count = len(display_text)
+            # Product image: image_path is often URL for products; fallback to clan_products.image_url
+            image_path = post_data.get("image_path") or ""
+            product_image_url = (
+                image_path
+                if image_path and (image_path.startswith("http://") or image_path.startswith("https://"))
+                else (post_data.get("product_image_url") or "")
+            )
+            return {
+                "display_text": display_text,
+                "char_count": char_count,
+                "warnings": [],
+                "meta": {
+                    "role": post_data.get("role"),
+                    "status": post_data.get("status"),
+                    "content_type": content_type,
+                    "platform": post_data.get("platform"),
+                    "category": post_data.get("category"),
+                    "product_image_url": product_image_url or None,
+                    "product_name": post_data.get("product_name"),
+                    "product_link": post_data.get("product_link"),
+                },
+            }
+        # Text-based: culture/heritage get header; then message formatting
         raw_text = (post_data.get("generated_content") or "").strip()
-
-        # Reuse publish formatting logic for line breaks etc.
-        display_text = format_message_for_facebook(raw_text) if raw_text else ""
-
+        content = apply_culture_or_heritage_header(content_type, raw_text) if raw_text else ""
+        display_text = format_message_for_facebook(content) if content else ""
         char_count = len(display_text)
-
         return {
             "display_text": display_text,
             "char_count": char_count,
@@ -39,8 +74,9 @@ class FacebookFormatter:
             "meta": {
                 "role": post_data.get("role"),
                 "status": post_data.get("status"),
-                "content_type": post_data.get("content_type"),
+                "content_type": content_type,
                 "platform": post_data.get("platform"),
+                "category": post_data.get("category"),
             },
         }
 
