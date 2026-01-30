@@ -26,7 +26,7 @@
 ### 2.2 Executor commit hash and deploy time
 
 - **Pre-cap executor:** Code running when the 5 posts were published did not include `apply_daily_cap` or claim-before-publish. Last commit touching executor before cap: `8a77286f` (2026-01-21; timeline fix).
-- **Current production (with cap):** Set by this closure commit (see CHANGELOG).
+- **Current production (with cap):** `c0655ba7` (Executor daily cap: closure complete).
 
 ### 2.3 Confirmation: production executor includes cap + claim
 

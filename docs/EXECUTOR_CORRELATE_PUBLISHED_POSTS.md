@@ -46,7 +46,7 @@ Example format:
 **Executor run that published the 5 posts (for causality):**
 - **Git commit hash of executor deployed at that time:** Pre-cap (no apply_daily_cap). Last commit touching executor before cap: `8a77286f` (2026-01-21).
 - **Timestamp of executor run (from logs):** Check `logs/background_posting.log` for run ~17h before 2026-01-30.
-- **Current production (with cap):** Commit hash set by closure commit (see CHANGELOG / adviser report).
+- **Current production (with cap):** `c0655ba7` (Executor daily cap: closure complete).
 
 **Conclusion:** 5 separate queue rows were in status ready/pending for that date; executor (pre-cap) published all. Run predated the cap logic. Guard (daily cap + claim) now prevents recurrence.
 

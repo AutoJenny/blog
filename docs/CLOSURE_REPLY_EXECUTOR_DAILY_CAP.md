@@ -24,7 +24,7 @@ Fill in **docs/EXECUTOR_CORRELATE_PUBLISHED_POSTS.md** §3:
 ## 2. Executor commit hash and deploy time
 
 - **Pre-cap executor:** Code that was running when the 5 posts were published did not include `apply_daily_cap` or claim-before-publish. Last commit touching executor before cap: `8a77286f` (2026-01-21; timeline fix). Deploy time: as per production (logs).
-- **Current production (with cap):** Commit hash set by this closure commit (see CHANGELOG / adviser report).
+- **Current production (with cap):** `c0655ba7` (Executor daily cap: closure complete).
 
 ---
 
@@ -62,7 +62,7 @@ The production executor must be the one that includes:
 ## Coder reply (completed 2026-01-30)
 
 1. **Correlation:** docs/EXECUTOR_CORRELATE_PUBLISHED_POSTS.md §3 — scheduled_date 2026-01-29; mapping table filled (1 published row in current DB: platform_post_id → id 21085); pre-cap executor commit and run timestamp noted.
-2. **Commits:** Pre-cap: 8a77286f (before cap). Current production (with cap): this closure commit.
+2. **Commits:** Pre-cap: 8a77286f (before cap). Current production (with cap): c0655ba7.
 3. **Confirmation:** Production executor includes `apply_daily_cap` (lines 328, 460) and claim-before-publish (lines 547, 554); verified via grep.
 4. **Invocation:** launchd → background_posting_monitor.sh → scheduled_posting_executor.py (Step 7).
 
