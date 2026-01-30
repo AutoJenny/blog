@@ -49,6 +49,7 @@ class ScheduledPostingExecutor:
     def __init__(self):
         self.db_manager = db_manager
         self._bypass_switch = False  # Set to True to bypass automated_posting_enabled check
+        self._dry_run = False  # Set to True to log only, no DB updates or publishing
     
     def is_automated_posting_enabled(self) -> bool:
         """
@@ -154,58 +155,72 @@ class ScheduledPostingExecutor:
         
         return True
     
-    def validate_weekly_content_schedule(self, post: Dict) -> bool:
+    # Matrix v1.1 (Phase C1/H1): content_type -> allowed weekdays (ISO 1=Mon .. 7=Sun)
+    _CONTENT_WEEKDAY_MATRIX = {
+        'weekly_word': (2,),      # Tuesday only
+        'weekly_phrase': (2,),    # Tuesday only
+        'weekly_insult': (2,),    # Tuesday only
+        'culture_fact': (1,),     # Monday only (Thursday = HERITAGE)
+        'heritage_fact': (4,),    # Thursday only
+        'message': (3,),          # Wednesday
+        'authority_short': (5,),  # Friday
+        'product': (6,),          # Saturday
+        'depth_long': (7,),       # Sunday
+    }
+    _LANGUAGE_TYPES = ('weekly_word', 'weekly_phrase', 'weekly_insult')
+
+    def validate_content_schedule(self, post: Dict) -> bool:
         """
-        Validate that weekly content posts follow the correct schedule:
-        - weekly_word: Monday
-        - weekly_phrase: Wednesday  
-        - weekly_insult: Friday
-        - Only one post per weekday
-        - Posts should be on alternating weeks (not all three in same week)
+        Validate that post follows Matrix v1.1 weekday rules (Phase C1).
+        - Language (weekly_word/phrase/insult): Tuesday only; one language post per week.
+        - culture_fact: Monday only. heritage_fact: Thursday only.
+        - message: Wednesday. authority_short: Friday. product: Saturday. depth_long: Sunday.
+        - If content_type not in matrix, allow (no restriction).
+        - Legacy language on any day other than Tuesday is hard-blocked.
         """
         content_type = post.get('content_type', '').lower()
-        if content_type not in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
-            return True  # Not weekly content, skip validation
-        
+        if not content_type or content_type not in self._CONTENT_WEEKDAY_MATRIX:
+            return True  # Not in matrix, skip validation
+
         scheduled_date = post.get('scheduled_date')
         if not scheduled_date:
             logger.warning(f"Post {post['id']} ({content_type}) missing scheduled_date, cannot validate weekday")
             return False
-        
+
         if isinstance(scheduled_date, str):
             scheduled_date = date.fromisoformat(scheduled_date)
-        
-        # Get weekday (0=Monday, 6=Sunday in Python, but ISO uses 1=Monday)
+
         weekday = scheduled_date.isoweekday()  # 1=Monday, 7=Sunday
-        
-        # Expected weekdays
-        expected_weekday = {
-            'weekly_word': 1,    # Monday
-            'weekly_phrase': 3,  # Wednesday
-            'weekly_insult': 5   # Friday
-        }.get(content_type)
-        
-        if weekday != expected_weekday:
-            logger.error(f"BLOCKED: Post {post['id']} ({content_type}) scheduled for weekday {weekday} (expected {expected_weekday})")
+        allowed = self._CONTENT_WEEKDAY_MATRIX[content_type]
+
+        if weekday not in allowed:
+            logger.error(
+                "BLOCKED: Post %s (%s) scheduled for weekday %s (allowed: %s)",
+                post['id'], content_type, weekday, allowed,
+            )
             return False
-        
-        # Check if another post of same type was already published this week
-        year, week_number, _ = scheduled_date.isocalendar()
-        with self.db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT id FROM posting_queue
-                WHERE content_type = %s
-                AND status = 'published'
-                AND scheduled_date IS NOT NULL
-                AND EXTRACT(YEAR FROM scheduled_date) = %s
-                AND EXTRACT(WEEK FROM scheduled_date) = %s
-                AND id != %s
-            """, (content_type, year, week_number, post['id']))
-            existing = cursor.fetchone()
-            if existing:
-                logger.error(f"BLOCKED: Post {post['id']} ({content_type}) - another {content_type} already published in week {year}-W{week_number:02d}")
-                return False
-        
+
+        # Language only: at most one language post (any type) per week already published
+        if content_type in self._LANGUAGE_TYPES:
+            year, week_number, _ = scheduled_date.isocalendar()
+            with self.db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id FROM posting_queue
+                    WHERE content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult')
+                    AND status = 'published'
+                    AND scheduled_date IS NOT NULL
+                    AND EXTRACT(YEAR FROM scheduled_date) = %s
+                    AND EXTRACT(WEEK FROM scheduled_date) = %s
+                    AND id != %s
+                """, (year, week_number, post['id']))
+                existing = cursor.fetchone()
+                if existing:
+                    logger.error(
+                        "BLOCKED: Post %s (%s) - another language post already published in week %s-W%02d",
+                        post['id'], content_type, year, week_number,
+                    )
+                    return False
+
         return True
     
     def get_due_posts(self) -> List[Dict]:
@@ -226,9 +241,10 @@ class ScheduledPostingExecutor:
                 now = datetime.now()
                 logger.debug(f"Current time: {now}")
                 
-                # SQL query to find posts that appear to be due
+                # SQL query to find posts that appear to be due (include role for daily-cap priority).
+                # Predicate must match utils.publishable_predicate (PUBLISHABLE_STATUSES + SCHEDULED_DUE_FRAGMENT).
                 cursor.execute("""
-                    SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
+                    SELECT pq.id, pq.platform, pq.role, pq.channel_type, pq.content_type,
                            pq.generated_content, pq.status, pq.product_id, pq.section_id,
                            pq.scheduled_timestamp, pq.schedule_name, pq.timezone,
                            pq.scheduled_date, pq.scheduled_time,
@@ -250,20 +266,20 @@ class ScheduledPostingExecutor:
                 candidate_posts = cursor.fetchall()
                 logger.info(f"Found {len(candidate_posts)} candidate posts from SQL query")
                 
-                # Failsafe: Validate each post with Python date checking AND weekly content schedule
+                # Failsafe: Validate each post with Python date checking AND Matrix v1.1 content schedule
                 valid_posts = []
                 for post in candidate_posts:
                     # First check: date validation
                     if not self.validate_scheduled_date(post):
                         logger.warning(f"BLOCKED post {post['id']} - failed failsafe date validation")
                         continue
-                    
-                    # Second check: weekly content schedule validation (for weekly_word/phrase/insult)
-                    if post.get('content_type') in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
-                        if not self.validate_weekly_content_schedule(post):
-                            logger.warning(f"BLOCKED post {post['id']} - failed weekly content schedule validation")
-                            continue
-                    
+
+                    # Second check: Matrix v1.1 content schedule (language Tuesday only; culture_fact Mon/Thu; etc.)
+                    if not self.validate_content_schedule(post):
+                        logger.warning(f"BLOCKED post {post['id']} - failed content schedule validation")
+                        continue
+
+                    scheduled_str = post.get('scheduled_timestamp') or f"{post.get('scheduled_date')} {post.get('scheduled_time')}"
                     valid_posts.append(post)
                     logger.debug(f"Validated post: ID={post['id']}, scheduled={scheduled_str}, platform={post['platform']}")
                 
@@ -274,7 +290,98 @@ class ScheduledPostingExecutor:
             logger.error(f"Error fetching due posts: {e}")
             logger.exception("Full exception details:")
             return []
-    
+
+    # Daily cap: Matrix priority for deterministic selection (highest first)
+    _PRIORITY_BY_ROLE_OR_TYPE = {
+        'AUTHORITY_SHORT': 1,
+        'DEPTH_LONG': 2,
+        'HERITAGE': 3,
+        'CULTURE': 4,
+        'message': 5,
+        'weekly_word': 6,
+        'weekly_phrase': 6,
+        'weekly_insult': 6,
+        'product': 7,
+    }
+
+    def _priority_sort_key(self, post: Dict) -> tuple:
+        role = (post.get('role') or '').strip()
+        ct = (post.get('content_type') or '').strip()
+        if role == 'AUTHORITY_SHORT':
+            p = 1
+        elif ct == 'depth_long':
+            p = 2
+        elif role == 'HERITAGE' or ct == 'heritage_fact':
+            p = 3
+        elif ct == 'culture_fact':
+            p = 4
+        elif ct == 'message':
+            p = 5
+        elif ct in ('weekly_word', 'weekly_phrase', 'weekly_insult'):
+            p = 6
+        elif ct == 'product':
+            p = 7
+        else:
+            p = 99
+        return (p, post.get('id') or 0)
+
+    def apply_daily_cap(self, valid_posts: List[Dict]) -> tuple:
+        """
+        Enforce one post per day for Facebook (except Saturday: multiple product posts allowed).
+        Returns (posts_to_publish, list of (id, error_message) to cancel).
+        """
+        to_publish = []
+        to_cancel = []  # list of (id, error_message)
+        if not valid_posts:
+            return (to_publish, to_cancel)
+
+        from collections import defaultdict
+        by_platform_date = defaultdict(list)
+        for p in valid_posts:
+            platform = (p.get('platform') or '').strip().lower()
+            sd = p.get('scheduled_date')
+            if not sd:
+                continue
+            if isinstance(sd, str):
+                sd = date.fromisoformat(sd)
+            by_platform_date[(platform, sd)].append(p)
+
+        for (platform, scheduled_date), posts in by_platform_date.items():
+            if platform != 'facebook':
+                to_publish.extend(posts)
+                continue
+            weekday = scheduled_date.isoweekday()  # 1=Mon .. 7=Sun
+            if weekday == 6:  # Saturday: keep all product rows, cancel non-product
+                products = [p for p in posts if (p.get('content_type') or '').strip() == 'product']
+                non_products = [p for p in posts if (p.get('content_type') or '').strip() != 'product']
+                to_publish.extend(products)
+                for p in non_products:
+                    to_cancel.append((
+                        p['id'],
+                        f"Executor cap: cancelled non-product post for Saturday {scheduled_date}; only product posts publish on Saturday",
+                    ))
+                if non_products:
+                    logger.info(
+                        "Executor daily cap (Saturday): kept %s product(s), cancelled %s non-product for %s",
+                        len(products), len(non_products), scheduled_date,
+                    )
+            else:
+                # Non-Saturday: exactly one per date
+                sorted_posts = sorted(posts, key=self._priority_sort_key)
+                keep = sorted_posts[0]
+                to_publish.append(keep)
+                for p in sorted_posts[1:]:
+                    to_cancel.append((
+                        p['id'],
+                        f"Executor cap: cancelled surplus eligible post for date {scheduled_date}; kept queue_id={keep['id']}",
+                    ))
+                if len(sorted_posts) > 1:
+                    logger.info(
+                        "Executor daily cap: date %s had %s eligible, kept id=%s (priority), cancelling %s surplus",
+                        scheduled_date, len(sorted_posts), keep['id'], len(sorted_posts) - 1,
+                    )
+        return (to_publish, to_cancel)
+
     def route_to_platform_publisher(self, post: Dict) -> Dict:
         """
         Route post to appropriate platform publisher.
@@ -321,32 +428,61 @@ class ScheduledPostingExecutor:
         Dict with stats: total_found, successfully_published, failed, skipped
         """
         stats = {
+            'eligible_after_validation': 0,
             'total_found': 0,
             'successfully_published': 0,
             'failed': 0,
-            'skipped': 0
+            'skipped': 0,
+            'cancelled_surplus': 0,
+            'blocked_wrong_day': 0,
         }
         
         try:
             # CRITICAL: Check if automated posting is enabled (unless bypassed)
             if not self._bypass_switch and not self.is_automated_posting_enabled():
                 logger.info("Automated posting is DISABLED - skipping all publishing")
-                # Still get count for stats
                 due_posts = self.get_due_posts()
+                stats['eligible_after_validation'] = len(due_posts)
                 stats['total_found'] = len(due_posts)
                 stats['skipped'] = len(due_posts)
                 return stats
             
             # Get due posts (already validated by get_due_posts)
             due_posts = self.get_due_posts()
+            stats['eligible_after_validation'] = len(due_posts)
             stats['total_found'] = len(due_posts)
             
             if not due_posts:
                 logger.info("No posts due for publishing")
                 return stats
             
-            # Process each post
-            for post in due_posts:
+            # Daily cap: at most one per day for Facebook (except Saturday products); cancel surplus
+            posts_to_publish, cancel_list = self.apply_daily_cap(due_posts)
+            if cancel_list:
+                stats['cancelled_surplus'] = len(cancel_list)
+                if self._dry_run:
+                    for queue_id, error_message in cancel_list:
+                        logger.info("DRY-RUN would cancel id=%s: %s", queue_id, error_message[:80])
+                else:
+                    with self.db_manager.get_connection() as conn:
+                        with conn.cursor() as cursor:
+                            for queue_id, error_message in cancel_list:
+                                cursor.execute("""
+                                    UPDATE posting_queue
+                                    SET status = 'cancelled', error_message = %s, updated_at = NOW()
+                                    WHERE id = %s
+                                """, (error_message, queue_id))
+                    logger.info("Executor cap: cancelled %s surplus eligible row(s)", len(cancel_list))
+            
+            if self._dry_run:
+                for post in posts_to_publish:
+                    logger.info("DRY-RUN would publish id=%s platform=%s content_type=%s scheduled_date=%s",
+                                post.get('id'), post.get('platform'), post.get('content_type'), post.get('scheduled_date'))
+                logger.info("DRY-RUN complete: would publish %s, would cancel %s", len(posts_to_publish), len(cancel_list))
+                return stats
+            
+            # Process each post (only those that passed the daily cap)
+            for post in posts_to_publish:
                 try:
                     queue_id = post['id']
                     
@@ -407,6 +543,24 @@ class ScheduledPostingExecutor:
                                 stats['skipped'] += 1
                                 continue
                     
+                    # Atomic claim: prevent two processes publishing the same row (only one winner)
+                    # Claim only if still eligible: status in ready/pending AND platform_post_id IS NULL
+                    with self.db_manager.get_connection() as conn:
+                        with conn.cursor() as cursor:
+                            cursor.execute("""
+                                UPDATE posting_queue
+                                SET status = 'publishing', updated_at = NOW()
+                                WHERE id = %s AND status IN ('ready', 'pending')
+                                  AND (platform_post_id IS NULL OR platform_post_id = '')
+                            """, (queue_id,))
+                            if cursor.rowcount != 1:
+                                logger.warning(
+                                    "Post %s not claimed (rowcount=%s); already claimed/published by another process, skipping",
+                                    queue_id, cursor.rowcount,
+                                )
+                                stats['skipped'] += 1
+                                continue
+                    
                     # Route to platform publisher
                     result = self.route_to_platform_publisher(post)
                     
@@ -451,7 +605,11 @@ class ScheduledPostingExecutor:
                     logger.exception("Full exception details:")
                     stats['failed'] += 1
             
-            logger.info(f"Scheduled posting execution complete: {stats}")
+            logger.info(
+                "Scheduled posting execution complete: eligible=%s published=%s failed=%s skipped=%s cancelled_surplus=%s",
+                stats['eligible_after_validation'], stats['successfully_published'], stats['failed'],
+                stats['skipped'], stats['cancelled_surplus'],
+            )
             return stats
             
         except Exception as e:
@@ -463,38 +621,50 @@ class ScheduledPostingExecutor:
 def main():
     """
     Main function to run the scheduled posting executor
-    
+
     Command-line arguments:
     --bypass-switch: Bypass the automated_posting_enabled check (for manual triggers)
+    --dry-run: Log due posts, daily cap, and cancellations only; no DB updates or publishing
     """
     try:
         import argparse
         parser = argparse.ArgumentParser(description='Scheduled Posting Executor')
-        parser.add_argument('--bypass-switch', action='store_true', 
+        parser.add_argument('--bypass-switch', action='store_true',
                           help='Bypass automated_posting_enabled check (for manual triggers)')
+        parser.add_argument('--dry-run', action='store_true',
+                          help='Log due posts, daily cap selection, and cancellations only; do not update DB or publish')
         args = parser.parse_args()
-        
+
         logger.info("Starting scheduled posting executor")
+        try:
+            from config.unified_config import get_database_target_for_logging
+            logger.info("DB target: %s", get_database_target_for_logging())
+        except Exception:
+            logger.info("DB target: (config unavailable)")
+        logger.info("Executor daily cap enabled (max 1 per day except Saturday products)")
         if args.bypass_switch:
             logger.info("BYPASS MODE: Ignoring automated_posting_enabled switch (manual trigger)")
-        
+        if args.dry_run:
+            logger.info("DRY-RUN: No DB updates or publishing")
+
         # Create executor
         executor = ScheduledPostingExecutor()
-        executor._bypass_switch = args.bypass_switch  # Store bypass flag
-        
+        executor._bypass_switch = args.bypass_switch
+        executor._dry_run = getattr(args, 'dry_run', False)
+
         # Process due posts
         stats = executor.process_due_posts()
-        
-        logger.info(f"Scheduled posting executor complete: {stats}")
-        
+
+        logger.info("Scheduled posting executor complete: %s", stats)
+
         # Exit with appropriate code
         if stats['failed'] > 0:
             sys.exit(1)  # Some posts failed
         else:
             sys.exit(0)  # Success
-            
+
     except Exception as e:
-        logger.error(f"Fatal error in scheduled posting executor: {e}")
+        logger.error("Fatal error in scheduled posting executor: %s", e)
         logger.exception("Full exception details:")
         sys.exit(1)
 
