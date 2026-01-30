@@ -224,6 +224,29 @@ function renderItems(container, items, type, year, week) {
     }
     
     let title = item.title || item.theme_title || item.recipe_title || item.post_title || 'Untitled';
+    // Role-based posts (culture, heritage, authority_short, depth_long): use content as title when title is generic
+    if (type === 'culture' || type === 'heritage' || type === 'authority_short' || type === 'depth_long') {
+      const genericPattern = /^(culture|heritage|authority.short|depth.long)\s+post$/i;
+      const placeholderPattern = /placeholder|short factual context/i;
+      const isGeneric = !title || title === 'Untitled' || genericPattern.test(String(title).trim());
+      const isPlaceholder = placeholderPattern.test(String(title || ''));
+      if (isGeneric || isPlaceholder) {
+        const content = item.generated_content || item.generated_caption || '';
+        const firstLine = content ? content.split('\n')[0].trim() : '';
+        const contentIsPlaceholder = placeholderPattern.test(firstLine);
+        if (firstLine && !contentIsPlaceholder) {
+          title = firstLine.length > 60 ? firstLine.substring(0, 60) + '…' : firstLine;
+        } else if (type === 'authority_short') {
+          title = 'Authority post';
+        } else if (type === 'culture') {
+          title = 'Culture post';
+        } else if (type === 'heritage') {
+          title = 'Heritage post';
+        } else if (type === 'depth_long') {
+          title = 'Depth post';
+        }
+      }
+    }
     // If multiple product posts for this day, add count indicator
     if (type === 'product' && item._multiple_count && item._multiple_count > 1) {
       title = `${title} (+${item._multiple_count - 1} more)`;
@@ -967,20 +990,17 @@ async function loadWeek(year, weekNumber) {
     });
   }
   
-  // Render weekly words/phrases/insults and product posts into Social Posts row
-  // Phase 5.1: Matrix v1 fixed assignment — Mon=Word, Tue=Phrase, Thu=Insult (ISO day 1,2,4).
+  // Render weekly language (one per week, Tuesday only) and product posts into Social Posts row
+  // Matrix v1: one language post per week (word/phrase/insult rotating); always on Tuesday (day 2).
   if (showSocialPosts && socialPostsCells) {
-    if (selectedWord) {
-      const wordTarget = document.getElementById('social-posts-row-day-1');
-      if (wordTarget) renderItems(wordTarget, [selectedWord], 'weekly-word', year, weekNumber);
-    }
-    if (selectedPhrase) {
-      const phraseTarget = document.getElementById('social-posts-row-day-2');
-      if (phraseTarget) renderItems(phraseTarget, [selectedPhrase], 'weekly-phrase', year, weekNumber);
-    }
-    if (selectedInsult) {
-      const insultTarget = document.getElementById('social-posts-row-day-4');
-      if (insultTarget) renderItems(insultTarget, [selectedInsult], 'weekly-insult', year, weekNumber);
+    const languageItem = selectedWord || selectedPhrase || selectedInsult;
+    if (languageItem) {
+      const dayIndex = 2; // Tuesday (ISO weekday)
+      const languageTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+      if (languageTarget) {
+        const langType = languageItem.type === 'weekly_word' ? 'weekly-word' : languageItem.type === 'weekly_phrase' ? 'weekly-phrase' : 'weekly-insult';
+        renderItems(languageTarget, [languageItem], langType, year, weekNumber);
+      }
     }
     // Product posts - render on their actual scheduled_date
     // Group by day and show only one per day (the first one scheduled for that day)
@@ -1046,8 +1066,8 @@ async function loadWeek(year, weekNumber) {
     }
     
     // Role-based posts (e.g., DEPTH_LONG Sunday Deep Dive) - render on their scheduled_date
-    // Role-based posts (e.g. DEPTH_LONG, AUTHORITY_SHORT): exclude product/message — those are already rendered above
-    const rolePosts = schedule.filter(s => s.role && s.posting_queue_id && s.type !== 'product' && s.type !== 'message');
+    // Exclude product, message, and language (weekly_*) — those are already rendered above
+    const rolePosts = schedule.filter(s => s.role && s.posting_queue_id && s.type !== 'product' && s.type !== 'message' && s.type !== 'weekly_word' && s.type !== 'weekly_phrase' && s.type !== 'weekly_insult');
     if (rolePosts.length > 0) {
       rolePosts.forEach((rolePost) => {
         if (rolePost.scheduled_date) {

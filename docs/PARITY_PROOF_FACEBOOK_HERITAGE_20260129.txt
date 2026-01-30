@@ -1,0 +1,8 @@
+Facebook Preview/Publish Parity Proof
+Run at: 2026-01-29T16:03:23.006177Z
+
+post_id=21085 role=HERITAGE content_type=heritage_fact -> PASS
+
+post_id=21089 role=CULTURE content_type=culture_fact -> PASS
+
+post_id=18154 role=CULTURE content_type=weekly_phrase -> PASS

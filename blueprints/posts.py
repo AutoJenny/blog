@@ -690,62 +690,20 @@ def api_posts_timeline():
 def api_publish_post(queue_id):
     """
     Manually publish a single post from posting_queue.
-    Bypasses automated posting switch for one-off publishing.
+
+    Phase C1: Facebook publishing is only allowed through the scheduled posting executor
+    so that weekday validation is enforced. This endpoint no longer calls publish_to_facebook.
     """
     try:
-        from utils.platform_publishers import publish_to_facebook
-        
-        # Get post details
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                SELECT id, status, platform, content_type, scheduled_timestamp, platform_post_id
-                FROM posting_queue
-                WHERE id = %s
-            """, (queue_id,))
-            post = cursor.fetchone()
-            
-            if not post:
-                return jsonify({
-                    'success': False,
-                    'error': 'Post not found'
-                }), 404
-            
-            # Check if already published
-            if post['status'] == 'published':
-                return jsonify({
-                    'success': False,
-                    'error': 'Post already published'
-                }), 400
-            
-            if post['platform_post_id']:
-                return jsonify({
-                    'success': False,
-                    'error': 'Post already has platform_post_id, may be duplicate'
-                }), 400
-            
-            # Only support Facebook for now
-            if post['platform'] != 'facebook':
-                return jsonify({
-                    'success': False,
-                    'error': f'Platform {post["platform"]} not supported for manual publishing'
-                }), 400
-            
-            # Publish the post
-            result = publish_to_facebook(queue_id)
-            
-            if result.get('success'):
-                return jsonify({
-                    'success': True,
-                    'message': 'Post published successfully',
-                    'platform_post_id': result.get('platform_post_id'),
-                    'platform_post_ids': result.get('platform_post_ids', [])
-                })
-            else:
-                return jsonify({
-                    'success': False,
-                    'error': result.get('error', 'Publishing failed')
-                }), 500
-            
+        # Phase C1 — Single authoritative gate: only scheduled_posting_executor may publish.
+        # Manual publish would bypass weekday validation (wrong-day language, etc.).
+        return jsonify({
+            'success': False,
+            'error': (
+                'Facebook publishing must go through the scheduled posting executor. '
+                'Manual publish is disabled for date safety. Use the executor (e.g. background monitor) to publish.'
+            )
+        }), 403
     except Exception as e:
         logger.error(f"Error in api_publish_post: {e}")
         return jsonify({"error": str(e)}), 500

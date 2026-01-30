@@ -70,28 +70,38 @@ class ChannelPreviewRenderer:
                 "error_code": "INVALID_CHANNEL",
             }
 
-        # Load basic post data from posting_queue (incl. validation_report_json for provenance/warnings)
+        # Load basic post data from posting_queue (incl. product join for product_image_url, etc.)
         with db_manager.get_cursor() as cursor:
             cursor.execute(
                 """
                 SELECT
-                    id,
-                    platform,
-                    channel_type,
-                    role,
-                    content_type,
-                    status,
-                    generated_content,
-                    scheduled_date,
-                    scheduled_time,
-                    rota_year,
-                    rota_week,
-                    topic_id,
-                    source_page_id,
-                    angle_id,
-                    validation_report_json
-                FROM posting_queue
-                WHERE id = %s
+                    pq.id,
+                    pq.platform,
+                    pq.channel_type,
+                    pq.role,
+                    pq.content_type,
+                    pq.status,
+                    pq.generated_content,
+                    pq.generated_caption,
+                    pq.image_path,
+                    pq.product_id,
+                    pq.scheduled_date,
+                    pq.scheduled_time,
+                    pq.rota_year,
+                    pq.rota_week,
+                    pq.topic_id,
+                    pq.source_page_id,
+                    pq.angle_id,
+                    pq.culture_library_id,
+                    pq.heritage_library_id,
+                    pq.validation_report_json,
+                    cp.name AS product_name,
+                    cp.image_url AS product_image_url,
+                    cp.price AS product_price,
+                    cp.url AS product_link
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                WHERE pq.id = %s
                 """,
                 (post_id,),
             )
@@ -106,6 +116,28 @@ class ChannelPreviewRenderer:
 
         # Normalise into a simple dict
         post_data: Dict[str, Any] = dict(row)
+
+        # For culture_fact, derive category from culture_library for meta (preview only; does not affect publish)
+        if post_data.get("content_type") == "culture_fact" and post_data.get("culture_library_id"):
+            with db_manager.get_cursor() as cursor:
+                cursor.execute(
+                    "SELECT category FROM culture_library WHERE id = %s",
+                    (post_data["culture_library_id"],),
+                )
+                cat_row = cursor.fetchone()
+                if cat_row and cat_row.get("category"):
+                    post_data["category"] = cat_row["category"]
+
+        # For heritage_fact, derive category from heritage_library for meta (preview only; does not affect publish)
+        if post_data.get("content_type") == "heritage_fact" and post_data.get("heritage_library_id"):
+            with db_manager.get_cursor() as cursor:
+                cursor.execute(
+                    "SELECT category FROM heritage_library WHERE id = %s",
+                    (post_data["heritage_library_id"],),
+                )
+                cat_row = cursor.fetchone()
+                if cat_row and cat_row.get("category"):
+                    post_data["category"] = cat_row["category"]
 
         # Run channel formatter (preview and publish must share formatting rules).
         formatter = get_formatter(channel_lower)

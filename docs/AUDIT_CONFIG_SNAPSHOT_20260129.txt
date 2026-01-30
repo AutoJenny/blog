@@ -1,0 +1,39 @@
+=== Audit config snapshot (no secret values) ===
+Date: 2026-01-29
+Purpose: Reference for AUDIT_FACEBOOK_AUTOMATED_POSTING_DUPLICATES_AND_DAY_DRIFT.md
+
+--- 1) Facebook page targeting (platform_credentials) ---
+
+Relevant keys for Facebook (platform_id = Facebook):
+  - page_id           → Page A (Scotweb CLAN)
+  - page_access_token
+  - page_id_2         → Page B (CLAN by Scotweb), only used if != page_id
+  - page_access_token_2
+
+Source: utils/platform_publishers.publish_to_facebook() reads these and builds pages_to_post[];
+each call posts to both pages (same content).
+
+To list keys only (run against DB):
+  SELECT credential_key FROM platform_credentials
+  WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook') AND is_active = true;
+
+--- 2) Automated posting switch ---
+
+system_config.config_key = 'automated_posting_enabled'
+  - If 'true' or '1': scheduled_posting_executor will publish due posts.
+  - If 'false' or missing: executor skips publishing (logs "Automated posting is DISABLED").
+  - Executor defaults to True if key not found.
+
+--- 3) Executor log path ---
+
+Hardcoded in scripts/scheduled_posting_executor.py:
+  /Users/autojenny/Documents/projects/blog/logs/scheduled_posting_executor.log
+
+--- 4) Monitor script and schedule ---
+
+Script: scripts/background_posting_monitor.sh
+  - Runs in loop every 5 minutes.
+  - Step 7: runs scheduled_posting_executor.py (PYTHONPATH + python3).
+  - PID file: logs/background_posting.pid
+
+(No credential values or tokens are included in this snapshot.)

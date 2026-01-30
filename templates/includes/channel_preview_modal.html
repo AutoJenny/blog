@@ -1,0 +1,64 @@
+{# 
+  Universal Channel Preview Modal
+  --------------------------------
+  Minimal implementation matching `docs/UNIFIED_CHANNEL_PREVIEW_SYSTEM.md`.
+  Used by:
+    - Planning calendar week view
+    - Posting queue view
+    - Content Control Board
+
+  JS expectations (from docs):
+    - openChannelPreview(postId, channel, mode, variant)
+    - closeChannelPreviewModal()
+
+  This template only provides the HTML structure and basic CSS hooks.
+  Behaviour is implemented in JS (to be filled out / extended as needed).
+#}
+
+<div id="channel-preview-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-60">
+  <div class="bg-slate-900 rounded-lg shadow-xl max-w-3xl w-full mx-4 border border-slate-700 relative">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+      <h2 id="channel-preview-modal-title" class="text-sm font-semibold text-slate-100">
+        Channel Preview
+      </h2>
+      <button type="button"
+              class="text-slate-400 hover:text-white"
+              onclick="window.closeChannelPreviewModal && window.closeChannelPreviewModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-4 py-4">
+      <!-- Loading state -->
+      <div id="channel-preview-loading" class="flex items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-200 mr-3"></div>
+        <span class="text-slate-300 text-sm">Loading preview…</span>
+      </div>
+
+      <!-- Error state -->
+      <div id="channel-preview-error" class="hidden">
+        <p class="text-red-400 text-sm mb-2" id="channel-preview-error-message">
+          Failed to load preview.
+        </p>
+        <p class="text-slate-400 text-xs" id="channel-preview-error-code"></p>
+      </div>
+
+      <!-- Preview content -->
+      <div id="channel-preview-content" class="hidden">
+        <!-- HTML from /api/preview/post/<id> will be injected here -->
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-end px-4 py-3 border-t border-slate-700">
+      <button type="button"
+              class="btn btn-sm btn-secondary"
+              onclick="window.closeChannelPreviewModal && window.closeChannelPreviewModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+

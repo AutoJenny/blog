@@ -1,0 +1,2 @@
+id,scheduled_date,role,content_type,status_before,error_message,kept_queue_id
+24715,2026-01-30,CULTURE,weekly_insult,ready,Cleanup: cancelled surplus for date 2026-01-30; kept queue_id=15505,15505

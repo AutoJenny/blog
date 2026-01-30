@@ -17,6 +17,8 @@ from utils.publication_status_resolver import resolve_post_for_calendar_item
 import logging
 
 logger = logging.getLogger(__name__)
+_db_target_logged = False
+
 
 def api_calendar_schedule(year, week_number):
     """
@@ -27,18 +29,27 @@ def api_calendar_schedule(year, week_number):
     
     Returns theme, recipes, profiles, words, phrases, insults using cyclic logic.
     """
+    global _db_target_logged
+    if not _db_target_logged:
+        try:
+            from config.unified_config import get_database_target_for_logging
+            logger.info("DB target (schedule API): %s", get_database_target_for_logging())
+        except Exception:
+            logger.info("DB target (schedule API): (config unavailable)")
+        _db_target_logged = True
     try:
         # NEW SYSTEM: Use cyclic resolver for all categories
         # This ensures week-view aligns with the scheduling calendar
         theme = resolve_item_for_week("theme", year, week_number)
         
-        # Also get recipes, profiles, words, phrases, insults from cyclic system
+        # Also get recipes, profiles from cyclic system
         recipe = resolve_item_for_week("recipe", year, week_number)
         profile_product = resolve_item_for_week("profile_product", year, week_number)
         profile_surname = resolve_item_for_week("profile_surname", year, week_number)
-        weekly_word = resolve_item_for_week("weekly_word", year, week_number, classification="weekly_word")
-        weekly_phrase = resolve_item_for_week("weekly_phrase", year, week_number, classification="weekly_phrase")
-        weekly_insult = resolve_item_for_week("weekly_insult", year, week_number, classification="weekly_insult")
+        # CULTURE v1.1: Tuesday only — one language type per week, rotating word → phrase → insult
+        language_types = ['weekly_word', 'weekly_phrase', 'weekly_insult']
+        language_type = language_types[(week_number - 1) % 3]
+        tuesday_language = resolve_item_for_week(language_type, year, week_number, classification=language_type)
         
         # Build schedule response using new system
         schedule = []
@@ -130,36 +141,89 @@ def api_calendar_schedule(year, week_number):
                 '_from_cyclic_system': True
             })
         
-        # Weekly content — Matrix v1: CULTURE (language angles)
-        if weekly_word:
+        # Weekly content — CULTURE v1.1: Tuesday only (one language type per week, rotating)
+        # Prefer posting_queue for this week's Tuesday if present; else resolver
+        from datetime import date, timedelta
+        jan4 = date(year, 1, 4)
+        jan4_day = (jan4.isoweekday() + 6) % 7
+        week_start = date(year, 1, 4) + timedelta(days=(week_number - 1) * 7 - jan4_day)
+        tuesday_date = week_start + timedelta(days=1)
+        tuesday_from_queue = None
+        try:
+            with db_manager.get_cursor() as cursor:
+                # Tuesday language: platform=facebook, scheduled_date=that Tuesday, content_type in weekly_*,
+                # status in ready/pending/generated/published/scheduled (visible); pick one (prefer ready, else newest).
+                cursor.execute("""
+                    SELECT pq.id, pq.idea_id, pq.content_type, pq.status, pq.scheduled_date, pq.scheduled_time
+                    FROM posting_queue pq
+                    WHERE pq.platform = 'facebook'
+                    AND pq.content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult')
+                    AND pq.scheduled_date = %s
+                    AND pq.status IN ('ready', 'pending', 'generated', 'published', 'scheduled')
+                    ORDER BY CASE WHEN pq.status = 'ready' THEN 0 WHEN pq.status = 'published' THEN 1 ELSE 2 END, pq.id DESC
+                    LIMIT 1
+                """, (tuesday_date,))
+                row = cursor.fetchone()
+                if row and row.get('idea_id'):
+                    cursor.execute(
+                        "SELECT id, idea_title, idea_description, position FROM calendar_ideas WHERE id = %s",
+                        (row['idea_id'],)
+                    )
+                    idea_row = cursor.fetchone()
+                    if idea_row:
+                        tuesday_from_queue = {
+                            'type': row['content_type'],
+                            'item_id': idea_row['id'],
+                            'title': idea_row.get('idea_title'),
+                            'description': idea_row.get('idea_description'),
+                            'position': idea_row.get('position'),
+                            'posting_queue_id': row['id'],
+                            'post_status': row.get('status'),
+                            'scheduled_date': row.get('scheduled_date'),
+                            'scheduled_time': row.get('scheduled_time'),
+                        }
+                elif row:
+                    # No calendar_ideas row: still surface the queue item with generated content as title
+                    tuesday_from_queue = {
+                        'type': row['content_type'],
+                        'item_id': row['id'],
+                        'title': f"Language ({row['content_type']})",
+                        'description': None,
+                        'position': None,
+                        'posting_queue_id': row['id'],
+                        'post_status': row.get('status'),
+                        'scheduled_date': row.get('scheduled_date'),
+                        'scheduled_time': row.get('scheduled_time'),
+                    }
+        except Exception as e:
+            logger.warning("Error loading Tuesday language from posting_queue: %s", e)
+        if tuesday_from_queue:
             schedule.append({
-                'type': 'weekly_word',
-                'item_id': weekly_word.get('id'),
-                'title': weekly_word.get('idea_title'),
-                'description': weekly_word.get('idea_description'),
-                'position': weekly_word.get('position'),
+                'type': tuesday_from_queue['type'],
+                'item_id': tuesday_from_queue['item_id'],
+                'title': tuesday_from_queue['title'],
+                'description': tuesday_from_queue.get('description'),
+                'position': tuesday_from_queue.get('position'),
                 'role': 'CULTURE',
-                '_from_cyclic_system': True
+                'posting_queue_id': tuesday_from_queue.get('posting_queue_id'),
+                'post_status': tuesday_from_queue.get('post_status'),
+                'scheduled_date': str(tuesday_from_queue['scheduled_date']) if tuesday_from_queue.get('scheduled_date') else None,
+                'scheduled_time': str(tuesday_from_queue['scheduled_time']) if tuesday_from_queue.get('scheduled_time') else None,
+                '_from_posting_queue': True,
+                '_tuesday_language': True
             })
-        if weekly_phrase:
+        elif tuesday_language:
             schedule.append({
-                'type': 'weekly_phrase',
-                'item_id': weekly_phrase.get('id'),
-                'title': weekly_phrase.get('idea_title'),
-                'description': weekly_phrase.get('idea_description'),
-                'position': weekly_phrase.get('position'),
+                'type': language_type,
+                'item_id': tuesday_language.get('id'),
+                'title': tuesday_language.get('idea_title'),
+                'description': tuesday_language.get('idea_description'),
+                'position': tuesday_language.get('position'),
                 'role': 'CULTURE',
-                '_from_cyclic_system': True
-            })
-        if weekly_insult:
-            schedule.append({
-                'type': 'weekly_insult',
-                'item_id': weekly_insult.get('id'),
-                'title': weekly_insult.get('idea_title'),
-                'description': weekly_insult.get('idea_description'),
-                'position': weekly_insult.get('position'),
-                'role': 'CULTURE',
-                '_from_cyclic_system': True
+                'scheduled_date': str(tuesday_date) if tuesday_date else None,
+                'scheduled_time': '09:00:00',
+                '_from_cyclic_system': True,
+                '_tuesday_language': True
             })
         
         # Add automated Facebook posts (products and messages) from posting_queue for this week
@@ -229,10 +293,11 @@ def api_calendar_schedule(year, week_number):
                     ORDER BY pq.scheduled_date, pq.scheduled_time
                 """, (week_start, week_end))
                 product_posts = cursor.fetchall()
-                filtered_product_posts = product_posts
-                logger.info(f"Found {len(product_posts)} product posts (Matrix v1: Saturday only)")
+                # Option A: Cap Saturday to 1 visible card in week-view grid; rest remain in queue/detail
+                filtered_product_posts = product_posts[:1]
+                logger.info(f"Found {len(product_posts)} product posts (Matrix v1: Saturday only); showing 1 in grid")
                 
-                # Add product posts (excluding Saturday)
+                # Add product posts (one card per Saturday in grid)
                 for idx, post in enumerate(filtered_product_posts):
                     if post['scheduled_date']:
                         # Map posting_queue status to post_status for frontend
@@ -319,11 +384,12 @@ def api_calendar_schedule(year, week_number):
                 
                 logger.info(f"Added {len([s for s in schedule if s.get('type') == 'product'])} product posts and {len([s for s in schedule if s.get('type') == 'message'])} message posts to schedule")
                 
-                # Query role-based posts (e.g., DEPTH_LONG Sunday Deep Dive, AUTHORITY_SHORT Friday)
+                # Query role-based posts (e.g. DEPTH_LONG Sunday, AUTHORITY_SHORT Friday, CULTURE Mon, HERITAGE Thu)
+                # CULTURE v1.1: Monday CULTURE (culture_fact). Phase H1: Thursday HERITAGE (heritage_fact). Both appear here via role rail.
                 # Exclude:
                 #   - 'product' and 'message' (already returned by the product/message queries above)
                 #   - weekly language types ('weekly_word','weekly_phrase','weekly_insult')
-                #     which are already represented in the grid via the Matrix language resolver.
+                #     which are Tuesday only and already added via tuesday_language above.
                 cursor.execute("""
                     SELECT 
                         pq.id as posting_queue_id,
@@ -350,9 +416,13 @@ def api_calendar_schedule(year, week_number):
                 # Add role-based posts to schedule
                 for idx, post in enumerate(role_posts):
                     if post['scheduled_date']:
-                        # Extract title from content
+                        # Extract title from content; avoid surfacing placeholder text
                         content = post['generated_content'] or post['generated_caption'] or ''
-                        title = content.split('\n')[0][:50] if content else f"{post['role']} Post"
+                        first_line = (content.split('\n')[0][:50].strip() if content else '') or ''
+                        if first_line and ('placeholder' in first_line.lower() or 'short factual context' in first_line.lower()):
+                            title = f"{post['role']} post"
+                        else:
+                            title = first_line if first_line else f"{post['role']} Post"
                         
                         # Map posting_queue status to post_status for frontend
                         queue_status = post['status'] or 'draft'
@@ -377,6 +447,7 @@ def api_calendar_schedule(year, week_number):
                             'posting_queue_id': post['posting_queue_id'],
                             'role': post['role'],
                             'title': title,
+                            'generated_content': (post.get('generated_content') or post.get('generated_caption') or '')[:500],
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
                             'status': queue_status,  # Keep original status field

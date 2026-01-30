@@ -167,6 +167,7 @@ def monitoring_events():
             ('automated_weekly_content_creator', 'logs/automated_weekly_content_creator.log', 'posting'),
             ('automated_weekly_content_workflow', 'logs/automated_weekly_content_workflow.log', 'posting'),
             ('posting_executor', 'logs/posting_executor.log', 'posting'),
+            ('scheduled_posting_executor', 'logs/scheduled_posting_executor.log', 'posting'),
             ('automated_posting', 'logs/automated_posting.log', 'posting'),
             # Administrative processes (infrastructure, monitoring, maintenance)
             ('background_posting_monitor', 'logs/background_posting.log', 'admin'),

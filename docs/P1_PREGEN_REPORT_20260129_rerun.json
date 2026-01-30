@@ -1,0 +1,68 @@
+{
+  "weeks_ahead": 12,
+  "platform": "facebook",
+  "dry_run": false,
+  "started_at": "2026-01-30T08:24:12.353745Z",
+  "creators": [
+    {
+      "script": "automated_culture_creator.py",
+      "label": "Monday (culture_fact)",
+      "exit_code": 0,
+      "stdout_preview": "",
+      "stderr_preview": "2026-01-30 08:24:12,468 - INFO - Database connection established\n2026-01-30 08:24:12,477 - INFO - Culture slot 2026-02-02 valid, skip queue_id=21089\n2026-01-30 08:24:12,482 - INFO - Database connection established\n2026-01-30 08:24:12,487 - INFO - Culture slot 2026-02-09 valid, skip queue_id=21090\n2026-01-30 08:24:12,491 - INFO - Database connection established\n2026-01-30 08:24:12,493 - INFO - Culture slot 2026-02-16 valid, skip queue_id=21091\n2026-01-30 08:24:12,496 - INFO - Database connection "
+    },
+    {
+      "script": "automated_weekly_content_creator.py",
+      "label": "Tuesday (language)",
+      "exit_code": 0,
+      "stdout_preview": "",
+      "stderr_preview": "2026-01-30 08:24:12,668 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:12,680 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:12,687 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:12,694 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:12,698 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:12,701 - INFO - get_connection:25 - Database connection es"
+    },
+    {
+      "script": "automated_message_post_creator.py",
+      "label": "Wednesday (message)",
+      "exit_code": 0,
+      "stdout_preview": "\nMessage Post Creation Results:\n  Created: 0\n  Regenerated: 0\n  Skipped: 12\n  Failed: 0\n",
+      "stderr_preview": "2026-01-30 08:24:13,252 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:13,259 - INFO - ensure_message_slot:166 - Message slot 2026-02-04 valid, skip queue_id=21476\n2026-01-30 08:24:13,260 - INFO - ensure_message_slot:166 - Message slot 2026-02-11 valid, skip queue_id=21477\n2026-01-30 08:24:13,260 - INFO - ensure_message_slot:166 - Message slot 2026-02-18 valid, skip queue_id=21478\n2026-01-30 08:24:13,260 - INFO - ensure_message_slot:166 - Message slot 2026-02-25 va"
+    },
+    {
+      "script": "automated_heritage_creator.py",
+      "label": "Thursday (heritage_fact)",
+      "exit_code": 0,
+      "stdout_preview": "",
+      "stderr_preview": "2026-01-30 08:24:13,394 - INFO - Database connection established\n2026-01-30 08:24:13,403 - INFO - Heritage slot 2026-02-05 valid, skip queue_id=21086\n2026-01-30 08:24:13,407 - INFO - Database connection established\n2026-01-30 08:24:13,412 - INFO - Heritage slot 2026-02-12 valid, skip queue_id=21087\n2026-01-30 08:24:13,416 - INFO - Database connection established\n2026-01-30 08:24:13,418 - INFO - Heritage slot 2026-02-19 valid, skip queue_id=21088\n2026-01-30 08:24:13,421 - INFO - Database connecti"
+    },
+    {
+      "script": "automated_authority_short_creator.py",
+      "label": "Friday (authority_short)",
+      "exit_code": 0,
+      "stdout_preview": "AUTHORITY_SHORT creation results:\n  Created: 13\n  Skipped (existing): 0\n  Errors: 0\n",
+      "stderr_preview": "2026-01-30 08:24:13,589 - INFO - get_upcoming_fridays:108 - Upcoming Fridays: [datetime.date(2026, 1, 30), datetime.date(2026, 2, 6), datetime.date(2026, 2, 13), datetime.date(2026, 2, 20), datetime.date(2026, 2, 27), datetime.date(2026, 3, 6), datetime.date(2026, 3, 13), datetime.date(2026, 3, 20), datetime.date(2026, 3, 27), datetime.date(2026, 4, 3), datetime.date(2026, 4, 10), datetime.date(2026, 4, 17), datetime.date(2026, 4, 24)]\n2026-01-30 08:24:13,606 - INFO - get_connection:25 - Databas"
+    },
+    {
+      "script": "automated_product_post_creator.py",
+      "label": "Saturday (product)",
+      "exit_code": 0,
+      "stdout_preview": "\nProduct Post Creation Results:\n  Created: 0\n  Regenerated: 8\n  Skipped: 4\n  Failed: 0\n",
+      "stderr_preview": "2026-01-30 08:24:13,753 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:13,769 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:13,774 - INFO - ensure_product_slot:155 - Product slot 2026-01-31 valid, skip queue_id=10727\n2026-01-30 08:24:13,778 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:13,780 - INFO - ensure_product_slot:155 - Product slot 2026-02-07 valid, skip queue_id=21480\n2026-01-30 08:24:13,783 -"
+    },
+    {
+      "script": "automated_depth_long_creator.py",
+      "label": "Sunday (depth_long)",
+      "exit_code": 0,
+      "stdout_preview": "\nDepth_long Creator Results:\n  Created: 0\n  Regenerated: 0\n  Skipped: 12\n  Failed: 0\n",
+      "stderr_preview": "2026-01-30 08:24:14,047 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:14,054 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:14,060 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:14,067 - INFO - get_connection:25 - Database connection established\n2026-01-30 08:24:14,071 - INFO - ensure_depth_long_slot:177 - Depth_long slot 2026-02-01 valid, skip queue_id=11823\n2026-01-30 08:24:14,076 - INFO - get_connect"
+    }
+  ],
+  "exit_codes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "has_failure": false,
+  "finished_at": "2026-01-30T08:24:14.249324Z"
+}

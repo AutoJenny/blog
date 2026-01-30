@@ -1209,28 +1209,25 @@ def execute_optimize_for_facebook(post_id, data):
 
 def execute_publish_to_facebook(queue_id, data):
     """
-    DEPRECATED: This function is deprecated. Use utils/platform_publishers.publish_to_facebook() instead.
-    
-    Publishing should be handled by scripts/scheduled_posting_executor.py which validates
-    scheduled dates before calling platform publishers.
-    
-    This function is kept for backward compatibility but now delegates to the new
-    platform publisher. It will be removed in a future version.
-    
-    Publish post to Facebook (both pages).
-    
-    Supports:
-    - Weekly content: Uses generated image and caption, posts via /photos endpoint
-    - Product posts: Uses product image URL and caption, posts via /photos endpoint
+    DISABLED (Phase C1): Facebook publishing must go through scheduled_posting_executor.py
+    so that weekday validation is enforced. This path bypassed validation and could publish
+    language on the wrong day (e.g. Thursday). It no longer calls publish_to_facebook.
     """
-    logger.warning(f"execute_publish_to_facebook() is deprecated. Use utils/platform_publishers.publish_to_facebook() instead. Publishing should go through scripts/scheduled_posting_executor.py for date validation.")
-    from utils.platform_publishers import publish_to_facebook
-    result = publish_to_facebook(queue_id)
-    # Convert result to tuple format for backward compatibility
-    if result.get('success'):
-        return result, 200
-    else:
-        return result, 500
+    logger.warning(
+        "execute_publish_to_facebook() is disabled for date safety. "
+        "Facebook publishing must go through scripts/scheduled_posting_executor.py. queue_id=%s",
+        queue_id,
+    )
+    return (
+        {
+            "success": False,
+            "error": (
+                "Facebook publishing must go through scheduled_posting_executor. "
+                "This path is disabled for date safety."
+            ),
+        },
+        403,
+    )
 
 
 def execute_generate_caption(post_id, data):

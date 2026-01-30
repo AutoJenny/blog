@@ -1,0 +1,48 @@
+=== Audit log excerpts: scheduled_posting_executor.log ===
+Date: 2026-01-29
+Purpose: Evidence for AUDIT_FACEBOOK_AUTOMATED_POSTING_DUPLICATES_AND_DAY_DRIFT.md
+
+--- 1) Jan 29 10:41 — BLOCKED Thursday (weekday 4) language ---
+
+2026-01-29 10:41:25,320 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 4552 (weekly_word) scheduled for weekday 4 (expected 1)
+2026-01-29 10:41:25,320 - WARNING - get_due_posts:264 - BLOCKED post 4552 - failed weekly content schedule validation
+2026-01-29 10:41:25,320 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 4553 (weekly_phrase) scheduled for weekday 4 (expected 3)
+2026-01-29 10:41:25,320 - WARNING - get_due_posts:264 - BLOCKED post 4553 - failed weekly content schedule validation
+2026-01-29 10:41:25,320 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 4554 (weekly_insult) scheduled for weekday 4 (expected 5)
+2026-01-29 10:41:25,320 - WARNING - get_due_posts:264 - BLOCKED post 4554 - failed weekly content schedule validation
+2026-01-29 10:41:25,321 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 4555 (weekly_word) scheduled for weekday 4 (expected 1)
+2026-01-29 10:41:25,321 - WARNING - get_due_posts:264 - BLOCKED post 4555 - failed weekly content schedule validation
+2026-01-29 10:41:25,321 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 4556 (weekly_phrase) scheduled for weekday 4 (expected 3)
+2026-01-29 10:41:25,321 - WARNING - get_due_posts:264 - BLOCKED post 4556 - failed weekly content schedule validation
+2026-01-29 10:41:25,321 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 4557 (weekly_insult) scheduled for weekday 4 (expected 5)
+2026-01-29 10:41:25,321 - WARNING - get_due_posts:264 - BLOCKED post 4557 - failed weekly content schedule validation
+
+(Weekday 4 = Thursday. Expected: weekly_word=1 Mon, weekly_phrase=3 Wed, weekly_insult=5 Fri.)
+
+--- 2) Jan 29 10:44 — BLOCKED Thursday language (sample of hundreds) ---
+
+2026-01-29 10:44:00,750 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 17146 (weekly_word) scheduled for weekday 4 (expected 1)
+2026-01-29 10:44:00,750 - WARNING - get_due_posts:264 - BLOCKED post 17146 - failed weekly content schedule validation
+2026-01-29 10:44:00,750 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 17147 (weekly_phrase) scheduled for weekday 4 (expected 3)
+2026-01-29 10:44:00,750 - WARNING - get_due_posts:264 - BLOCKED post 17147 - failed weekly content schedule validation
+2026-01-29 10:44:00,750 - ERROR - validate_weekly_content_schedule:189 - BLOCKED: Post 17148 (weekly_insult) scheduled for weekday 4 (expected 5)
+...
+(Same pattern for IDs 17149–17714+; all Thursday language blocked.)
+
+--- 3) Jan 29 runs — completion stats (all 0 published) ---
+
+2026-01-29 00:02:03,936 - INFO - main:488 - Scheduled posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+2026-01-29 00:07:04,532 - INFO - main:488 - Scheduled posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+... (every ~5 min through 10:44 and beyond; no successfully_published > 0 on 2026-01-29 in this log.)
+
+--- 4) Jan 26 — NameError in get_due_posts (0 valid posts returned) ---
+
+2026-01-26 17:56:04,349 - ERROR - get_due_posts:274 - Error fetching due posts: name 'scheduled_str' is not defined
+Traceback (most recent call last):
+  File ".../scripts/scheduled_posting_executor.py", line 268, in get_due_posts
+    logger.debug(f"Validated post: ID={post['id']}, scheduled={scheduled_str}, platform={post['platform']}")
+NameError: name 'scheduled_str' is not defined
+2026-01-26 17:56:04,350 - INFO - process_due_posts:345 - No posts due for publishing
+2026-01-26 17:56:04,350 - INFO - main:488 - Scheduled posting executor complete: {'total_found': 0, 'successfully_published': 0, 'failed': 0, 'skipped': 0}
+
+(When this bug triggers, the executor returns 0 valid posts even if some would have passed; actual publish that day would have to come from another path.)

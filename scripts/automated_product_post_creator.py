@@ -1,358 +1,245 @@
 #!/usr/bin/env python3
 """
-Automated Product Post Creator
-Creates posting_queue entries for product posts 1 week in advance
-Runs daily to check for upcoming schedule slots and create draft posts
+Automated Product Post Creator (Phase P1.1 normalised)
+
+Creates posting_queue entries for Saturday COMMERCE (product) from daily_posts_schedule + clan_products.
+Phase P1: One slot = one row. Insert if missing; regenerate in place with NEW product (re-pick) if failed/empty/placeholder; skip if valid.
+- Regenerate = re-pick product from pool, UPDATE same row (product_id, status draft); workflow fills content.
+- CLI: --days-ahead (default 28), --dry-run, --force.
 """
 
 import os
 import sys
 import logging
 from datetime import datetime, timedelta, date, time
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 
-# Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.database import db_manager
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s",
     handlers=[
-        logging.FileHandler('/Users/autojenny/Documents/projects/blog/logs/automated_product_post_creator.log'),
-        logging.StreamHandler()
-    ]
+        logging.FileHandler(
+            os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                "logs",
+                "automated_product_post_creator.log",
+            )
+        ),
+        logging.StreamHandler(),
+    ],
 )
 logger = logging.getLogger(__name__)
 
-class ProductPostCreator:
-    def __init__(self):
-        self.db_manager = db_manager
-        self.days_ahead = 7  # Create posts 1 week in advance
-        
-    def get_active_schedules(self, platform: str = 'facebook') -> List[Dict]:
-        """
-        Get active schedules for product posts.
-        For Facebook, Matrix v1 overrides: COMMERCE/product on Saturday (ISO 6) only.
-        """
-        try:
-            with self.db_manager.get_cursor() as cursor:
+PLATFORM = "facebook"
+CONTENT_TYPE = "product"
+ROLE = "COMMERCE"
+VALID_STATUSES = ("ready", "approved", "scheduled", "published")
+
+
+def _row_is_valid(row: Dict[str, Any]) -> bool:
+    content = (row.get("generated_content") or "").strip()
+    if not content:
+        return False
+    if "placeholder" in (content or "").lower():
+        return False
+    status = (row.get("status") or "").strip()
+    return status in VALID_STATUSES
+
+
+def get_active_schedules(platform: str = "facebook") -> List[Dict]:
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, name, time, timezone, days, is_active
+                FROM daily_posts_schedule
+                WHERE is_active = true AND platform = %s AND content_type = 'product'
+                ORDER BY time ASC
+            """, (platform,))
+            schedules = cursor.fetchall()
+        if platform == "facebook" and schedules:
+            for s in schedules:
+                s["days"] = [6]  # Saturday only
+        return list(schedules) if schedules else []
+    except Exception as e:
+        logger.error("Error fetching active schedules: %s", e)
+        return []
+
+
+def get_upcoming_saturday_slots(days_ahead: int) -> List[Dict]:
+    today = date.today()
+    slots = []
+    for day_offset in range(days_ahead):
+        check_date = today + timedelta(days=day_offset)
+        if check_date.isoweekday() != 6:
+            continue
+        if check_date <= today:
+            continue
+        schedule_time = time(15, 0)
+        slots.append({
+            "date": check_date,
+            "time": schedule_time,
+            "datetime": datetime.combine(check_date, schedule_time),
+            "schedule_id": 0,
+            "schedule_name": "Matrix Saturday",
+        })
+    return slots
+
+
+def get_products_pool(limit: int = 50, days_back: int = 30, exclude_product_id: Optional[int] = None) -> List[Dict]:
+    cutoff = date.today() - timedelta(days=days_back)
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT DISTINCT cp.id, cp.name, cp.sku, cp.image_url, cp.url
+                FROM clan_products cp
+                WHERE cp.image_url IS NOT NULL AND cp.image_url != ''
+                AND cp.id NOT IN (
+                    SELECT DISTINCT product_id FROM posting_queue
+                    WHERE product_id IS NOT NULL AND content_type = 'product'
+                    AND (scheduled_date >= %s OR status = 'published')
+                )
+                ORDER BY cp.id DESC
+                LIMIT %s
+            """, (cutoff, limit))
+            rows = cursor.fetchall()
+        products = [dict(r) for r in rows] if rows else []
+        if exclude_product_id is not None:
+            products = [p for p in products if p.get("id") != exclude_product_id]
+        return products
+    except Exception as e:
+        logger.error("Error fetching products: %s", e)
+        return []
+
+
+def ensure_product_slot(
+    slot: Dict,
+    products_pool: List[Dict],
+    product_index: int,
+    dry_run: bool,
+    force: bool,
+) -> tuple:
+    """
+    One slot = one row. Regenerate = re-pick product (do not retry same product_id), UPDATE row.
+    Returns: (outcome, used_pool_index) where outcome in 'created'|'regenerated'|'skipped'|'failed',
+    and used_pool_index is the index consumed from pool (-1 if none).
+    """
+    scheduled_date = slot["date"]
+    scheduled_time = slot["time"]
+    scheduled_datetime = slot["datetime"]
+    schedule_name = slot.get("schedule_name", "Matrix Saturday")
+
+    with db_manager.get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, product_id, generated_content, status
+                FROM posting_queue
+                WHERE platform = %s AND content_type = 'product'
+                AND scheduled_date = %s AND scheduled_time = %s
+                LIMIT 1
+            """, (PLATFORM, scheduled_date, scheduled_time))
+            row = cursor.fetchone()
+
+            if row:
+                queue_id = row["id"] if isinstance(row, dict) else row[0]
+                current_product_id = row["product_id"] if isinstance(row, dict) else row[1]
+                row_dict = (
+                    dict(row)
+                    if hasattr(row, "keys")
+                    else {"generated_content": row[2], "status": row[3]}
+                )
+                if not force and _row_is_valid(row_dict):
+                    logger.info("Product slot %s valid, skip queue_id=%s", scheduled_date, queue_id)
+                    return ("skipped", -1)
+                # Regenerate: pick first product in pool that is not current_product_id
+                used_idx = -1
+                for i in range(len(products_pool)):
+                    idx = (product_index + i) % len(products_pool)
+                    if products_pool[idx].get("id") != current_product_id:
+                        used_idx = idx
+                        break
+                if used_idx < 0:
+                    logger.warning("No alternate product for slot %s (pool exhausted)", scheduled_date)
+                    return ("failed", -1)
+                new_product_id = products_pool[used_idx]["id"]
+                if dry_run:
+                    logger.info("[DRY-RUN] Would regenerate product queue_id=%s date=%s new_product_id=%s", queue_id, scheduled_date, new_product_id)
+                    return ("regenerated", used_idx)
                 cursor.execute("""
-                    SELECT id, name, time, timezone, days, is_active
-                    FROM daily_posts_schedule
-                    WHERE is_active = true
-                    AND platform = %s
-                    AND content_type = 'product'
-                    ORDER BY time ASC
-                """, (platform,))
-                
-                schedules = cursor.fetchall()
-                if platform == 'facebook' and schedules:
-                    # Matrix v1: no parallel product-days logic for Facebook; Saturday only
-                    for s in schedules:
-                        s['days'] = [6]  # ISO Saturday
-                    logger.info("Facebook product schedules overridden to Matrix v1: Saturday (6) only")
-                logger.info(f"Found {len(schedules)} active schedules for product posts")
-                return schedules
-                
-        except Exception as e:
-            logger.error(f"Error fetching active schedules: {e}")
-            return []
-    
-    def get_upcoming_slots(self, schedules: List[Dict], days_ahead: int = 7) -> List[Dict]:
-        """
-        Calculate upcoming posting slots based on schedules
-        Returns list of {date, time, schedule_id, schedule_name} dicts
-        """
-        slots = []
-        today = date.today()
-        
-        for schedule in schedules:
-            schedule_time = schedule['time']
-            schedule_days = schedule['days']  # Array of day numbers (1=Monday, 7=Sunday)
-            schedule_id = schedule['id']
-            schedule_name = schedule.get('name', f"Schedule {schedule_id}")
-            
-            # Parse schedule_time if it's a string
-            if isinstance(schedule_time, str):
-                time_parts = schedule_time.split(':')
-                hour = int(time_parts[0])
-                minute = int(time_parts[1]) if len(time_parts) > 1 else 0
-                schedule_time_obj = time(hour, minute)
-            else:
-                schedule_time_obj = schedule_time
-            
-            # Check each day in the lookahead period
-            for day_offset in range(days_ahead):
-                check_date = today + timedelta(days=day_offset)
-                weekday = check_date.isoweekday()  # ISO: 1=Monday, 7=Sunday
-                
-                # CRITICAL: Exclude Sunday (day 7) - reserved for DEPTH_LONG posts
-                # Check if Content Roles rail exists for this day/time
-                if weekday == 7:  # Sunday
-                    # Check if DEPTH_LONG rail exists for Sunday 15:00
-                    try:
-                        from config.content_roles_schedule_rails import get_rails_for_platform
-                        rails = get_rails_for_platform('facebook', role='DEPTH_LONG')
-                        # Check if any rail is for Sunday (day 7) at 15:00
-                        schedule_time_str = schedule_time_obj.strftime('%H:%M') if hasattr(schedule_time_obj, 'strftime') else str(schedule_time_obj)
-                        if rails and any(r['day'] == 7 and r['time'] == '15:00' for r in rails):
-                            logger.debug(f"Skipping Sunday {check_date} - reserved for DEPTH_LONG posts")
-                            continue
-                    except Exception as e:
-                        logger.warning(f"Error checking Content Roles rails: {e}, skipping Sunday to be safe")
-                        continue
-                
-                # Check if this day matches the schedule
-                if schedule_days and weekday in schedule_days:
-                    slots.append({
-                        'date': check_date,
-                        'time': schedule_time_obj,
-                        'schedule_id': schedule_id,
-                        'schedule_name': schedule_name,
-                        'datetime': datetime.combine(check_date, schedule_time_obj)
-                    })
-        
-        # Sort by datetime
-        slots.sort(key=lambda x: x['datetime'])
-        logger.info(f"Found {len(slots)} upcoming posting slots")
-        return slots
-    
-    def check_existing_post(self, scheduled_date: date, scheduled_time: time, platform: str = 'facebook', product_id: int = None) -> bool:
-        """
-        Check if a posting_queue entry already exists for this date/time/platform/product
-        If product_id is provided, checks for that specific product. Otherwise checks for any product.
-        """
-        try:
-            with self.db_manager.get_cursor() as cursor:
-                if product_id:
-                    # Check for specific product at this time slot
-                    cursor.execute("""
-                        SELECT id FROM posting_queue
-                        WHERE content_type = 'product'
-                        AND platform = %s
-                        AND scheduled_date = %s
-                        AND scheduled_time = %s
-                        AND product_id = %s
-                        AND status NOT IN ('published', 'failed')
-                    """, (platform, scheduled_date, scheduled_time, product_id))
-                else:
-                    # Check for any product at this time slot (prevent multiple products at same time)
-                    cursor.execute("""
-                        SELECT id FROM posting_queue
-                        WHERE content_type = 'product'
-                        AND platform = %s
-                        AND scheduled_date = %s
-                        AND scheduled_time = %s
-                        AND status NOT IN ('published', 'failed')
-                    """, (platform, scheduled_date, scheduled_time))
-                
-                result = cursor.fetchone()
-                return result is not None
-        except Exception as e:
-            logger.error(f"Error checking existing post: {e}")
-            return False
-    
-    def get_products_not_posted_recently(self, limit: int = 10, days_back: int = 30) -> List[Dict]:
-        """
-        Get products that haven't been posted recently
-        Prioritizes products with images
-        """
-        try:
-            cutoff_date = date.today() - timedelta(days=days_back)
-            
-            with self.db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    SELECT DISTINCT cp.id, cp.name, cp.sku, cp.image_url, cp.url
-                    FROM clan_products cp
-                    WHERE cp.image_url IS NOT NULL
-                    AND cp.image_url != ''
-                    AND cp.id NOT IN (
-                        SELECT DISTINCT product_id
-                        FROM posting_queue
-                        WHERE product_id IS NOT NULL
-                        AND content_type = 'product'
-                        AND (
-                            scheduled_date >= %s
-                            OR status = 'published'
-                        )
-                    )
-                    ORDER BY cp.id DESC
-                    LIMIT %s
-                """, (cutoff_date, limit))
-                
-                products = cursor.fetchall()
-                logger.info(f"Found {len(products)} products not posted recently")
-                return products
-                
-        except Exception as e:
-            logger.error(f"Error fetching products: {e}")
-            return []
-    
-    def create_product_post(self, product_id: int, scheduled_date: date, scheduled_time: time, 
-                           schedule_id: int, schedule_name: str, platform: str = 'facebook') -> Optional[int]:
-        """
-        Create a draft product post in posting_queue
-        Returns queue_id if successful, None otherwise
-        """
-        try:
-            with self.db_manager.get_cursor() as cursor:
-                # Get product details
-                cursor.execute("""
-                    SELECT id, name, sku, description, image_url, url, price
-                    FROM clan_products
+                    UPDATE posting_queue
+                    SET product_id = %s, status = 'draft', generated_content = NULL, updated_at = NOW()
                     WHERE id = %s
-                """, (product_id,))
-                
-                product = cursor.fetchone()
-                if not product:
-                    logger.error(f"Product {product_id} not found")
-                    return None
-                
-                # Create scheduled_timestamp
-                scheduled_datetime = datetime.combine(scheduled_date, scheduled_time)
-                
-                # Insert into posting_queue
+                """, (new_product_id, queue_id))
+                conn.commit()
+                logger.info("Regenerated product queue_id=%s date=%s product_id=%s", queue_id, scheduled_date, new_product_id)
+                return ("regenerated", used_idx)
+            else:
+                if product_index >= len(products_pool):
+                    logger.warning("No product available for slot %s", scheduled_date)
+                    return ("failed", -1)
+                product = products_pool[product_index]
+                product_id = product["id"]
+                if dry_run:
+                    logger.info("[DRY-RUN] Would create product post date=%s product_id=%s", scheduled_date, product_id)
+                    return ("created", product_index)
                 cursor.execute("""
                     INSERT INTO posting_queue (
                         product_id, content_type, platform, status, role,
                         scheduled_date, scheduled_time, scheduled_timestamp,
                         schedule_name, created_at, updated_at
                     )
-                    VALUES (%s, 'product', %s, 'draft', 'COMMERCE', %s, %s, %s, %s, NOW(), NOW())
+                    VALUES (%s, %s, %s, 'draft', %s, %s, %s, %s, %s, NOW(), NOW())
                     RETURNING id
-                """, (
-                    product_id, platform, scheduled_date, scheduled_time,
-                    scheduled_datetime, schedule_name
-                ))
-                
-                result = cursor.fetchone()
-                queue_id = result['id'] if isinstance(result, dict) else result[0]
-                
-                logger.info(f"Created product post: queue_id={queue_id}, product={product['name']}, scheduled={scheduled_date} {scheduled_time}")
-                return queue_id
-                
-        except Exception as e:
-            logger.error(f"Error creating product post: {e}")
-            return None
-    
-    def create_product_posts(self, days_ahead: int = 7) -> Dict[str, int]:
-        """
-        Create posting_queue entries for product posts in upcoming slots
-        """
-        stats = {
-            'schedules_found': 0,
-            'slots_found': 0,
-            'slots_skipped': 0,
-            'posts_created': 0,
-            'errors': 0
-        }
-        
-        try:
-            # Get active schedules
-            schedules = self.get_active_schedules()
-            stats['schedules_found'] = len(schedules)
-            
-            if not schedules:
-                logger.warning("No active schedules found for product posts")
-                return stats
-            
-            # Get upcoming slots
-            slots = self.get_upcoming_slots(schedules, days_ahead)
-            stats['slots_found'] = len(slots)
-            
-            if not slots:
-                logger.info("No upcoming posting slots found")
-                return stats
-            
-            # Get products that haven't been posted recently
-            products = self.get_products_not_posted_recently(limit=len(slots) * 2)  # Get extra in case some are skipped
-            
-            if not products:
-                logger.warning("No products available for posting")
-                return stats
-            
-            product_index = 0
-            
-            # Create posts for each slot
-            for slot in slots:
-                scheduled_date = slot['date']
-                scheduled_time = slot['time']
-                
-                # Check if any post already exists for this slot (prevent duplicates)
-                if self.check_existing_post(scheduled_date, scheduled_time):
-                    logger.info(f"Post already exists for {scheduled_date} {scheduled_time}, skipping")
-                    stats['slots_skipped'] += 1
-                    continue
-                
-                # Get next available product
-                if product_index >= len(products):
-                    logger.warning(f"Ran out of products, only created {stats['posts_created']} posts")
-                    break
-                
-                product = products[product_index]
-                product_id = product['id']
-                
-                # Double-check this specific product isn't already scheduled for this slot
-                if self.check_existing_post(scheduled_date, scheduled_time, product_id=product_id):
-                    logger.info(f"Product {product_id} already scheduled for {scheduled_date} {scheduled_time}, trying next product")
-                    # Try next product instead
-                    product_index += 1
-                    if product_index >= len(products):
-                        logger.warning(f"Ran out of products")
-                        break
-                    product = products[product_index]
-                    product_id = product['id']
-                
-                # Create post
-                queue_id = self.create_product_post(
-                    product_id=product_id,
-                    scheduled_date=scheduled_date,
-                    scheduled_time=scheduled_time,
-                    schedule_id=slot['schedule_id'],
-                    schedule_name=slot['schedule_name']
-                )
-                
-                if queue_id:
-                    stats['posts_created'] += 1
-                    product_index += 1
-                else:
-                    stats['errors'] += 1
-            
-            logger.info(f"Product post creation complete: {stats}")
-            return stats
-            
-        except Exception as e:
-            logger.error(f"Error in create_product_posts: {e}")
-            logger.exception("Full exception details:")
-            return stats
+                """, (product_id, CONTENT_TYPE, PLATFORM, ROLE, scheduled_date, scheduled_time, scheduled_datetime, schedule_name))
+                r = cursor.fetchone()
+                qid = r["id"] if r and isinstance(r, dict) else (r[0] if r else None)
+                conn.commit()
+                if qid:
+                    logger.info("Created product queue_id=%s date=%s product_id=%s", qid, scheduled_date, product_id)
+                    return ("created", product_index)
+                return ("failed", -1)
+    return ("failed", -1)
+
 
 def main():
-    """
-    Main function to run the product post creator
-    """
-    try:
-        logger.info("Starting automated product post creator")
-        
-        creator = ProductPostCreator()
-        
-        # Create posts for next 7 days (1 week ahead)
-        stats = creator.create_product_posts(days_ahead=7)
-        
-        logger.info(f"Product post creator complete: {stats}")
-        
-        # Exit with appropriate code
-        if stats['errors'] > 0:
-            sys.exit(1)  # Some errors occurred
-        else:
-            sys.exit(0)  # Success
-            
-    except Exception as e:
-        logger.error(f"Fatal error in product post creator: {e}")
-        logger.exception("Full exception details:")
+    import argparse
+    parser = argparse.ArgumentParser(description="Saturday product (P1.1): one slot = one row; regenerate = re-pick product.")
+    parser.add_argument("--days-ahead", type=int, default=28, help="Days ahead (default 28)")
+    parser.add_argument("--dry-run", action="store_true", help="Do not write to DB")
+    parser.add_argument("--force", action="store_true", help="Regenerate even if slot is valid")
+    args = parser.parse_args()
+
+    slots = get_upcoming_saturday_slots(args.days_ahead)
+    if not slots:
+        logger.info("No upcoming Saturday slots in window")
+        sys.exit(0)
+
+    products = get_products_pool(limit=max(len(slots) * 2, 20))
+    if not products:
+        logger.warning("No products available for posting")
         sys.exit(1)
+
+    stats = {"created": 0, "regenerated": 0, "skipped": 0, "failed": 0}
+    product_index = 0
+    for slot in slots:
+        outcome, used_idx = ensure_product_slot(slot, products, product_index, dry_run=args.dry_run, force=args.force)
+        stats[outcome] = stats.get(outcome, 0) + 1
+        if outcome in ("created", "regenerated") and used_idx >= 0:
+            product_index = used_idx + 1
+        if product_index >= len(products):
+            product_index = 0
+
+    logger.info("Product post creation complete: %s", stats)
+    print("\nProduct Post Creation Results:")
+    print(f"  Created: {stats['created']}")
+    print(f"  Regenerated: {stats['regenerated']}")
+    print(f"  Skipped: {stats['skipped']}")
+    print(f"  Failed: {stats['failed']}")
+    sys.exit(0 if stats["failed"] == 0 else 1)
+
 
 if __name__ == "__main__":
     main()

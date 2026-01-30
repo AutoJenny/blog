@@ -194,6 +194,17 @@ def get_database_url():
     config_class = get_config()
     return config_class.DATABASE_URL
 
+
+def get_database_target_for_logging():
+    """Return a safe string for logging DB target (host, port, dbname, user; no password)."""
+    c = get_config()
+    return "host={} port={} dbname={} user={}".format(
+        getattr(c, "DB_HOST", "?"),
+        getattr(c, "DB_PORT", "?"),
+        getattr(c, "DB_NAME", "?"),
+        getattr(c, "DB_USER", "?"),
+    )
+
 def get_redis_url():
     """Get Redis URL from configuration"""
     config_class = get_config()
