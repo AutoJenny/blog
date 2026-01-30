@@ -40,8 +40,20 @@
     <p>Facebook currently supports:</p>
     <ul>
         <li><strong>Weekly Words & Phrases</strong> - Automated (words, phrases, insults)</li>
+        <li><strong>Culture / Heritage</strong> - Monday (culture_fact) and Thursday (heritage_fact) with authoritative headers (UNDERSTANDING SCOTLAND, SCOTTISH HERITAGE)</li>
+        <li><strong>Product posts</strong> - Commerce posts; price is never shown in preview or publish (policy)</li>
+        <li><strong>Message, authority_short, depth_long</strong> - Text-only or image posts as per Matrix</li>
         <li><strong>Other Content Types</strong> - 🔴 Not yet implemented</li>
     </ul>
+    
+    <h3>Culture & Heritage formatting</h3>
+    <p>Culture (Monday) and heritage (Thursday) posts use a shared formatter so <strong>preview matches publish</strong>:</p>
+    <ul>
+        <li>Header: <code>UNDERSTANDING SCOTLAND</code> (culture_fact) or <code>SCOTTISH HERITAGE</code> (heritage_fact), then two newlines, title, one newline, body.</li>
+        <li>Newlines: runs of 3+ blank lines are collapsed to 2; no trailing spaces; at most one trailing newline.</li>
+        <li>Product captions: price is stripped from preview and published text.</li>
+    </ul>
+    <p>Technical details: <a href="/docs/FACEBOOK_CULTURE_HERITAGE_FORMATTING.md" class="kb-ui-link">Facebook culture/heritage formatting (docs)</a>, <a href="/docs/PREVIEW_FACEBOOK_MATCH_PUBLISH.md" class="kb-ui-link">Preview matches publish</a>. Run parity check when format logic changes: <code>PYTHONPATH=. python3 scripts/prove_preview_publish_parity.py --platform facebook --weeks 2 --qa-format</code>.</p>
     
     <h2>UI Access</h2>
     <p>Facebook content can be managed through:</p>
@@ -74,6 +86,9 @@
         <h3>✅ Complete</h3>
         <ul>
             <li>Weekly Words & Phrases posting - Fully automated</li>
+            <li>Culture/heritage posts (Mon/Thu) with authoritative headers; preview/publish parity</li>
+            <li>Product posts; price never in preview or publish</li>
+            <li>Executor daily cap (max one non-product Facebook post per weekday); atomic claim-before-publish</li>
             <li>API integration with Facebook Graph API</li>
             <li>Multi-page posting support (both pages)</li>
             <li>Image upload and posting</li>

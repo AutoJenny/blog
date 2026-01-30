@@ -86,7 +86,9 @@ with db_manager.get_cursor() as cursor:
 ```
 
 ### Key Tables
-- `posting_queue` - Content scheduling. Facebook posts publish only via <code>scheduled_posting_executor.py</code> (single gate; Matrix v1.1 validation). Partial unique index on Facebook language posts prevents duplicates.
+- `posting_queue` - Content scheduling. Facebook posts publish only via <code>scheduled_posting_executor.py</code> (single gate; Matrix v1.1 validation). Partial unique index on Facebook language posts prevents duplicates. Optional <code>culture_library_id</code> for culture_fact (Mon/Thu CULTURE rota).
+- `culture_library` - CULTURE v1.1: library of culture/heritage facts for Mon/Thu culture_fact posts (90-day repeat avoidance). Ingest: <code>scripts/ingest_culture_library_csv.py</code> (default CSV: <code>docs/CULTURE_v1_1_FINAL_INGESTION.csv</code>; use <code>--run-migration</code> if table missing).
+- `heritage_library` - Heritage/clans rota: same structure as culture_library; for second slot (once weekly culture + once heritage; coding to follow). Ingest: <code>scripts/ingest_heritage_library_csv.py</code> (default CSV: <code>docs/HERITAGE_LINEAGE_v1_0_FINAL_INGESTION_PATCHED.csv</code>; use <code>--run-migration</code> if table missing).
 - `clan_products` - Product data
 - `ui_session_state` - UI state
 - `workflow_stage_entity` - Workflows
@@ -251,9 +253,17 @@ tail -f logs/auto-replenish.log
 3. Check configuration: `cat config/queue_auto_replenish.json`
 4. Review logs: `tail -f logs/auto-replenish.log`
 
+## 📋 Recent changes (2026-01-30)
+
+- **Facebook preview/publish parity:** Culture/heritage use shared formatter (headers UNDERSTANDING SCOTLAND, SCOTTISH HERITAGE); product captions strip price. Preview formatter aligns text-only (message, culture_fact, heritage_fact) vs image-post (product, weekly_*, etc.). See [FACEBOOK_CULTURE_HERITAGE_FORMATTING.md](FACEBOOK_CULTURE_HERITAGE_FORMATTING.md), [PREVIEW_FACEBOOK_MATCH_PUBLISH.md](PREVIEW_FACEBOOK_MATCH_PUBLISH.md).
+- **Parity/QA script:** `PYTHONPATH=. python3 scripts/prove_preview_publish_parity.py --platform facebook --weeks 2 --qa-format` (exit 0 = PASS, 1 = FAIL). Optional `--ids 123,456` instead of `--weeks`.
+- **Backfill (culture headers):** Run only once or when header rules change: `python3 scripts/backfill_culture_headers.py` (dry-run by default); `--apply` to update. Idempotent.
+- **Changelog:** [CHANGELOG.md](CHANGELOG.md) — Executor daily cap, product price removal, preview/publish alignment, docs.
+
 ## 📚 Additional Resources
 
 - **[System Overview](system-overview.md)** - Complete system documentation
 - **[Auto-Replenish Guide](auto-replenish-system.md)** - Detailed auto-replenish documentation
-- **[README](../README.md)** - Main project documentation
+- **[README](README.md)** - Main project documentation (docs index)
+- **[CHANGELOG](CHANGELOG.md)** - Recent changes log
 - **[Architecture Docs](temp/)** - Detailed architecture documentation

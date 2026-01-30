@@ -29,3 +29,5 @@
 7. **Parity script** — `scripts/prove_preview_publish_parity.py`: culture/heritage use shared formatter; product uses generated_caption for publish_text; include product IDs in parity checks.
 
 **QA:** Culture/heritage preview shows header + two blank lines + title + one blank line + body. Product preview shows image, title, link, caption (no price). Parity test includes culture_fact, heritage_fact, product.
+
+**Formatting rules:** Header strings and newline rules are documented in [FACEBOOK_CULTURE_HERITAGE_FORMATTING.md](FACEBOOK_CULTURE_HERITAGE_FORMATTING.md). Run the parity script whenever format logic changes.

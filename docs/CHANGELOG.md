@@ -1,5 +1,22 @@
 # Changelog
 
+## Facebook preview/publish alignment and QA (2026-01-30)
+
+### Scope (instruction doc: cleanup, QA, docs before next platform)
+- **1.1 Preview/publish alignment:** Text-only path (message, culture_fact, heritage_fact) uses generated_content + shared formatter; image-post path (product, weekly_*, etc.) uses generated_caption. Preview formatter now branches explicitly so weekly_phrase/weekly_word/weekly_insult use generated_caption (same as publish). Product continues to strip price in both preview and publish.
+- **1.2 Backfill idempotency:** Re-ran `scripts/backfill_culture_headers.py` in dry-run; 22 target rows, 0 would change. Doc note added: run only once or when header rules change; idempotency confirmed.
+- **1.3 Parity/QA script:** `scripts/prove_preview_publish_parity.py` extended with `--platform facebook --weeks N` (fetch IDs from queue for next N weeks), `--qa-format` (culture/heritage header present, newline collapse, no trailing spaces), and exit code 0/1 (PASS/FAIL). Product path uses strip_price_from_caption in script to match publish.
+- **1.4 Backfill:** Already applied previously; dry-run confirms zero rows to change.
+- **1.5 Documentation:** New `docs/FACEBOOK_CULTURE_HERITAGE_FORMATTING.md` — header strings (UNDERSTANDING SCOTLAND, SCOTTISH HERITAGE), composition (two newlines after header, one between title and body), newline rules (collapse 3+ to 2, no trailing spaces), parity script usage, backfill note. `docs/README.md` and `docs/PREVIEW_FACEBOOK_MATCH_PUBLISH.md` updated with links.
+- **1.6 Clean state:** `scripts/validate_daily_cap_invariant.py --weeks 4` passed. Parity script `--platform facebook --weeks 2 --qa-format` passed for 18 posts (authority_short, weekly_*, product, depth_long, culture_fact, message, heritage_fact).
+
+### Artefacts
+- **docs/FACEBOOK_CULTURE_HERITAGE_FORMATTING.md** — Facebook culture/heritage header and formatting rules.
+- **scripts/backfill_culture_headers.py** — Doc note: run only once or when headers change; idempotency note.
+- **scripts/prove_preview_publish_parity.py** — `--platform facebook --weeks N`, `--qa-format`, exit code 0/1; product uses strip_price_from_caption.
+
+---
+
 ## Product price never in Facebook preview or publish (2026-01-30)
 
 ### Policy

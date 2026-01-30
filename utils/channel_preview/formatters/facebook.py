@@ -34,13 +34,32 @@ class FacebookFormatter:
         """
         content_type = (post_data.get("content_type") or "").strip()
 
+        # Text-only path (publish uses generated_content): message, culture_fact, heritage_fact
+        if content_type in ("message", "culture_fact", "heritage_fact"):
+            raw_text = (post_data.get("generated_content") or "").strip()
+            content = apply_culture_or_heritage_header(content_type, raw_text) if raw_text else ""
+            display_text = format_message_for_facebook(content) if content else ""
+            char_count = len(display_text)
+            return {
+                "display_text": display_text,
+                "char_count": char_count,
+                "warnings": [],
+                "meta": {
+                    "role": post_data.get("role"),
+                    "status": post_data.get("status"),
+                    "content_type": content_type,
+                    "platform": post_data.get("platform"),
+                    "category": post_data.get("category"),
+                },
+            }
+
+        # Image-post path (publish uses generated_caption): product, weekly_*, etc.
         if content_type == "product":
-            # Product: display_text = caption (what publishes); strip price per policy
+            # Product: strip price per policy; pass product meta for template
             caption = (post_data.get("generated_caption") or "").strip()
             caption_no_price = strip_price_from_caption(caption) if caption else ""
             display_text = format_message_for_facebook(caption_no_price) if caption_no_price else ""
             char_count = len(display_text)
-            # Product image: image_path is often URL for products; fallback to clan_products.image_url
             image_path = post_data.get("image_path") or ""
             product_image_url = (
                 image_path
@@ -62,10 +81,10 @@ class FacebookFormatter:
                     "product_link": post_data.get("product_link"),
                 },
             }
-        # Text-based: culture/heritage get header; then message formatting
-        raw_text = (post_data.get("generated_content") or "").strip()
-        content = apply_culture_or_heritage_header(content_type, raw_text) if raw_text else ""
-        display_text = format_message_for_facebook(content) if content else ""
+
+        # Other image-post types (weekly_phrase, weekly_word, weekly_insult, etc.): use caption as published
+        caption = (post_data.get("generated_caption") or "").strip()
+        display_text = format_message_for_facebook(caption) if caption else ""
         char_count = len(display_text)
         return {
             "display_text": display_text,
