@@ -2,12 +2,19 @@
 """
 Phase P1.2: Matrix pre-generation orchestrator.
 
+SINGLE SUPPORTED MECHANISM for populating posting_queue for the weekly calendar.
+This script is the ONLY supported path to create both Facebook and Instagram
+rows for the matrix (Mon CULTURE, Tue LANGUAGE, Wed REASSURANCE, Thu HERITAGE,
+Fri AUTHORITY_SHORT, Sat product, Sun DEPTH_LONG). Do not rely on running
+individual automated_*_creator.py scripts alone — their main() paths create
+Facebook-only rows. Always run this orchestrator to guarantee IG coverage.
+
 Approach A (shared selection): For each slot, select upstream provenance once,
 then create/update rows for both platforms (facebook, instagram).
-No platform-order coupling; no creator reads FB row for provenance.
+PLATFORMS = ["facebook", "instagram"] — both are always generated; no option to skip IG.
+Idempotent: generate_for_slot skips or updates existing rows; safe to re-run.
 
-Creators that expose select_for_slot + generate_for_slot are run in-process;
-others are run as subprocess (legacy, facebook-only until migrated).
+Creators run in-process with select_for_slot + generate_for_slot for both platforms.
 Exit non-zero if any required slot is unfilled (creator failed).
 """
 
@@ -437,15 +444,36 @@ def main():
     from_date = datetime.strptime(args.start_date, "%Y-%m-%d").date() if args.start_date else date.today()
     env = {"PYTHONPATH": PROJECT_ROOT}
 
+    run_started_at = datetime.now(timezone.utc)
     report = {
         "weeks_ahead": weeks,
         "platforms": PLATFORMS,
         "dry_run": args.dry_run,
-        "started_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "started_at": run_started_at.isoformat().replace("+00:00", "Z"),
         "slots": {},
         "creators_legacy": [],
         "has_failure": False,
     }
+
+    # Phase G-1: matrix_run_ledger — insert one row per platform at run start (audit trail)
+    ledger_ids = {}
+    try:
+        from config.database import db_manager
+        with db_manager.get_cursor() as cursor:
+            for platform in PLATFORMS:
+                cursor.execute(
+                    """
+                    INSERT INTO matrix_run_ledger (platform, start_date, weeks_ahead, started_at, status)
+                    VALUES (%s, %s, %s, %s, 'running')
+                    RETURNING id
+                    """,
+                    (platform, from_date, weeks, run_started_at),
+                )
+                row = cursor.fetchone()
+                if row:
+                    ledger_ids[platform] = row["id"]
+    except Exception as e:
+        print("matrix_run_ledger insert failed (run continues):", e, file=sys.stderr)
 
     # --- Culture (Monday): Approach A in-process ---
     culture_slots, culture_fail = run_culture_creator_slots(weeks, args.dry_run, args.force, from_date)
@@ -515,12 +543,41 @@ def main():
             print(err.strip(), file=sys.stderr)
 
     report["finished_at"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    run_finished_at = datetime.now(timezone.utc)
 
     if args.report:
         # Serialize slot keys for JSON (date -> str)
         with open(args.report, "w") as f:
             json.dump(report, f, indent=2)
         print(f"Report written to {args.report}")
+
+    # Phase G-1: matrix_run_ledger — update each platform row with finished_at, status, report_path
+    def _ledger_status_for_platform(report_slots: dict, platform: str) -> str:
+        """Per-platform status: success if no slot had outcome 'failed', else partial."""
+        for slot_name, entries in (report_slots or {}).items():
+            for entry in entries if isinstance(entries, list) else []:
+                platforms_out = entry.get("platforms") or {}
+                if platforms_out.get(platform, {}).get("outcome") == "failed":
+                    return "partial"
+        return "success"
+
+    if ledger_ids:
+        try:
+            from config.database import db_manager
+            with db_manager.get_cursor() as cursor:
+                for platform in PLATFORMS:
+                    if platform in ledger_ids:
+                        status = _ledger_status_for_platform(report["slots"], platform)
+                        cursor.execute(
+                            """
+                            UPDATE matrix_run_ledger
+                            SET finished_at = %s, status = %s, report_path = %s
+                            WHERE id = %s
+                            """,
+                            (run_finished_at, status, args.report, ledger_ids[platform]),
+                        )
+        except Exception as e:
+            print("matrix_run_ledger update failed (run continues):", e, file=sys.stderr)
 
     sys.exit(1 if report["has_failure"] else 0)
 

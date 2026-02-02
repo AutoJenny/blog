@@ -1,5 +1,208 @@
 # Changelog
 
+## Phase G-1 — Matrix Run Ledger (2026-02-02)
+
+- **Objective:** Introduce a Matrix Run Ledger that records in the database when the matrix was run, for which date window, for which platform(s), and whether it completed successfully. Write-once audit trail; no UI, scheduler, or automation.
+- **Database:** New table `matrix_run_ledger` (id, platform, start_date, weeks_ahead, started_at, finished_at, status, report_path, created_at). One row per platform per run. Migration: `migrations/20260201_create_matrix_run_ledger.sql`.
+- **Write path:** `scripts/pregenerate_matrix.py` inserts two rows at run start (status 'running'), updates at completion with finished_at, status (success/partial/failed), report_path. Ledger writes do not crash the run on failure (log and continue).
+- **Verification:** Query `matrix_run_ledger WHERE platform = 'instagram' ORDER BY started_at DESC LIMIT 5` answers “Has Instagram been generated for week X?”.
+- **Deliverable:** docs/PHASE_G1_MATRIX_RUN_LEDGER_REPORT.md.
+
+---
+
+## Phase G-0 — IG Matrix Population Fix (2026-02-01)
+
+- **Objective:** Fix root cause of missing Instagram items in planning week-view: ensure IG receives the same role/day coverage as Facebook via a single, deterministic, auditable path.
+- **Root cause:** Instagram `posting_queue` rows were never created for weeks 4 and 5 (and partial for week 5) because `pregenerate_matrix.py` was not run for those weeks, or only FB-only creators were run manually.
+- **Single source of truth:** `scripts/pregenerate_matrix.py` is the ONLY supported mechanism for populating the weekly matrix for both Facebook and Instagram. Docstring updated to state this; no option to skip IG; idempotent and safe to re-run.
+- **Backfill:** Ran `python scripts/pregenerate_matrix.py --start-date 2026-01-19 --weeks-ahead 8 --report temp/pregenerate_matrix_backfill_report.json`. Week 4: IG rows 0→4; Week 5: IG rows 10→21; Week 6 unchanged (idempotent).
+- **Proof:** Before/after DB row counts and schedule API curl output for weeks 4 and 5 documented in report. Week-view now shows IG on appropriate days (Mon CULTURE, Wed REASSURANCE, Thu HERITAGE, Fri AUTHORITY_SHORT, Sun DEPTH_LONG).
+- **Deliverable:** docs/IG_MATRIX_POPULATION_FIX_REPORT.md. No Hybrid, previews, SDXL, UI polish, or alerts touched.
+
+---
+
+## Phase E — Expand Hybrid Coverage to Match Human Browsing Reality (2026-01-31)
+
+- **Objective:** Eliminate “most Instagram previews still show placeholders” by running the existing Hybrid system for a human-relevant browsing window (7 weeks: current week + next 6).
+- **Scope:** Execution and coverage only. No new Hybrid logic, resolvers, UI, or automation proof. Phase D and Phase 3 paused.
+- **Target window:** from_date 2026-01-29, weeks_ahead 7 (39 slots: 6 roles × 6–7 dates). Rationale: typical user scrolls current + next several weeks.
+- **Execution:** Hybrid script run (and background run started) with `--from-date 2026-01-29 --weeks-ahead 7`. Before: 15/39 with images; after (as of report): 25/39; remainder fill via re-run or completed background run.
+- **Success (UI-based):** Phase E complete only when Nick confirms in the UI that the majority of Slide 2 positions show real images when opening IG previews across the window; placeholders rare and explainable; status panel aligned.
+- **Deliverable:** docs/PHASE_E_INSTAGRAM_COVERAGE_EXPANSION_REPORT.md.
+
+---
+
+## Phase D — Automate Hybrid Runs and Prove Quiet Operation (2026-01-31)
+
+- **Objective:** Make the Instagram Hybrid system run automatically, daily, and quietly; prove it without human intervention.
+- **Scope:** Automation + proof only. No imagery changes, UI redesign, generators, or cost work.
+- **Execution mechanism:** launchd (Option A). Matches existing posting monitor pattern; more reliable than cron on macOS. Template: `docs/launchd_hybrid_phase1_template.plist`. Install to `~/Library/LaunchAgents/com.blog.instagram-hybrid-phase1.plist` (replace PROJECT_ROOT with repo path), then `launchctl load`.
+- **Canonical invocation:** `python3 scripts/run_instagram_hybrid_phase1.py --weeks-ahead 3`. `--from-date` omitted; script now defaults to today (optional `--from-date` in `run_instagram_hybrid_phase1.py`).
+- **Cadence:** Once every 24 hours at 06:00 (StartCalendarInterval). Logs: `logs/hybrid_phase1.out`, `logs/hybrid_phase1.err`. No retries, backoff, or new alert logic.
+- **Proof:** Two automated runs ≥24h apart required; evidence (hybrid_run_summaries rows, UI quiet) documented in `docs/PHASE_D_AUTOMATION_AND_QUIET_OPERATION_REPORT.md`. Phase D not complete until both runs and UI verification are recorded.
+- **Docs:** docs/PHASE_D_AUTOMATION_AND_QUIET_OPERATION_REPORT.md, docs/launchd_hybrid_phase1_template.plist, docs/kb/imagery/hybrid_phase1.md (Phase D section), docs/IMAGE_CAPABILITIES_INDEX.md (Phase D bullet).
+
+---
+
+## Phase C — Complete Instagram Image Coverage (Hybrid Only) (2026-01-31)
+
+- **Objective:** Bring Instagram to operational readiness: every IG post that contractually requires an image (Slide 2) has a real image generated via the existing Hybrid pipeline for a 3-week forward window.
+- **Scope:** Instagram only. Mon CULTURE, Tue LANGUAGE, Wed REASSURANCE, Thu HERITAGE, Fri AUTHORITY_SHORT, Sun DEPTH_LONG — Slide 2 only. Saturday PRODUCT out of scope. No new generators, prompts, UI, schema, or automation logic.
+- **Forward window:** Default `--weeks-ahead` in `scripts/run_instagram_hybrid_phase1.py` set to 3 (Phase C minimum); usage line updated. Same from_date/weeks_ahead used for Hybrid runs, coverage evaluation, and reporting.
+- **Execution:** Iterative fill until coverage complete: run Hybrid script (from_date 2026-01-29, weeks_ahead 3); one slot (DEPTH 2026-02-15) was missing; second live run generated it. Final run: coverage_status "complete", confidence_statement "Instagram imagery is complete for the next 3 weeks."
+- **Report:** docs/PHASE_C_INSTAGRAM_IMAGE_COVERAGE_REPORT.md — coverage window, coverage table (per role: days covered, images generated, editorial steers, final status), final run summary, UI verification checklist (Nick), compliance statement.
+- **No scope drift. Phase 3 (cost, SDXL) explicitly deferred.**
+
+---
+
+## Phase 2.6 — Hybrid Status Panel (Launchpad) (2026-02-06)
+
+- **Objective:** Convert the Hybrid alert signal into a clear, confidence-building operational surface on the Launchpad. Read-only panel; no new automation, generators, or workflows.
+- **Panel:** “Instagram Hybrid Status” card on `/launchpad/one-click-publication`, below the main heading. Shows: last run (from `run_timestamp`), coverage state (from `confidence_statement`), action-required summary (from `human_action_counts` when `any_human_action_required`), links “View in calendar” and “Hybrid documentation”. Data from `hybrid_run_summaries` only; no JSON parsing or recomputation.
+- **Acknowledgement:** Opening the Launchpad sets `acknowledged_at` on the latest `hybrid_run_summaries` row. Header alerts for that run are suppressed until a subsequent run (new row). Migration: `migrations/20260206_add_acknowledged_at_to_hybrid_run_summaries.sql`.
+- **Alerts API:** `get_alerts()` only returns stale/blocked/incomplete/human_action alerts when the latest row has `acknowledged_at IS NULL`. “No run ever” alert unchanged.
+- **Files:** `blueprints/launchpad_old.py` (_get_hybrid_status_for_launchpad, one_click_publication passes hybrid_status); `templates/launchpad/includes/hybrid_status_panel.html` (new); `templates/launchpad/one_click_publication.html` (include panel); `blueprints/automation_pipeline.py` (get_alerts uses acknowledged_at).
+- **Docs:** docs/kb/imagery/hybrid_phase1.md (“Hybrid Status Panel (Phase 2.6)”); docs/HYBRID_PHASE2_6_IMPLEMENTATION_REPORT.md.
+- **No new imagery logic. No Run Hybrid button. No scheduler. No UI editors. No scope expansion.**
+
+---
+
+## Phase 2.5 — DB-backed Hybrid run alerts (2026-02-05)
+
+- **Objective:** Make missed or problematic Instagram Hybrid imagery runs visible in the main UI header alert indicator. DB-backed alert source; no file scanning in request paths.
+- **Database:** New table `hybrid_run_summaries` (migration `migrations/20260205_create_hybrid_run_summaries.sql`). One row per run: run_timestamp, platform, from_date, weeks_ahead, coverage_status, run_outcome, confidence_statement, summary_text, any_human_action_required, human_action_counts (JSONB), coverage_summary (JSONB), report_file_path. Index (platform, run_timestamp DESC).
+- **Hybrid runner:** `scripts/run_instagram_hybrid_phase1.py` inserts one row after writing `temp/hybrid_phase1_report_<ts>.json`. On DB write failure, script exits non-zero and logs clearly.
+- **Alerts API:** `GET /launchpad/one-click-publication/api/alerts` reads latest `hybrid_run_summaries` row for platform "instagram". Returns alerts for: no run ever (warning), run older than 24 h (warning), run_outcome blocked (error), coverage_status != complete (warning), any_human_action_required (warning). Alert payload includes title, message, severity, action_url (planning calendar week from from_date), action_text.
+- **Frontend:** `static/js/shared/site-header.js` — `loadAlerts()` fetches the alerts API; mock specimen removed. Badge and dropdown unchanged; 30s polling preserved. New alert_type icons: hybrid_never, hybrid_stale, hybrid_blocked, hybrid_incomplete, hybrid_human_action.
+- **Docs:** docs/kb/imagery/hybrid_phase1.md (section "Hybrid alerts & confidence (Phase 2.5)"); docs/IMAGE_CAPABILITIES_INDEX.md (§10 Phase 2.5); docs/CURRENT_STATE_REPORT.md (hybrid_run_summaries); docs/HYBRID_PHASE2_5_IMPLEMENTATION_REPORT.md; docs/evidence/hybrid_phase2_5/README.md.
+- **No new UI pages, no schedulers, no imagery logic changes.**
+
+---
+
+## Phase 2.3 — Complete Instagram coverage + human confidence signals (2026-01-29)
+
+- **Phase 2.3-A (Complete Instagram image coverage):** Extended Hybrid pipeline to REASSURANCE (Wednesday) and DEPTH_LONG (Sunday), using the same pattern as prior roles. No refactors. Storage: `static/content/instagram_hybrid/reassurance/<YYYY-MM-DD>/`, `static/content/instagram_hybrid/depth/<YYYY-MM-DD>/`. Utilities: build_stock_query_for_reassurance/depth, slot_dir_for_reassurance/depth, resolve_reassurance_slide2_asset, resolve_depth_slide2_asset. Payload: `day == 2 and role == "REASSURANCE"`, `day == 6 and role == "DEPTH_LONG"`. Script: iter_reassurance_wednesdays, iter_depth_sundays; REASSURANCE and DEPTH loops; coverage_summary reassurance_*, depth_*. Regeneration: --role reassurance (warn if not Wednesday), --role depth (warn if not Sunday).
+- **Phase 2.3-B (Human confidence; no new imagery):** Report top-level coverage_status (complete | incomplete | attention_required), confidence_statement (one plain-English sentence derived from coverage counts). Per-slot human_action_required (boolean), human_action_reason (missing_image | editorial_steer_pending | generation_failed | null). Deterministic; clarifies state for Nick without reading logs.
+- **No UI. No schema. No new imagery logic beyond day expansion.** Docs: docs/kb/imagery/hybrid_phase1.md (REASSURANCE/DEPTH subsections, "How Nick knows Instagram is 'done' for the week"), docs/IMAGE_CAPABILITIES_INDEX.md (§10 scope IG Monday–Sunday), docs/HYBRID_PHASE2_3_IMPLEMENTATION_REPORT.md.
+
+---
+
+## Phase 2.2 — Hybrid imagery for Instagram LANGUAGE Tuesdays (2026-01-29)
+
+- **Objective:** Extend the existing Hybrid imagery pipeline to cover Instagram LANGUAGE posts on Tuesdays, using exactly the same Hybrid pattern as HERITAGE, CULTURE, and AUTHORITY_SHORT. Pure expansion of coverage.
+- **Scope:** Instagram LANGUAGE Tuesday Slide 2 only. Slides 1 and 3 remain placeholder. Other roles’ behaviour unchanged.
+- **Implementation:** Copy of HERITAGE/CULTURE/AUTHORITY pattern: separate slot directory `static/content/instagram_hybrid/language/<YYYY-MM-DD>/`, separate `build_stock_query_for_language`, `slot_dir_for_language`, `resolve_language_slide2_asset`; Tuesday LANGUAGE branch in `utils/instagram_payload.py` (runs before generic Tuesday weekly-PNG logic); LANGUAGE Tuesday loop in `scripts/run_instagram_hybrid_phase1.py`. Prompt theme: "Scottish language and words". Fallback query: "Scottish language words typography culture".
+- **Reporting:** coverage_summary now includes language_tuesdays_total, language_with_generated_image, language_missing_generated_image, language_with_editorial_steer_pending; summary_text mentions LANGUAGE when applicable.
+- **Regeneration:** `scripts/request_hybrid_regenerate.py` accepts `--role language` for Tuesday slots; validates that the date is a Tuesday (warns otherwise).
+- **No UI, no schema, no refactors.** Docs: docs/kb/imagery/hybrid_phase1.md (LANGUAGE Tuesday §), docs/IMAGE_CAPABILITIES_INDEX.md (§10), docs/HYBRID_PHASE2_2_IMPLEMENTATION_REPORT.md.
+
+---
+
+## Phase 2.1 — Hybrid imagery for Instagram AUTHORITY_SHORT Fridays (2026-01-29)
+
+- **Objective:** Extend the existing Hybrid imagery pipeline to cover Instagram AUTHORITY_SHORT posts on Fridays, using exactly the same Hybrid pattern as HERITAGE Thursdays and CULTURE Mondays. Coverage expansion only; no new mechanisms.
+- **Scope:** Instagram AUTHORITY_SHORT Friday Slide 2 only. Slides 1 and 3 remain placeholder. HERITAGE and CULTURE behaviour unchanged.
+- **Implementation:** Copy of HERITAGE/CULTURE pattern: separate slot directory `static/content/instagram_hybrid/authority/<YYYY-MM-DD>/`, separate `build_stock_query_for_authority`, `slot_dir_for_authority`, `resolve_authority_slide2_asset`; Friday AUTHORITY_SHORT branch in `utils/instagram_payload.py`; AUTHORITY Friday loop in `scripts/run_instagram_hybrid_phase1.py`. Same snapshot/generation/steer/iteration semantics. Prompt theme: "Scottish authority and tradition".
+- **Reporting:** coverage_summary now includes authority_fridays_total, authority_with_generated_image, authority_missing_generated_image, authority_with_editorial_steer_pending; summary_text mentions AUTHORITY when applicable.
+- **Regeneration:** `scripts/request_hybrid_regenerate.py` accepts `--role authority` for Friday slots; validates that the date is a Friday (warns otherwise).
+- **No UI, no schema, no scheduler, no refactor of HERITAGE or CULTURE.** Docs: docs/kb/imagery/hybrid_phase1.md (AUTHORITY_SHORT Friday §), docs/IMAGE_CAPABILITIES_INDEX.md (§10), docs/HYBRID_PHASE2_1_IMPLEMENTATION_REPORT.md.
+
+---
+
+## Phase 2.0 — Hybrid imagery for Instagram CULTURE Mondays (2026-01-29)
+
+- **Objective:** Extend the existing Hybrid imagery pipeline to cover Instagram CULTURE posts on Mondays, using exactly the same Hybrid pattern as HERITAGE Thursdays. Pure coverage expansion; no new mechanisms.
+- **Scope:** Instagram CULTURE Monday Slide 2 only. Slides 1 and 3 remain placeholder. HERITAGE behaviour unchanged.
+- **Implementation:** Copy of HERITAGE pattern: separate slot directory `static/content/instagram_hybrid/culture/<YYYY-MM-DD>/`, separate `build_stock_query_for_culture`, `slot_dir_for_culture`, `resolve_culture_slide2_asset`; CULTURE Monday branch in `utils/instagram_payload.py`; CULTURE loop in `scripts/run_instagram_hybrid_phase1.py`. Same snapshot/generation/steer/iteration semantics.
+- **Reporting:** coverage_summary now includes culture_mondays_total, culture_with_generated_image, culture_missing_generated_image, culture_with_editorial_steer_pending; summary_text mentions CULTURE when applicable.
+- **Regeneration:** `scripts/request_hybrid_regenerate.py` accepts `--role culture` for Monday slots.
+- **No UI, no schema, no scheduler, no refactor of HERITAGE.** Docs: docs/kb/imagery/hybrid_phase1.md (CULTURE Monday §), docs/IMAGE_CAPABILITIES_INDEX.md (§10), docs/HYBRID_PHASE2_0_IMPLEMENTATION_REPORT.md.
+
+---
+
+## Hybrid Phase 1.8 — Preview-driven editorial feedback loop (2026-01-31)
+
+- **Control refinement only; no scope expansion.** Formalises the human-in-the-loop correction cycle: Instagram preview remains the only validation surface; feedback can be added, refined, and iterated without destabilising automation.
+- **Multi-entry steer:** One slot = one feedback history. Files: editorial_steer.txt, editorial_steer_2.txt, editorial_steer_3.txt, … in the slot dir. All included in prompt as “Editorial guidance based on prior review:”; no summarise/normalise/reinterpret.
+- **Generation iteration:** Monotonic counter per slot (generation_iteration.txt); report field generation_iteration (1, 2, 3, …).
+- **Report extensions:** editorial_steer_entries, editorial_steer_combined_sha256, generation_iteration, regeneration_reason_present (in success, failure, and dry-run). No breaking changes to existing fields.
+- **No UI, no auto-retry, no schema, no other days/generators.** Docs: docs/kb/imagery/hybrid_phase1.md (Phase 1.8), docs/IMAGE_CAPABILITIES_INDEX.md, docs/HYBRID_PHASE1_8_IMPLEMENTATION_REPORT.md.
+
+---
+
+## Hybrid Phase 1.7 — Slot-local editorial steer for regeneration (2026-01-31)
+
+- **Objective:** Allow a human to attach a single free-text editorial note to one slot; the note is injected into the GPT-Image-1 prompt only when that slot is regenerated. Guided correction, not art direction.
+- **Steer location:** Optional file `editorial_steer.txt` in the slot directory (`static/content/instagram_hybrid/heritage/<YYYY-MM-DD>/`). Missing or empty = no steer (Phase 1.6 behaviour).
+- **Prompt:** When present and non-empty, appended verbatim: “Editorial guidance for regeneration:” + contents + “Apply this guidance while preserving the overall intent of the image.”
+- **Report:** Per-slot fields added: `editorial_steer_present`, `editorial_steer_sha256`, `generation_used_editorial_steer`.
+- **No UI, no schema, no global change.** Flow: add/edit editorial_steer.txt → request_hybrid_regenerate.py → main script.
+- **Docs:** docs/kb/imagery/hybrid_phase1.md (Guided regeneration Phase 1.7), docs/IMAGE_CAPABILITIES_INDEX.md, docs/HYBRID_PHASE1_7_IMPLEMENTATION_REPORT.md.
+
+---
+
+## Hybrid Phase 1.6 — Human override & regeneration control (2026-01-31)
+
+- **Objective:** Allow a human to cause a specific HERITAGE Thursday Slide 2 image to be regenerated without new UI, without affecting other slots/days/channels, and without breaking automation.
+- **Mechanism:** Option A (sentinel file deletion). Absence of `generated_1080x1350.png` = eligible for regeneration; next script run reuses snapshot and generates a new image.
+- **Helper script:** `scripts/request_hybrid_regenerate.py --slot-date YYYY-MM-DD` removes the generated image for that Thursday only. User then runs the normal Hybrid script; only that slot is regenerated.
+- **Report:** Per-slot report now includes `snapshot_reused` (true when snapshot existed and generation ran this run) and `output_file_sha256` (SHA-256 of generated file when created). No snapshot re-run on regeneration.
+- **Docs:** docs/kb/imagery/hybrid_phase1.md (Manual regeneration Phase 1.6), docs/IMAGE_CAPABILITIES_INDEX.md (§10 Phase 1.6), docs/HYBRID_PHASE1_6_IMPLEMENTATION_REPORT.md.
+
+---
+
+## Hybrid Phase 1.5 — Operationalised forward generation (2026-01-31)
+
+- **Objective:** Make Hybrid Phase 1 reliably visible in the UI. Instagram Thursday HERITAGE previews must consistently show a real image for Slide 2 for upcoming weeks without manual intervention.
+- **Change:** Hybrid HERITAGE Thursday images are now generated ahead of time so Instagram previews reliably show real imagery for upcoming weeks. No new behaviour; operational hardening only.
+- **Run cadence:** Script `run_instagram_hybrid_phase1.py` is expected to be run at least once per week (manually or via cron), with `--from-date $(date +%Y-%m-%d)` and `--weeks-ahead 3`. No daemon or in-app scheduler.
+- **Report:** JSON report now includes `slots_processed`, `slots_generated`, `slots_skipped_existing` for diagnosis.
+- **Docs:** docs/kb/imagery/hybrid_phase1.md — Phase 1.5 run cadence and runbook section; idempotency confirmed (script skips existing snapshot/generated file).
+
+---
+
+## Hybrid Phase 1 — HERITAGE Thu IG Slide 2 (2026-01-31)
+
+- **Objective:** Produce preview-approvable Instagram visuals for HERITAGE Thursday Slide 2 using Hybrid (stock-assisted reference → GPT-Image-1 generated output). Preview-first; no publishing.
+- **Scope:** HERITAGE (Thursday) Slide 2 only; Slides 1 & 3 remain typographic placeholder.
+- **Flow:** Deterministic query from post_data → photo_apis (Pexels/Unsplash) → snapshot per slot (stock_results.json, stock_selected.json) → deterministic selection (stable_hash % len) → GPT-Image-1 generation → 1080×1350 PNG (generated_1080x1350.png). Stock is reference only; output is generated_editorial_illustration.
+- **Payload:** `utils/instagram_payload.py` — HERITAGE Slide 2: if generated_1080x1350.png exists for slot → use it; else if snapshot exists → placeholder + "Hybrid pending generation"; else → placeholder + "Hybrid missing snapshot".
+- **Script:** `scripts/run_instagram_hybrid_phase1.py` (--from-date, --weeks-ahead, --dry-run). Pre-generation only; no live API during preview.
+- **Storage:** `static/content/instagram_hybrid/heritage/<YYYY-MM-DD>/`. Report: `temp/hybrid_phase1_report_<timestamp>.json`.
+- **Docs:** docs/HYBRID_PHASE1_IMPLEMENTATION_REPORT.md, docs/IMAGE_CAPABILITIES_INDEX.md (§10), docs/kb/imagery/hybrid_phase1.md.
+
+---
+
+## Instagram Preview Readiness — Phases A–C (2026-01-30)
+
+### Phase A — Validator hygiene
+- **Objective:** Run validator cleanly for future weeks without touching legacy data.
+- **Change:** `scripts/validate_daily_cap_invariant.py` accepts optional `--from-date YYYY-MM-DD`. When provided, only rows with `scheduled_date >= from-date` are considered; range is `[from-date, from-date + weeks)`. Default behaviour unchanged when omitted.
+- **Usage:** `validate_daily_cap_invariant.py --weeks 3 --platforms facebook instagram --from-date <today>`. Evidence: `temp/validator_forward_only_evidence.txt`.
+
+### Phase B — Editorial preview UX
+- **Objective:** Make Instagram previews comfortable to approve; no payload logic changes.
+- **templates/channel_previews/instagram_feed.html:** Added small label "Instagram feed preview" near top; slide index indicators ("Slide 1 of 3", etc.); carousel grouped with `.instagram-carousel` / `.instagram-slide`. When a slide uses the typographic placeholder, overlay caption "Placeholder image (Phase 1)" (via `slide.is_placeholder` from payload).
+- **utils/instagram_payload.py:** `_slide_spec` and all carousel builds now set `is_placeholder=True` when using the generic placeholder URL; formatter passes through to template.
+- **Calendar clarity:** `static/js/planning/unified-item-card.js` adds class `platform-instagram` (or `platform-facebook`) to item cards when `item.platform` is set. `templates/planning/calendar/includes/week_view_styles.html` adds `.item-card.platform-instagram { border-left-width: 3px; border-left-color: #a855f7; }` so IG items are visually distinct. No logic change; CSS/class only.
+- **No regressions:** Facebook previews unchanged; IG still routes to IG preview; no new endpoints.
+
+### Phase C — First real Instagram visual (Tuesday LANGUAGE only)
+- **Objective:** Replace placeholder for Tuesday with real weekly PNG resized to 1080×1350 (4:5) for Instagram only.
+- **utils/instagram_payload.py:** When day == 1 (LANGUAGE) and `image_path` exists, `_weekly_image_to_ig_1080x1350(image_path)` produces an IG-sized image: centre-crop to 1080×1350, saved as `instagram_1080x1350.png` in the same directory as the weekly PNG (no new storage tables). Preview and publish use the same URL. If resize fails, fall back to typographic placeholder and append to payload warnings.
+- **CULTURE, AUTHORITY_SHORT, DEPTH_LONG:** Unchanged; remain placeholder-only in Phase 1.
+
+### Phase C-2 — Heritage (Thursday) Instagram Slide 2
+- **Objective:** Add a second real Instagram visual pathway, limited to HERITAGE (Thursday); preview-first, no publishing, no new systems.
+- **Carousel:** Thursday HERITAGE: Slide 1 = typographic placeholder, Slide 2 = curated heritage image (static directory), Slide 3 = typographic placeholder. No variation.
+- **Storage:** `static/images/instagram/heritage/` (Option A). 3–6 images, semantic filenames (e.g. stone_cross.png, ruined_kirk.png). No metadata, no manifest, no DB.
+- **Selection:** Deterministic in `utils/instagram_payload.py`: when day == 3 and role == HERITAGE, `_select_heritage_ig_slide2(post_data)` lists image files in directory (sorted), index = hash(scheduled_date) % len(files). Repeatable, preview- and publish-stable.
+- **Caption:** For HERITAGE IG only, append one line at bottom: "Illustrative image". No credits, dates, or claims.
+- **Config:** `config/instagram_assets.py` — `INSTAGRAM_HERITAGE_IMAGE_DIR`.
+- **CULTURE, AUTHORITY, DEPTH, Tuesday LANGUAGE:** Unchanged. No schema changes; no publishing enabled; no new pipelines.
+
+---
+
 ## Matrix generation: Instagram from shared sources (Approach A) (2026-01-30)
 
 - **Objective:** Extend Matrix pre-generation so Instagram rows are originated from the same upstream sources as Facebook (one row per slot per platform), with no cloning and no schema changes. Per docs/INSTAGRAM_MATRIX_GENERATION_PLAN.md.
