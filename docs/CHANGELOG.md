@@ -1,5 +1,34 @@
 # Changelog
 
+## Phase I-0 — Image Prompt Transparency Audit (2026-03-01)
+
+- **Objective:** Audit image and hybrid prompt construction for transparency, determinism, and traceability. Design + audit only; no code changes.
+- **Deliverable:** docs/PHASE_I0_IMAGE_PROMPT_TRANSPARENCY_AUDIT.md. Inventory of image-generation entry points (Instagram Hybrid, carousel, blog_post section/header, product, weekly content); prompt composition analysis; transparency gap (opaque vs partially transparent); mapping to workbench concepts; explicit non-goals.
+- **Outcome:** Hybrid and carousel slides classified opaque; blog_post section/header partially transparent; enables decision on I-1/I-2/I-3 or stop.
+
+---
+
+## Phase H-5.1 — Publish Path Alignment (2026-03-01)
+
+- **Objective:** Ensure all publishing and scheduling use the explicit “current output” selected in the Unified Channel Workbench. Backend wiring only; no UI, generator, or carousel changes.
+- **Resolver:** `blueprints/launchpad_utils.resolve_current_posting_queue_id(content_ref, platform, channel_type, slot_identifier)` — workbench_current_outputs → generation_runs.output_refs.posting_queue_id → validate queue row; no fallback.
+- **post_now:** launchpad_old, launchpad_scheduling, blog_post_syndication — for blog_post, resolve current output; 400 NO_CURRENT_OUTPUT if none or if item_id is not current.
+- **schedule_tomorrow:** Same resolver rules for blog_post.
+- **Scheduled executor:** get_due_posts includes post_id; for blog_post, skip unless queue row is the resolved current output.
+- **Deliverable:** docs/PHASE_H51_PUBLISH_PATH_ALIGNMENT_REPORT.md.
+
+---
+
+## Phase H-5 — Engine Comparison & Current Output Selection (2026-03-01)
+
+- **Objective:** Multi-engine comparison and explicit “current output” selection per slot in the Unified Channel Workbench. No generator or carousel changes.
+- **Storage:** Table `workbench_current_outputs` (content_ref, platform, channel_type, slot_identifier, run_id, updated_at). Migration: migrations/20260301_create_workbench_current_outputs.sql. Slot = "primary" for blog_post.
+- **API:** GET /launchpad/api/workbench/engines; GET/POST /launchpad/api/workbench/current-output; POST /launchpad/api/workbench/run accepts engine_id, slot_identifier.
+- **UI:** Engine selector, “Run with engine”, Asset Comparison “Use this output”, “✓ Current” in Generation History, “Prompt for current output” in Inspector. workbench.js + workbench.html.
+- **Deliverable:** docs/PHASE_H5_ENGINE_COMPARISON_REPORT.md.
+
+---
+
 ## Phase G-1 — Matrix Run Ledger (2026-02-02)
 
 - **Objective:** Introduce a Matrix Run Ledger that records in the database when the matrix was run, for which date window, for which platform(s), and whether it completed successfully. Write-once audit trail; no UI, scheduler, or automation.

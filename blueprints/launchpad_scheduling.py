@@ -10,8 +10,17 @@ from humanize import naturaltime
 from config.database import db_manager
 import psycopg
 
+from blueprints.launchpad_utils import resolve_current_posting_queue_id
+
 bp = Blueprint('launchpad_scheduling', __name__)
 logger = logging.getLogger(__name__)
+
+# Phase H-5.1: No current output -> 400 (no silent fallback)
+_NO_CURRENT_OUTPUT = {
+    'success': False,
+    'error': 'NO_CURRENT_OUTPUT',
+    'message': 'No current output selected for this item. Select an output in the workbench before publishing.',
+}
 
 def get_next_posting_slot(cursor, platform='facebook', content_type='product'):
     """Calculate the next available posting slot based on schedules and existing queue."""
@@ -460,56 +469,110 @@ def get_today_status():
 
 @bp.route('/api/syndication/post-now', methods=['POST'])
 def post_now():
-    """Post content immediately."""
+    """Post content immediately. Phase H-5.1: For blog_post, only the current workbench output is allowed."""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
+        platform = data.get('platform', 'facebook')
+        channel_type = data.get('channel_type') or data.get('content_type', 'blog_post')
         item_id = data.get('item_id')
-        
-        if not item_id:
-            return jsonify({
-                'success': False,
-                'error': 'Item ID is required'
-            }), 400
-        
+        content_ref = data.get('content_ref')
+
+        if content_ref is not None and (platform or channel_type):
+            resolved_id = resolve_current_posting_queue_id(
+                int(content_ref), platform, channel_type, 'primary'
+            )
+            if resolved_id is None:
+                return jsonify(_NO_CURRENT_OUTPUT), 400
+            item_id = resolved_id
+        elif item_id:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, post_id, platform, channel_type, content_type
+                    FROM posting_queue WHERE id = %s
+                """, (item_id,))
+                row = cursor.fetchone()
+            if not row:
+                return jsonify({'success': False, 'error': 'Queue item not found'}), 404
+            ct = (row.get('content_type') or '').strip().lower()
+            if ct == 'blog_post' and row.get('post_id') is not None:
+                resolved_id = resolve_current_posting_queue_id(
+                    row['post_id'],
+                    row.get('platform') or platform,
+                    row.get('channel_type') or channel_type,
+                    'primary',
+                )
+                if resolved_id is None:
+                    return jsonify(_NO_CURRENT_OUTPUT), 400
+                if resolved_id != item_id:
+                    return jsonify({
+                        'success': False,
+                        'error': 'NO_CURRENT_OUTPUT',
+                        'message': 'Selected item is not the current output. Select this output in the workbench first.',
+                    }), 400
+        else:
+            return jsonify({'success': False, 'error': 'Item ID or (content_ref, platform, channel_type) is required'}), 400
+
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
-                # Update the item status to posted
                 cursor.execute("""
                     UPDATE posting_queue
                     SET status = 'posted', updated_at = NOW()
                     WHERE id = %s
                 """, (item_id,))
                 conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Content posted successfully'
-                })
+        return jsonify({'success': True, 'message': 'Content posted successfully'})
     except Exception as e:
         logger.error(f"Error posting now: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/syndication/schedule-tomorrow', methods=['POST'])
 def schedule_tomorrow():
-    """Schedule content for tomorrow."""
+    """Schedule content for tomorrow. Phase H-5.1: For blog_post, only the current workbench output is allowed."""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
+        platform = data.get('platform', 'facebook')
+        channel_type = data.get('channel_type') or data.get('content_type', 'blog_post')
         item_id = data.get('item_id')
-        
-        if not item_id:
-            return jsonify({
-                'success': False,
-                'error': 'Item ID is required'
-            }), 400
-        
+        content_ref = data.get('content_ref')
+
+        if content_ref is not None and (platform or channel_type):
+            resolved_id = resolve_current_posting_queue_id(
+                int(content_ref), platform, channel_type, 'primary'
+            )
+            if resolved_id is None:
+                return jsonify(_NO_CURRENT_OUTPUT), 400
+            item_id = resolved_id
+        elif item_id:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, post_id, platform, channel_type, content_type
+                    FROM posting_queue WHERE id = %s
+                """, (item_id,))
+                row = cursor.fetchone()
+            if not row:
+                return jsonify({'success': False, 'error': 'Queue item not found'}), 404
+            ct = (row.get('content_type') or '').strip().lower()
+            if ct == 'blog_post' and row.get('post_id') is not None:
+                resolved_id = resolve_current_posting_queue_id(
+                    row['post_id'],
+                    row.get('platform') or platform,
+                    row.get('channel_type') or channel_type,
+                    'primary',
+                )
+                if resolved_id is None:
+                    return jsonify(_NO_CURRENT_OUTPUT), 400
+                if resolved_id != item_id:
+                    return jsonify({
+                        'success': False,
+                        'error': 'NO_CURRENT_OUTPUT',
+                        'message': 'Selected item is not the current output. Select this output in the workbench first.',
+                    }), 400
+        else:
+            return jsonify({'success': False, 'error': 'Item ID or (content_ref, platform, channel_type) is required'}), 400
+
         tomorrow = date.today() + timedelta(days=1)
-        
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
-                # Update the item to schedule for tomorrow
                 cursor.execute("""
                     UPDATE posting_queue
                     SET scheduled_date = %s, scheduled_time = '09:00:00',
@@ -517,14 +580,7 @@ def schedule_tomorrow():
                     WHERE id = %s
                 """, (tomorrow, datetime.combine(tomorrow, time(9, 0)), item_id))
                 conn.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Content scheduled for tomorrow'
-                })
+        return jsonify({'success': True, 'message': 'Content scheduled for tomorrow'})
     except Exception as e:
         logger.error(f"Error scheduling tomorrow: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500

@@ -380,9 +380,11 @@ def get_post_details(post_id):
 
 @bp.route('/api/syndication/generate-blog-content', methods=['POST'])
 def generate_blog_content():
-    """Generate social media content for a blog post using LLM."""
+    """Generate social media content for a blog post. Accepts platform, channel_type (defaults: facebook, blog_post)."""
     try:
         data = request.get_json()
+        platform = data.get('platform') or 'facebook'
+        channel_type = data.get('channel_type') or data.get('content_type') or 'blog_post'
         post_id = data.get('post_id')
         content_type = data.get('content_type', 'blog_post')
         
@@ -428,8 +430,8 @@ def generate_blog_content():
             blog_url = post['clan_uploaded_url'] or f"https://clan.com/blog/{post.get('slug', '')}"
             
             formatted_prompt = prompt_template.format(
-                platform='Facebook',
-                channel_type='blog_post',
+                platform=platform.capitalize() if platform else 'Facebook',
+                channel_type=channel_type or 'blog_post',
                 requirements=f"""Create an engaging blog post promotion for Facebook:
 Blog Post Title: {post['title']}
 Subtitle: {post.get('subtitle', '')}
@@ -458,35 +460,33 @@ Write a compelling social media post that highlights the key points of this blog
             if response and 'content' in response:
                 generated_content = response['content']
                 
-                # Check if content already exists for this post and content_type
+                # Check if content already exists for this post, content_type, platform, channel_type
                 cursor.execute("""
                     SELECT id FROM posting_queue
-                    WHERE post_id = %s AND content_type = %s
+                    WHERE post_id = %s AND content_type = %s AND COALESCE(platform, 'facebook') = %s AND COALESCE(channel_type, 'blog_post') = %s
                     LIMIT 1
-                """, (post_id, content_type))
+                """, (post_id, content_type, platform, channel_type))
                 existing = cursor.fetchone()
                 
                 if existing:
-                    # Update existing content
                     cursor.execute("""
                         UPDATE posting_queue
-                        SET generated_content = %s, post_title = %s, updated_at = NOW()
+                        SET generated_content = %s, post_title = %s, platform = %s, channel_type = %s, updated_at = NOW()
                         WHERE post_id = %s AND content_type = %s
                         RETURNING id
-                    """, (generated_content, post['title'], post_id, content_type))
+                    """, (generated_content, post['title'], platform, channel_type, post_id, content_type))
                     result = cursor.fetchone()
                     queue_item_id = result['id'] if result else None
                 else:
-                    # Insert new content
                     cursor.execute("""
                         INSERT INTO posting_queue (
                             post_id, content_type, generated_content, 
                             post_title, status, platform, channel_type,
                             created_at, updated_at
                         )
-                        VALUES (%s, %s, %s, %s, 'draft', 'facebook', 'feed_post', NOW(), NOW())
+                        VALUES (%s, %s, %s, %s, 'draft', %s, %s, NOW(), NOW())
                         RETURNING id
-                    """, (post_id, content_type, generated_content, post['title']))
+                    """, (post_id, content_type, generated_content, post['title'], platform, channel_type))
                     result = cursor.fetchone()
                     queue_item_id = result['id'] if result else None
                 
@@ -519,9 +519,11 @@ Write a compelling social media post that highlights the key points of this blog
 
 @bp.route('/api/syndication/save-blog-content', methods=['POST'])
 def save_blog_content():
-    """Save generated content for a blog post to the posting queue."""
+    """Save generated content for a blog post. Accepts platform, channel_type (defaults: facebook, blog_post)."""
     try:
         data = request.get_json()
+        platform = data.get('platform') or 'facebook'
+        channel_type = data.get('channel_type') or data.get('content_type') or 'blog_post'
         post_id = data.get('post_id')
         content_type = data.get('content_type', 'blog_post')
         generated_content = data.get('content') or data.get('generated_content')
@@ -540,7 +542,6 @@ def save_blog_content():
             post_result = cur.fetchone()
             post_title = post_result['title'] if post_result else None
             
-            # Check if content already exists for this post and content_type
             cur.execute("""
                 SELECT id FROM posting_queue
                 WHERE post_id = %s AND content_type = %s
@@ -548,21 +549,19 @@ def save_blog_content():
             existing = cur.fetchone()
             
             if existing:
-                # Update existing content
                 cur.execute("""
                     UPDATE posting_queue
-                    SET generated_content = %s, post_title = %s, updated_at = NOW()
+                    SET generated_content = %s, post_title = %s, platform = %s, channel_type = %s, updated_at = NOW()
                     WHERE post_id = %s AND content_type = %s
-                """, (generated_content, post_title, post_id, content_type))
+                """, (generated_content, post_title, platform, channel_type, post_id, content_type))
             else:
-                # Insert new content
                 cur.execute("""
                     INSERT INTO posting_queue (
                         post_id, content_type, generated_content, post_title,
                         status, platform, channel_type, created_at, updated_at
                     )
-                    VALUES (%s, %s, %s, %s, 'draft', 'facebook', 'feed_post', NOW(), NOW())
-                """, (post_id, content_type, generated_content, post_title))
+                    VALUES (%s, %s, %s, %s, 'draft', %s, %s, NOW(), NOW())
+                """, (post_id, content_type, generated_content, post_title, platform, channel_type))
             
             conn.commit()
             
@@ -580,16 +579,19 @@ def save_blog_content():
 
 @bp.route('/api/syndication/get-blog-content/<int:post_id>')
 def get_blog_content(post_id):
-    """Get generated content for a blog post."""
+    """Get generated content for a blog post. Accepts platform, channel_type (query, defaults: facebook, blog_post)."""
     try:
+        platform = request.args.get('platform', 'facebook')
+        channel_type = request.args.get('channel_type') or request.args.get('content_type', 'blog_post')
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT generated_content, created_at, updated_at, status, id
                 FROM posting_queue 
                 WHERE post_id = %s AND content_type = 'blog_post'
+                  AND COALESCE(platform, 'facebook') = %s AND COALESCE(channel_type, 'blog_post') = %s
                 ORDER BY updated_at DESC
                 LIMIT 1
-            """, (post_id,))
+            """, (post_id, platform, channel_type))
             
             result = cursor.fetchone()
             
@@ -616,11 +618,19 @@ def get_blog_content(post_id):
         }), 500
 
 
+# Phase H-5.1: Error when no current output set (no silent fallback)
+_NO_CURRENT_OUTPUT = {
+    'success': False,
+    'error': 'NO_CURRENT_OUTPUT',
+    'message': 'No current output selected for this item. Select an output in the workbench before publishing.',
+}
+
+
 @bp.route('/api/syndication/post-now', methods=['POST'])
 def post_now():
     """
-    Post blog post content to Facebook immediately.
-    
+    Post blog post content to platform immediately.
+    Phase H-5.1: Publishes only the run marked current in workbench_current_outputs.
     ⚠️ DISABLED - Facebook posting has been disabled to prevent unwanted posts.
     """
     logger.error(f"BLOCKED: post_now API endpoint called - Facebook posting is DISABLED")
@@ -629,27 +639,56 @@ def post_now():
         'error': 'Facebook posting has been disabled'
     }), 403
     try:
-        data = request.get_json()
+        from blueprints.launchpad_utils import resolve_current_posting_queue_id
+        data = request.get_json() or {}
+        platform = data.get('platform', 'facebook')
+        channel_type = data.get('channel_type') or data.get('content_type', 'blog_post')
         item_id = data.get('item_id')
-        
-        if not item_id:
-            return jsonify({
-                'success': False,
-                'error': 'Item ID is required'
-            }), 400
-        
-        # Use the shared execute_facebook_post function
+        content_ref = data.get('content_ref')
+
+        if content_ref is not None and (platform or channel_type):
+            resolved_id = resolve_current_posting_queue_id(
+                int(content_ref), platform, channel_type, 'primary'
+            )
+            if resolved_id is None:
+                return jsonify(_NO_CURRENT_OUTPUT), 400
+            item_id = resolved_id
+        elif item_id:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, post_id, platform, channel_type, content_type
+                    FROM posting_queue WHERE id = %s
+                """, (item_id,))
+                row = cursor.fetchone()
+            if not row:
+                return jsonify({'success': False, 'error': 'Queue item not found'}), 404
+            ct = (row.get('content_type') or '').strip().lower()
+            if ct == 'blog_post' and row.get('post_id') is not None:
+                resolved_id = resolve_current_posting_queue_id(
+                    row['post_id'],
+                    row.get('platform') or platform,
+                    row.get('channel_type') or channel_type,
+                    'primary',
+                )
+                if resolved_id is None:
+                    return jsonify(_NO_CURRENT_OUTPUT), 400
+                if resolved_id != item_id:
+                    return jsonify({
+                        'success': False,
+                        'error': 'NO_CURRENT_OUTPUT',
+                        'message': 'Selected item is not the current output. Select this output in the workbench first.',
+                    }), 400
+        else:
+            return jsonify({'success': False, 'error': 'Item ID or (content_ref, platform, channel_type) is required'}), 400
+
         result = execute_facebook_post(item_id)
-        
         if result['success']:
             return jsonify({
-                'success': True, 
+                'success': True,
                 'message': result['message'],
-                'platform_post_ids': result.get('platform_post_ids', [])
+                'platform_post_ids': result.get('platform_post_ids', []),
             })
-        else:
-            return jsonify({'success': False, 'error': result['message']})
-            
+        return jsonify({'success': False, 'error': result['message']}), 500
     except Exception as e:
         logger.error(f"Error in post_now: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ platform.display_name }} {{ channel_type.display_name }} - Blog Launchpad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/syndication.css') }}">
+    <script>
+        window.pageData = {
+            platform: {{ platform | tojson }},
+            channel_type: {{ channel_type | tojson }}
+        };
+    </script>
+</head>
+<body>
+    {% include 'shared/header.html' %}
+    <div class="container">
+        {% include 'launchpad/includes/breadcrumb.html' %}
+        <div class="header">
+            <h1>{{ platform.display_name }} {{ channel_type.display_name }}</h1>
+            <p>{{ channel_type.description }}</p>
+        </div>
+
+        {% include 'launchpad/includes/blog_post_selection.html' %}
+
+        <!-- Workbench surfaces (visible when item selected) -->
+        <div id="workbench-surfaces" class="d-none">
+            <!-- 4.1 Prompt Inspector (read-only) -->
+            <div class="section-card mt-4" data-accordion="prompt-inspector">
+                <div class="section-title with-right-content" onclick="toggleAccordion('prompt-inspector')">
+                    <div class="section-title-left">
+                        <i class="fas fa-chevron-right accordion-chevron" id="prompt-inspector-chevron"></i>
+                        <i class="fas fa-search"></i> Prompt Inspector
+                    </div>
+                    <span id="prompt-inspector-label" class="text-muted small">Current prompt</span>
+                </div>
+                <div class="section-content" id="prompt-inspector-content">
+                    <pre id="prompt-inspector-text" class="bg-dark text-light p-3 rounded small" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">No prompt loaded. Select a post and load current prompt, or select a run to see historical prompt.</pre>
+                </div>
+            </div>
+
+            <!-- 4.2 Prompt Editor (write) -->
+            <div class="section-card mt-4" data-accordion="prompt-editor">
+                <div class="section-title" onclick="toggleAccordion('prompt-editor')">
+                    <i class="fas fa-chevron-right accordion-chevron" id="prompt-editor-chevron"></i>
+                    <i class="fas fa-edit"></i> Prompt Editor
+                </div>
+                <div class="section-content" id="prompt-editor-content">
+                    <p class="text-muted small mb-2">Edits affect future runs only. No editing of historical prompts.</p>
+                    <textarea id="prompt-editor-text" class="form-control bg-dark text-light font-monospace small" rows="6" placeholder="Current text prompt (load first)"></textarea>
+                    <button type="button" class="btn btn-primary mt-2" id="prompt-editor-save"><i class="fas fa-save"></i> Save current prompt</button>
+                </div>
+            </div>
+
+            <!-- 4.5 Regeneration Controls (H-5: engine selector) -->
+            <div class="section-card mt-4" data-accordion="regeneration">
+                <div class="section-title" onclick="toggleAccordion('regeneration')">
+                    <i class="fas fa-chevron-right accordion-chevron" id="regeneration-chevron"></i>
+                    <i class="fas fa-sync-alt"></i> Regeneration
+                </div>
+                <div class="section-content" id="regeneration-content">
+                    <p class="text-muted small mb-2">Trigger a new run using current prompt. Choose engine (no engine-specific UI).</p>
+                    <label for="workbench-engine-select" class="form-label text-white small">Engine</label>
+                    <select id="workbench-engine-select" class="form-select form-select-sm bg-dark text-white border-secondary mb-2" style="max-width: 280px;">
+                        <option value="">Loading…</option>
+                    </select>
+                    <button type="button" class="btn btn-primary" id="workbench-regenerate-btn"><i class="fas fa-play"></i> Run with engine</button>
+                    <span id="regeneration-status" class="ms-2 small text-muted"></span>
+                </div>
+            </div>
+
+            <!-- 4.3 Generation History (read-only list) -->
+            <div class="section-card mt-4" data-accordion="generation-history">
+                <div class="section-title" onclick="toggleAccordion('generation-history')">
+                    <i class="fas fa-chevron-right accordion-chevron" id="generation-history-chevron"></i>
+                    <i class="fas fa-history"></i> Generation History
+                </div>
+                <div class="section-content" id="generation-history-content">
+                    <p class="text-muted small mb-2">Select a run to view its prompt in the Inspector and compare outputs below.</p>
+                    <div id="generation-history-list" class="list-group list-group-flush"></div>
+                </div>
+            </div>
+
+            <!-- 4.4 Asset Comparison Panel (H-5: Use this output) -->
+            <div class="section-card mt-4" data-accordion="asset-comparison">
+                <div class="section-title" onclick="toggleAccordion('asset-comparison')">
+                    <i class="fas fa-chevron-right accordion-chevron" id="asset-comparison-chevron"></i>
+                    <i class="fas fa-columns"></i> Asset Comparison
+                </div>
+                <div class="section-content" id="asset-comparison-content">
+                    <p class="text-muted small mb-2">Select runs in History to compare. For each output: engine, timestamp, and &quot;Use this output&quot; to set as current.</p>
+                    <div class="row" id="comparison-row">
+                        <div class="col-md-6"><div id="comparison-left" class="border rounded p-3 bg-dark small text-break min-height-100">Select a run (left)</div></div>
+                        <div class="col-md-6"><div id="comparison-right" class="border rounded p-3 bg-dark small text-break min-height-100">Select a run (right)</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include 'launchpad/includes/ai_content_generation.html' %}
+        {% include 'launchpad/includes/posting_control.html' %}
+        {% include 'launchpad/includes/posting_queue.html' %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/state-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/blog-post-selection.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-content-generation-core.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-content-generation-events.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-content-generation-content.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-content-generation-data.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-content-generation-prompts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-content-generation-utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/queue-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/posting-control-utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/posting-control.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/workbench.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.blogPostSelectionManager) window.blogPostSelectionManager.loadPosts();
+        });
+    </script>
+</body>
+</html>

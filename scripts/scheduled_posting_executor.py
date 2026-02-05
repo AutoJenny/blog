@@ -245,7 +245,7 @@ class ScheduledPostingExecutor:
                 # Predicate must match utils.publishable_predicate (PUBLISHABLE_STATUSES + SCHEDULED_DUE_FRAGMENT).
                 cursor.execute("""
                     SELECT pq.id, pq.platform, pq.role, pq.channel_type, pq.content_type,
-                           pq.generated_content, pq.status, pq.product_id, pq.section_id,
+                           pq.post_id, pq.generated_content, pq.status, pq.product_id, pq.section_id,
                            pq.scheduled_timestamp, pq.schedule_name, pq.timezone,
                            pq.scheduled_date, pq.scheduled_time,
                            cp.name as product_name, cp.sku, cp.image_url as product_image,
@@ -278,6 +278,33 @@ class ScheduledPostingExecutor:
                     if not self.validate_content_schedule(post):
                         logger.warning(f"BLOCKED post {post['id']} - failed content schedule validation")
                         continue
+
+                    # Phase H-5.1: For blog_post, publish only the run marked current in workbench
+                    ct = (post.get('content_type') or '').strip().lower()
+                    if ct == 'blog_post' and post.get('post_id') is not None:
+                        try:
+                            from blueprints.launchpad_utils import resolve_current_posting_queue_id
+                            resolved_id = resolve_current_posting_queue_id(
+                                post['post_id'],
+                                post.get('platform') or 'facebook',
+                                post.get('channel_type') or 'blog_post',
+                                'primary',
+                            )
+                            if resolved_id is None:
+                                logger.warning(
+                                    "BLOCKED post %s (blog_post) - no current output set for (post_id=%s, platform=%s); skip",
+                                    post['id'], post['post_id'], post.get('platform'),
+                                )
+                                continue
+                            if resolved_id != post['id']:
+                                logger.warning(
+                                    "BLOCKED post %s (blog_post) - queue row is not the current output (current=%s); skip",
+                                    post['id'], resolved_id,
+                                )
+                                continue
+                        except Exception as e:
+                            logger.warning(f"BLOCKED post {post['id']} - resolver error: {e}; skip")
+                            continue
 
                     scheduled_str = post.get('scheduled_timestamp') or f"{post.get('scheduled_date')} {post.get('scheduled_time')}"
                     valid_posts.append(post)

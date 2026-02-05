@@ -11,7 +11,11 @@ from config.database import db_manager
 import psycopg
 
 # Import utility functions
-from blueprints.launchpad_utils import get_next_posting_slot, strip_html_doc
+from blueprints.launchpad_utils import (
+    get_next_posting_slot,
+    strip_html_doc,
+    resolve_current_posting_queue_id,
+)
 
 bp = Blueprint('launchpad', __name__)
 logger = logging.getLogger(__name__)
@@ -26,7 +30,7 @@ def index():
 
 @bp.route('/api/syndication/section-image-url/<int:post_id>/<int:section_id>')
 def get_section_image_url(post_id, section_id):
-    """Get the clan.com URL for a section image."""
+    """Get the clan.com URL for a section image. Accepts platform, channel_type (query) for API consistency."""
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -57,9 +61,10 @@ def get_section_image_url(post_id, section_id):
 
 @bp.route('/api/syndication/save-generated-content', methods=['POST'])
 def save_generated_content():
-    """Save generated content for a product or blog section."""
+    """Save generated content for a product or blog section. Accepts platform, channel_type (defaults: facebook, blog_post)."""
     try:
         data = request.get_json()
+        platform, channel_type = data.get('platform') or 'facebook', data.get('channel_type') or data.get('content_type') or 'blog_post'
         product_id = data.get('product_id')
         section_id = data.get('section_id')
         content_type = data.get('content_type', 'product')
@@ -84,7 +89,7 @@ def save_generated_content():
         with db_manager.get_connection() as conn:
             cur = conn.cursor()
             
-            # Check if content already exists for this item and content_type
+            # Check if content already exists for this item and content_type (platform/channel_type set on write)
             cur.execute(f"""
                 SELECT id FROM posting_queue 
                 WHERE {id_field} = %s AND content_type = %s AND status = 'draft'
@@ -97,27 +102,27 @@ def save_generated_content():
                 if content_type == 'blog_post' and section_image_url:
                     cur.execute(f"""
                         UPDATE posting_queue 
-                        SET generated_content = %s, product_image = %s, updated_at = NOW()
+                        SET generated_content = %s, product_image = %s, platform = %s, channel_type = %s, updated_at = NOW()
                         WHERE {id_field} = %s AND content_type = %s AND status = 'draft'
-                    """, (generated_content, section_image_url, item_id, content_type))
+                    """, (generated_content, section_image_url, platform, channel_type, item_id, content_type))
                 else:
                     cur.execute(f"""
                         UPDATE posting_queue 
-                        SET generated_content = %s, updated_at = NOW()
+                        SET generated_content = %s, platform = %s, channel_type = %s, updated_at = NOW()
                         WHERE {id_field} = %s AND content_type = %s AND status = 'draft'
-                    """, (generated_content, item_id, content_type))
+                    """, (generated_content, platform, channel_type, item_id, content_type))
             else:
-                # Insert new content as draft
+                # Insert new content as draft (platform-aware)
                 if content_type == 'blog_post' and section_image_url:
                     cur.execute(f"""
-                        INSERT INTO posting_queue ({id_field}, content_type, generated_content, product_image, status, created_at, updated_at)
-                        VALUES (%s, %s, %s, %s, 'draft', NOW(), NOW())
-                    """, (item_id, content_type, generated_content, section_image_url))
+                        INSERT INTO posting_queue ({id_field}, content_type, generated_content, product_image, status, platform, channel_type, created_at, updated_at)
+                        VALUES (%s, %s, %s, %s, 'draft', %s, %s, NOW(), NOW())
+                    """, (item_id, content_type, generated_content, section_image_url, platform, channel_type))
                 else:
                     cur.execute(f"""
-                        INSERT INTO posting_queue ({id_field}, content_type, generated_content, status, created_at, updated_at)
-                        VALUES (%s, %s, %s, 'draft', NOW(), NOW())
-                    """, (item_id, content_type, generated_content))
+                        INSERT INTO posting_queue ({id_field}, content_type, generated_content, status, platform, channel_type, created_at, updated_at)
+                        VALUES (%s, %s, %s, 'draft', %s, %s, NOW(), NOW())
+                    """, (item_id, content_type, generated_content, platform, channel_type))
             
             conn.commit()
             
@@ -135,8 +140,10 @@ def save_generated_content():
 
 @bp.route('/api/syndication/get-generated-content/<int:item_id>/<content_type>')
 def get_generated_content(item_id, content_type):
-    """Get generated content for a product or blog section and content type."""
+    """Get generated content for a product or blog section. Accepts platform, channel_type (query, defaults: facebook, blog_post)."""
     try:
+        platform = request.args.get('platform', 'facebook')
+        channel_type_param = request.args.get('channel_type') or request.args.get('content_type') or 'blog_post'
         with db_manager.get_connection() as conn:
             cur = conn.cursor(row_factory=psycopg.rows.dict_row)
             
@@ -146,12 +153,12 @@ def get_generated_content(item_id, content_type):
             else:
                 id_field = 'section_id'
             
-            # Query for generated content
+            # Query for generated content (filter by platform/channel_type when present in DB)
             cur.execute(f"""
                 SELECT generated_content as content, created_at, updated_at 
                 FROM posting_queue 
-                WHERE {id_field} = %s AND content_type = %s AND status IN ('draft', 'ready', 'pending')
-            """, (item_id, content_type))
+                WHERE {id_field} = %s AND content_type = %s AND COALESCE(platform, 'facebook') = %s AND COALESCE(channel_type, 'blog_post') = %s AND status IN ('draft', 'ready', 'pending')
+            """, (item_id, content_type, platform, channel_type_param))
             
             result = cur.fetchone()
             
@@ -178,9 +185,11 @@ def get_generated_content(item_id, content_type):
 
 @bp.route('/api/syndication/update-queue-status', methods=['POST'])
 def update_queue_status():
-    """Update the status of a queue item from 'draft' to 'ready' and schedule it."""
+    """Update the status of a queue item from 'draft' to 'ready' and schedule it. Accepts platform, channel_type (defaults: facebook, blog_post)."""
     try:
         data = request.get_json()
+        platform = data.get('platform') or 'facebook'
+        channel_type_param = data.get('channel_type') or data.get('content_type') or 'blog_post'
         product_id = data.get('product_id')
         section_id = data.get('section_id')
         content_type = data.get('content_type', 'product')
@@ -199,7 +208,7 @@ def update_queue_status():
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
                 # Get the next available posting slot for this platform and content type
-                next_slot = get_next_posting_slot(cursor, platform='facebook', content_type=content_type)
+                next_slot = get_next_posting_slot(cursor, platform=platform, content_type=content_type)
                 
                 if not next_slot:
                     return jsonify({
@@ -207,7 +216,7 @@ def update_queue_status():
                         'error': 'No available posting slots found'
                     }), 400
                 
-                # Update the status and schedule the post
+                # Update the status and schedule the post (match by item, content_type; support COALESCE for legacy NULL platform/channel_type)
                 cursor.execute(f"""
                     UPDATE posting_queue 
                     SET status = %s, 
@@ -216,10 +225,12 @@ def update_queue_status():
                         scheduled_timestamp = %s,
                         schedule_name = %s,
                         timezone = %s,
+                        platform = %s,
+                        channel_type = %s,
                         updated_at = NOW()
                     WHERE {id_field} = %s AND content_type = %s AND status IN ('draft', 'pending', 'ready')
                 """, (status, next_slot['date'], next_slot['time'], next_slot['timestamp'], 
-                      next_slot['schedule_name'], next_slot['timezone'], item_id, content_type))
+                      next_slot['schedule_name'], next_slot['timezone'], platform, channel_type_param, item_id, content_type))
                 
                 if cursor.rowcount > 0:
                     conn.commit()
@@ -327,9 +338,8 @@ def syndication():
 
 @bp.route('/syndication/<platform_name>/<channel_type>')
 def syndication_platform_channel(platform_name, channel_type):
-    """Platform-specific syndication configuration."""
+    """Unified workbench for blog_post (FB + IG); carousel at instagram/carousel; other channels per-template."""
     try:
-        # Create fallback data for now to avoid database issues
         platform = {
             'id': 1,
             'name': platform_name,
@@ -337,8 +347,6 @@ def syndication_platform_channel(platform_name, channel_type):
             'logo_url': f'/static/images/platforms/{platform_name}.png',
             'development_status': 'active'
         }
-        
-        # Define channel type configurations with proper icons and display names
         channel_configs = {
             'product_post': {
                 'display_name': 'Product Posts',
@@ -348,16 +356,19 @@ def syndication_platform_channel(platform_name, channel_type):
             'blog_post': {
                 'display_name': 'Blog Posts',
                 'icon': 'newspaper',
-                'description': 'Automated Facebook posts featuring blog content and articles'
+                'description': 'Syndication workbench: blog content with prompt transparency and run history'
+            },
+            'carousel': {
+                'display_name': 'Carousel',
+                'icon': 'images',
+                'description': 'Instagram carousel posts from blog articles'
             }
         }
-        
         channel_config = channel_configs.get(channel_type, {
             'display_name': channel_type.replace('_', ' ').title(),
             'icon': 'cog',
             'description': f'{channel_type.replace("_", " ").title()} channel configuration'
         })
-        
         channel_type_info = {
             'id': 1,
             'name': channel_type,
@@ -365,14 +376,23 @@ def syndication_platform_channel(platform_name, channel_type):
             'icon': channel_config['icon'],
             'description': channel_config['description']
         }
-        
         content_process = {
             'id': 1,
             'name': f'{platform_name}_{channel_type}',
             'config': {},
             'status': 'active'
         }
-        
+        # Phase H-4: one workbench for (facebook, blog_post) and (instagram, blog_post); carousel at instagram/carousel only
+        if platform_name == 'instagram' and channel_type == 'carousel':
+            return render_template('launchpad/syndication/instagram/carousel.html',
+                                 platform=platform,
+                                 channel_type=channel_type_info,
+                                 content_process=content_process)
+        if channel_type == 'blog_post':
+            return render_template('launchpad/syndication/workbench.html',
+                                 platform=platform,
+                                 channel_type=channel_type_info,
+                                 content_process=content_process)
         return render_template(f'launchpad/syndication/{platform_name}/{channel_type}.html',
                              platform=platform,
                              channel_type=channel_type_info,
@@ -411,8 +431,10 @@ def get_posts():
 
 @bp.route('/api/syndication/posts')
 def get_syndication_posts():
-    """Get posts for syndication."""
+    """Get posts for syndication. Accepts platform, channel_type (query, defaults: facebook, blog_post) for API consistency."""
     try:
+        platform = request.args.get('platform', 'facebook')
+        channel_type = request.args.get('channel_type') or request.args.get('content_type', 'blog_post')
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT p.id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug,
@@ -436,8 +458,10 @@ def get_syndication_posts():
 
 @bp.route('/api/syndication/posts/<int:post_id>')
 def get_syndication_post_details(post_id):
-    """Get details for a specific syndication post."""
+    """Get details for a syndication post. Accepts platform, channel_type (query, defaults: facebook, blog_post) for API consistency."""
     try:
+        platform = request.args.get('platform', 'facebook')
+        channel_type = request.args.get('channel_type') or request.args.get('content_type', 'blog_post')
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT p.id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug,
@@ -467,8 +491,10 @@ def get_syndication_post_details(post_id):
 
 @bp.route('/api/syndication/post-sections/<int:post_id>')
 def get_post_sections(post_id):
-    """Get sections for a specific post."""
+    """Get sections for a post. Accepts platform, channel_type (query, defaults: facebook, blog_post) for API consistency."""
     try:
+        platform = request.args.get('platform', 'facebook')
+        channel_type = request.args.get('channel_type') or request.args.get('content_type', 'blog_post')
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT id, section_heading, section_order, section_description, 
@@ -531,8 +557,10 @@ def social_media_command_center():
 
 @bp.route('/api/queue')
 def get_queue():
-    """Get unified queue data for the command center."""
+    """Get unified queue data. Accepts platform, channel_type (query, defaults: facebook, blog_post). Filters by platform/channel_type."""
     try:
+        platform = request.args.get('platform', 'facebook')
+        channel_type = request.args.get('channel_type') or request.args.get('content_type', 'blog_post')
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
@@ -552,9 +580,11 @@ def get_queue():
                 LEFT JOIN clan_products cp ON pq.product_id = cp.id
                 LEFT JOIN post_section ps ON pq.section_id = ps.id
                 WHERE pq.status IN ('pending', 'ready', 'published', 'failed')
+                  AND COALESCE(pq.platform, 'facebook') = %s
+                  AND COALESCE(pq.channel_type, 'blog_post') = %s
                 ORDER BY pq.scheduled_timestamp ASC NULLS LAST, pq.created_at ASC
                 LIMIT 50
-            """)
+            """, (platform, channel_type))
             
             items = cursor.fetchall()
             
@@ -635,28 +665,38 @@ def delete_queue_item(item_id):
 
 @bp.route('/api/queue/clear', methods=['POST'])
 def clear_queue():
-    """Clear items from the queue, optionally filtered by content type."""
+    """Clear items from the queue. Accepts platform, channel_type, content_type (defaults: facebook, blog_post). Filters by platform/channel_type (and content_type if provided)."""
     try:
         data = request.get_json() or {}
+        platform = data.get('platform', 'facebook')
+        channel_type = data.get('channel_type') or data.get('content_type', 'blog_post')
         content_type = data.get('content_type')
         
         with db_manager.get_connection() as conn:
             with conn.cursor() as cursor:
                 if content_type:
-                    # Get count before deletion for specific content type
-                    cursor.execute("SELECT COUNT(*) FROM posting_queue WHERE content_type = %s", (content_type,))
+                    # Get count before deletion for platform/channel_type/content_type
+                    cursor.execute("""
+                        SELECT COUNT(*) FROM posting_queue 
+                        WHERE COALESCE(platform, 'facebook') = %s AND COALESCE(channel_type, 'blog_post') = %s AND content_type = %s
+                    """, (platform, channel_type, content_type))
                     count = cursor.fetchone()['count']
-                    
-                    # Delete items for specific content type
-                    cursor.execute("DELETE FROM posting_queue WHERE content_type = %s", (content_type,))
+                    cursor.execute("""
+                        DELETE FROM posting_queue 
+                        WHERE COALESCE(platform, 'facebook') = %s AND COALESCE(channel_type, 'blog_post') = %s AND content_type = %s
+                    """, (platform, channel_type, content_type))
                     message = f'All {content_type} queue items deleted successfully'
                 else:
-                    # Get count before deletion for all items
-                    cursor.execute("SELECT COUNT(*) FROM posting_queue")
+                    # Get count and delete for platform/channel_type only
+                    cursor.execute("""
+                        SELECT COUNT(*) FROM posting_queue 
+                        WHERE COALESCE(platform, 'facebook') = %s AND COALESCE(channel_type, 'blog_post') = %s
+                    """, (platform, channel_type))
                     count = cursor.fetchone()['count']
-                    
-                    # Delete all items
-                    cursor.execute("DELETE FROM posting_queue")
+                    cursor.execute("""
+                        DELETE FROM posting_queue 
+                        WHERE COALESCE(platform, 'facebook') = %s AND COALESCE(channel_type, 'blog_post') = %s
+                    """, (platform, channel_type))
                     message = 'All queue items deleted successfully'
                 
                 conn.commit()
@@ -677,11 +717,10 @@ def clear_queue():
 # Scheduling API endpoints
 @bp.route('/api/syndication/schedules')
 def get_schedules():
-    """Get posting schedules filtered by platform and content type."""
+    """Get posting schedules. Accepts platform, channel_type (or content_type) (query, defaults: facebook, blog_post)."""
     try:
-        # Get filter parameters from query string
         platform = request.args.get('platform', 'facebook')
-        content_type = request.args.get('content_type', 'product')
+        content_type = request.args.get('channel_type') or request.args.get('content_type', 'blog_post')
         
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -719,7 +758,7 @@ def get_schedules():
 
 @bp.route('/api/syndication/schedules', methods=['POST'])
 def add_schedule():
-    """Add a new posting schedule."""
+    """Add a new posting schedule. Accepts platform, channel_type (or content_type) (defaults: facebook, blog_post)."""
     try:
         data = request.get_json()
         name = data.get('name') or 'Schedule'
@@ -727,7 +766,7 @@ def add_schedule():
         timezone = data.get('timezone') or 'UTC'
         days = data.get('days', [])
         platform = data.get('platform') or 'facebook'
-        content_type = data.get('content_type') or 'product'
+        content_type = data.get('channel_type') or data.get('content_type') or 'blog_post'
         
         if not time or not days:
             return jsonify({"success": False, "error": "Missing required fields"}), 400
@@ -788,7 +827,7 @@ def add_schedule():
 
 @bp.route('/api/syndication/llm-prompts/<int:process_id>')
 def get_llm_prompts(process_id):
-    """Get LLM prompts for a specific process from process_configurations table."""
+    """Get LLM prompts for a specific process. Accepts platform, channel_type (query, defaults: facebook, blog_post) for API consistency."""
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -825,9 +864,11 @@ def get_llm_prompts(process_id):
 
 @bp.route('/api/syndication/llm-prompts/<int:process_id>', methods=['PUT'])
 def update_llm_prompt(process_id):
-    """Update a specific LLM prompt in process_configurations table."""
+    """Update a specific LLM prompt. Accepts platform, channel_type (body, defaults: facebook, blog_post) for API consistency."""
     try:
         data = request.get_json()
+        platform = data.get('platform') or 'facebook'
+        channel_type = data.get('channel_type') or data.get('content_type') or 'blog_post'
         config_key = data.get('config_key')
         config_value = data.get('config_value')
         
@@ -882,8 +923,10 @@ def delete_schedule(schedule_id):
 
 @bp.route('/api/syndication/schedules/test')
 def test_schedules():
-    """Test all schedules and return preview."""
+    """Test schedules. Accepts platform, channel_type (query, defaults: facebook, blog_post). Filters by platform/content_type."""
     try:
+        platform = request.args.get('platform', 'facebook')
+        content_type = request.args.get('channel_type') or request.args.get('content_type', 'blog_post')
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 SELECT id, time, timezone, days, is_active,
@@ -894,9 +937,9 @@ def test_schedules():
                            ELSE 'Custom Schedule'
                        END as name
                 FROM daily_posts_schedule
-                WHERE is_active = true
+                WHERE is_active = true AND platform = %s AND content_type = %s
                 ORDER BY created_at DESC
-            """)
+            """, (platform, content_type))
             schedules = cursor.fetchall()
             
             if not schedules:
@@ -946,10 +989,13 @@ def test_schedules():
 
 @bp.route('/api/syndication/schedules/clear', methods=['POST'])
 def clear_schedules():
-    """Clear all posting schedules."""
+    """Clear posting schedules. Accepts platform, channel_type (body, defaults: facebook, blog_post). Clears only that slice when provided."""
     try:
+        data = request.get_json(silent=True) or {}
+        platform = data.get('platform', 'facebook')
+        content_type = data.get('channel_type') or data.get('content_type', 'blog_post')
         with db_manager.get_cursor() as cursor:
-            cursor.execute("DELETE FROM daily_posts_schedule")
+            cursor.execute("DELETE FROM daily_posts_schedule WHERE platform = %s AND content_type = %s", (platform, content_type))
             
             return jsonify({
                 "success": True,
@@ -961,17 +1007,20 @@ def clear_schedules():
 
 @bp.route('/api/syndication/today-status')
 def get_today_status():
-    """Get today's posting status."""
+    """Get today's posting status. Accepts platform, channel_type (query, defaults: facebook, blog_post). Filters by platform."""
     try:
+        platform = request.args.get('platform', 'facebook')
+        channel_type = request.args.get('channel_type') or request.args.get('content_type', 'blog_post')
         with db_manager.get_cursor() as cursor:
-            # Check if there's a post for today
             cursor.execute("""
                 SELECT id, status, created_at, scheduled_date
                 FROM posting_queue
                 WHERE DATE(created_at) = CURRENT_DATE
+                  AND COALESCE(platform, 'facebook') = %s
+                  AND COALESCE(channel_type, 'blog_post') = %s
                 ORDER BY created_at DESC
                 LIMIT 1
-            """)
+            """, (platform, channel_type))
             post = cursor.fetchone()
             
             if post:
@@ -1261,40 +1310,76 @@ def execute_facebook_post(queue_item_id):
         logger.error(f"Error in execute_facebook_post: {e}")
         return {'success': False, 'message': str(e)}
 
+# Phase H-5.1: Error shape when no current output is set (no silent fallback)
+NO_CURRENT_OUTPUT_RESPONSE = (
+    {
+        'success': False,
+        'error': 'NO_CURRENT_OUTPUT',
+        'message': 'No current output selected for this item. Select an output in the workbench before publishing.',
+    },
+    400,
+)
+
+
 @bp.route('/api/syndication/post-now', methods=['POST'])
 def post_now():
-    """Post content to Facebook with product image - posts to both pages."""
+    """Post content to platform. Phase H-5.1: For blog_post, publish only the run marked current in workbench_current_outputs."""
     try:
-        data = request.get_json()
-        
-        # Handle both old format (from daily-product-posts page) and new format (from timeline)
-        item_id = data.get('item_id')
-        product_id = data.get('product_id')
-        content = data.get('content')
-        content_type = data.get('content_type')
+        data = request.get_json() or {}
         platform = data.get('platform', 'facebook')
-        
-        if item_id:
-            # New format: posting from timeline - use shared function
-            result = execute_facebook_post(item_id)
-            
-            if result['success']:
-                return jsonify({
-                    'success': True, 
-                    'message': result['message'],
-                    'platform_post_ids': result.get('platform_post_ids', [])
-                })
-            else:
-                return jsonify({'success': False, 'error': result['message']})
-        
+        channel_type = data.get('channel_type') or data.get('content_type', 'blog_post')
+        item_id = data.get('item_id')
+        content_ref = data.get('content_ref')
+
+        # Workbench path: (content_ref, platform, channel_type) -> resolve to posting_queue id
+        if content_ref is not None and (platform or channel_type):
+            resolved_id = resolve_current_posting_queue_id(
+                int(content_ref), platform, channel_type, 'primary'
+            )
+            if resolved_id is None:
+                return jsonify(NO_CURRENT_OUTPUT_RESPONSE[0]), NO_CURRENT_OUTPUT_RESPONSE[1]
+            item_id = resolved_id
+        elif item_id:
+            # Timeline path: validate that item_id is the current output for blog_post
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, post_id, platform, channel_type, content_type
+                    FROM posting_queue WHERE id = %s
+                """, (item_id,))
+                row = cursor.fetchone()
+            if not row:
+                return jsonify({'success': False, 'error': 'Queue item not found'}), 404
+            ct = (row.get('content_type') or '').strip().lower()
+            if ct == 'blog_post' and row.get('post_id') is not None:
+                resolved_id = resolve_current_posting_queue_id(
+                    row['post_id'],
+                    row.get('platform') or platform,
+                    row.get('channel_type') or channel_type,
+                    'primary',
+                )
+                if resolved_id is None:
+                    return jsonify(NO_CURRENT_OUTPUT_RESPONSE[0]), NO_CURRENT_OUTPUT_RESPONSE[1]
+                if resolved_id != item_id:
+                    return jsonify({
+                        'success': False,
+                        'error': 'NO_CURRENT_OUTPUT',
+                        'message': 'Selected item is not the current output. Select this output in the workbench first.',
+                    }), 400
+            # Non-blog_post or validated blog_post: proceed
         else:
-            # Old format: legacy posting from daily-product-posts page
-            # This is kept for backward compatibility but should be deprecated
-            return jsonify({'success': False, 'error': 'Legacy posting format not supported. Use timeline posting instead.'})
-            
+            return jsonify({'success': False, 'error': 'Item ID or (content_ref, platform, channel_type) is required'}), 400
+
+        result = execute_facebook_post(item_id)
+        if result['success']:
+            return jsonify({
+                'success': True,
+                'message': result['message'],
+                'platform_post_ids': result.get('platform_post_ids', []),
+            })
+        return jsonify({'success': False, 'error': result['message']}), 500
     except Exception as e:
         logger.error(f"Error in post_now: {e}")
-        return jsonify({'success': False, 'error': str(e)})
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/syndication/pieces')
 def get_syndication_pieces():
@@ -1629,10 +1714,77 @@ def replenish_queue(config):
 # - blueprints/launchpad/publishing_validation.py (validation route)
 # All function bodies have been removed from this file to avoid duplication.
 
+def _get_hybrid_status_for_launchpad():
+    """Phase 2.6: Fetch latest hybrid_run_summaries row, acknowledge it, return dict for Hybrid Status panel."""
+    hybrid_status = {"has_run": False, "last_run_text": "Hybrid has never been run", "coverage_sentence": "", "coverage_status": "", "action_required_bullets": [], "calendar_url": "/planning/calendar?tab=week-view", "from_date": None}
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, run_timestamp, platform, from_date, weeks_ahead,
+                       coverage_status, run_outcome, confidence_statement, summary_text,
+                       any_human_action_required, human_action_counts
+                FROM hybrid_run_summaries
+                WHERE platform = %s
+                ORDER BY run_timestamp DESC
+                LIMIT 1
+            """, ("instagram",))
+            row = cursor.fetchone()
+        if not row:
+            return hybrid_status
+        # Acknowledge this run so header alert does not nag until state changes (Phase 2.6)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                "UPDATE hybrid_run_summaries SET acknowledged_at = NOW() WHERE id = %s",
+                (row["id"],),
+            )
+        run_ts = row["run_timestamp"]
+        if run_ts.tzinfo is None and hasattr(run_ts, "replace"):
+            run_ts = run_ts.replace(tzinfo=pytz.UTC)
+        try:
+            if run_ts.tzinfo:
+                run_ts = run_ts.astimezone(pytz.timezone("Europe/London"))
+        except Exception:
+            pass
+        last_run_str = run_ts.strftime("%a %d %b %Y at %H:%M") if hasattr(run_ts, "strftime") else str(run_ts)
+        hybrid_status["has_run"] = True
+        hybrid_status["last_run_text"] = f"Last Hybrid run: {last_run_str}"
+        hybrid_status["coverage_sentence"] = row.get("confidence_statement") or ""
+        hybrid_status["coverage_status"] = row.get("coverage_status") or ""
+        from_date = row.get("from_date")
+        if from_date:
+            if hasattr(from_date, "isocalendar"):
+                y, w, _ = from_date.isocalendar()
+            else:
+                from datetime import datetime as dt
+                d = dt.strptime(str(from_date)[:10], "%Y-%m-%d").date()
+                y, w, _ = d.isocalendar()
+            hybrid_status["calendar_url"] = f"/planning/calendar?year={y}&week={w}&tab=week-view"
+            hybrid_status["from_date"] = from_date.isoformat() if hasattr(from_date, "isoformat") else str(from_date)
+        counts = row.get("human_action_counts") or {}
+        if isinstance(counts, str):
+            try:
+                counts = json.loads(counts)
+            except Exception:
+                counts = {}
+        bullets = []
+        if counts.get("missing_image"):
+            bullets.append(f"Missing images: {counts['missing_image']}")
+        if counts.get("editorial_steer_pending"):
+            bullets.append(f"Editorial steer pending: {counts['editorial_steer_pending']}")
+        if counts.get("generation_failed"):
+            bullets.append(f"Generation failed: {counts['generation_failed']}")
+        hybrid_status["action_required_bullets"] = bullets
+        hybrid_status["any_human_action_required"] = bool(row.get("any_human_action_required"))
+    except Exception as e:
+        logger.warning("Hybrid status for launchpad: %s", e)
+    return hybrid_status
+
+
 @bp.route('/one-click-publication')
 def one_click_publication():
     """One-Click Publication page - automated multi-channel publication creation."""
-    return render_template('launchpad/one_click_publication.html')
+    hybrid_status = _get_hybrid_status_for_launchpad()
+    return render_template('launchpad/one_click_publication.html', hybrid_status=hybrid_status)
 
 @bp.route('/one-click-blog')
 def one_click_blog():

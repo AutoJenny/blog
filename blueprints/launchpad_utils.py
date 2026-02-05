@@ -4,9 +4,74 @@
 import logging
 import json
 from datetime import datetime, date, timedelta
+from typing import Optional
 from config.database import db_manager
 
 logger = logging.getLogger(__name__)
+
+
+# --- Phase H-5.1: Authoritative resolver for publishable output ---
+
+def resolve_current_posting_queue_id(
+    content_ref: int,
+    platform: str,
+    channel_type: str,
+    slot_identifier: str = 'primary',
+) -> Optional[int]:
+    """
+    Resolve (content_ref, platform, channel_type, slot) to the posting_queue.id
+    that is the current output for the workbench. Used by post_now and schedule execution.
+
+    Canonical path:
+        workbench_current_outputs.run_id -> generation_runs.output_refs.posting_queue_id
+        -> validate queue row exists and matches platform/channel -> return id.
+
+    Returns:
+        posting_queue id, or None if no current output is set or validation fails.
+    No fallback logic. No guessing.
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT run_id FROM workbench_current_outputs
+                WHERE content_ref = %s AND platform = %s AND channel_type = %s AND slot_identifier = %s
+            """, (content_ref, platform, channel_type, slot_identifier))
+            row = cursor.fetchone()
+        if not row:
+            return None
+
+        run_id = row['run_id']
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT output_refs FROM generation_runs WHERE id = %s
+            """, (run_id,))
+            run_row = cursor.fetchone()
+        if not run_row or not run_row.get('output_refs'):
+            return None
+
+        refs = run_row['output_refs']
+        if isinstance(refs, str):
+            refs = json.loads(refs) if refs else {}
+        posting_queue_id = refs.get('posting_queue_id') if isinstance(refs, dict) else None
+        if posting_queue_id is None:
+            return None
+
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, platform, channel_type FROM posting_queue
+                WHERE id = %s
+            """, (posting_queue_id,))
+            pq = cursor.fetchone()
+        if not pq:
+            return None
+        if (str(pq['platform'] or '').strip().lower() != str(platform).strip().lower() or
+                str(pq['channel_type'] or '').strip().lower() != str(channel_type).strip().lower()):
+            return None
+
+        return int(pq['id'])
+    except Exception as e:
+        logger.warning(f"resolve_current_posting_queue_id error: {e}")
+        return None
 
 def get_next_posting_slot(cursor, platform='facebook', content_type='product'):
     """Calculate the next available posting slot based on schedules and existing queue."""
