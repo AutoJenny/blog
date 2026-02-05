@@ -38,7 +38,11 @@ def register_routes(bp):
 
     @bp.route('/api/posts/<int:post_id>/generate-header-image', methods=['POST'])
     def api_generate_header_image(post_id):
-        """Generate header image: landscape and portrait, then optimize both"""
+        """Generate header image: landscape and portrait, then optimize both.
+
+        Phase I-1A: Record generation_runs rows for blog_post header imaging.
+        """
+        run_id = None
         try:
             data = request.get_json()
             image_prompt = data.get('image_prompt', '').strip()
@@ -53,6 +57,41 @@ def register_routes(bp):
             landscape_size = parameters.get('size', '1536x1024')
             portrait_size = parameters.get('portrait_size', '1024x1536')
             quality = parameters.get('quality', 'high')
+
+            # Validate model before creating run record
+            supported_model = (
+                model_name == 'gpt-image-1'
+                or model_name.startswith('dall-e')
+                or model_name.startswith('openai')
+                or model_name.startswith('sdxl')
+            )
+            if not supported_model:
+                return jsonify({'error': f'Unknown model: {model_name}'}), 400
+
+            # Phase I-1A: create run record for this header image generation
+            platform = data.get('platform', 'facebook')
+            channel_type = data.get('channel_type') or data.get('content_type', 'blog_post')
+            engine_id = f"image/{model_name}"
+            trigger = data.get('trigger', 'user')
+            prompt_snapshot = {'image_prompt': image_prompt}
+
+            try:
+                run_id = _create_run_record(
+                    content_ref=post_id,
+                    platform=platform,
+                    channel_type=channel_type,
+                    engine_id=engine_id,
+                    trigger=trigger,
+                    prompt_snapshot=prompt_snapshot,
+                    slot_identifier='primary',
+                )
+            except Exception as e:
+                logger.error(f"[HEADER_IMAGE] Failed to create image run record for post {post_id}: {e}", exc_info=True)
+                return jsonify({'error': 'Failed to create image run record'}), 500
+
+            if not run_id:
+                logger.error(f"[HEADER_IMAGE] _create_run_record returned None for post {post_id}")
+                return jsonify({'error': 'Failed to create image run record'}), 500
             
             # Import generators
             from blueprints.imaging_generators import imaging_generate_gpt_image_1, imaging_generate_dalle_image, imaging_generate_sdxl_image
@@ -72,7 +111,13 @@ def register_routes(bp):
                 return jsonify({'error': f'Unknown model: {model_name}'}), 400
             
             if not landscape_result.get('success'):
-                return jsonify({'error': f'Landscape generation failed: {landscape_result.get("error")}'}), 500
+                error_msg = f'Landscape generation failed: {landscape_result.get("error")}'
+                if run_id:
+                    try:
+                        _complete_run_record(run_id, 'failed', None, error_msg)
+                    except Exception:
+                        logger.error(f"[HEADER_IMAGE] Failed to mark run {run_id} as failed after landscape error", exc_info=True)
+                return jsonify({'error': error_msg}), 500
             
             # Generate portrait image
             logger.info(f"[HEADER_IMAGE] Generating portrait image for post {post_id}")
@@ -89,7 +134,13 @@ def register_routes(bp):
                 return jsonify({'error': f'Unknown model: {model_name}'}), 400
             
             if not portrait_result.get('success'):
-                return jsonify({'error': f'Portrait generation failed: {portrait_result.get("error")}'}), 500
+                error_msg = f'Portrait generation failed: {portrait_result.get("error")}'
+                if run_id:
+                    try:
+                        _complete_run_record(run_id, 'failed', None, error_msg)
+                    except Exception:
+                        logger.error(f"[HEADER_IMAGE] Failed to mark run {run_id} as failed after portrait error", exc_info=True)
+                return jsonify({'error': error_msg}), 500
             
             # Optimize both images
             logger.info(f"[HEADER_IMAGE] Optimizing images for post {post_id}")
@@ -97,7 +148,13 @@ def register_routes(bp):
             optimize_result = optimize_image_with_watermark(post_id, 'header', parameters)
             
             if not optimize_result.get('success'):
-                return jsonify({'error': f'Optimization failed: {optimize_result.get("error")}'}), 500
+                error_msg = f'Optimization failed: {optimize_result.get("error")}'
+                if run_id:
+                    try:
+                        _complete_run_record(run_id, 'failed', None, error_msg)
+                    except Exception:
+                        logger.error(f"[HEADER_IMAGE] Failed to mark run {run_id} as failed after optimization error", exc_info=True)
+                return jsonify({'error': error_msg}), 500
             
             # Save optimized image to database (same logic as api_optimize_header_image)
             optimized_path = optimize_result.get('optimized_path')
@@ -195,18 +252,39 @@ def register_routes(bp):
                     logger.info(f"[HEADER_IMAGE] Saved optimized image to database: image_id={image_id}, path={optimized_path}")
             
             # Return success with paths
-            return jsonify({
+            response = {
                 'success': True,
                 'landscape_raw': landscape_result.get('image_path'),
                 'portrait_raw': portrait_result.get('image_path'),
                 'landscape_optimized': optimize_result.get('optimized_path'),
-                'portrait_optimized': optimize_result.get('portrait_path')
-            })
+                'portrait_optimized': optimize_result.get('portrait_path'),
+            }
+
+            if run_id:
+                try:
+                    output_refs = {
+                        'type': 'blog_post_header_image',
+                        'post_id': post_id,
+                        'landscape_raw': response['landscape_raw'],
+                        'portrait_raw': response['portrait_raw'],
+                        'landscape_optimized': response['landscape_optimized'],
+                        'portrait_optimized': response['portrait_optimized'],
+                    }
+                    _complete_run_record(run_id, 'success', output_refs, None)
+                except Exception:
+                    logger.error(f"[HEADER_IMAGE] Failed to complete image run record {run_id}", exc_info=True)
+
+            return jsonify(response)
             
         except Exception as e:
             logger.error(f"Error generating header image for post {post_id}: {e}")
             import traceback
             logger.error(traceback.format_exc())
+            if run_id:
+                try:
+                    _complete_run_record(run_id, 'failed', None, str(e))
+                except Exception:
+                    logger.error(f"[HEADER_IMAGE] Failed to mark run {run_id} as failed after exception", exc_info=True)
             return jsonify({'error': str(e)}), 500
 
     @bp.route('/api/posts/<int:post_id>/get-header-image', methods=['GET'])

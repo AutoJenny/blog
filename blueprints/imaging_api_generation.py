@@ -13,8 +13,9 @@ import re
 from blueprints.imaging_generators import (
     imaging_generate_dalle_image,
     imaging_generate_gpt_image_1,
-    imaging_generate_sdxl_image
+    imaging_generate_sdxl_image,
 )
+from blueprints.launchpad.workbench_api import _create_run_record, _complete_run_record
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,12 @@ def register_routes(bp):
         """
         Generate landscape and/or portrait images for a section.
         Reads prompt from database, uses model and parameters from request.
+
+        Phase I-1A: For blog_post images, record an immutable generation_runs row
+        with the exact image_prompt used and engine_id before calling the generator,
+        and complete the run after generation (success/failed) with output_refs.
         """
+        run_id = None
         try:
             data = request.get_json() or {}
             model_name = data.get('model_name', 'gpt-image-1')
@@ -96,12 +102,39 @@ def register_routes(bp):
                 section = cursor.fetchone()
                 if not section:
                     return jsonify({'success': False, 'error': 'Section not found'})
+
+            # Phase I-1A: create a single run record for this blog_post image generation
+            # (section-level, primary slot). Platform/channel_type are API-level parameters;
+            # default to facebook/blog_post for compatibility if not provided.
+            platform = data.get('platform', 'facebook')
+            channel_type = data.get('channel_type') or data.get('content_type', 'blog_post')
+            engine_id = f"image/{model_name}"
+            trigger = data.get('trigger', 'user')
+            prompt_snapshot = {'image_prompt': image_prompt}
+
+            try:
+                run_id = _create_run_record(
+                    content_ref=post_id,
+                    platform=platform,
+                    channel_type=channel_type,
+                    engine_id=engine_id,
+                    trigger=trigger,
+                    prompt_snapshot=prompt_snapshot,
+                    slot_identifier='primary',
+                )
+            except Exception as e:
+                logger.error(f"[IMAGE_GENERATION] Failed to create image run record for post {post_id}, section {resolved_section_id}: {e}", exc_info=True)
+                return jsonify({'success': False, 'error': 'Failed to create image run record'}), 500
+
+            if not run_id:
+                logger.error(f"[IMAGE_GENERATION] _create_run_record returned None for post {post_id}, section {resolved_section_id}")
+                return jsonify({'success': False, 'error': 'Failed to create image run record'}), 500
             
             results = {
                 'landscape_generated': False,
                 'portrait_generated': False,
                 'landscape_path': None,
-                'portrait_path': None
+                'portrait_path': None,
             }
             
             # Generate landscape image if requested
@@ -196,13 +229,49 @@ def register_routes(bp):
             if 'portrait_error' in results:
                 response_data['portrait_error'] = results['portrait_error']
             
-            logger.info(f"[IMAGE_GENERATION] Final response for section {resolved_section_id}: landscape={results['landscape_generated']}, portrait={results['portrait_generated']}")
-            
+            logger.info(
+                f"[IMAGE_GENERATION] Final response for section {resolved_section_id}: "
+                f"landscape={results['landscape_generated']}, portrait={results['portrait_generated']}"
+            )
+
+            # Phase I-1A: complete run record with output_refs and status
+            if run_id:
+                try:
+                    output_refs = {
+                        'type': 'blog_post_section_image',
+                        'post_id': post_id,
+                        'section_id': resolved_section_id,
+                        'landscape_generated': results['landscape_generated'],
+                        'portrait_generated': results['portrait_generated'],
+                        'landscape_path': results['landscape_path'],
+                        'portrait_path': results['portrait_path'],
+                    }
+                    if 'landscape_error' in results:
+                        output_refs['landscape_error'] = results['landscape_error']
+                    if 'portrait_error' in results:
+                        output_refs['portrait_error'] = results['portrait_error']
+
+                    # Success if at least one orientation generated; otherwise failed.
+                    run_status = 'success' if (results['landscape_generated'] or results['portrait_generated']) else 'failed'
+                    error_message = None
+                    if run_status == 'failed':
+                        error_message = results.get('portrait_error') or results.get('landscape_error')
+
+                    _complete_run_record(run_id, run_status, output_refs, error_message)
+                except Exception as e:
+                    logger.error(f"[IMAGE_GENERATION] Failed to complete image run record {run_id}: {e}", exc_info=True)
+
             return jsonify(response_data)
-                    
+
         except Exception as e:
             logger.error(f"Error generating image: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
+            # Best-effort: mark run as failed if it was created
+            if run_id:
+                try:
+                    _complete_run_record(run_id, 'failed', None, str(e))
+                except Exception:
+                    logger.error(f"[IMAGE_GENERATION] Failed to mark run {run_id} as failed after exception", exc_info=True)
             return jsonify({'success': False, 'error': str(e)})
 

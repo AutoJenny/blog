@@ -1,5 +1,14 @@
 # Changelog
 
+## Phase I-1A — Blog_post Image Run Recording (2026-03-01)
+
+- **Objective:** Bring blog_post section and header image generation up to the same transparency and auditability guarantees as text runs in the Unified Channel Workbench: be able to answer “Exactly what prompt, through which engine, produced this image, and when?”.
+- **Changes:** Reused `generation_runs` for image runs. Section imaging endpoint (`imaging_api_generation.imaging_generate_image`) and header imaging endpoint (`header.api_image_generation.api_generate_header_image`) now create a `generation_runs` row before calling image generators (`gpt-image-1`, DALL-E, SDXL) and complete it after generation/optimization with `status`, `finished_at`, and `output_refs` (image paths). Prompt snapshots store the exact `image_prompt` string used; `engine_id` is recorded as `image/<model_name>`.
+- **Guarantees:** No blog_post section/header image is generated without a corresponding run record; failure paths mark runs as `failed` with `error_message`. Existing HTTP contracts and publishing behaviour are unchanged. Hybrid/carousel code untouched.  
+- **Deliverable:** docs/PHASE_I1A_BLOG_IMAGES_RUN_RECORDING_REPORT.md.
+
+---
+
 ## Phase I-0 — Image Prompt Transparency Audit (2026-03-01)
 
 - **Objective:** Audit image and hybrid prompt construction for transparency, determinism, and traceability. Design + audit only; no code changes.
