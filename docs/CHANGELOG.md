@@ -1,5 +1,25 @@
 # Changelog
 
+## W2-GOV-2 — Phase Close: Documentation Sync (2026-02-23)
+
+- **Architecture overview:** `docs/ARCHITECTURE_V2_OVERVIEW.md` — Layered architecture, validation order, automation control layers, calendar-driven model, actor model, block types.
+- **Cross-links:** All workflow docs link to ARCHITECTURE_V2_OVERVIEW; KB links to workflow docs.
+- **KB updates:** `docs/kb/status_and_stage_guide.md`, `docs/kb/how_to_publish.md`, `docs/kb/blog_post_workflow.md` — Week automation controls, output readiness, block types (Automation disabled vs Stage blocked vs Output blocked).
+
+---
+
+## W2-FIX-9.2 — Week-Level Automation Controls + Calendar-Driven Work Selection (2026-02-23)
+
+- **calendar_week_controls table:** automation_enabled (default TRUE), locked (default FALSE) per (year, week).
+- **utils/calendar/week_controls.py:** get_week_controls, set_week_controls, is_week_locked, is_week_automation_enabled.
+- **utils/automation/calendar_driver.py:** get_posts_for_week(year, week) — posts from calendar_week_items and calendar_seed, ordered by workflow stage.
+- **API:** GET/PUT /planning/api/calendar/week-controls/<year>/<week>; GET week-worklist; POST run-week-automation.
+- **UI:** Week view — Automation On/Off and Lock toggles; schedule response includes week_controls.
+- **Safety:** Week locked → 409 week_locked; week disabled → skip worklist; execute_substage checks lock when target week provided.
+- **Documentation:** docs/workflow/week_automation_controls.md. See `docs/ARCHITECTURE_V2_OVERVIEW.md`.
+
+---
+
 ## W2-FIX-9.1 — Calendar Seed Traceability & Week Integrity (2026-02-23)
 
 - **utils/posts/calendar_seed.py:** `set_calendar_seed`, `get_calendar_seed`, `ensure_manual_seed`, `verify_calendar_seed_for_automation`.
@@ -8,7 +28,7 @@
 - **Integrity guard:** Before automation advances post, verify calendar_seed exists and week/year match; 409 `calendar_mismatch` on failure. Backfill missing seeds as `manual`.
 - **Theme uniqueness:** At most one selected theme per (year, week); 409 `calendar_conflict` when violating.
 - **Orphan prevention:** create_post_from_item for theme/weekly requires year+week; 400 `calendar_seed_required` if missing.
-- **Documentation:** docs/workflow/calendar_seed_model.md.
+- **Documentation:** docs/workflow/calendar_seed_model.md. See `docs/ARCHITECTURE_V2_OVERVIEW.md`.
 
 ---
 
@@ -21,6 +41,7 @@
 - **API:** GET `/launchpad/api/publish/<id>/output-readiness?output=blog`.
 - **Documentation:** `docs/workflow/output_readiness_model.md` — validation order (workflow_stage → output_readiness → preflight → status transition).
 - **config/post_type_substages:** Deprecated as primary source; used only as fallback when DB empty.
+- **Overview:** docs/ARCHITECTURE_V2_OVERVIEW.md.
 
 ---
 
@@ -31,6 +52,7 @@
 - **start_automation:** Requires workflow_stage >= essentials_complete, preflight OK; actor='automation'. Override bypasses.
 - **Reconcile:** After successful execute, validate_workflow_stage + advance_stage if criteria met and stage enabled.
 - **Deliverable:** reports/W2-FIX-7_AUTOMATION_CONVERGENCE_IMPLEMENTATION_REPORT.md.
+- **Overview:** docs/ARCHITECTURE_V2_OVERVIEW.md.
 
 ---
 
@@ -51,6 +73,7 @@
 - **Publish sync:** On publish success, set_workflow_stage(post_id, 'published').
 - **Downgrade logging:** logger.warning with post_id, old_stage, new_stage, reason.
 - **Deliverable:** reports/W2-FIX-6_WORKFLOW_STAGE_INTEGRITY_HARDENING_REPORT.md.
+- **Overview:** docs/ARCHITECTURE_V2_OVERVIEW.md.
 
 ---
 
@@ -63,6 +86,7 @@
 - **UI:** Workflow stage panel on authoring (blog_pipeline_header) and launchpad publishing (essentials accordion). "Advance to [stage]" button when criteria met.
 - **Post creation:** All creation paths call ensure_workflow_stage_idea → new posts start at idea.
 - **Deliverable:** reports/W2-FIX-5_PERSISTED_WORKFLOW_STAGE_IMPLEMENTATION_REPORT.md.
+- **Overview:** docs/ARCHITECTURE_V2_OVERVIEW.md.
 
 ---
 

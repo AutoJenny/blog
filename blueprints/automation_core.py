@@ -40,6 +40,109 @@ bp.register_blueprint(calendar_bp)
 bp.register_blueprint(pipeline_bp)
 bp.register_blueprint(settings_bp)
 
+@bp.route('/week-worklist', methods=['GET'])
+def get_week_worklist():
+    """
+    W2-FIX-9.2 Part C: Get posts to process for a week (calendar-driven selection).
+    Respects week automation_enabled and locked. Returns ordered worklist.
+    """
+    try:
+        year = request.args.get('year', type=int)
+        week = request.args.get('week', type=int)
+        if not year or not week:
+            return jsonify({
+                "success": False,
+                "error": "year and week query parameters are required",
+            }), 400
+
+        from utils.calendar.week_controls import get_week_controls
+        from utils.automation.calendar_driver import get_posts_for_week
+
+        controls = get_week_controls(year, week)
+        if controls.get("locked"):
+            return jsonify({
+                "success": False,
+                "error": f"Week {year}/W{week} is locked.",
+                "week_locked": True,
+                "year": year,
+                "week_number": week,
+            }), 409
+        if not controls.get("automation_enabled", True):
+            return jsonify({
+                "success": True,
+                "year": year,
+                "week_number": week,
+                "posts": [],
+                "skipped": True,
+                "reason": "automation_disabled",
+            })
+
+        posts = get_posts_for_week(year, week, only_automation_enabled=True)
+        return jsonify({
+            "success": True,
+            "year": year,
+            "week_number": week,
+            "posts": posts,
+            "week_controls": controls,
+        })
+    except Exception as e:
+        logger.error(f"get_week_worklist failed: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route('/run-week-automation', methods=['POST'])
+def run_week_automation():
+    """
+    W2-FIX-9.2 Part C: Run automation for a week. Picks target week(s), skips locked/disabled.
+    Returns worklist; actual execution is per-post via execute_substage (caller or future batch).
+    """
+    try:
+        data = request.get_json() or {}
+        year = data.get("year")
+        week = data.get("week")
+        if year is None or week is None:
+            from datetime import date
+            y, w, _ = date.today().isocalendar()
+            year = year if year is not None else y
+            week = week if week is not None else w
+        year = int(year)
+        week = int(week)
+
+        from utils.calendar.week_controls import get_week_controls
+        from utils.automation.calendar_driver import get_posts_for_week
+
+        controls = get_week_controls(year, week)
+        if controls.get("locked"):
+            return jsonify({
+                "success": False,
+                "error": f"Week {year}/W{week} is locked. Automation cannot run.",
+                "week_locked": True,
+                "year": year,
+                "week_number": week,
+            }), 409
+        if not controls.get("automation_enabled", True):
+            return jsonify({
+                "success": True,
+                "year": year,
+                "week_number": week,
+                "posts": [],
+                "message": "Week automation disabled; no posts processed.",
+                "skipped": True,
+            })
+
+        posts = get_posts_for_week(year, week, only_automation_enabled=True)
+        return jsonify({
+            "success": True,
+            "year": year,
+            "week_number": week,
+            "posts": posts,
+            "message": f"Worklist: {len(posts)} posts. Call execute-substage per post with target_year/target_week.",
+        })
+    except Exception as e:
+        logger.error(f"run_week_automation failed: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @bp.route('/execute-substage/<stage>/<substage>', methods=['POST'])
 def execute_substage(stage, substage):
     """Main router for substage execution, optionally filtered by output channel"""
@@ -71,6 +174,18 @@ def execute_substage(stage, substage):
         ok, err, code = verify_calendar_seed_for_automation(post_id, target_year, target_week)
         if not ok:
             return jsonify({**err, "success": False}), code
+
+        # W2-FIX-9.2 Part D: If target week provided and week is locked, block
+        if target_year is not None and target_week is not None:
+            from utils.calendar.week_controls import is_week_locked
+            if is_week_locked(target_year, target_week):
+                return jsonify({
+                    "success": False,
+                    "error": f"Week {target_year}/W{target_week} is locked. Automation cannot modify posts for this week.",
+                    "week_locked": True,
+                    "year": target_year,
+                    "week_number": target_week,
+                }), 409
         
         # Add output_channel to data for execution functions (for future channel-specific logic)
         data['output_channel'] = output_channel

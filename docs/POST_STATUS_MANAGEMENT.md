@@ -1,25 +1,45 @@
 # Post Status Management
 
-**Date:** 2025-01-19  
-**Status:** ✅ **FIXED** - Post reuse logic now correctly excludes published posts
+**Date:** 2026-02-23 (W2-FIX-4, W2-GOV-1)  
+**Status:** ✅ Current — Post reuse logic excludes published posts; status transitions are canonical.
 
 ---
 
 ## Status Flow
 
-The blog post status follows this workflow:
+The blog post status follows this workflow (W2-FIX-4):
 
 ```
-draft → in_progress → needs_review → ready → published
+draft → in_process → published
+  │          │
+  └──→ deleted   └──→ draft (revoke)
+                        │
+published → archived → draft | deleted
 ```
+
+**Valid statuses:** `draft`, `in_process`, `published`, `archived`, `deleted`
 
 ### Status Definitions
 
-- **`draft`**: New post created, initial state
-- **`in_process`**: Post is being actively worked on
-- **`published`**: Post has been published (final state, never reused)
-- **`deleted`**: Post has been soft-deleted (final state, never reused)
-- **`archived`**: Post has been archived (final state, never reused)
+- **`draft`**: New post created; in workflow; not ready for publish
+- **`in_process`**: Marked ready; publishable (use "Mark Ready" to set)
+- **`published`**: Successfully published to Clan.com (final, never reused)
+- **`archived`**: Archived (final)
+- **`deleted`**: Soft-deleted (terminal, never reused)
+
+**Note:** Use `in_process` (not `in_progress`). All status writes go through `utils.posts.status_transitions.transition_post_status()`.
+
+---
+
+## Workflow Stage (Internal Progression)
+
+Inside `status=draft`, posts progress through **workflow_stage** (stored in `post.extra_settings`):
+
+```
+idea → structured → drafted → imaged → essentials_complete → ready → published
+```
+
+See `docs/workflow/workflow_stage_model.md` for criteria, route gates, and integrity rules.
 
 ---
 
@@ -63,22 +83,10 @@ WHERE ...
   AND p.status != 'deleted'  -- ❌ WRONG - allows published posts
 ```
 
-### Helper Function
+### Helper Functions
 
-Use `utils/post_status_helpers.py` for consistent status validation:
-
-```python
-from utils.post_status_helpers import can_reuse_post, get_reusable_status_filter
-
-# Check if a post can be reused
-if can_reuse_post(post_status):
-    # Reuse post
-    pass
-
-# Get SQL filter condition
-status_filter = get_reusable_status_filter()
-# Returns: "status IN ('draft', 'in_process')"
-```
+- **Status transitions:** `utils/posts/status_transitions.py` — `transition_post_status()`, `get_post_status()`, `require_post_editable()`
+- **Reuse check:** `utils/post_status_helpers.py` — `can_reuse_post()`, `get_reusable_status_filter()`
 
 ---
 
@@ -147,6 +155,10 @@ To verify the fix:
 
 ## Related Documentation
 
+- `docs/ARCHITECTURE_V2_OVERVIEW.md` — Architecture V2 overview
+- `docs/workflow/status_transitions.md` - Status transition rules and override behaviour
+- `docs/workflow/workflow_stage_model.md` - Workflow stage flow and integrity
+- `docs/api/workflow_stage_api.md` - Workflow stage endpoints
 - `docs/PUBLICATION_STATUS_RESOLVER_REFERENCE.md` - Status normalization
 - `docs/POSTING_SAFEGUARDS_VERIFICATION.md` - Posting queue status flow
 - `docs/BLOG_POST_CREATION_PROCESS.md` - Overall post creation workflow

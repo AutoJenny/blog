@@ -468,13 +468,18 @@ def api_calendar_schedule(year, week_number):
         
         # Return response with new cyclic system data
         selected_theme_id = theme.get('id') if theme else None
-        
+
+        # W2-FIX-9.2: Include week-level automation controls
+        from utils.calendar.week_controls import get_week_controls
+        week_controls = get_week_controls(year, week_number)
+
         return jsonify({
             'success': True,
             'year': year,
             'week_number': week_number,
             'schedule': schedule,
             'selected_theme_id': selected_theme_id,
+            'week_controls': week_controls,
             '_from_cyclic_system': True  # Flag to indicate new system
         })
             

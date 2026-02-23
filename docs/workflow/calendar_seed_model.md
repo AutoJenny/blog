@@ -133,6 +133,7 @@ In `api_select_theme_idea` and `confirm_calendar_idea`:
 
 ## Related Documentation
 
+- `docs/ARCHITECTURE_V2_OVERVIEW.md` — Calendar-driven model summary
 - `docs/workflow/workflow_stage_model.md` — workflow progression
 - `docs/workflow/output_readiness_model.md` — output channel validation
 - `reports/W2-FIX-9_1_CALENDAR_SEED_IMPLEMENTATION_REPORT.md` — implementation report

@@ -364,6 +364,31 @@ def api_calendar_schedule(year, week_number):
     """Get schedule for a specific year and week"""
     return schedule_api_func(year, week_number)
 
+
+@bp.route('/api/calendar/week-controls/<int:year>/<int:week_number>', methods=['GET', 'PUT'])
+def api_week_controls(year, week_number):
+    """W2-FIX-9.2: Get or set week-level automation controls (automation_enabled, locked)"""
+    from utils.calendar.week_controls import get_week_controls, set_week_controls
+    if request.method == 'GET':
+        controls = get_week_controls(year, week_number)
+        return jsonify({'success': True, 'year': year, 'week_number': week_number, **controls})
+    # PUT
+    data = request.get_json() or {}
+    automation_enabled = data.get('automation_enabled')
+    locked = data.get('locked')
+    if automation_enabled is None and locked is None:
+        return jsonify({'success': False, 'error': 'Provide automation_enabled and/or locked'}), 400
+    if automation_enabled is not None and not isinstance(automation_enabled, bool):
+        return jsonify({'success': False, 'error': 'automation_enabled must be boolean'}), 400
+    if locked is not None and not isinstance(locked, bool):
+        return jsonify({'success': False, 'error': 'locked must be boolean'}), 400
+    ok = set_week_controls(year, week_number, automation_enabled=automation_enabled, locked=locked)
+    if not ok:
+        return jsonify({'success': False, 'error': 'Failed to update controls'}), 500
+    controls = get_week_controls(year, week_number)
+    return jsonify({'success': True, 'year': year, 'week_number': week_number, **controls})
+
+
 @bp.route('/api/calendar/scheduling/all', methods=['GET'])
 def api_calendar_scheduling_all():
     """Get all scheduling data for 52 weeks (cached)"""

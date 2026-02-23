@@ -8,6 +8,16 @@
             <div class="week">Week: <span id="week-number"></span></div>
             <div class="dates" id="week-dates"></div>
         </div>
+        <div class="week-automation-controls" id="week-automation-controls" title="W2-FIX-9.2: Week-level automation controls">
+            <label class="week-control-toggle" title="Automation On/Off for this week">
+                <input type="checkbox" id="week-automation-enabled" checked>
+                <span>Automation</span>
+            </label>
+            <label class="week-control-toggle" title="Lock week: prevent automation from modifying posts">
+                <input type="checkbox" id="week-locked">
+                <span>Lock</span>
+            </label>
+        </div>
         <div class="week-picker-container">
             <button class="nav-btn nav-btn-text" id="week-picker-btn" title="Pick a week"><i class="fas fa-calendar"></i></button>
             <div class="week-picker-popup" id="week-picker-popup" style="display: none;">

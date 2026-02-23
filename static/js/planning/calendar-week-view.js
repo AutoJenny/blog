@@ -195,7 +195,7 @@ function renderItems(container, items, type, year, week) {
       typeName = 'Recipe';
     } else if (type === 'profile') {
       typeName = 'Profile';
-    } else if (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult') {
+    } else     if (type === 'weekly-word' || type === 'weekly-phrase' || type === 'weekly-insult') {
       angleLabel = type === 'weekly-word'
         ? 'Language: Word'
         : type === 'weekly-phrase'
@@ -221,6 +221,14 @@ function renderItems(container, items, type, year, week) {
         primaryRole = item.role;
       }
       typeName = primaryRole ? primaryRole.replace(/_/g, ' ') : type;
+    }
+    // Channel-aware label: prefix FB: or IG: for social posts (posting_queue items) so editors can tell which preview they get
+    const isSocialPost = !!(item.posting_queue_id || (item._from_posting_queue && item.platform));
+    const channelPrefix = isSocialPost && item.platform
+      ? (item.platform.toLowerCase() === 'instagram' ? 'IG: ' : 'FB: ')
+      : '';
+    if (channelPrefix) {
+      typeName = channelPrefix + typeName;
     }
     
     let title = item.title || item.theme_title || item.recipe_title || item.post_title || 'Untitled';
@@ -616,8 +624,16 @@ async function loadWeek(year, weekNumber) {
     if (scheduleRes.status === 'fulfilled') {
       const scheduleData = scheduleRes.value;
       schedule = Array.isArray(scheduleData) ? scheduleData : (scheduleData?.schedule || []);
-      // Store full scheduleData for theme lookup (includes selected_theme_id at top level)
+      // Store full scheduleData for theme lookup (includes selected_theme_id, week_controls at top level)
       window.currentScheduleData = scheduleData;
+      // W2-FIX-9.2: Sync week automation controls from schedule response
+      const wc = scheduleData?.week_controls;
+      if (wc) {
+        const enabledEl = document.getElementById('week-automation-enabled');
+        const lockedEl = document.getElementById('week-locked');
+        if (enabledEl) enabledEl.checked = wc.automation_enabled !== false;
+        if (lockedEl) lockedEl.checked = wc.locked === true;
+      }
       console.log('Schedule data loaded:', {
         isArray: Array.isArray(scheduleData),
         hasSchedule: !!scheduleData?.schedule,
@@ -665,8 +681,9 @@ async function loadWeek(year, weekNumber) {
   }
   
   // Check if we have the required row containers
+  // Social posts row: some templates use 'social-posts-row', others 'words-phrases-row'
   const blogRow = document.getElementById('blog-row');
-  const socialPostsRow = document.getElementById('social-posts-row');
+  const socialPostsRow = document.getElementById('social-posts-row') || document.getElementById('words-phrases-row');
   const annualEventsRow = document.getElementById('annual-events-row');
   const specialEventsRow = document.getElementById('special-events-row');
   const syndicationRow = document.getElementById('syndication-row');
@@ -681,6 +698,7 @@ async function loadWeek(year, weekNumber) {
     });
     return;
   }
+  const socialPostsRowId = socialPostsRow.id;
 
   // Get filter toggles
   const toggleBlog = document.getElementById('toggle-blog');
@@ -693,7 +711,8 @@ async function loadWeek(year, weekNumber) {
   const showAnnualEvents = document.getElementById('toggle-annual-events')?.checked !== false;
   const showSpecialEvents = document.getElementById('toggle-special-events')?.checked !== false;
   const showSyndication = document.getElementById('toggle-syndication')?.checked !== false;
-  const showSocialPosts = document.getElementById('toggle-social-posts')?.checked !== false;
+  const showSocialPostsToggle = document.getElementById('toggle-social-posts') || document.getElementById('toggle-words-phrases');
+  const showSocialPosts = showSocialPostsToggle?.checked !== false;
 
   // Build row grids cells for rows container
   const ensureRowCells = (rowId) => {
@@ -729,7 +748,7 @@ async function loadWeek(year, weekNumber) {
   const annualEventsCells = ensureRowCells('annual-events-row');
   const specialEventsCells = ensureRowCells('special-events-row');
   const syndicationCells = ensureRowCells('syndication-row');
-  const socialPostsCells = ensureRowCells('social-posts-row');
+  const socialPostsCells = ensureRowCells(socialPostsRowId);
 
   // Load themes from schedule (themes scheduled for this week)
   // NEW SYSTEM: Uses cyclic position-based logic (same as scheduling calendar)
@@ -996,7 +1015,7 @@ async function loadWeek(year, weekNumber) {
     const languageItem = selectedWord || selectedPhrase || selectedInsult;
     if (languageItem) {
       const dayIndex = 2; // Tuesday (ISO weekday)
-      const languageTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+      const languageTarget = document.getElementById(`${socialPostsRowId}-day-${dayIndex}`);
       if (languageTarget) {
         const langType = languageItem.type === 'weekly_word' ? 'weekly-word' : languageItem.type === 'weekly_phrase' ? 'weekly-phrase' : 'weekly-insult';
         renderItems(languageTarget, [languageItem], langType, year, weekNumber);
@@ -1030,7 +1049,7 @@ async function loadWeek(year, weekNumber) {
             const jsDay = dateObj.getDay();
             const dayIndex = jsDay === 0 ? 7 : jsDay; // Convert to ISO weekday (1=Mon, 7=Sun)
             
-            const productTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+            const productTarget = document.getElementById(`${socialPostsRowId}-day-${dayIndex}`);
             if (productTarget) {
               // If multiple posts for this day, show count in title
               if (dayPosts.length > 1) {
@@ -1054,7 +1073,7 @@ async function loadWeek(year, weekNumber) {
             const dateObj = new Date(messagePost.scheduled_date + 'T00:00:00');
             const jsDay = dateObj.getDay();
             const dayIndex = jsDay === 0 ? 7 : jsDay; // ISO weekday (1=Mon, 7=Sun)
-            const messageTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+            const messageTarget = document.getElementById(`${socialPostsRowId}-day-${dayIndex}`);
             if (messageTarget) {
               renderItems(messageTarget, [messagePost], 'message', year, weekNumber);
             }
@@ -1077,7 +1096,7 @@ async function loadWeek(year, weekNumber) {
             const jsDay = dateObj.getDay();
             const dayIndex = jsDay === 0 ? 7 : jsDay; // Convert to ISO weekday (1=Mon, 7=Sun)
             
-            const roleTarget = document.getElementById(`social-posts-row-day-${dayIndex}`);
+            const roleTarget = document.getElementById(`${socialPostsRowId}-day-${dayIndex}`);
             if (roleTarget) {
               // Use role as type (e.g., 'depth_long') for rendering
               const roleType = rolePost.role.toLowerCase();
@@ -1611,20 +1630,17 @@ console.log('calendar-week-view.js module loaded');
     });
   }
 
-  // Filter change handlers
-  const attach = (id) => {
-    const el = document.getElementById(id);
+  // Filter change handlers (social posts row: some templates use toggle-words-phrases)
+  const attach = (id, fallbackId) => {
+    const el = document.getElementById(id) || (fallbackId ? document.getElementById(fallbackId) : null);
     if (el) el.addEventListener('change', () => {
       updateFilterVisuals();
-      // Reload current week (filters don't change the week, just visibility)
-      // SINGLE SOURCE OF TRUTH: Get from URL only
       let currentYear, currentWeek;
       if (window.WeekContext) {
         const weekContext = window.WeekContext.getWeekContextWithDefault();
         currentYear = weekContext.year;
         currentWeek = weekContext.week;
       } else {
-        // Fallback: calculate current week from today's date
         const now = new Date();
         const currentWeekInfo = getISOWeekInfo(now);
         currentYear = currentWeekInfo.year;
@@ -1637,24 +1653,54 @@ console.log('calendar-week-view.js module loaded');
       attach('toggle-annual-events');
       attach('toggle-special-events');
       attach('toggle-syndication');
-      attach('toggle-social-posts');
+      attach('toggle-social-posts', 'toggle-words-phrases');
+
+  // W2-FIX-9.2: Week automation controls (automation_enabled, locked)
+  (function attachWeekControlsHandlers() {
+    const getContext = () => window.WeekContext ? window.WeekContext.getWeekContextWithDefault() : { year: state.year, week: state.weekNumber };
+    const putControls = async (year, week, automation_enabled, locked) => {
+      try {
+        const res = await fetch(`/planning/api/calendar/week-controls/${year}/${week}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ automation_enabled, locked }),
+        });
+        const data = await res.json();
+        if (!data.success) console.warn('Week controls update failed:', data.error);
+      } catch (e) {
+        console.warn('Week controls update error:', e);
+      }
+    };
+    const enabledEl = document.getElementById('week-automation-enabled');
+    const lockedEl = document.getElementById('week-locked');
+    if (enabledEl) {
+      enabledEl.addEventListener('change', () => {
+        const ctx = getContext();
+        putControls(ctx.year, ctx.week, enabledEl.checked, lockedEl?.checked ?? false);
+      });
+    }
+    if (lockedEl) {
+      lockedEl.addEventListener('change', () => {
+        const ctx = getContext();
+        putControls(ctx.year, ctx.week, enabledEl?.checked ?? true, lockedEl.checked);
+      });
+    }
+  })();
 
   function updateFilterVisuals() {
     const map = [
-      { id: 'toggle-blog', cls: 'filter-blog' },
-      { id: 'toggle-annual-events', cls: 'filter-annual-events' },
-      { id: 'toggle-special-events', cls: 'filter-special-events' },
-      { id: 'toggle-syndication', cls: 'filter-syndication' },
-      { id: 'toggle-social-posts', cls: 'filter-social-posts' },
+      { id: 'toggle-blog', fallbackId: null, cls: 'filter-blog' },
+      { id: 'toggle-annual-events', fallbackId: null, cls: 'filter-annual-events' },
+      { id: 'toggle-special-events', fallbackId: null, cls: 'filter-special-events' },
+      { id: 'toggle-syndication', fallbackId: null, cls: 'filter-syndication' },
+      { id: 'toggle-social-posts', fallbackId: 'toggle-words-phrases', cls: 'filter-social-posts' },
     ];
-    map.forEach(({ id, cls }) => {
-      const input = document.getElementById(id);
+    map.forEach(({ id, fallbackId }) => {
+      const input = document.getElementById(id) || (fallbackId ? document.getElementById(fallbackId) : null);
       if (!input) return;
-      
-      // Find the label that contains this checkbox
       const label = input.closest('label');
       if (label) {
-        // Toggle 'active' class based on checkbox state
         label.classList.toggle('active', input.checked);
       }
     });
