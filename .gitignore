@@ -12,3 +12,11 @@ blog-core/blog_test_backup_*.sql
 logs/*.out
 logs/*.errunified_app.out
 unified_app.out
+
+.DS_Store
+logs/
+temp/
+static/content/instagram_hybrid/
+static/content/posts/0/
+static/images/instagram/
+
