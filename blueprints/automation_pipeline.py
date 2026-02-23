@@ -4,7 +4,7 @@ Pipeline Status and Data API Endpoints
 
 from flask import Blueprint, jsonify, request
 import json
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from config.database import db_manager
 from utils.substage_config import get_substages_for_post_type, is_substage_valid_for_post_type
 from config.output_channel_stages import (
@@ -676,37 +676,112 @@ def get_posts_in_development():
         logger.error(f"Error getting posts in development: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+def _calendar_week_url_from_date(from_date):
+    """Build /planning/calendar?year=Y&week=W&tab=week-view from from_date (date or date string)."""
+    if hasattr(from_date, "isocalendar"):
+        year, week, _ = from_date.isocalendar()
+    else:
+        d = datetime.strptime(str(from_date)[:10], "%Y-%m-%d").date()
+        year, week, _ = d.isocalendar()
+    return f"/planning/calendar?year={year}&week={week}&tab=week-view"
+
+
 @bp.route('/alerts', methods=['GET'])
 def get_alerts():
-    """Get system alerts"""
+    """Get system alerts. Phase 2.5: Hybrid run alerts from hybrid_run_summaries."""
     try:
+        alerts = []
         with db_manager.get_cursor() as cursor:
-            # Get overdue posts
-            # Note: calendar_schedule table is deprecated. New system uses JSON schedules.
-            # For now, return empty list - alerts can be reimplemented using JSON schedule data if needed
-            overdue_posts = []
-            
-            alerts = []
-            
-            # Add overdue alerts
-            for post in overdue_posts:
-                alerts.append({
-                    "id": f"overdue_{post['id']}",
-                    "type": "overdue",
-                    "title": "Overdue Post",
-                    "message": f"Post '{post['title']}' was scheduled for {post['scheduled_date']} but is not published",
-                    "post_id": post['id'],
-                    "created_at": post['scheduled_date'].isoformat(),
-                    "severity": "high"
-                })
-            
-            return jsonify({
-                "success": True,
-                "data": alerts
+            cursor.execute("""
+                SELECT id, run_timestamp, platform, from_date, weeks_ahead,
+                       coverage_status, run_outcome, confidence_statement, summary_text,
+                       any_human_action_required, human_action_counts, coverage_summary,
+                       acknowledged_at
+                FROM hybrid_run_summaries
+                WHERE platform = %s
+                ORDER BY run_timestamp DESC
+                LIMIT 1
+            """, ("instagram",))
+            row = cursor.fetchone()
+
+        if not row:
+            alerts.append({
+                "id": 0,
+                "alert_type": "hybrid_never",
+                "severity": "warning",
+                "title": "Instagram imagery not yet run",
+                "message": "Instagram imagery has never been generated.",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "is_read": False,
+                "action_url": "/planning/calendar?tab=week-view",
+                "action_text": "View calendar",
             })
-            
+            return jsonify({"success": True, "data": alerts})
+
+        run_ts = row["run_timestamp"]
+        if run_ts.tzinfo is None:
+            run_ts = run_ts.replace(tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
+        stale_threshold = now - timedelta(hours=24)
+        from_date = row["from_date"]
+        action_url = _calendar_week_url_from_date(from_date)
+        summary_id = row["id"]
+        # Phase 2.6: only show alerts for this run if not yet acknowledged (e.g. user has not opened Launchpad)
+        acknowledged = row.get("acknowledged_at") is not None
+
+        if not acknowledged and run_ts < stale_threshold:
+            alerts.append({
+                "id": summary_id * 100 + 1,
+                "alert_type": "hybrid_stale",
+                "severity": "warning",
+                "title": "Instagram imagery automation stale",
+                "message": "Instagram imagery automation hasn't run recently.",
+                "created_at": run_ts.isoformat(),
+                "is_read": False,
+                "action_url": action_url,
+                "action_text": "View calendar",
+            })
+        if not acknowledged and row["run_outcome"] == "blocked":
+            alerts.append({
+                "id": summary_id * 100 + 2,
+                "alert_type": "hybrid_blocked",
+                "severity": "error",
+                "title": "Instagram imagery run blocked",
+                "message": row["confidence_statement"] or "Run reported blocked.",
+                "created_at": run_ts.isoformat(),
+                "is_read": False,
+                "action_url": action_url,
+                "action_text": "View calendar",
+            })
+        if not acknowledged and row["coverage_status"] != "complete":
+            alerts.append({
+                "id": summary_id * 100 + 3,
+                "alert_type": "hybrid_incomplete",
+                "severity": "warning",
+                "title": "Instagram imagery incomplete",
+                "message": row["confidence_statement"] or row["summary_text"] or "Coverage not complete.",
+                "created_at": run_ts.isoformat(),
+                "is_read": False,
+                "action_url": action_url,
+                "action_text": "View calendar",
+            })
+        if not acknowledged and row["any_human_action_required"]:
+            alerts.append({
+                "id": summary_id * 100 + 4,
+                "alert_type": "hybrid_human_action",
+                "severity": "warning",
+                "title": "Instagram imagery needs attention",
+                "message": row["confidence_statement"] or "Some slots need human action.",
+                "created_at": run_ts.isoformat(),
+                "is_read": False,
+                "action_url": action_url,
+                "action_text": "View calendar",
+            })
+
+        return jsonify({"success": True, "data": alerts})
+
     except Exception as e:
-        logger.error(f"Error getting alerts: {e}")
+        logger.exception("Error getting alerts")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/alert/dismiss/<int:alert_id>', methods=['POST'])

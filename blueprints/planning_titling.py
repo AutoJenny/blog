@@ -32,6 +32,12 @@ def api_sections_title():
         
         logger.info(f"Titling request: post_id={post_id}, sections={len(topic_allocation) if isinstance(topic_allocation, list) else 'not a list'}, expanded_idea_length={len(expanded_idea) if expanded_idea else 0}")
         
+        if post_id:
+            from utils.posts.workflow_stage import require_workflow_stage
+            gate, gate_code = require_workflow_stage(post_id, 'planning', request=request)
+            if gate:
+                return jsonify({**gate, 'success': False}), gate_code
+        
         if not topic_allocation:
             logger.error("No topic_allocation provided in request")
             return jsonify({
@@ -445,6 +451,10 @@ CRITICAL: Your response must start with {{ and end with }}. Do NOT add any text 
 def api_save_sections(post_id):
     """Save generated sections to post_development table"""
     try:
+        from utils.posts.workflow_stage import require_workflow_stage
+        gate, gate_code = require_workflow_stage(post_id, 'planning', request=request)
+        if gate:
+            return jsonify({**gate, 'success': False}), gate_code
         data = request.get_json()
         sections_data = data.get('sections', [])
         

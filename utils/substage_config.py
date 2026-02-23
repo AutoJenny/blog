@@ -103,6 +103,21 @@ def get_substages_for_post_type(post_type, stage=None):
         post_type = 'themed'
     
     if post_type not in _substage_cache:
+        # DB cache empty - fall back to config for legacy compatibility (W2-FIX-8)
+        try:
+            from config.post_type_substages import POST_TYPE_SUBSTAGES
+            fallback = POST_TYPE_SUBSTAGES.get(post_type, POST_TYPE_SUBSTAGES.get('themed', {}))
+            if fallback:
+                logger.warning(
+                    "substage_config: DB empty for post_type=%s, using config fallback. "
+                    "Populate post_type_substages table for DB-backed config.",
+                    post_type
+                )
+                if stage:
+                    return fallback.get(stage, [])
+                return fallback
+        except ImportError:
+            pass
         return [] if stage else {}
     
     substages = _substage_cache[post_type]

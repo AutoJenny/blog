@@ -18,12 +18,21 @@ logger = logging.getLogger(__name__)
 from blueprints.planning_titling import api_sections_title, api_save_sections
 
 def api_design_section_structure():
-    """Step 1: Design section structure (7-section for themed posts, 11-section for profile posts)"""
+    """Step 1: Design section structure (7-section for themed posts, 11-section for profile posts). W2-FIX-4: draft only."""
     try:
         data = request.get_json()
         topics = data.get('topics', [])
         expanded_idea = data.get('expanded_idea', '')
         post_id = data.get('post_id')
+        if post_id:
+            from utils.posts.status_transitions import require_post_editable
+            from utils.posts.workflow_stage import require_workflow_stage
+            err, code = require_post_editable(post_id, allowed_statuses=frozenset({'draft'}), request=request)
+            if err:
+                return jsonify({'success': False, 'error': err, 'status_blocked': True}), code
+            gate, gate_code = require_workflow_stage(post_id, 'planning', request=request)
+            if gate:
+                return jsonify({**gate, 'success': False}), gate_code
         product_data = data.get('product_data')
         post_type = data.get('post_type')
         

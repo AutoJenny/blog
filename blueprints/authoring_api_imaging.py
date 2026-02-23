@@ -1,5 +1,5 @@
 # Authoring Imaging API Blueprint
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for
 from config.database import db_manager
 from config.authoring_panel_configs import get_panel_config
 import logging
@@ -10,6 +10,13 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 bp = Blueprint('authoring_imaging', __name__)
+
+
+@bp.route('/posts/<int:post_id>/sections/drafting')
+def redirect_drafting_to_authoring(post_id):
+    """W2-FIX-1: Redirect /authoring/posts/<id>/sections/drafting → /posts/<id>/sections/drafting"""
+    return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+
 
 # Import micro-modules
 from blueprints.authoring_api_sections import api_get_sections as sections_api_func, api_get_section as section_api_func
@@ -368,7 +375,11 @@ def api_activate_style(post_id, style_index):
 
 @bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/save-image-prompt', methods=['POST'])
 def api_save_image_prompt(post_id, section_id):
-    """Save image prompt for a section"""
+    """Save image prompt for a section. W2-FIX-5: Requires stage drafted or imaged."""
+    from utils.posts.workflow_stage import require_workflow_stage
+    gate, gate_code = require_workflow_stage(post_id, 'imaging', request=request)
+    if gate:
+        return jsonify({**gate, 'success': False}), gate_code
     try:
         data = request.get_json()
         image_prompt = data.get('image_prompt')
@@ -461,7 +472,11 @@ def api_preview_rendered_prompt(post_id, section_id):
 
 @bp.route('/api/posts/<int:post_id>/sections/<int:section_id>/save-image-concepts', methods=['POST'])
 def api_save_image_concepts(post_id, section_id):
-    """Save image concepts for a specific section"""
+    """Save image concepts for a specific section. W2-FIX-5: Requires stage drafted or imaged."""
+    from utils.posts.workflow_stage import require_workflow_stage
+    gate, gate_code = require_workflow_stage(post_id, 'imaging', request=request)
+    if gate:
+        return jsonify({**gate, 'success': False}), gate_code
     try:
         data = request.get_json()
         image_concepts = data.get('image_concepts', '')
@@ -623,7 +638,11 @@ def api_select_concept(post_id, section_id):
 
 @bp.route('/api/posts/<int:post_id>/sections/<section_id>/generate-image-concepts', methods=['POST'])
 def api_generate_image_concepts(post_id, section_id):
-    """Generate image concepts for a specific section"""
+    """Generate image concepts for a specific section. W2-FIX-5: Requires stage drafted or imaged."""
+    from utils.posts.workflow_stage import require_workflow_stage
+    gate, gate_code = require_workflow_stage(post_id, 'imaging', request=request)
+    if gate:
+        return jsonify({**gate, 'success': False}), gate_code
     try:
         logger.info(f"[IMAGE_CONCEPTS] Starting generation for post_id={post_id}, section_id={section_id}")
         

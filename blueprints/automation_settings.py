@@ -14,32 +14,82 @@ bp = Blueprint('automation_settings', __name__)
 
 @bp.route('/start-automation', methods=['POST'])
 def start_automation():
-    """Start automation for a post"""
+    """
+    Start automation for a post (Mark Ready semantics). W2-FIX-7 Part C.
+    Requires: automation.enabled, workflow_stage >= essentials_complete, preflight ok.
+    Override: ?override=1 or { "override": true } bypasses checks.
+    """
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         post_id = data.get('post_id')
-        
+
         if not post_id:
             return jsonify({'success': False, 'error': 'Post ID is required'}), 400
-        
-        with db_manager.get_cursor() as cursor:
-            # Check if post exists
-            cursor.execute("SELECT id FROM post WHERE id = %s", (post_id,))
-            if not cursor.fetchone():
-                return jsonify({'success': False, 'error': 'Post not found'}), 404
-            
-            # Update post status to in_progress
-            cursor.execute("""
-                UPDATE post 
-                SET status = 'in_progress', updated_at = NOW()
-                WHERE id = %s
-            """, (post_id,))
-            
-            return jsonify({
-                'success': True,
-                'message': 'Automation started successfully'
-            })
-            
+
+        override = (
+            request.args.get('override') == '1' or
+            data.get('override') is True
+        )
+
+        if not override:
+            from utils.posts.automation_helpers import is_automation_enabled
+            if not is_automation_enabled(post_id):
+                return jsonify({
+                    'success': False,
+                    'error': 'Automation is disabled for this post.',
+                    'automation_blocked': True,
+                }), 403
+
+            from utils.posts.workflow_stage import get_workflow_stage, STAGES
+
+            current = get_workflow_stage(post_id, persist_if_missing=True)
+            req_idx = STAGES.index('essentials_complete') if 'essentials_complete' in STAGES else 4
+            curr_idx = STAGES.index(current) if current in STAGES else -1
+
+            if curr_idx < req_idx:
+                required_stage = 'essentials_complete'
+                return jsonify({
+                    'success': False,
+                    'error': f'Post is at stage "{current}". Start automation requires stage >= {required_stage}. Run automation steps (drafts, images, essentials) first.',
+                    'required_stage': required_stage,
+                    'current_stage': current,
+                    'stage_blocked': True,
+                }), 409
+
+            # W2-FIX-8: Output readiness check before preflight
+            from utils.posts.output_readiness import get_output_readiness
+            readiness = get_output_readiness(post_id, output_channel='blog')
+            if not readiness.get('ok'):
+                return jsonify({
+                    'success': False,
+                    'error': 'Output not ready for automation. Complete required substage first.',
+                    'output_blocked': True,
+                    'current_substage': readiness.get('current_substage', ''),
+                    'required_substage': readiness.get('required_substage', ''),
+                    'errors': readiness.get('errors', []),
+                }), 409
+
+            from utils.publishing.validators import validate_post_for_clan_publish
+            preflight = validate_post_for_clan_publish(post_id)
+            if not preflight.get('ok'):
+                return jsonify({
+                    'success': False,
+                    'error': 'Preflight validation failed.',
+                    'errors': preflight.get('errors', []),
+                    'warnings': preflight.get('warnings', []),
+                    'required_fields_snapshot': preflight.get('required_fields_snapshot', {}),
+                }), 400
+
+        from utils.posts.status_transitions import transition_post_status
+        ok, err = transition_post_status(post_id, 'in_process', actor='automation')
+        if not ok:
+            return jsonify({'success': False, 'error': err or 'Failed to start'}), (
+                404 if err and 'not found' in (err or '').lower() else 400
+            )
+        return jsonify({
+            'success': True,
+            'message': 'Automation started successfully'
+        })
     except Exception as e:
         logger.error(f"Error starting automation: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

@@ -274,10 +274,28 @@ def execute_section_structure(post_id, data):
         return {"success": False, "error": str(e)}, 500
 
 def execute_author_first_drafts(post_id, data):
-    """Execute author first drafts generation for all sections of a post"""
+    """Execute author first drafts generation for all sections of a post. W2-FIX-7: gated by authoring stage."""
     try:
+        import flask
+        from utils.posts.workflow_stage import require_workflow_stage
+        from utils.posts.automation_helpers import (
+            check_automation_blocked,
+            reconcile_after_execute,
+            set_automation_last_blocked,
+            set_automation_last_run,
+        )
+
+        gate, gate_code = require_workflow_stage(post_id, "authoring", request=flask.request)
+        if gate:
+            set_automation_last_blocked(post_id, "author_first_drafts", gate.get("message", ""))
+            return {**gate, "success": False}, gate_code
+        blocked, block_resp, block_code = check_automation_blocked(post_id, "drafted")
+        if blocked:
+            set_automation_last_blocked(post_id, "drafted", block_resp.get("message", ""))
+            return block_resp, block_code
+
         logger.info(f"Starting author first drafts generation for post {post_id}")
-        
+
         # Get all sections for this post
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -429,7 +447,11 @@ def execute_author_first_drafts(post_id, data):
                 """, (post_id,))
         
         logger.info(f"Author first drafts generation completed: {success_count}/{len(sections)} sections successful")
-        
+
+        if success_count > 0:
+            set_automation_last_run(post_id, "author_first_drafts")
+            reconcile_after_execute(post_id, "author_first_drafts", actor="automation")
+
         return {
             'success': True,
             'total_sections': len(sections),
@@ -438,16 +460,34 @@ def execute_author_first_drafts(post_id, data):
             'results': results,
             'message': f'Generated drafts for {success_count} out of {len(sections)} sections'
         }
-        
+
     except Exception as e:
         logger.error(f"Error executing author first drafts: {e}")
         return {"success": False, "error": str(e)}, 500
 
 def execute_image_concepts(post_id, data):
-    """Execute image concepts generation for all sections of a post"""
+    """Execute image concepts generation for all sections of a post. W2-FIX-7: gated by imaging stage."""
     try:
+        import flask
+        from utils.posts.workflow_stage import require_workflow_stage
+        from utils.posts.automation_helpers import (
+            check_automation_blocked,
+            reconcile_after_execute,
+            set_automation_last_blocked,
+            set_automation_last_run,
+        )
+
+        gate, gate_code = require_workflow_stage(post_id, "imaging", request=flask.request)
+        if gate:
+            set_automation_last_blocked(post_id, "image_concepts", gate.get("message", ""))
+            return {**gate, "success": False}, gate_code
+        blocked, block_resp, block_code = check_automation_blocked(post_id, "imaged")
+        if blocked:
+            set_automation_last_blocked(post_id, "imaged", block_resp.get("message", ""))
+            return block_resp, block_code
+
         logger.info(f"Starting image concepts generation for post {post_id}")
-        
+
         # Get all sections for this post
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -612,7 +652,11 @@ def execute_image_concepts(post_id, data):
                 """, (post_id,))
         
         logger.info(f"Image concepts generation completed: {success_count}/{len(sections)} sections successful")
-        
+
+        if success_count > 0:
+            set_automation_last_run(post_id, "image_concepts")
+            reconcile_after_execute(post_id, "image_concepts", actor="automation")
+
         return {
             'success': True,
             'total_sections': len(sections),
@@ -621,16 +665,34 @@ def execute_image_concepts(post_id, data):
             'results': results,
             'message': f'Generated image concepts for {success_count} out of {len(sections)} sections'
         }
-        
+
     except Exception as e:
         logger.error(f"Error executing image concepts: {e}")
         return {"success": False, "error": str(e)}, 500
 
 def execute_image_prompts(post_id, data):
-    """Execute image prompts generation for all sections of a post"""
+    """Execute image prompts generation for all sections of a post. W2-FIX-7: gated by imaging stage."""
     try:
+        import flask
+        from utils.posts.workflow_stage import require_workflow_stage
+        from utils.posts.automation_helpers import (
+            check_automation_blocked,
+            reconcile_after_execute,
+            set_automation_last_blocked,
+            set_automation_last_run,
+        )
+
+        gate, gate_code = require_workflow_stage(post_id, "imaging", request=flask.request)
+        if gate:
+            set_automation_last_blocked(post_id, "image_prompts", gate.get("message", ""))
+            return {**gate, "success": False}, gate_code
+        blocked, block_resp, block_code = check_automation_blocked(post_id, "imaged")
+        if blocked:
+            set_automation_last_blocked(post_id, "imaged", block_resp.get("message", ""))
+            return block_resp, block_code
+
         logger.info(f"Starting image prompts generation for post {post_id}")
-        
+
         # Get all sections for this post
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -773,7 +835,9 @@ def execute_image_prompts(post_id, data):
                     SET updated_at = NOW()
                     WHERE post_id = %s
                 """, (post_id,))
-        
+            set_automation_last_run(post_id, "image_prompts")
+            reconcile_after_execute(post_id, "image_prompts", actor="automation")
+
         return {
             'success': True,
             'total_sections': len(sections),
@@ -782,16 +846,34 @@ def execute_image_prompts(post_id, data):
             'results': results,
             'message': f'Generated image prompts for {success_count} out of {len(sections)} sections'
         }
-        
+
     except Exception as e:
         logger.error(f"Error executing image prompts: {e}")
         return {"success": False, "error": str(e)}, 500
 
 def execute_image_captions(post_id, data):
-    """Execute image captions generation for all sections of a post"""
+    """Execute image captions generation for all sections of a post. W2-FIX-7: gated by imaging stage."""
     try:
+        import flask
+        from utils.posts.workflow_stage import require_workflow_stage
+        from utils.posts.automation_helpers import (
+            check_automation_blocked,
+            reconcile_after_execute,
+            set_automation_last_blocked,
+            set_automation_last_run,
+        )
+
+        gate, gate_code = require_workflow_stage(post_id, "imaging", request=flask.request)
+        if gate:
+            set_automation_last_blocked(post_id, "image_captions", gate.get("message", ""))
+            return {**gate, "success": False}, gate_code
+        blocked, block_resp, block_code = check_automation_blocked(post_id, "imaged")
+        if blocked:
+            set_automation_last_blocked(post_id, "imaged", block_resp.get("message", ""))
+            return block_resp, block_code
+
         logger.info(f"Starting image captions generation for post {post_id}")
-        
+
         # Get all sections for this post
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
@@ -934,7 +1016,9 @@ def execute_image_captions(post_id, data):
                     SET updated_at = NOW()
                     WHERE post_id = %s
                 """, (post_id,))
-        
+            set_automation_last_run(post_id, "image_captions")
+            reconcile_after_execute(post_id, "image_captions", actor="automation")
+
         return {
             'success': True,
             'total_sections': len(sections),
@@ -943,7 +1027,7 @@ def execute_image_captions(post_id, data):
             'results': results,
             'message': f'Generated image captions for {success_count} out of {len(sections)} sections'
         }
-        
+
     except Exception as e:
         logger.error(f"Error executing image captions: {e}")
         return {"success": False, "error": str(e)}, 500

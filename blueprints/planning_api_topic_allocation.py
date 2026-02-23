@@ -170,14 +170,19 @@ def build_allocation_data(all_allocations, section_structure):
     return allocation_data
 
 def api_generate_section_specific_topics():
-    """Generate section-specific topics instead of forcing existing ideas into sections"""
+    """Generate section-specific topics instead of forcing existing ideas into sections. W2-FIX-7: gated by planning (idea, structured)."""
     try:
         data = request.get_json()
         post_id = data.get('post_id')
-        
+
         if not post_id:
             return jsonify({'success': False, 'error': 'Post ID is required'}), 400
-        
+
+        from utils.posts.workflow_stage import require_workflow_stage
+        gate, gate_code = require_workflow_stage(post_id, 'planning', request=request)
+        if gate:
+            return jsonify({**gate, 'success': False}), gate_code
+
         # Get post data - use subtitle (expanded idea description) instead of expanded_idea
         with db_manager.get_cursor() as cursor:
             cursor.execute("""

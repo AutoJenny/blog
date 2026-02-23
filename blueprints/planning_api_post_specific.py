@@ -1740,7 +1740,13 @@ def api_create_new_post():
                 INSERT INTO post_development (post_id, idea_seed)
                 VALUES (%s, %s)
             """, (post_id, topic))
-            
+
+            # W2-FIX-1: Ensure default sections for immediate authoring
+            from utils.posts.post_factory import ensure_default_sections
+            ensure_default_sections(post_id, variant='generic', template_name='default_generic')
+            # W2-FIX-5: New post starts at workflow_stage=idea
+            from utils.posts.workflow_stage import ensure_workflow_stage_idea
+            ensure_workflow_stage_idea(post_id)
             return jsonify({
                 'success': True,
                 'post_id': post_id,
@@ -1790,8 +1796,13 @@ def api_posts_idea_scope(post_id):
     
     elif request.method == 'POST':
         try:
+            from utils.posts.workflow_stage import require_workflow_stage
+            gate, gate_code = require_workflow_stage(post_id, 'planning', request=request)
+            if gate:
+                return jsonify({**gate, 'success': False}), gate_code
+
             data = request.get_json()
-            
+
             # Handle both 'topics' and 'idea_scope' formats for backward compatibility
             if 'topics' in data:
                 # Format topics as JSON for storage (brainstorm page format)

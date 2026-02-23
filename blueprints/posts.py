@@ -780,7 +780,13 @@ def api_create_profile_post():
                 INSERT INTO post_development (post_id, idea_seed, updated_at)
                 VALUES (%s, %s, NOW())
             """, (post_id, f"Profile post for {product_name}"))
-            
+
+            # W2-FIX-1: Ensure default sections for immediate authoring
+            from utils.posts.post_factory import ensure_default_sections
+            ensure_default_sections(post_id, variant='profile', template_name='default_profile')
+            # W2-FIX-5: New post starts at workflow_stage=idea
+            from utils.posts.workflow_stage import ensure_workflow_stage_idea
+            ensure_workflow_stage_idea(post_id)
             return jsonify({
                 'success': True,
                 'post_id': post_id,
@@ -793,82 +799,101 @@ def api_create_profile_post():
         logger.error(traceback.format_exc())
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@bp.route('/posts/<int:post_id>/advance-stage', methods=['POST'])
+def api_advance_workflow_stage(post_id):
+    """
+    W2-FIX-5: Advance post workflow stage. JSON: {"target_stage": "structured"|...}
+    If target_stage=ready, also sets status=in_process (Mark Ready).
+    """
+    try:
+        from utils.posts.workflow_stage import advance_stage, get_workflow_stage, STAGES
+        data = request.get_json() or {}
+        target = (data.get("target_stage") or "").strip().lower()
+        if not target or target not in STAGES:
+            return jsonify({
+                "success": False,
+                "error": f"target_stage required. Allowed: {', '.join(STAGES)}",
+            }), 400
+        override = data.get("override") or request.args.get("override") == "1"
+        ok, err = advance_stage(post_id, target, actor="ui", override=override)
+        if not ok:
+            return jsonify({"success": False, "error": err or "Advance failed"}), (
+                404 if "not found" in (err or "").lower() else 400
+            )
+        return jsonify({
+            "success": True,
+            "workflow_stage": get_workflow_stage(post_id, persist_if_missing=False),
+        }), 200
+    except Exception as e:
+        logger.error(f"Error advancing workflow stage: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route('/api/posts/<int:post_id>/workflow-stage', methods=['GET'])
+def api_get_workflow_stage(post_id):
+    """
+    W2-FIX-5: Get current workflow stage + next advanceable (for UI).
+    Migrates legacy posts on first access.
+    """
+    try:
+        from utils.posts.workflow_stage import get_workflow_stage, get_next_advanceable_stage
+        stage = get_workflow_stage(post_id, persist_if_missing=True)
+        next_stage = get_next_advanceable_stage(post_id)
+        return jsonify({
+            "success": True,
+            "workflow_stage": stage,
+            "next_advanceable": next_stage,
+        }), 200
+    except Exception as e:
+        logger.error(f"Error getting workflow stage: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @bp.route('/api/posts/<int:post_id>/fields/status', methods=['POST'])
 def api_update_post_status(post_id):
     """
-    Update a post's status.
-    Used by posts_list.html template for delete/restore operations.
+    Update a post's status via canonical transitions (W2-FIX-4).
+    Expected JSON: {"value": "deleted" | "draft" | "in_process" | "published" | "archived" | "restore"}
     
-    Expected JSON: {"value": "deleted" | "draft" | "published" | "restore" | etc.}
-    
-    - Cannot delete published posts (returns error)
-    - When restoring from deleted, restores to 'published' if it was published before
-    - Otherwise normal status update
+    - Cannot delete published posts (transition not allowed; use archive first)
+    - restore: from deleted -> draft or published (based on clan_post_id)
     """
     try:
+        from utils.posts.status_transitions import transition_post_status, get_post_status
+        from config.database import db_manager
+
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
-        
+
         new_status = data.get('value')
         if not new_status:
             return jsonify({"error": "Status value is required"}), 400
-        
-        with db_manager.get_connection() as conn:
-            with conn.cursor() as cursor:
-                # Get current status
-                cursor.execute("SELECT status FROM post WHERE id = %s", (post_id,))
-                current = cursor.fetchone()
-                
-                if not current:
-                    return jsonify({"error": "Post not found"}), 404
-                
-                current_status = current['status']
-                
-                # Prevent deletion of published posts
-                if new_status == 'deleted' and current_status == 'published':
-                    return jsonify({
-                        "error": "Cannot delete published posts. Please unpublish first.",
-                        "success": False
-                    }), 400
-                
-                # When restoring from deleted, check if it should be restored to published
-                # We'll check if there's a clan_post_id or other indicators it was published
-                if current_status == 'deleted' and new_status == 'restore':
-                    # Check if post was published by looking for indicators
-                    cursor.execute("""
-                        SELECT clan_post_id, clan_uploaded_url 
-                        FROM post 
-                        WHERE id = %s
-                    """, (post_id,))
-                    post_info = cursor.fetchone()
-                    
-                    # If it has clan_post_id or uploaded_url, it was likely published
-                    if post_info and (post_info.get('clan_post_id') or post_info.get('clan_uploaded_url')):
-                        restore_to = 'published'
-                    else:
-                        restore_to = 'draft'
-                    
-                    cursor.execute("""
-                        UPDATE post 
-                        SET status = %s, updated_at = NOW()
-                        WHERE id = %s
-                    """, (restore_to, post_id))
-                else:
-                    # Normal status update
-                    cursor.execute("""
-                        UPDATE post 
-                        SET status = %s, updated_at = NOW()
-                        WHERE id = %s
-                    """, (new_status, post_id))
-                
-                conn.commit()
-        
-        return jsonify({
-            "success": True,
-            "message": f"Post status updated"
-        })
-        
+
+        current = get_post_status(post_id)
+        if not current:
+            return jsonify({"error": "Post not found"}), 404
+
+        target = (new_status or "").strip().lower()
+        if target == "restore" and current == "deleted":
+            with db_manager.get_cursor() as cursor:
+                cursor.execute(
+                    "SELECT clan_post_id, clan_uploaded_url FROM post WHERE id = %s",
+                    (post_id,)
+                )
+                row = cursor.fetchone()
+            target = "published" if (row and (row.get("clan_post_id") or row.get("clan_uploaded_url"))) else "draft"
+        elif target == "restore":
+            return jsonify({"error": "Restore only applies when status is deleted"}), 400
+
+        override = data.get("override") or request.args.get("override") == "1"
+        ok, err = transition_post_status(post_id, target, actor="posts_api", override=override)
+        if not ok:
+            return jsonify({"error": err or "Transition failed", "success": False}), (
+                404 if "not found" in (err or "").lower() else 400
+            )
+
+        return jsonify({"success": True, "message": "Post status updated"})
     except Exception as e:
         logger.error(f"Error updating post status: {e}")
         return jsonify({"error": str(e)}), 500

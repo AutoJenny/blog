@@ -40,16 +40,30 @@ def api_create_profile():
         
         with db_manager.get_connection() as conn:
             with conn.cursor() as cur:
+                # W2-FIX-1: Generate slug (required by schema)
+                import re
+                base = re.sub(r"[^a-z0-9\-]+", '-', (title or '').lower().strip().replace(' ', '-'))
+                base = re.sub(r"-+", '-', base).strip('-') or 'profile'
+                slug = base
+                suffix = 1
+                while True:
+                    cur.execute("SELECT 1 FROM post WHERE slug = %s LIMIT 1", (slug,))
+                    if not cur.fetchone():
+                        break
+                    suffix += 1
+                    slug = f"{base}-{suffix}"
+
                 # Create post record
                 cur.execute("""
                     INSERT INTO post (
-                        title, profile_type, profile_product_id, profile_category_id,
+                        title, slug, profile_type, profile_product_id, profile_category_id,
                         profile_producer_name, profile_standfirst, status, created_at, updated_at
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
                     RETURNING id
                 """, (
                     title,
+                    slug,
                     profile_type,
                     data.get('profile_product_id') if profile_type == 'product' else None,
                     data.get('profile_category_id') if profile_type == 'category' else None,
@@ -59,7 +73,14 @@ def api_create_profile():
                 ))
                 
                 post_id = cur.fetchone()[0]
-                
+
+                # W2-FIX-1: Ensure post_development and default sections for immediate authoring
+                from utils.posts.post_factory import ensure_post_development, ensure_default_sections
+                ensure_post_development(post_id, idea_seed=f"Profile: {title}")
+                ensure_default_sections(post_id, variant='profile', template_name='default_profile')
+                # W2-FIX-5: New post starts at workflow_stage=idea
+                from utils.posts.workflow_stage import ensure_workflow_stage_idea
+                ensure_workflow_stage_idea(post_id)
                 # Schedule in calendar if week/year provided
                 year = data.get('year')
                 week_number = data.get('week_number')

@@ -459,41 +459,25 @@
         async function publishPost(postId) {
             console.log('Publishing post:', postId);
             
-            // Step 1: Validate data before publishing
-            showToast('Validating post data...', 'info');
+            // Step 1: Preflight (same gate as publish route)
+            showToast('Running preflight...', 'info');
             try {
-                const validationResponse = await fetch(`/launchpad/api/validate-publish/${postId}`);
-                const validation = await validationResponse.json();
+                const preflightRes = await fetch(`/launchpad/api/publish/${postId}/preflight`);
+                const preflight = await preflightRes.json();
                 
-                if (!validation.valid) {
-                    // Build informative error message
-                    let errorMessage = 'Validation failed:\n\n';
-                    validation.issues.forEach(issue => {
-                        if (issue.type === 'missing_field') {
-                            errorMessage += `Missing required field: ${issue.field}\n`;
-                        } else if (issue.type === 'raw_image_path' || issue.type === 'png_in_optimized') {
-                            errorMessage += `Image path issue: ${issue.field} uses ${issue.path}\n`;
-                        } else if (issue.type === 'raw_section_image') {
-                            errorMessage += `Section "${issue.section_heading}" uses raw image: ${issue.path}\n`;
-                        } else if (issue.type === 'cross_promotion_missing') {
-                            errorMessage += 'Cross-promotion configured but not attached\n';
-                        } else {
-                            errorMessage += `${issue.type}: ${issue.message || JSON.stringify(issue)}\n`;
-                        }
-                    });
-                    
-                    alert(errorMessage);
-                    showToast('Validation failed. Check console for details.', 'error');
+                if (!preflight.ok) {
+                    let errMsg = (preflight.errors || []).join('\n');
+                    if (preflight.fix) errMsg += '\n\n' + preflight.fix;
+                    alert('Preflight failed:\n\n' + errMsg);
+                    showToast('Preflight failed.', 'error');
                     return;
                 }
-                
-                // Validation passed - proceed with publishing
-                showToast('Validation passed. Publishing post to Clan.com...', 'info');
-                
+                showToast('Preflight OK. Publishing to Clan.com...', 'info');
             } catch (error) {
-                console.error('Validation error:', error);
-                alert(`Validation check failed: ${error.message}\n\nProceed with publishing anyway?`);
-                // Continue with publishing even if validation fails
+                console.error('Preflight error:', error);
+                alert(`Preflight failed: ${error.message}`);
+                showToast('Preflight failed.', 'error');
+                return;
             }
             
             updatePostStatus(postId, 'publishing');
@@ -523,7 +507,11 @@
                         renderPosts();
                     }
                 } else {
-                    throw new Error(result.error || 'Unknown error occurred');
+                    let errMsg = result.errors && result.errors.length
+                        ? result.errors.join('\n')
+                        : (result.error || 'Unknown error occurred');
+                    if (result.fix) errMsg += '\n\n' + result.fix;
+                    throw new Error(errMsg);
                 }
                 
             } catch (error) {
@@ -566,6 +554,167 @@
         function viewClanPostHtml(postId) {
             console.log('Viewing clan_post HTML for post:', postId);
             window.open(`/clan-post-html/${postId}`, '_blank');
+        }
+
+        async function preflightPost(postId) {
+            try {
+                const response = await fetch(`/launchpad/api/publish/${postId}/preflight`);
+                const data = await response.json();
+                let msg = '';
+                if (data.ok) {
+                    msg = 'Preflight OK — ready to publish.\n';
+                    if (data.warnings && data.warnings.length) {
+                        msg += '\nWarnings:\n' + data.warnings.map(w => '• ' + w).join('\n');
+                    }
+                } else {
+                    msg = 'Preflight failed:\n\n' + (data.errors || []).map(e => '• ' + e).join('\n');
+                    if (data.warnings && data.warnings.length) {
+                        msg += '\n\nWarnings:\n' + data.warnings.map(w => '• ' + w).join('\n');
+                    }
+                }
+                alert(msg);
+            } catch (e) {
+                alert('Preflight request failed: ' + e.message);
+            }
+        }
+
+        async function loadOutputReadiness(postId) {
+            const el = document.getElementById('outputReadinessStatus-' + postId);
+            if (!el) return;
+            el.textContent = '…';
+            try {
+                const res = await fetch(`/launchpad/api/publish/${postId}/output-readiness`);
+                const data = await res.json();
+                if (data.ok) {
+                    el.innerHTML = '<span class="text-success">✓ Output Ready</span>';
+                } else {
+                    const req = data.required_substage || 'unknown';
+                    el.innerHTML = '<span class="text-warning">✗ Missing substage: ' + req + '</span>';
+                    if (data.errors && data.errors.length) el.title = data.errors.join('\n');
+                }
+            } catch (e) {
+                el.textContent = '—';
+            }
+        }
+
+        function refreshOutputReadiness(postId) {
+            loadOutputReadiness(postId);
+        }
+
+        async function loadPublishEssentials(postId, formEl) {
+            try {
+                const res = await fetch(`/launchpad/api/publish/${postId}/essentials`);
+                const data = await res.json();
+                if (!res.ok || !data.essentials) return;
+                const e = data.essentials;
+                formEl.querySelector('.essentials-title').value = e.title || '';
+                formEl.querySelector('.essentials-subtitle').value = e.subtitle || '';
+                formEl.querySelector('.essentials-meta-title').value = e.meta_title || '';
+                formEl.querySelector('.essentials-meta-desc').value = e.meta_description || '';
+                formEl.querySelector('.essentials-status').value = e.status || 'draft';
+            } catch (err) {
+                console.error('Load essentials error:', err);
+            }
+        }
+
+        async function loadWorkflowStageForPost(postId) {
+            const valEl = document.getElementById('ws-value-' + postId);
+            const advEl = document.getElementById('ws-advance-' + postId);
+            if (!valEl) return;
+            try {
+                const res = await fetch('/api/posts/' + postId + '/workflow-stage');
+                const data = await res.json();
+                if (!data.success) return;
+                valEl.textContent = data.workflow_stage || '—';
+                if (advEl) {
+                    if (data.next_advanceable) {
+                        advEl.innerHTML = '<button type="button" class="btn btn-sm btn-outline-success advance-stage-btn" data-target="' + data.next_advanceable + '" data-post-id="' + postId + '">Advance to ' + data.next_advanceable.replace(/_/g, ' ') + '</button>';
+                        advEl.querySelector('.advance-stage-btn').addEventListener('click', async function() {
+                            const btn = this;
+                            btn.disabled = true;
+                            try {
+                                const r = await fetch('/posts/' + btn.dataset.postId + '/advance-stage', {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({target_stage: btn.dataset.target})
+                                });
+                                const j = await r.json();
+                                if (j.success) loadWorkflowStageForPost(postId);
+                                else { alert(j.error || 'Advance failed'); btn.disabled = false; }
+                            } catch (e) { alert('Request failed'); btn.disabled = false; }
+                        });
+                    } else advEl.innerHTML = '';
+                }
+            } catch (e) {
+                valEl.textContent = '—';
+            }
+        }
+
+        async function savePublishEssentials(postId, formEl) {
+            const fb = formEl.querySelector('.essentials-feedback');
+            fb.style.display = 'none';
+            try {
+                const payload = {
+                    title: formEl.querySelector('.essentials-title').value.trim(),
+                    subtitle: formEl.querySelector('.essentials-subtitle').value.trim(),
+                    meta_title: formEl.querySelector('.essentials-meta-title').value.trim(),
+                    meta_description: formEl.querySelector('.essentials-meta-desc').value.trim(),
+                    status: formEl.querySelector('.essentials-status').value
+                };
+                const res = await fetch(`/launchpad/api/publish/${postId}/essentials`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    fb.className = 'essentials-feedback small mt-2 text-success';
+                    fb.textContent = 'Saved. Run Preflight to verify.';
+                    fb.style.display = 'block';
+                    const idx = posts.findIndex(p => p.id === postId);
+                    if (idx >= 0) {
+                        posts[idx].title = payload.title;
+                        posts[idx].subtitle = payload.subtitle;
+                        posts[idx].status = payload.status;
+                    }
+                } else {
+                    fb.className = 'essentials-feedback small mt-2 text-danger';
+                    fb.textContent = data.error || 'Save failed';
+                    fb.style.display = 'block';
+                }
+            } catch (err) {
+                fb.className = 'essentials-feedback small mt-2 text-danger';
+                fb.textContent = err.message || 'Save failed';
+                fb.style.display = 'block';
+            }
+        }
+
+        async function markPostReady(postId, formEl) {
+            const fb = formEl.querySelector('.essentials-feedback');
+            fb.style.display = 'none';
+            try {
+                const res = await fetch(`/launchpad/api/publish/${postId}/mark-ready`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    formEl.querySelector('.essentials-status').value = 'in_process';
+                    fb.className = 'essentials-feedback small mt-2 text-success';
+                    fb.textContent = 'Status set to in_process (ready).';
+                    fb.style.display = 'block';
+                    const idx = posts.findIndex(p => p.id === postId);
+                    if (idx >= 0) {
+                        posts[idx].status = 'in_process';
+                        updateStatistics();
+                    }
+                } else {
+                    fb.className = 'essentials-feedback small mt-2 text-danger';
+                    fb.textContent = data.error || 'Mark Ready failed';
+                    fb.style.display = 'block';
+                }
+            } catch (err) {
+                fb.className = 'essentials-feedback small mt-2 text-danger';
+                fb.textContent = err.message || 'Mark Ready failed';
+                fb.style.display = 'block';
+            }
         }
 
         function updatePostStatus(postId, newStatus) {
@@ -748,6 +897,83 @@
                     </div>
                 </div>
                 
+                <!-- Publish Essentials (W2-FIX-3) -->
+                <div class="publish-essentials-panel mt-3">
+                    <div class="accordion" id="essentialsAccordion${post.id}">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="essentialsHeader${post.id}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#essentialsCollapse${post.id}" aria-expanded="false" aria-controls="essentialsCollapse${post.id}">
+                                    <i class="fas fa-check-double me-2"></i>Publish Essentials
+                                </button>
+                            </h2>
+                            <div id="essentialsCollapse${post.id}" class="accordion-collapse collapse" aria-labelledby="essentialsHeader${post.id}" data-bs-parent="#essentialsAccordion${post.id}">
+                                <div class="accordion-body">
+                                    <div class="publish-essentials-form" data-post-id="${post.id}">
+                                        <div class="row g-2 mb-2 workflow-stage-row" data-post-id="${post.id}">
+                                            <div class="col-12">
+                                                <span class="text-muted small">Stage:</span>
+                                                <span class="workflow-stage-value" id="ws-value-${post.id}">...</span>
+                                                <span class="workflow-stage-advance ms-2" id="ws-advance-${post.id}"></span>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-md-6">
+                                                <label class="form-label small mb-0">Title</label>
+                                                <input type="text" class="form-control form-control-sm essentials-title" placeholder="Post title" value="${(post.title || post.provisional_title || post.idea_seed || '').replace(/"/g, '&quot;')}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label small mb-0">Subtitle</label>
+                                                <input type="text" class="form-control form-control-sm essentials-subtitle" placeholder="Visible intro" value="${(post.subtitle || '').replace(/"/g, '&quot;')}">
+                                            </div>
+                                        </div>
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-md-6">
+                                                <label class="form-label small mb-0">Meta Title (optional)</label>
+                                                <input type="text" class="form-control form-control-sm essentials-meta-title" placeholder="SEO title" value="${(post.meta_title || '').replace(/"/g, '&quot;')}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label small mb-0">Meta Description (optional)</label>
+                                                <input type="text" class="form-control form-control-sm essentials-meta-desc" placeholder="SEO description" value="${(post.meta_description || '').replace(/"/g, '&quot;')}">
+                                            </div>
+                                        </div>
+                                        <div class="row g-2 mb-2 align-items-end">
+                                            <div class="col-md-4">
+                                                <label class="form-label small mb-0">Status</label>
+                                                <select class="form-select form-select-sm essentials-status">
+                                                    <option value="draft" ${(post.status || 'draft') === 'draft' ? 'selected' : ''}>draft</option>
+                                                    <option value="in_process" ${(post.status || '') === 'in_process' ? 'selected' : ''}>in_process (ready)</option>
+                                                    <option value="published" ${(post.status || '') === 'published' ? 'selected' : ''}>published</option>
+                                                    <option value="archived" ${(post.status || '') === 'archived' ? 'selected' : ''}>archived</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-8 d-flex gap-2 flex-wrap align-items-end">
+                                                <button type="button" class="btn btn-success btn-sm mark-ready-btn" title="Set status to in_process">
+                                                    <i class="fas fa-check-circle me-1"></i>Mark Ready
+                                                </button>
+                                                <a href="/header/posts/${post.id}/header-image" target="_blank" class="btn btn-outline-secondary btn-sm" title="Pick header image">
+                                                    <i class="fas fa-image me-1"></i>Header Image
+                                                </a>
+                                                <button type="button" class="btn btn-primary btn-sm save-essentials-btn">
+                                                    <i class="fas fa-save me-1"></i>Save
+                                                </button>
+                                                <button type="button" class="btn btn-outline-info btn-sm" onclick="preflightPost(${post.id})">
+                                                    <i class="fas fa-clipboard-check me-1"></i>Preflight
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="output-readiness-section mt-2 small">
+                                            <strong>Output Readiness:</strong>
+                                            <span id="outputReadinessStatus-${post.id}" class="ms-1">—</span>
+                                            <button type="button" class="btn btn-link btn-sm p-0 ms-1" onclick="refreshOutputReadiness(${post.id})" title="Refresh">⟳</button>
+                                        </div>
+                                        <div class="essentials-feedback small mt-2" style="display:none;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Clan.com API Content Accordion -->
                 <div class="clan-api-accordion">
                     <div class="accordion" id="clanApiAccordion${post.id}">
@@ -831,6 +1057,20 @@
                 previewBtn.addEventListener('click', () => previewPost(post.id));
             }
             
+            // Publish Essentials: load when expanded, wire Save + Mark Ready
+            const essentialsCollapse = div.querySelector('#essentialsCollapse' + post.id);
+            const essentialsForm = div.querySelector('.publish-essentials-form');
+            if (essentialsCollapse && essentialsForm) {
+                essentialsCollapse.addEventListener('shown.bs.collapse', function onShown() {
+                    loadPublishEssentials(post.id, essentialsForm);
+                    loadWorkflowStageForPost(post.id);
+                    loadOutputReadiness(post.id);
+                    essentialsCollapse.removeEventListener('shown.bs.collapse', onShown);
+                });
+                essentialsForm.querySelector('.save-essentials-btn')?.addEventListener('click', () => savePublishEssentials(post.id, essentialsForm));
+                essentialsForm.querySelector('.mark-ready-btn')?.addEventListener('click', () => markPostReady(post.id, essentialsForm));
+            }
+            
             return div;
         }
 
@@ -908,6 +1148,9 @@
                         <button class="btn retry-btn">
                             <i class="fas fa-redo me-1"></i>Retry
                         </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="preflightPost(${post.id})">
+                            <i class="fas fa-clipboard-check me-1"></i>Preflight
+                        </button>
                         <div class="view-buttons-group">
                             <button class="btn view-btn">
                                 <i class="fas fa-eye me-1"></i>Preview
@@ -920,6 +1163,9 @@
             } else if (post.status === 'published') {
                 return `
                     <div class="action-buttons-container">
+                        <button class="btn btn-outline-info btn-sm" onclick="preflightPost(${post.id})">
+                            <i class="fas fa-clipboard-check me-1"></i>Preflight
+                        </button>
                         <div class="view-buttons-group">
                             <button class="btn view-btn">
                                 <i class="fas fa-eye me-1"></i>Preview
@@ -934,6 +1180,9 @@
                     <div class="action-buttons-container">
                         <button class="btn publish-btn">
                             <i class="fas fa-upload me-1"></i>Publish
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="preflightPost(${post.id})">
+                            <i class="fas fa-clipboard-check me-1"></i>Preflight
                         </button>
                         <div class="view-buttons-group">
                             <button class="btn view-btn">

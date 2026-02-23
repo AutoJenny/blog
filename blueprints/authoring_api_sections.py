@@ -136,6 +136,24 @@ def api_get_sections(post_id):
                     ORDER BY section_order
                 """, (post_id,))
             sections = cursor.fetchall()
+
+            # W2-FIX-1: Ensure default sections on first authoring visit (legacy posts created before fix)
+            if not sections and post_type != 'recipe':
+                from utils.posts.post_factory import ensure_default_sections
+                created = ensure_default_sections(post_id, variant=post_type if post_type in ('profile', 'generated') else 'generic')
+                if created:
+                    # Re-fetch sections
+                    cursor.execute("""
+                        SELECT id, section_order, section_heading, section_description,
+                               status, draft, polished, ideas_to_include, facts_to_include,
+                               highlighting, image_concepts, image_prompts, image_captions,
+                               image_alt_text, selected_image_concept, section_type,
+                               post_section_elements
+                        FROM post_section
+                        WHERE post_id = %s
+                        ORDER BY section_order
+                    """, (post_id,))
+                    sections = cursor.fetchall()
             
             # CRITICAL: Auto-populate missing section headings for recipe sections
             # This ensures headings are always present, even if they were lost or never set
@@ -181,84 +199,9 @@ def api_get_sections(post_id):
                         logger.warning(f"Failed to parse topic_allocation for post {post_id}")
                         topic_allocation_data = None
             
-            # If no sections found in post_section table, check post_development.sections
-            if not sections:
-                cursor.execute("""
-                    SELECT sections FROM post_development WHERE post_id = %s
-                """, (post_id,))
-                result = cursor.fetchone()
-                
-                if result and result.get('sections'):
-                    try:
-                        sections_data = json.loads(result['sections'])
-                        if isinstance(sections_data, dict) and 'sections' in sections_data:
-                            sections_list = sections_data['sections']
-                        elif isinstance(sections_data, list):
-                            sections_list = sections_data
-                        else:
-                            sections_list = []
-                        
-                        # Convert JSON sections to post_section-like format
-                        formatted_sections = []
-                        for i, section in enumerate(sections_list):
-                            # Get raw data chunks from topic_allocation for this section (profile posts)
-                            data_chunks = []
-                            if post_type == 'profile' and topic_allocation_data:
-                                try:
-                                    allocations = topic_allocation_data.get('allocations', [])
-                                    section_order = section.get('order', section.get('index', i + 1))
-                                    # Match by section_order (section_01, section_02, etc.) or section_code (S01, S02, etc.)
-                                    for allocation in allocations:
-                                        allocation_section_id = allocation.get('section_id', '')
-                                        allocation_section_code = allocation.get('section_code', '').replace('{', '').replace('}', '')
-                                        # Match by order number - try multiple formats
-                                        section_order_str = str(section_order)
-                                        section_order_padded = f"{section_order:02d}"
-                                        
-                                        # Check if section_id matches (e.g., "section_1" or "section_01")
-                                        if allocation_section_id:
-                                            if (f'section_{section_order}' == allocation_section_id) or \
-                                               (f'section_{section_order_padded}' == allocation_section_id):
-                                                data_chunks = allocation.get('data_chunks', [])
-                                                break
-                                        
-                                        # Check if section_code matches (e.g., "S01" or "S1")
-                                        if allocation_section_code:
-                                            if (f'S{section_order_padded}' == allocation_section_code) or \
-                                               (f'S{section_order}' == allocation_section_code):
-                                                data_chunks = allocation.get('data_chunks', [])
-                                                break
-                                except (KeyError, TypeError, AttributeError) as e:
-                                    logger.warning(f"Error extracting data chunks for section {i + 1}: {e}")
-                                    data_chunks = []
-                            
-                            formatted_sections.append({
-                                'id': section.get('id', i + 1),
-                                'section_order': section.get('order', section.get('index', i + 1)),
-                                'section_heading': section.get('title', f'Section {i + 1}'),
-                                'section_description': section.get('subtitle', ''),
-                                'title': section.get('title', f'Section {i + 1}'),
-                                'description': section.get('subtitle', ''),
-                                'order': section.get('order', section.get('index', i + 1)),
-                                'status': 'draft',
-                                'draft': None,
-                                'polished': None,
-                                'ideas_to_include': None,
-                                'facts_to_include': None,
-                                'highlighting': None,
-                                'image_concepts': section.get('image_concepts'),  # Get from JSON, not None
-                                'image_prompts': section.get('image_prompts'),
-                                'image_captions': section.get('image_captions'),
-                                'image_alt_text': None,
-                                'selected_image_concept': section.get('selected_image_concept'),
-                                'topics': section.get('topics', []),
-                                'data_chunks': data_chunks  # Raw data chunks for profile posts
-                            })
-                        sections = formatted_sections
-                    except (json.JSONDecodeError, TypeError, KeyError) as e:
-                        logger.warning(f"Failed to parse sections from post_development: {e}")
-                        sections = []
-            
+            # W2-FIX-1: Do NOT fall back to post_development.sections. Only return real post_section rows
+            # (non-numeric IDs from JSON cannot be saved; ensure_default_sections guarantees DB sections at creation)
+
             # Convert to frontend-compatible format
             formatted_sections = []
             for section in sections:
@@ -383,6 +326,14 @@ def api_get_section(post_id, section_id):
             
             # Handle PUT request for updating section
             if request.method == 'PUT':
+                from utils.posts.status_transitions import require_post_editable
+                from utils.posts.workflow_stage import require_workflow_stage
+                err, code = require_post_editable(post_id, request=request)
+                if err:
+                    return jsonify({'error': err, 'status_blocked': True}), code
+                gate, gate_code = require_workflow_stage(post_id, 'authoring', request=request)
+                if gate:
+                    return jsonify({**gate, 'success': False}), gate_code
                 data = request.get_json()
                 update_fields = []
                 update_values = []
@@ -427,35 +378,15 @@ def api_get_section(post_id, section_id):
                 WHERE post_id = %s AND id = %s
             """, (post_id, int(section_id)))
             section = cursor.fetchone()
-            
-            # If not found in post_section, check post_development.sections
-            section_data = None
+
+            # W2-FIX-1: Do NOT fall back to post_development.sections for single section (non-numeric IDs cannot be saved)
             if not section:
-                cursor.execute("""
-                    SELECT sections FROM post_development WHERE post_id = %s
-                """, (post_id,))
-                result = cursor.fetchone()
-                
-                if result and result.get('sections'):
-                    try:
-                        sections_data = json.loads(result['sections'])
-                        if isinstance(sections_data, dict) and 'sections' in sections_data:
-                            sections_list = sections_data['sections']
-                        elif isinstance(sections_data, list):
-                            sections_list = sections_data
-                        else:
-                            sections_list = []
-                        
-                        # Find the section matching the requested ID
-                        section_data = next((s for s in sections_list if str(s.get('id', '')) == str(section_id)), None)
-                    except (json.JSONDecodeError, TypeError, KeyError) as e:
-                        logger.warning(f"Failed to parse sections from post_development: {e}")
-                        section_data = None
+                return jsonify({'error': 'Section not found'}), 404
             
-            if section or section_data:
+            if section:
                 # Get detailed description from section_structure
                 detailed_description = None
-                section_order = section['section_order'] if section else section_data.get('order', section_data.get('index', int(section_id)))
+                section_order = section['section_order']
                 
                 try:
                     cursor.execute("""
@@ -479,92 +410,61 @@ def api_get_section(post_id, section_id):
                 except Exception as e:
                     logger.warning(f"Could not fetch detailed description: {e}")
                 
-                # Convert to frontend-compatible format
-                if section:
-                    # From post_section table
-                    # But also check post_development.sections for image fields that might be saved there
-                    image_concepts_from_json = section.get('image_concepts')
-                    selected_concept_from_json = section.get('selected_image_concept')
-                    
-                    # If image_concepts is NULL in post_section, check post_development.sections
-                    if not image_concepts_from_json:
-                        cursor.execute("""
-                            SELECT sections FROM post_development WHERE post_id = %s
-                        """, (post_id,))
-                        dev_result = cursor.fetchone()
-                        if dev_result and dev_result.get('sections'):
-                            try:
-                                dev_sections_data = json.loads(dev_result['sections'])
-                                if isinstance(dev_sections_data, dict) and 'sections' in dev_sections_data:
-                                    dev_sections_list = dev_sections_data['sections']
-                                elif isinstance(dev_sections_data, list):
-                                    dev_sections_list = dev_sections_data
-                                else:
-                                    dev_sections_list = []
-                                
-                                # Find matching section
-                                for dev_section in dev_sections_list:
-                                    if str(dev_section.get('id', '')) == str(section['id']):
-                                        image_concepts_from_json = dev_section.get('image_concepts')
-                                        selected_concept_from_json = dev_section.get('selected_image_concept') or selected_concept_from_json
-                                        break
-                            except (json.JSONDecodeError, TypeError):
-                                pass
-                    
-                    formatted_section = {
-                        'id': section['id'],
-                        'section_order': section['section_order'],
-                        'section_heading': section['section_heading'],
-                        'section_description': section['section_description'],
-                        'section_type': section.get('section_type'),  # Include section_type for recipe sections
-                        'title': section['section_heading'],
-                        'description': section['section_description'],
-                        'detailed_description': detailed_description,
-                        'order': section['section_order'],
-                        'status': section['status'],
-                        'draft': section['draft'],
-                        'polished': section['polished'],
-                        'ideas_to_include': section['ideas_to_include'],
-                        'facts_to_include': section['facts_to_include'],
-                        'highlighting': section['highlighting'],
-                        'image_concepts': image_concepts_from_json,  # Use from JSON if not in DB
-                        'image_prompts': section['image_prompts'],
-                        'image_captions': section['image_captions'],
-                        'image_alt_text': section['image_alt_text'],
-                        'selected_image_concept': selected_concept_from_json,
-                        'topics': []
-                    }
-                else:
-                    # From post_development.sections
-                    formatted_section = {
-                        'id': int(section_id),
-                        'section_order': section_order,
-                        'section_heading': section_data.get('title', f'Section {section_id}'),
-                        'section_description': section_data.get('subtitle', ''),
-                        'title': section_data.get('title', f'Section {section_id}'),
-                        'description': section_data.get('subtitle', ''),
-                        'detailed_description': detailed_description,
-                        'order': section_order,
-                        'status': 'draft',
-                        'draft': None,
-                        'polished': None,
-                        'ideas_to_include': None,
-                        'facts_to_include': None,
-                        'highlighting': None,
-                        'image_concepts': None,
-                        'image_prompts': None,
-                        'image_captions': None,
-                        'image_alt_text': None,
-                        'selected_image_concept': None,
-                        'topics': section_data.get('topics', [])
-                    }
-                
+                # Convert to frontend-compatible format (post_section only; W2-FIX-1 no JSON fallback)
+                image_concepts_from_json = section.get('image_concepts')
+                selected_concept_from_json = section.get('selected_image_concept')
+
+                # Augment image fields from post_development.sections if missing in post_section
+                if not image_concepts_from_json:
+                    cursor.execute("""
+                        SELECT sections FROM post_development WHERE post_id = %s
+                    """, (post_id,))
+                    dev_result = cursor.fetchone()
+                    if dev_result and dev_result.get('sections'):
+                        try:
+                            dev_sections_data = json.loads(dev_result['sections'])
+                            if isinstance(dev_sections_data, dict) and 'sections' in dev_sections_data:
+                                dev_sections_list = dev_sections_data['sections']
+                            elif isinstance(dev_sections_data, list):
+                                dev_sections_list = dev_sections_data
+                            else:
+                                dev_sections_list = []
+                            for dev_section in dev_sections_list:
+                                if str(dev_section.get('id', '')) == str(section['id']):
+                                    image_concepts_from_json = dev_section.get('image_concepts')
+                                    selected_concept_from_json = dev_section.get('selected_image_concept') or selected_concept_from_json
+                                    break
+                        except (json.JSONDecodeError, TypeError):
+                            pass
+
+                formatted_section = {
+                    'id': section['id'],
+                    'section_order': section['section_order'],
+                    'section_heading': section['section_heading'],
+                    'section_description': section['section_description'],
+                    'section_type': section.get('section_type'),
+                    'title': section['section_heading'],
+                    'description': section['section_description'],
+                    'detailed_description': detailed_description,
+                    'order': section['section_order'],
+                    'status': section['status'],
+                    'draft': section['draft'],
+                    'polished': section['polished'],
+                    'ideas_to_include': section['ideas_to_include'],
+                    'facts_to_include': section['facts_to_include'],
+                    'highlighting': section['highlighting'],
+                    'image_concepts': image_concepts_from_json,
+                    'image_prompts': section['image_prompts'],
+                    'image_captions': section['image_captions'],
+                    'image_alt_text': section['image_alt_text'],
+                    'selected_image_concept': selected_concept_from_json,
+                    'topics': []
+                }
+
                 return jsonify({
                     'success': True,
                     'section': formatted_section
                 })
-            else:
-                return jsonify({'error': 'Section not found'}), 404
                 
     except Exception as e:
         logger.error(f"Error fetching section: {e}")

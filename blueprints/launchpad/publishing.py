@@ -10,6 +10,12 @@ from blueprints.launchpad.publishing_helpers import (
     get_post_with_development,
     find_header_image
 )
+from utils.publishing.validators import validate_post_for_clan_publish, PUBLISHABLE_POST_STATUSES
+from utils.posts.status_transitions import (
+    transition_post_status,
+    USE_NOW,
+    USE_NOW_IF_NULL,
+)
 
 bp = Blueprint("publishing", __name__)
 logger = logging.getLogger(__name__)
@@ -20,10 +26,149 @@ def publishing():
     """Publishing management page."""
     return render_template('launchpad/publishing.html')
 
+
+@bp.route('/api/publish/<int:post_id>/preflight', methods=['GET'])
+def preflight_publish(post_id):
+    """Preflight validation for Clan publish. Returns ok, errors, warnings, required_fields_snapshot."""
+    result = validate_post_for_clan_publish(post_id)
+    if "Post not found" in result.get("errors", []):
+        return jsonify(result), 404
+    return jsonify(result), 200
+
+
+@bp.route('/api/publish/<int:post_id>/output-readiness', methods=['GET'])
+def output_readiness(post_id):
+    """W2-FIX-8: Output readiness for blog channel. Returns ok, required_substage, current_substage, errors, warnings."""
+    from utils.posts.output_readiness import get_output_readiness
+    output_channel = request.args.get('output', 'blog').lower()
+    result = get_output_readiness(post_id, output_channel=output_channel)
+    if "Post not found" in (result.get("errors") or []):
+        return jsonify(result), 404
+    return jsonify(result), 200
+
+
+@bp.route('/api/publish/<int:post_id>/mark-ready', methods=['POST'])
+def mark_post_ready(post_id):
+    """Set post status to in_process (ready to publish). W2-FIX-5: Allowed only from essentials_complete."""
+    from utils.posts.workflow_stage import require_workflow_stage
+    gate, gate_code = require_workflow_stage(post_id, 'publish', request=request)
+    if gate:
+        return jsonify({**gate, "success": False}), gate_code
+    ok, err = transition_post_status(post_id, 'in_process', actor='mark_ready')
+    if not ok:
+        return jsonify({"success": False, "error": err or "Transition failed"}), 404 if "not found" in (err or "").lower() else 400
+    return jsonify({"success": True, "status": "in_process"}), 200
+
+
+@bp.route('/api/publish/<int:post_id>/essentials', methods=['GET', 'POST'])
+def publish_essentials(post_id):
+    """GET: return essentials. POST: save essentials."""
+    if request.method == 'GET':
+        try:
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT p.id, p.title, p.subtitle, p.summary, p.status,
+                           p.meta_title, p.meta_description
+                    FROM post p WHERE p.id = %s
+                """, (post_id,))
+                row = cursor.fetchone()
+            if not row:
+                return jsonify({"error": "Post not found"}), 404
+            return jsonify({"success": True, "essentials": dict(row)}), 200
+        except Exception as e:
+            logger.error(f"Error getting essentials for post {post_id}: {e}")
+            return jsonify({"success": False, "error": str(e)}), 500
+    else:
+        from utils.posts.workflow_stage import require_workflow_stage
+        gate, gate_code = require_workflow_stage(post_id, 'launchpad_essentials', request=request)
+        if gate:
+            return jsonify({**gate, "success": False}), gate_code
+        try:
+            data = request.get_json() or {}
+            allowed = ['title', 'subtitle', 'summary', 'meta_title', 'meta_description', 'status']
+            to_save = {k: data[k] for k in allowed if k in data}
+            if not to_save:
+                return jsonify({"error": "No valid fields provided"}), 400
+            status_val = to_save.pop('status', None)
+            if status_val is not None:
+                ok, err = transition_post_status(post_id, status_val, actor='essentials_save')
+                if not ok:
+                    return jsonify({"success": False, "error": err or "Invalid status transition"}), 400
+            if to_save:
+                with db_manager.get_cursor() as cursor:
+                    sets = ", ".join(f"{k} = %s" for k in to_save)
+                    vals = [to_save[k] for k in to_save]
+                    cursor.execute(
+                        f"UPDATE post SET {sets}, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                        vals + [post_id]
+                    )
+                    if cursor.rowcount == 0:
+                        return jsonify({"success": False, "error": "Post not found"}), 404
+                    cursor.connection.commit()
+            # W2-FIX-6: Validate stage after essentials save (may downgrade if header/subtitle removed)
+            from utils.posts.workflow_stage import validate_workflow_stage
+            validate_workflow_stage(post_id)
+            return jsonify({"success": True}), 200
+        except Exception as e:
+            logger.error(f"Error saving essentials for post {post_id}: {e}")
+            return jsonify({"success": False, "error": str(e)}), 500
+
+
 @bp.route('/api/publish/<int:post_id>', methods=['POST'])
 def publish_post_to_clan(post_id):
-    """Publish a post to clan.com"""
+    """Publish a post to clan.com. Gated by workflow stage, output readiness, preflight, status (W2-FIX-5, W2-FIX-8)."""
+    from utils.posts.workflow_stage import require_workflow_stage, validate_workflow_stage
+    from utils.posts.output_readiness import get_output_readiness
+    validate_workflow_stage(post_id)
+    gate, gate_code = require_workflow_stage(post_id, 'publish', request=request)
+    if gate:
+        return jsonify({**gate, "success": False}), gate_code
+    # W2-FIX-8: Output readiness check before preflight
+    readiness = get_output_readiness(post_id, output_channel='blog')
+    if not readiness.get('ok'):
+        return jsonify({
+            "success": False,
+            "error": "Output not ready for publish",
+            "output_blocked": True,
+            "current_substage": readiness.get("current_substage", ""),
+            "required_substage": readiness.get("required_substage", ""),
+            "errors": readiness.get("errors", []),
+        }), 409
     try:
+        # 1) Preflight validation
+        preflight = validate_post_for_clan_publish(post_id)
+        if "Post not found" in preflight.get("errors", []):
+            return jsonify({
+                "success": False,
+                "error": "Post not found",
+                "preflight": preflight,
+            }), 404
+
+        if not preflight.get("ok"):
+            return jsonify({
+                "success": False,
+                "error": "Preflight validation failed",
+                "errors": preflight.get("errors", []),
+                "warnings": preflight.get("warnings", []),
+                "required_fields_snapshot": preflight.get("required_fields_snapshot", {}),
+            }), 400
+
+        # 2) Status gate (unless override)
+        override = request.args.get("override") == "1" or request.json and request.json.get("override")
+        post = get_post_with_development(post_id)
+        if not post:
+            return jsonify({"success": False, "error": "Post not found"}), 404
+
+        status = (post.get("status") or "").strip().lower()
+        if not override and status not in PUBLISHABLE_POST_STATUSES:
+            fix_msg = "Use Mark Ready to set in_process, then Publish." if status == "draft" else f"Set status to one of: {', '.join(sorted(PUBLISHABLE_POST_STATUSES))}"
+            return jsonify({
+                "success": False,
+                "error": f"Post status '{post.get('status')}' is not publishable. {fix_msg}",
+                "fix": fix_msg,
+                "status": post.get("status"),
+                "required_status": "in_process",
+            }), 409
         # Sync product-match selections to cross-promotion before loading post data
         # This ensures published posts use the matched IDs
         import sys
@@ -50,11 +195,9 @@ def publish_post_to_clan(post_id):
         if post.get('post_id') and not post.get('id'):
             post['id'] = post['post_id']
         
-        # Ensure summary field exists and has content
+        # Ensure summary for Clan short_content (subtitle or summary or intro_blurb)
         if not post.get('summary'):
-            post['summary'] = post.get('intro_blurb')
-            if not post['summary']:
-                raise ValueError("Post must have either summary or intro_blurb")
+            post['summary'] = post.get('subtitle') or post.get('intro_blurb')
         
         # Ensure created_at is handled properly - convert to datetime object for template
         if post.get('created_at'):
@@ -255,19 +398,21 @@ def publish_post_to_clan(post_id):
         logger.info(f"Publishing result: {result}")
         
         if result['success']:
-            # Update database with clan post details
-            with db_manager.get_cursor() as cursor:
-                cursor.execute("""
-                    UPDATE post SET 
-                        clan_post_id = %s,
-                        status = 'published',
-                        clan_last_attempt = CURRENT_TIMESTAMP,
-                        clan_error = NULL,
-                        clan_uploaded_url = %s,
-                        first_published_at = COALESCE(first_published_at, CURRENT_TIMESTAMP)
-                    WHERE id = %s
-                """, (result.get('clan_post_id'), result.get('url'), post_id))
-            
+            ok, err = transition_post_status(
+                post_id, 'published', actor='publish',
+                extra_updates={
+                    'clan_post_id': result.get('clan_post_id'),
+                    'clan_uploaded_url': result.get('url'),
+                    'clan_error': None,
+                    'clan_last_attempt': USE_NOW,
+                    'first_published_at': USE_NOW_IF_NULL,
+                }
+            )
+            if not ok:
+                logger.error(f"Publish success but status transition failed: {err}")
+            # W2-FIX-6: Sync workflow_stage to published
+            from utils.posts.workflow_stage import set_workflow_stage
+            set_workflow_stage(post_id, 'published', actor='publish')
             return jsonify({
                 'success': True, 
                 'message': 'Post published successfully to clan.com',
@@ -275,15 +420,13 @@ def publish_post_to_clan(post_id):
                 'url': result.get('url')
             })
         else:
-            # Update database with error
+            # Status stays in_process; record error in clan_error (do not use status='error')
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    UPDATE post SET 
-                        status = 'in_process',
-                        clan_last_attempt = CURRENT_TIMESTAMP,
-                        clan_error = %s
+                    UPDATE post SET clan_last_attempt = CURRENT_TIMESTAMP, clan_error = %s, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
                 """, (result.get('error'), post_id))
+                cursor.connection.commit()
             
             # Check if it's a network connectivity issue
             error_msg = result.get('error', 'Unknown error occurred')
@@ -296,16 +439,12 @@ def publish_post_to_clan(post_id):
             }), 500
             
     except Exception as e:
-        # Update database with error
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                UPDATE post SET 
-                    status = 'in_process',
-                    clan_last_attempt = CURRENT_TIMESTAMP,
-                    clan_error = %s
+                UPDATE post SET clan_last_attempt = CURRENT_TIMESTAMP, clan_error = %s
                 WHERE id = %s
             """, (str(e), post_id))
-        
+            cursor.connection.commit()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/clan-api-data/<int:post_id>')
@@ -329,11 +468,9 @@ def clan_api_data(post_id):
         if post.get('post_id') and not post.get('id'):
             post['id'] = post['post_id']
         
-        # Ensure summary field exists and has content
+        # Ensure summary for Clan short_content (subtitle or summary or intro_blurb)
         if not post.get('summary'):
-            post['summary'] = post.get('intro_blurb')
-            if not post['summary']:
-                raise ValueError("Post must have either summary or intro_blurb")
+            post['summary'] = post.get('subtitle') or post.get('intro_blurb')
         
         # Ensure created_at is handled properly - convert to datetime object for template
         if post.get('created_at'):

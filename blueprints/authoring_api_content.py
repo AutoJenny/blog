@@ -7,6 +7,23 @@ import json
 logger = logging.getLogger(__name__)
 bp = Blueprint('authoring_content', __name__)
 
+
+def __check_post_editable(post_id):
+    """W2-FIX-4 + W2-FIX-5: Block for status and workflow stage."""
+    from utils.posts.status_transitions import require_post_editable
+    from utils.posts.workflow_stage import require_workflow_stage
+    err, code = require_post_editable(
+        post_id,
+        allowed_statuses=frozenset({'draft', 'in_process'}),
+        request=request,
+    )
+    if err:
+        return {"error": err, "status_blocked": True}, code
+    gate, gate_code = require_workflow_stage(post_id, 'authoring', request=request)
+    if gate:
+        return {**gate, "success": False}, gate_code
+    return None, None
+
 # Import micro-modules
 from blueprints.authoring_api_sections import api_get_sections as sections_api_func, api_get_section as section_api_func
 
@@ -29,7 +46,10 @@ def api_get_section_detail(post_id, section_id):
 
 @bp.route('/api/posts/<int:post_id>/sections/<int:section_id>', methods=['PUT'])
 def api_save_section_content(post_id, section_id):
-    """Save section content (draft, polished, etc.)"""
+    """Save section content (draft, polished, etc.). Blocked for published/archived/deleted (W2-FIX-4)."""
+    resp, code = __check_post_editable(post_id)
+    if resp:
+        return jsonify(resp), code
     try:
         data = request.get_json()
         
@@ -52,7 +72,9 @@ def api_save_section_content(post_id, section_id):
                   highlighting, status, post_id, section_id))
             
             cursor.connection.commit()
-            
+            # W2-FIX-6: Validate stage after section save (may downgrade if drafts deleted)
+            from utils.posts.workflow_stage import validate_workflow_stage
+            validate_workflow_stage(post_id)
             return jsonify({
                 'success': True,
                 'message': 'Section content saved successfully'
@@ -64,7 +86,10 @@ def api_save_section_content(post_id, section_id):
 
 @bp.route('/api/posts/<int:post_id>/sections/<section_id>/generate', methods=['POST'])
 def api_generate_section_draft(post_id, section_id):
-    """Generate section draft using LLM"""
+    """Generate section draft using LLM. Blocked for published/archived/deleted (W2-FIX-4)."""
+    resp, code = __check_post_editable(post_id)
+    if resp:
+        return jsonify(resp), code
     try:
         data = request.get_json()
         

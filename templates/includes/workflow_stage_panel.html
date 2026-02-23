@@ -1,0 +1,59 @@
+{% if post_id is defined and post_id %}
+<!-- W2-FIX-5: Workflow stage display + advance button -->
+<div class="workflow-stage-panel mt-2 mb-2" data-post-id="{{ post_id }}" style="font-size: 0.8rem;">
+    <span class="workflow-stage-label text-muted">Stage:</span>
+    <span class="workflow-stage-value" id="workflow-stage-value-{{ post_id }}">...</span>
+    <span class="workflow-stage-advance ms-2" id="workflow-stage-advance-{{ post_id }}"></span>
+</div>
+<script>
+(function() {
+    const postId = {{ post_id }};
+    async function loadWorkflowStage() {
+        try {
+            const r = await fetch('/api/posts/' + postId + '/workflow-stage');
+            const data = await r.json();
+            if (!data.success) return;
+            const el = document.getElementById('workflow-stage-value-' + postId);
+            const adv = document.getElementById('workflow-stage-advance-' + postId);
+            if (el) el.textContent = data.workflow_stage || '—';
+            if (adv) {
+                if (data.next_advanceable) {
+                    adv.innerHTML = '<button type="button" class="btn btn-sm btn-outline-success advance-stage-btn" data-target="' + data.next_advanceable + '">Advance to ' + data.next_advanceable.replace(/_/g, ' ') + '</button>';
+                    adv.querySelector('.advance-stage-btn').addEventListener('click', async function() {
+                        const btn = this;
+                        btn.disabled = true;
+                        try {
+                            const res = await fetch('/posts/' + postId + '/advance-stage', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({target_stage: btn.dataset.target})
+                            });
+                            const j = await res.json();
+                            if (j.success) {
+                                loadWorkflowStage();
+                            } else {
+                                alert(j.error || 'Advance failed');
+                                btn.disabled = false;
+                            }
+                        } catch (e) {
+                            alert('Request failed');
+                            btn.disabled = false;
+                        }
+                    });
+                } else {
+                    adv.innerHTML = '';
+                }
+            }
+        } catch (e) {
+            const el = document.getElementById('workflow-stage-value-' + postId);
+            if (el) el.textContent = '—';
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadWorkflowStage);
+    } else {
+        loadWorkflowStage();
+    }
+})();
+</script>
+{% endif %}

@@ -1,38 +1,74 @@
 """
 Workflow Navigation API
 Provides endpoints for workflow navigation (Next button, progress tracking)
+
+W2-FIX-8: Uses DB-backed substage config (post_type_substages, substage_metadata).
+Falls back to config/post_type_substages with deprecation warning only when DB is empty.
 """
 
 from flask import Blueprint, jsonify, request
-from config.database import db_manager
-from config.post_type_substages import POST_TYPE_SUBSTAGES, SUBSTAGE_METADATA
 from utils.taxonomy_helpers import get_post_type
+from utils.substage_config import (
+    get_substages_for_post_type,
+    get_substage_metadata,
+)
 import logging
 
 logger = logging.getLogger(__name__)
-
 bp = Blueprint('workflow_navigation', __name__, url_prefix='/api/workflow')
+
+# Stage order for "next substage" navigation (DB does not store stage order)
+_STAGE_ORDER = ['planning', 'research', 'authoring', 'imaging', 'header']
+
+
+def _get_substages_with_fallback(post_type):
+    """Get substages from DB; fall back to config if DB returns empty. Logs warning on fallback."""
+    substages = get_substages_for_post_type(post_type)
+    if substages:
+        return substages
+    # Fallback when DB has no data (e.g. tables not populated)
+    try:
+        from config.post_type_substages import POST_TYPE_SUBSTAGES
+        fallback = POST_TYPE_SUBSTAGES.get(post_type, POST_TYPE_SUBSTAGES.get('themed', {}))
+        if fallback:
+            logger.warning(
+                "workflow_navigation: DB substage config empty for post_type=%s, using config fallback. "
+                "Populate post_type_substages and substage_metadata for DB-backed config.",
+                post_type
+            )
+            return fallback
+    except ImportError:
+        pass
+    return {}
+
+
+def _get_substage_metadata_with_fallback(substage_key):
+    """Get substage metadata from DB; fall back to config if not found."""
+    meta = get_substage_metadata(substage_key)
+    if meta:
+        return meta
+    try:
+        from config.post_type_substages import SUBSTAGE_METADATA
+        return SUBSTAGE_METADATA.get(substage_key, {})
+    except ImportError:
+        return {}
+
 
 @bp.route('/substages', methods=['GET'])
 def get_substages():
     """
     Get substages configuration for a post type
-    Returns substages organized by stage in order
+    Returns substages organized by stage in order.
+    W2-FIX-8: Uses DB-backed config; fallback to config with warning.
     """
     try:
         post_type = request.args.get('post_type', 'themed')
-        
-        # Normalize post_type
-        if post_type not in POST_TYPE_SUBSTAGES:
+        substages_by_stage = _get_substages_with_fallback(post_type)
+        if not substages_by_stage:
             post_type = 'themed'
+            substages_by_stage = _get_substages_with_fallback('themed')
         
-        # Get substages for this post type
-        substages_by_stage = POST_TYPE_SUBSTAGES[post_type]
-        
-        # Build response - return list of substage keys for each stage
-        result = {}
-        for stage, substage_keys in substages_by_stage.items():
-            result[stage] = substage_keys  # Return list of substage keys
+        result = {stage: keys for stage, keys in substages_by_stage.items()}
         
         return jsonify({
             'success': True,
@@ -50,7 +86,8 @@ def get_substages():
 def get_next_substage():
     """
     Get next substage for a post
-    Returns next substage URL and metadata
+    Returns next substage URL and metadata.
+    W2-FIX-8: Uses DB-backed substage config.
     """
     try:
         post_id = request.args.get('post_id', type=int)
@@ -63,26 +100,23 @@ def get_next_substage():
                 'error': 'post_id is required'
             }), 400
         
-        # Get post type
         post_type = get_post_type(post_id)
         if not post_type:
             post_type = 'themed'
         
-        # Get substages
-        substages_by_stage = POST_TYPE_SUBSTAGES.get(post_type, POST_TYPE_SUBSTAGES['themed'])
+        substages_by_stage = _get_substages_with_fallback(post_type)
+        if not substages_by_stage:
+            substages_by_stage = _get_substages_with_fallback('themed')
         
-        # Find current position
         if not current_stage or not current_substage:
             return jsonify({
                 'success': False,
                 'error': 'stage and substage are required'
             }), 400
         
-        # Normalize stage name
         if current_stage == 'concept':
             current_stage = 'planning'
         
-        # Get substages for current stage
         stage_substages = substages_by_stage.get(current_stage, [])
         if not stage_substages:
             return jsonify({
@@ -90,7 +124,6 @@ def get_next_substage():
                 'error': f'No substages found for stage: {current_stage}'
             }), 404
         
-        # Find current substage index
         current_index = stage_substages.index(current_substage) if current_substage in stage_substages else -1
         
         if current_index == -1:
@@ -99,23 +132,19 @@ def get_next_substage():
                 'error': f'Substage {current_substage} not found in stage {current_stage}'
             }), 404
         
-        # Check if there's a next substage in current stage
         if current_index < len(stage_substages) - 1:
             next_substage_key = stage_substages[current_index + 1]
             next_stage = current_stage
         else:
-            # Move to next stage
-            stage_order = ['planning', 'research', 'authoring', 'imaging', 'header']
-            current_stage_index = stage_order.index(current_stage) if current_stage in stage_order else -1
+            current_stage_index = _STAGE_ORDER.index(current_stage) if current_stage in _STAGE_ORDER else -1
             
-            if current_stage_index == -1 or current_stage_index == len(stage_order) - 1:
-                # No next stage
+            if current_stage_index == -1 or current_stage_index == len(_STAGE_ORDER) - 1:
                 return jsonify({
                     'success': False,
                     'error': 'No next substage available'
                 }), 404
             
-            next_stage = stage_order[current_stage_index + 1]
+            next_stage = _STAGE_ORDER[current_stage_index + 1]
             next_stage_substages = substages_by_stage.get(next_stage, [])
             
             if not next_stage_substages:
@@ -126,8 +155,7 @@ def get_next_substage():
             
             next_substage_key = next_stage_substages[0]
         
-        # Get metadata for next substage
-        metadata = SUBSTAGE_METADATA.get(next_substage_key, {})
+        metadata = _get_substage_metadata_with_fallback(next_substage_key)
         route_function = metadata.get('route_function')
         
         # Build URL
@@ -197,7 +225,7 @@ def build_substage_url(post_id, stage, substage_key):
         'section_structure': f'/planning/posts/{post_id}/concept/section-structure',
         'topic_allocation': f'/planning/posts/{post_id}/concept/topic-allocation',
         'section_titling': f'/planning/posts/{post_id}/concept/titling',
-        'drafting': f'/authoring/posts/{post_id}/sections/drafting',
+        'drafting': f'/posts/{post_id}/sections/drafting',  # W2-FIX-1: authoring bp has no prefix
         'image_concepts': f'/authoring/posts/{post_id}/sections/image-concepts',
         'image_prompts': f'/authoring/posts/{post_id}/sections/image-prompts',
         'image_captions': f'/authoring/posts/{post_id}/sections/image-captions',
