@@ -142,64 +142,83 @@ def api_calendar_schedule(year, week_number):
             })
         
         # Weekly content — CULTURE v1.1: Tuesday only (one language type per week, rotating)
-        # Prefer posting_queue for this week's Tuesday if present; else resolver
+        # Prefer posting_queue for this week's Tuesday if present; else resolver.
+        # Include both Facebook and Instagram: one row per channel (no merge/dedupe).
         from datetime import date, timedelta
         jan4 = date(year, 1, 4)
         jan4_day = (jan4.isoweekday() + 6) % 7
         week_start = date(year, 1, 4) + timedelta(days=(week_number - 1) * 7 - jan4_day)
         tuesday_date = week_start + timedelta(days=1)
-        tuesday_from_queue = None
+        tuesday_rows = []
         try:
             with db_manager.get_cursor() as cursor:
-                # Tuesday language: platform=facebook, scheduled_date=that Tuesday, content_type in weekly_*,
-                # status in ready/pending/generated/published/scheduled (visible); pick one (prefer ready, else newest).
+                # Tuesday language: both platforms, scheduled_date=that Tuesday, content_type in weekly_*,
+                # status in ready/pending/generated/published/scheduled (visible); one per platform.
                 cursor.execute("""
-                    SELECT pq.id, pq.idea_id, pq.content_type, pq.status, pq.scheduled_date, pq.scheduled_time
+                    SELECT pq.id, pq.platform, pq.idea_id, pq.content_type, pq.status, pq.scheduled_date, pq.scheduled_time
                     FROM posting_queue pq
-                    WHERE pq.platform = 'facebook'
+                    WHERE pq.platform IN ('facebook', 'instagram')
                     AND pq.content_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult')
                     AND pq.scheduled_date = %s
                     AND pq.status IN ('ready', 'pending', 'generated', 'published', 'scheduled')
-                    ORDER BY CASE WHEN pq.status = 'ready' THEN 0 WHEN pq.status = 'published' THEN 1 ELSE 2 END, pq.id DESC
-                    LIMIT 1
+                    ORDER BY pq.platform, CASE WHEN pq.status = 'ready' THEN 0 WHEN pq.status = 'published' THEN 1 ELSE 2 END, pq.id DESC
                 """, (tuesday_date,))
-                row = cursor.fetchone()
-                if row and row.get('idea_id'):
-                    cursor.execute(
-                        "SELECT id, idea_title, idea_description, position FROM calendar_ideas WHERE id = %s",
-                        (row['idea_id'],)
-                    )
-                    idea_row = cursor.fetchone()
-                    if idea_row:
-                        tuesday_from_queue = {
-                            'type': row['content_type'],
-                            'item_id': idea_row['id'],
-                            'title': idea_row.get('idea_title'),
-                            'description': idea_row.get('idea_description'),
-                            'position': idea_row.get('position'),
-                            'posting_queue_id': row['id'],
-                            'post_status': row.get('status'),
-                            'scheduled_date': row.get('scheduled_date'),
-                            'scheduled_time': row.get('scheduled_time'),
-                        }
-                elif row:
-                    # No calendar_ideas row: still surface the queue item with generated content as title
-                    tuesday_from_queue = {
-                        'type': row['content_type'],
-                        'item_id': row['id'],
-                        'title': f"Language ({row['content_type']})",
-                        'description': None,
-                        'position': None,
-                        'posting_queue_id': row['id'],
-                        'post_status': row.get('status'),
-                        'scheduled_date': row.get('scheduled_date'),
-                        'scheduled_time': row.get('scheduled_time'),
-                    }
+                rows = cursor.fetchall()
+                seen_platforms = set()
+                for row in rows:
+                    if row and row.get('platform') and row['platform'] not in seen_platforms:
+                        seen_platforms.add(row['platform'])
+                        if row.get('idea_id'):
+                            cursor.execute(
+                                "SELECT id, idea_title, idea_description, position FROM calendar_ideas WHERE id = %s",
+                                (row['idea_id'],)
+                            )
+                            idea_row = cursor.fetchone()
+                            if idea_row:
+                                tuesday_rows.append({
+                                    'type': row['content_type'],
+                                    'platform': row['platform'],
+                                    'item_id': idea_row['id'],
+                                    'title': idea_row.get('idea_title'),
+                                    'description': idea_row.get('idea_description'),
+                                    'position': idea_row.get('position'),
+                                    'posting_queue_id': row['id'],
+                                    'post_status': row.get('status'),
+                                    'scheduled_date': row.get('scheduled_date'),
+                                    'scheduled_time': row.get('scheduled_time'),
+                                })
+                            else:
+                                tuesday_rows.append({
+                                    'type': row['content_type'],
+                                    'platform': row['platform'],
+                                    'item_id': row['id'],
+                                    'title': f"Language ({row['content_type']})",
+                                    'description': None,
+                                    'position': None,
+                                    'posting_queue_id': row['id'],
+                                    'post_status': row.get('status'),
+                                    'scheduled_date': row.get('scheduled_date'),
+                                    'scheduled_time': row.get('scheduled_time'),
+                                })
+                        else:
+                            tuesday_rows.append({
+                                'type': row['content_type'],
+                                'platform': row['platform'],
+                                'item_id': row['id'],
+                                'title': f"Language ({row['content_type']})",
+                                'description': None,
+                                'position': None,
+                                'posting_queue_id': row['id'],
+                                'post_status': row.get('status'),
+                                'scheduled_date': row.get('scheduled_date'),
+                                'scheduled_time': row.get('scheduled_time'),
+                            })
         except Exception as e:
             logger.warning("Error loading Tuesday language from posting_queue: %s", e)
-        if tuesday_from_queue:
+        for tuesday_from_queue in tuesday_rows:
             schedule.append({
                 'type': tuesday_from_queue['type'],
+                'platform': tuesday_from_queue.get('platform', 'facebook'),
                 'item_id': tuesday_from_queue['item_id'],
                 'title': tuesday_from_queue['title'],
                 'description': tuesday_from_queue.get('description'),
@@ -212,7 +231,7 @@ def api_calendar_schedule(year, week_number):
                 '_from_posting_queue': True,
                 '_tuesday_language': True
             })
-        elif tuesday_language:
+        if not tuesday_rows and tuesday_language:
             schedule.append({
                 'type': language_type,
                 'item_id': tuesday_language.get('id'),
@@ -269,11 +288,12 @@ def api_calendar_schedule(year, week_number):
                 
                 logger.info(f"Product days from config: {sorted(product_days)}, Message days: {sorted(message_days)}")
                 
-                # Query product posts - Matrix v1: COMMERCE/product on Saturday (day 6) only
-                # Use ISODOW for ISO weekday (1=Monday, 7=Sunday)
+                # Query product posts - Matrix v1: COMMERCE/product on Saturday (day 6) only.
+                # Include both Facebook and Instagram: one row per channel per day.
                 cursor.execute("""
                     SELECT 
                         pq.id as posting_queue_id,
+                        pq.platform,
                         pq.product_id,
                         pq.role,
                         pq.scheduled_date,
@@ -285,22 +305,21 @@ def api_calendar_schedule(year, week_number):
                     FROM posting_queue pq
                     LEFT JOIN clan_products cp ON pq.product_id = cp.id
                     WHERE pq.content_type = 'product'
-                      AND pq.platform = 'facebook'
+                      AND pq.platform IN ('facebook', 'instagram')
                       AND pq.scheduled_date >= %s
                       AND pq.scheduled_date <= %s
                       AND pq.scheduled_timestamp IS NOT NULL
                       AND EXTRACT(ISODOW FROM pq.scheduled_date) = 6  -- Matrix v1: Saturday only
-                    ORDER BY pq.scheduled_date, pq.scheduled_time
+                    ORDER BY pq.scheduled_date, pq.scheduled_time, pq.platform
                 """, (week_start, week_end))
                 product_posts = cursor.fetchall()
-                # Option A: Cap Saturday to 1 visible card in week-view grid; rest remain in queue/detail
-                filtered_product_posts = product_posts[:1]
-                logger.info(f"Found {len(product_posts)} product posts (Matrix v1: Saturday only); showing 1 in grid")
+                # Phase A/B: Saturday PRODUCT — Instagram intentionally absent. Show only Facebook product posts in calendar.
+                filtered_product_posts = [p for p in product_posts if (p.get('platform') or 'facebook').lower() == 'facebook'][:1]
+                logger.info(f"Found {len(product_posts)} product posts (Matrix v1: Saturday only); showing FB only (IG intentionally absent)")
                 
-                # Add product posts (one card per Saturday in grid)
+                # Add product posts (one card per Saturday: FB only; IG absent by design)
                 for idx, post in enumerate(filtered_product_posts):
                     if post['scheduled_date']:
-                        # Map posting_queue status to post_status for frontend
                         queue_status = post['status'] or 'draft'
                         post_status_map = {
                             'draft': 'draft',
@@ -309,27 +328,28 @@ def api_calendar_schedule(year, week_number):
                             'failed': 'failed'
                         }
                         post_status = post_status_map.get(queue_status, 'draft')
-                        
                         schedule.append({
                             'type': 'product',
+                            'platform': post.get('platform', 'facebook'),
                             'item_id': post['product_id'],
                             'product_id': post['product_id'],
                             'posting_queue_id': post['posting_queue_id'],
-                            'role': post.get('role'),  # Matrix v1: COMMERCE; surface for UI
+                            'role': post.get('role'),
                             'title': post['product_name'] or f"Product {post['product_id']}",
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
-                            'status': queue_status,  # Keep original status field
-                            'post_status': post_status,  # Add post_status for frontend compatibility
-                            'post_exists': True,  # Product post exists in posting_queue
+                            'status': queue_status,
+                            'post_status': post_status,
+                            'post_exists': True,
                             'position': idx + 1
                         })
                 
-                # Query message posts - Matrix v1: REASSURANCE/message on Wednesday (day 3) only
-                # Use ISODOW for ISO weekday (1=Monday, 7=Sunday)
+                # Query message posts - Matrix v1: REASSURANCE/message on Wednesday (day 3) only.
+                # Include both Facebook and Instagram.
                 cursor.execute("""
                     SELECT 
                         pq.id as posting_queue_id,
+                        pq.platform,
                         pq.role,
                         pq.scheduled_date,
                         pq.scheduled_time,
@@ -338,28 +358,22 @@ def api_calendar_schedule(year, week_number):
                         EXTRACT(ISODOW FROM pq.scheduled_date) as weekday
                     FROM posting_queue pq
                     WHERE pq.content_type = 'message'
-                      AND pq.platform = 'facebook'
+                      AND pq.platform IN ('facebook', 'instagram')
                       AND pq.scheduled_date >= %s
                       AND pq.scheduled_date <= %s
                       AND pq.scheduled_timestamp IS NOT NULL
                       AND EXTRACT(ISODOW FROM pq.scheduled_date) = 3  -- Matrix v1: Wednesday only
-                    ORDER BY pq.scheduled_date, pq.scheduled_time
+                    ORDER BY pq.scheduled_date, pq.scheduled_time, pq.platform
                 """, (week_start, week_end))
                 message_posts = cursor.fetchall()
                 wednesday_messages = message_posts
                 logger.info(f"Found {len(message_posts)} message posts (Matrix v1: Wednesday only)")
                 
-                # Add message posts (Matrix v1: Wednesday only)
                 for idx, post in enumerate(wednesday_messages):
                     if post['scheduled_date']:
-                        # Extract first line of message for title
                         content = post['generated_content'] or ''
                         title = content.split('\n')[0][:50] if content else 'Message'
-                        
-                        # Map posting_queue status to post_status for frontend
                         queue_status = post['status'] or 'draft'
-                        # posting_queue status: draft -> ready -> published
-                        # Map to post_status format expected by frontend
                         post_status_map = {
                             'draft': 'draft',
                             'ready': 'ready',
@@ -367,32 +381,29 @@ def api_calendar_schedule(year, week_number):
                             'failed': 'failed'
                         }
                         post_status = post_status_map.get(queue_status, 'draft')
-                        
                         schedule.append({
                             'type': 'message',
+                            'platform': post.get('platform', 'facebook'),
                             'item_id': post['posting_queue_id'],
                             'posting_queue_id': post['posting_queue_id'],
-                            'role': post.get('role'),  # Matrix v1: REASSURANCE; surface for UI
+                            'role': post.get('role'),
                             'title': title,
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
-                            'status': queue_status,  # Keep original status field
-                            'post_status': post_status,  # Add post_status for frontend compatibility
-                            'post_exists': True,  # Message post exists in posting_queue
+                            'status': queue_status,
+                            'post_status': post_status,
+                            'post_exists': True,
                             'position': idx + 1
                         })
                 
                 logger.info(f"Added {len([s for s in schedule if s.get('type') == 'product'])} product posts and {len([s for s in schedule if s.get('type') == 'message'])} message posts to schedule")
                 
-                # Query role-based posts (e.g. DEPTH_LONG Sunday, AUTHORITY_SHORT Friday, CULTURE Mon, HERITAGE Thu)
-                # CULTURE v1.1: Monday CULTURE (culture_fact). Phase H1: Thursday HERITAGE (heritage_fact). Both appear here via role rail.
-                # Exclude:
-                #   - 'product' and 'message' (already returned by the product/message queries above)
-                #   - weekly language types ('weekly_word','weekly_phrase','weekly_insult')
-                #     which are Tuesday only and already added via tuesday_language above.
+                # Query role-based posts (e.g. DEPTH_LONG Sunday, AUTHORITY_SHORT Friday, CULTURE Mon, HERITAGE Thu).
+                # Include both Facebook and Instagram.
                 cursor.execute("""
                     SELECT 
                         pq.id as posting_queue_id,
+                        pq.platform,
                         pq.role,
                         pq.scheduled_date,
                         pq.scheduled_time,
@@ -402,29 +413,25 @@ def api_calendar_schedule(year, week_number):
                         EXTRACT(ISODOW FROM pq.scheduled_date) as weekday
                     FROM posting_queue pq
                     WHERE pq.role IS NOT NULL
-                      AND pq.platform = 'facebook'
+                      AND pq.platform IN ('facebook', 'instagram')
                       AND pq.scheduled_date >= %s
                       AND pq.scheduled_date <= %s
                       AND pq.scheduled_timestamp IS NOT NULL
                       AND pq.content_type NOT IN ('product', 'message', 'weekly_word', 'weekly_phrase', 'weekly_insult')
-                    ORDER BY pq.scheduled_date, pq.scheduled_time
+                    ORDER BY pq.scheduled_date, pq.scheduled_time, pq.platform
                 """, (week_start, week_end))
                 role_posts = cursor.fetchall()
                 
                 logger.info(f"Found {len(role_posts)} role-based posts")
                 
-                # Add role-based posts to schedule
                 for idx, post in enumerate(role_posts):
                     if post['scheduled_date']:
-                        # Extract title from content; avoid surfacing placeholder text
                         content = post['generated_content'] or post['generated_caption'] or ''
                         first_line = (content.split('\n')[0][:50].strip() if content else '') or ''
                         if first_line and ('placeholder' in first_line.lower() or 'short factual context' in first_line.lower()):
                             title = f"{post['role']} post"
                         else:
                             title = first_line if first_line else f"{post['role']} Post"
-                        
-                        # Map posting_queue status to post_status for frontend
                         queue_status = post['status'] or 'draft'
                         post_status_map = {
                             'draft': 'draft',
@@ -437,12 +444,10 @@ def api_calendar_schedule(year, week_number):
                             'failed': 'failed'
                         }
                         post_status = post_status_map.get(queue_status, 'draft')
-                        
-                        # Determine type based on role
                         schedule_type = post['role'].lower() if post['role'] else 'role_post'
-                        
                         schedule.append({
                             'type': schedule_type,
+                            'platform': post.get('platform', 'facebook'),
                             'item_id': post['posting_queue_id'],
                             'posting_queue_id': post['posting_queue_id'],
                             'role': post['role'],
@@ -450,9 +455,9 @@ def api_calendar_schedule(year, week_number):
                             'generated_content': (post.get('generated_content') or post.get('generated_caption') or '')[:500],
                             'scheduled_date': str(post['scheduled_date']),
                             'scheduled_time': str(post['scheduled_time']) if post['scheduled_time'] else None,
-                            'status': queue_status,  # Keep original status field
-                            'post_status': post_status,  # Add post_status for frontend compatibility
-                            'post_exists': True,  # Role-based post exists in posting_queue
+                            'status': queue_status,
+                            'post_status': post_status,
+                            'post_exists': True,
                             'position': idx + 1
                         })
                 
@@ -563,6 +568,22 @@ def api_select_theme_idea():
                         'selected_theme_id': theme_id,
                         'updated_at': None
                     }
+
+                # W2-FIX-9.1 Part C: Enforce at most one selected theme per week
+                cursor.execute("""
+                    SELECT COUNT(*) AS cnt FROM calendar_week_items
+                    WHERE year = %s AND week_number = %s
+                      AND item_type = 'theme' AND is_selected = TRUE
+                """, (year, week_number))
+                row = cursor.fetchone()
+                selected_count = (row.get('cnt') if isinstance(row, dict) else (row[0] if row else 0)) or 0
+                if selected_count > 1:
+                    conn.rollback()
+                    return jsonify({
+                        'success': False,
+                        'error': f'Multiple themes selected for week {year}/W{week_number}. Only one theme per week is allowed. Please fix data first.',
+                        'calendar_conflict': True,
+                    }), 409
 
                 # Write to calendar_week_items (new unified table) – single source of truth
                 # First, unselect any currently selected theme for this week

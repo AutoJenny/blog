@@ -114,7 +114,12 @@ def api_generate_content():
             expanded_idea='',
             generated_source_type=source_type  # Set source type: 'product' or 'category'
         )
-        
+        # W2-FIX-5: New post starts at workflow_stage=idea
+        from utils.posts.workflow_stage import ensure_workflow_stage_idea
+        ensure_workflow_stage_idea(post_id)
+        # W2-FIX-9.1: Posts without calendar linkage get type=manual
+        from utils.posts.calendar_seed import ensure_manual_seed
+        ensure_manual_seed(post_id, actor="content_generation")
         # Initialize tracking for products
         if source_type == 'product':
             tracking_data = tracker.create_tracking_structure(post_id, source_id, validation_report)
@@ -169,6 +174,11 @@ def api_generate_content():
             post_id=post_id,
             sections=sections
         )
+
+        # W2-FIX-1: If no sections were created (empty/empty content), ensure default
+        if not section_ids:
+            from utils.posts.post_factory import ensure_default_sections
+            ensure_default_sections(post_id, variant='generated', template_name='default_generic')
         
         # Auto-pull section images from CLAN product data
         if source_type == 'product':

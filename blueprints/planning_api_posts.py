@@ -202,6 +202,21 @@ def confirm_calendar_idea():
                     'success': False,
                     'error': f'No theme selected for week {year}/{week_number}. Please select a theme first.'
                 }), 400
+
+            # W2-FIX-9.1 Part C: Reject if multiple themes selected for week (data integrity)
+            cursor.execute("""
+                SELECT COUNT(*) AS cnt FROM calendar_week_items
+                WHERE year = %s AND week_number = %s
+                  AND item_type = 'theme' AND is_selected = TRUE
+            """, (year, week_number))
+            cnt_row = cursor.fetchone()
+            sel_cnt = (cnt_row.get('cnt') if isinstance(cnt_row, dict) else (cnt_row[0] if cnt_row else 0)) or 0
+            if sel_cnt > 1:
+                return jsonify({
+                    'success': False,
+                    'error': f'Multiple themes selected for week {year}/W{week_number}. Only one theme per week allowed.',
+                    'calendar_conflict': True,
+                }), 409
             
             # Get default publication day for themed posts
             from blueprints.post_type_config import get_publication_day_for_post_type
@@ -247,6 +262,21 @@ def confirm_calendar_idea():
                 DO UPDATE SET idea_seed = EXCLUDED.idea_seed, updated_at = NOW()
             """, (post_id, topic))
 
+            # W2-FIX-1: Ensure default sections for immediate authoring
+            from utils.posts.post_factory import ensure_default_sections
+            ensure_default_sections(post_id, variant='generic', template_name='default_generic')
+            # W2-FIX-5: New post starts at workflow_stage=idea
+            from utils.posts.workflow_stage import ensure_workflow_stage_idea
+            ensure_workflow_stage_idea(post_id)
+            # W2-FIX-9.1: Record calendar_seed for traceability
+            from utils.posts.calendar_seed import set_calendar_seed
+            set_calendar_seed(post_id, {
+                "type": "theme",
+                "year": year,
+                "week_number": week_number,
+                "item_id": theme_selection["selected_theme_id"],
+                "category": "theme",
+            }, actor="confirm_idea", cursor=cursor)
             # Bump post.updated_at so it reflects this action in listings
             cursor.execute("""
                 UPDATE post

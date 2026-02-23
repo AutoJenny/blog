@@ -63,6 +63,14 @@ def execute_substage(stage, substage):
                 "success": False,
                 "error": f"Substage '{substage}' is not valid for output channel '{output_channel}'. Available channels: {', '.join(available_channels)}"
             }), 400
+
+        # W2-FIX-9.1 Part B: Verify calendar_seed exists before automation advances
+        from utils.posts.calendar_seed import verify_calendar_seed_for_automation
+        target_year = data.get("target_year")  # Optional: for week-driven automation
+        target_week = data.get("target_week")
+        ok, err, code = verify_calendar_seed_for_automation(post_id, target_year, target_week)
+        if not ok:
+            return jsonify({**err, "success": False}), code
         
         # Add output_channel to data for execution functions (for future channel-specific logic)
         data['output_channel'] = output_channel
@@ -219,40 +227,26 @@ def save_settings():
 
 @bp.route('/pause-post/<int:post_id>', methods=['POST'])
 def pause_post(post_id):
-    """Pause automation for a post"""
+    """Pause automation for a post. Uses extra_settings.paused (W2-FIX-4: no status write)."""
     try:
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                UPDATE post 
-                SET status = 'paused', updated_at = NOW()
-                WHERE id = %s
-            """, (post_id,))
-            
-            return jsonify({
-                "success": True,
-                "message": "Post paused successfully"
-            })
-            
+        from utils.posts.status_transitions import set_post_paused
+        ok, err = set_post_paused(post_id, paused=True)
+        if not ok:
+            return jsonify({"success": False, "error": err or "Failed to pause"}), 404
+        return jsonify({"success": True, "message": "Post paused successfully"})
     except Exception as e:
         logger.error(f"Error pausing post: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/resume-post/<int:post_id>', methods=['POST'])
 def resume_post(post_id):
-    """Resume automation for a post"""
+    """Resume automation for a post. Clears extra_settings.paused (W2-FIX-4: no status write)."""
     try:
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                UPDATE post 
-                SET status = 'in_progress', updated_at = NOW()
-                WHERE id = %s
-            """, (post_id,))
-            
-            return jsonify({
-                "success": True,
-                "message": "Post resumed successfully"
-            })
-            
+        from utils.posts.status_transitions import set_post_paused
+        ok, err = set_post_paused(post_id, paused=False)
+        if not ok:
+            return jsonify({"success": False, "error": err or "Failed to resume"}), 404
+        return jsonify({"success": True, "message": "Post resumed successfully"})
     except Exception as e:
         logger.error(f"Error resuming post: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
@@ -260,25 +254,15 @@ def resume_post(post_id):
 @bp.route('/delete-post/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
     """
-    Delete a post.
-    
-    TODO: FUTURE CONSOLIDATION - Consider migrating to blueprints.posts.api_update_post_status()
-    This endpoint is currently unused. The consolidated posts management is in blueprints/posts.py
-    which provides /api/posts/<id>/fields/status for status updates.
+    Delete a post. Uses canonical status transition (W2-FIX-4).
+    Consolidated posts management is in blueprints/posts.api_update_post_status().
     """
     try:
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("""
-                UPDATE post 
-                SET status = 'deleted', updated_at = NOW()
-                WHERE id = %s
-            """, (post_id,))
-            
-            return jsonify({
-                "success": True,
-                "message": "Post deleted successfully"
-            })
-            
+        from utils.posts.status_transitions import transition_post_status
+        ok, err = transition_post_status(post_id, 'deleted', actor='automation_delete')
+        if not ok:
+            return jsonify({"success": False, "error": err or "Delete failed"}), 400 if "not allowed" in (err or "").lower() or "not found" not in (err or "").lower() else 404
+        return jsonify({"success": True, "message": "Post deleted successfully"})
     except Exception as e:
         logger.error(f"Error deleting post: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
@@ -287,6 +271,7 @@ def delete_post(post_id):
 def create_post():
     """Create a new post"""
     try:
+        import re
         data = request.get_json()
         title = data.get('title')
         idea_seed = data.get('idea_seed')
@@ -295,11 +280,23 @@ def create_post():
             return jsonify({"success": False, "error": "Title is required"}), 400
         
         with db_manager.get_cursor() as cursor:
+            # W2-FIX-1: Generate slug (required by schema)
+            base = re.sub(r"[^a-z0-9\-]+", '-', (title or '').lower().strip().replace(' ', '-'))
+            base = re.sub(r"-+", '-', base).strip('-') or 'post'
+            slug = base
+            suffix = 1
+            while True:
+                cursor.execute("SELECT 1 FROM post WHERE slug = %s LIMIT 1", (slug,))
+                if not cursor.fetchone():
+                    break
+                suffix += 1
+                slug = f"{base}-{suffix}"
+
             cursor.execute("""
-                INSERT INTO post (title, status, created_at, updated_at)
-                VALUES (%s, 'draft', NOW(), NOW())
+                INSERT INTO post (title, slug, status, created_at, updated_at)
+                VALUES (%s, %s, 'draft', NOW(), NOW())
                 RETURNING id
-            """, (title,))
+            """, (title, slug))
             
             post_id = cursor.fetchone()['id']
             
@@ -308,7 +305,16 @@ def create_post():
                 INSERT INTO post_development (post_id, idea_seed, created_at, updated_at)
                 VALUES (%s, %s, NOW(), NOW())
             """, (post_id, idea_seed or ''))
-            
+
+            # W2-FIX-1: Ensure default sections for immediate authoring
+            from utils.posts.post_factory import ensure_default_sections
+            ensure_default_sections(post_id, variant='generic', template_name='default_generic')
+            # W2-FIX-5: New post starts at workflow_stage=idea
+            from utils.posts.workflow_stage import ensure_workflow_stage_idea
+            ensure_workflow_stage_idea(post_id)
+            # W2-FIX-9.1: Posts without calendar linkage get type=manual
+            from utils.posts.calendar_seed import ensure_manual_seed
+            ensure_manual_seed(post_id, actor="create_post")
             return jsonify({
                 "success": True,
                 "post_id": post_id,
@@ -547,6 +553,15 @@ def create_post_from_item():
         if not table or not id_col:
             logger.error(f"Invalid category config for '{category}': missing table or id_column")
             return jsonify({"success": False, "error": f"Invalid category configuration: {category}"}), 500
+        
+        # W2-FIX-9.1 Part D: Fail fast — require year+week for calendar-driven types before fetching item
+        if category in ("theme", "weekly_word", "weekly_phrase", "weekly_insult"):
+            if not year or not week:
+                return jsonify({
+                    "success": False,
+                    "error": "year and week are required for calendar-driven post creation. Provide year and week to link post to calendar.",
+                    "calendar_seed_required": True,
+                }), 400
         
         with db_manager.get_cursor() as cursor:
             # Get item data
@@ -811,7 +826,31 @@ def create_post_from_item():
                 INSERT INTO post_development (post_id, idea_seed)
                 VALUES (%s, %s)
             """, (post_id, idea_seed))
-            
+
+            # W2-FIX-1: Ensure default sections for immediate authoring
+            from utils.posts.post_factory import ensure_default_sections
+            section_variant = 'recipe' if category == 'recipe' else 'generic'
+            ensure_default_sections(post_id, variant=section_variant)
+            # W2-FIX-5: New post starts at workflow_stage=idea
+            from utils.posts.workflow_stage import ensure_workflow_stage_idea
+            ensure_workflow_stage_idea(post_id)
+            # W2-FIX-9.1: Record calendar_seed for traceability
+            from utils.posts.calendar_seed import set_calendar_seed
+            from datetime import date
+            iso_year, iso_week, _ = date.today().isocalendar()
+            seed_year = year if year is not None else iso_year
+            seed_week = week
+            if seed_week is None and category == "recipe":
+                seed_week = item_dict.get("week_number") or item_dict.get("recipe_week_number")
+            elif seed_week is None and category in ("weekly_word", "weekly_phrase", "weekly_insult"):
+                seed_week = item_dict.get("week_number")
+            set_calendar_seed(post_id, {
+                "type": category,
+                "year": seed_year,
+                "week_number": seed_week,
+                "item_id": int(item_id),
+                "category": category,
+            }, actor="create_post_from_item", cursor=cursor)
             # Link post to week in canonical week‑persistence table if year and week provided.
             # For themed blog posts this mirrors confirm_calendar_idea, writing into calendar_week_items
             # so that calendar_week_posts_v2 exposes the mapping.

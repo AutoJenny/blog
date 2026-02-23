@@ -1,5 +1,126 @@
 # Changelog
 
+## W2-FIX-9.1 — Calendar Seed Traceability & Week Integrity (2026-02-23)
+
+- **utils/posts/calendar_seed.py:** `set_calendar_seed`, `get_calendar_seed`, `ensure_manual_seed`, `verify_calendar_seed_for_automation`.
+- **calendar_seed** stored in `post.extra_settings` — type (theme, recipe, weekly_*, manual), year, week_number, item_id, actor.
+- **Creation paths:** confirm_calendar_idea, recipe create, create_post_from_item, create_post, content_generation_api — all set seed or ensure_manual_seed.
+- **Integrity guard:** Before automation advances post, verify calendar_seed exists and week/year match; 409 `calendar_mismatch` on failure. Backfill missing seeds as `manual`.
+- **Theme uniqueness:** At most one selected theme per (year, week); 409 `calendar_conflict` when violating.
+- **Orphan prevention:** create_post_from_item for theme/weekly requires year+week; 400 `calendar_seed_required` if missing.
+- **Documentation:** docs/workflow/calendar_seed_model.md.
+
+---
+
+## W2-FIX-8 — Output Readiness Formalisation (DB-backed, Explicit, Observable) (2026-02-23)
+
+- **workflow_navigation:** Uses DB-backed substage config (`post_type_substages`, `substage_metadata`) via `utils.substage_config`. Falls back to `config/post_type_substages` with warning when DB empty.
+- **get_output_readiness(post_id, output_channel):** New function in `utils/posts/output_readiness.py`. Returns `{ ok, required_substage, current_substage, errors, warnings }`. Purely diagnostic.
+- **Integration:** `publish_post_to_clan` and `start_automation` call `get_output_readiness` before preflight. If not ok → 409 with `{ output_blocked, current_substage, required_substage, errors }`.
+- **UI:** Launchpad Publishing page — "Output Readiness" section below Preflight in Publish Essentials panel. Shows ✓ Output Ready or ✗ Missing Substage X.
+- **API:** GET `/launchpad/api/publish/<id>/output-readiness?output=blog`.
+- **Documentation:** `docs/workflow/output_readiness_model.md` — validation order (workflow_stage → output_readiness → preflight → status transition).
+- **config/post_type_substages:** Deprecated as primary source; used only as fallback when DB empty.
+
+---
+
+## W2-FIX-7 — Automation Convergence with workflow_stage (2026-02-23)
+
+- **Gates:** execute_author_first_drafts (authoring), execute_image_concepts/prompts/captions (imaging), api_generate_section_specific_topics, api_posts_idea_scope (planning).
+- **Per-stage toggles:** `post.extra_settings.automation.enabled`, `automation.stage_enabled.{drafted,imaged}`; `is_automation_stage_enabled(post_id, stage_key)`.
+- **start_automation:** Requires workflow_stage >= essentials_complete, preflight OK; actor='automation'. Override bypasses.
+- **Reconcile:** After successful execute, validate_workflow_stage + advance_stage if criteria met and stage enabled.
+- **Deliverable:** reports/W2-FIX-7_AUTOMATION_CONVERGENCE_IMPLEMENTATION_REPORT.md.
+
+---
+
+## W2-GOV-1 — Mandatory Documentation & Knowledge Base Updates (2026-02-23)
+
+- **Policy:** After major phases (W2-FIX-*, W2-DESIGN-*), update technical docs and KB to reflect system changes.
+- **Technical docs:** docs/workflow/workflow_stage_model.md, docs/workflow/status_transitions.md, docs/api/workflow_stage_api.md, docs/POST_STATUS_MANAGEMENT.md.
+- **KB docs:** docs/kb/blog_post_workflow.md, docs/kb/how_to_publish.md, docs/kb/status_and_stage_guide.md.
+- **Implementation reports:** Documentation Update Summary added to W2-FIX-5 and W2-FIX-6.
+- **Policy doc:** docs/W2-GOV-1_DOCUMENTATION_POLICY.md.
+
+---
+
+## W2-FIX-6 — Workflow Stage Integrity Hardening (2026-02-23)
+
+- **validate_workflow_stage(post_id):** Re-evaluates criteria; downgrades to highest valid stage if current criteria no longer met. Returns (stage, was_downgraded).
+- **Integration:** Called from get_workflow_stage (before returning persisted stage), before publish, after section save, after essentials save.
+- **Publish sync:** On publish success, set_workflow_stage(post_id, 'published').
+- **Downgrade logging:** logger.warning with post_id, old_stage, new_stage, reason.
+- **Deliverable:** reports/W2-FIX-6_WORKFLOW_STAGE_INTEGRITY_HARDENING_REPORT.md.
+
+---
+
+## W2-FIX-5 — Persisted Workflow Stage Implementation (2026-02-23)
+
+- **utils/posts/workflow_stage.py:** Stage engine — STAGES, infer_workflow_stage, get_workflow_stage, set_workflow_stage, can_transition, advance_stage, require_workflow_stage, criteria_met_for_stage, get_next_advanceable_stage, ensure_workflow_stage_idea.
+- **Storage:** post.extra_settings.workflow_stage. Migration on first access (infer + persist).
+- **Route gates:** Planning (idea, structured), Authoring (structured, drafted), Imaging (drafted, imaged), Launchpad essentials (imaged, essentials_complete), Publish (essentials_complete, ready, published). Override: ?override=1.
+- **Endpoints:** POST /posts/<id>/advance-stage, GET /api/posts/<id>/workflow-stage.
+- **UI:** Workflow stage panel on authoring (blog_pipeline_header) and launchpad publishing (essentials accordion). "Advance to [stage]" button when criteria met.
+- **Post creation:** All creation paths call ensure_workflow_stage_idea → new posts start at idea.
+- **Deliverable:** reports/W2-FIX-5_PERSISTED_WORKFLOW_STAGE_IMPLEMENTATION_REPORT.md.
+
+---
+
+## W2-DESIGN-2 — Persisted Workflow Stage Model (Design only, no code) (2026-02-23)
+
+- **Objective:** Define persisted `workflow_stage` in `post.extra_settings` for strict internal progression inside status=draft.
+- **Audit:** automation_pipeline, validators, workflow_navigation, substage_completion_tracking plan — implicit assumptions for sections, drafts, images, essentials.
+- **Stage model:** idea → structured → drafted → imaged → essentials_complete → ready → published. Entry/exit criteria, auto vs manual transitions, optional auto-advance.
+- **Gate mapping:** Planning (idea, structured), Authoring (structured, drafted), Imaging (drafted, imaged), Launchpad Essentials (imaged, essentials_complete), Publish (essentials_complete, ready, published). Override: `?override=1`.
+- **Migration:** Infer stage from status, preflight fields (title/idea_seed, subtitle, header via post_images), section drafts, section images, section_structure, topic_allocation, sections, taxonomy, expanded_idea.
+- **Deliverable:** reports/W2-DESIGN-2_PERSISTED_WORKFLOW_STAGE_MODEL_SPECIFICATION.md.
+
+---
+
+## W2-FIX-4 — Strict Workflow Enforcement: Status Hygiene + Transition Gates (2026-02-23)
+
+- **utils/posts/status_transitions.py:** Canonical `transition_post_status()`, `set_post_paused()`, `require_post_editable()`.
+- **Status writes:** All post.status updates go through transition helper. Illegal values removed: paused→extra_settings.paused, in_progress→in_process, error→clan_error only.
+- **Route gates:** Authoring (draft/in_process), planning structure (draft only), publish (in_process+preflight). Override: `?override=1`.
+- **UI:** Clear messages when blocked (status_blocked, fix).
+- **Deliverable:** reports/W2-FIX-4_STRICT_WORKFLOW_ENFORCEMENT_IMPLEMENTATION_REPORT.md.
+
+---
+
+## W2-FIX-3 — Metadata Canonicalisation, Validator Alignment, Publish Essentials UI (2026-02-23)
+
+- **Validator alignment:** `utils/publishing/validators.py` — Hard requirements: title/idea_seed, subtitle, header image, status in `{in_process, published}`. Warnings only: meta_title, meta_description, summary. intro_blurb removed from requirements.
+- **header_image_alt_text:** Removed from `api_save_header_data` allowed_fields (Option 1). Render uses `image_archive.alt_text` only.
+- **Mark Ready:** `POST /launchpad/api/publish/<id>/mark-ready` sets status = in_process.
+- **Publish Essentials UI:** Accordion per post on Publishing page: title, subtitle, meta_title/meta_description (optional), status, Mark Ready, Header Image link, Save, Preflight. APIs: GET/POST `/launchpad/api/publish/<id>/essentials`.
+- **Publish flow:** Uses preflight (not validate-publish) before POST publish. Summary fallback: subtitle or intro_blurb.
+- **Deliverable:** reports/W2-FIX-3_METADATA_CANONICALISATION_IMPLEMENTATION_REPORT.md.
+
+---
+
+## W2-FIX-2 — Publish Gate + Preflight + Deterministic Rendering (2026-02-23)
+
+- **Validator:** `utils/publishing/validators.py` — `validate_post_for_clan_publish(post_id)` returns `{ ok, errors, warnings, required_fields_snapshot }`. Requirements (updated in W2-FIX-3): title, subtitle, header image; status in `{in_process, published}`.
+- **Preflight:** `GET /launchpad/api/publish/<post_id>/preflight` — returns validator output.
+- **Publish gate:** POST publish runs preflight first; if !ok → 400 with structured errors; status gate → 409 if status not publishable (override via `?override=1` or JSON `override: true`).
+- **Deterministic sections:** `ORDER BY section_order ASC NULLS LAST, id ASC` in post_data_loader and publishing_helpers.
+- **UI:** "Preflight" button on Publishing page; shows errors/warnings.
+- **Deliverable:** reports/W2-FIX-2_PUBLISH_GATE_PREFLIGHT_IMPLEMENTATION_REPORT.md.
+
+---
+
+## W2-FIX-1 — Canonical Draft Post Contract (2026-02-23)
+
+- **Objective:** After ANY post creation path, the post is authorable immediately: slug exists, post_development row exists, at least 1 post_section exists with numeric id and non-null section_order.
+- **New module:** `utils/posts/post_factory.py` — `ensure_post_development()`, `ensure_default_sections()` with templates (default_generic, default_editorial, default_profile, recipe).
+- **Creation paths updated:** confirm_calendar_idea, api_create_profile_post, api_create_new_post, create_post_from_item, create_post (automation), api_create_profile (planning_api_profiles), content_generation_api (when sections empty).
+- **Slug fixes:** automation_core.create_post and planning_api_profiles.api_create_profile now generate slug before INSERT.
+- **Sections API:** Removed post_development.sections JSON fallback; only return real post_section rows. Ensure default sections on first authoring visit for legacy posts.
+- **Route fix:** workflow_navigation drafting fallback → `/posts/<id>/sections/drafting`; redirect `/authoring/posts/<id>/sections/drafting` → correct route.
+- **Deliverable:** reports/W2-FIX-1_CANONICAL_DRAFT_POST_CONTRACT_IMPLEMENTATION_REPORT.md.
+
+---
+
 ## Phase I-1A — Blog_post Image Run Recording (2026-03-01)
 
 - **Objective:** Bring blog_post section and header image generation up to the same transparency and auditability guarantees as text runs in the Unified Channel Workbench: be able to answer “Exactly what prompt, through which engine, produced this image, and when?”.

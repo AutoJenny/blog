@@ -443,7 +443,22 @@ def api_create_recipe_post(recipe_week_number):
                     ON CONFLICT (post_id) DO UPDATE SET idea_seed = EXCLUDED.idea_seed
                 """, (post_id, idea_seed))
                 
-                # Create initial recipe sections
+                # W2-FIX-5: New post starts at workflow_stage=idea
+                from utils.posts.workflow_stage import ensure_workflow_stage_idea
+                ensure_workflow_stage_idea(post_id)
+                # W2-FIX-9.1: Record calendar_seed for traceability
+                from utils.posts.calendar_seed import set_calendar_seed
+                from datetime import date
+                effective_year = year or date.today().isocalendar()[0]
+                effective_week = week_number if week_number is not None else recipe_week_number
+                set_calendar_seed(post_id, {
+                    "type": "recipe",
+                    "year": effective_year,
+                    "week_number": effective_week,
+                    "item_id": recipe_definition_id,
+                    "category": "recipe",
+                }, actor="recipe_create", cursor=cursor)
+                # Create initial recipe sections (W2-FIX-1: recipes already create 6 sections; no ensure_default_sections needed)
                 recipe_sections = [
                     ('recipe_background', 'Background', 'The historic and cultural background of this recipe'),
                     ('recipe_ingredients', 'Ingredients', 'List of ingredients needed'),
