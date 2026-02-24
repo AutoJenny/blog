@@ -215,7 +215,7 @@ def update_week_item(item_id: int, **kwargs) -> bool:
     set_clause = []
     params = []
     
-    allowed_fields = ['weekday', 'scheduled_date', 'is_selected', 'priority', 
+    allowed_fields = ['year', 'week_number', 'weekday', 'scheduled_date', 'is_selected', 'priority',
                      'position', 'metadata', 'notes', 'is_active']
     
     for field, value in kwargs.items():

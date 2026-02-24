@@ -7,6 +7,7 @@ Calendar ideas CRUD endpoints
 from flask import jsonify
 from config.database import db_manager
 from blueprints.planning_api_calendar_utils import _safe_parse_json_request, _current_iso_week
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -167,13 +168,26 @@ def api_add_calendar_idea():
     try:
         import json
         data = _safe_parse_json_request() or {}
-        # Apply backend defaults so client doesn't have to supply everything
-        if not data.get('idea_title'):
-            return jsonify({'success': False, 'error': 'Missing field: idea_title'}), 400
+        idea_title_input = (data.get('idea_title') or data.get('title') or '').strip()
+        idea_summary_input = data.get('idea_description')
+        if idea_summary_input is None:
+            idea_summary_input = data.get('summary')
+
+        if not idea_title_input:
+            return jsonify({'success': False, 'error': 'Missing field: title'}), 400
+
         if not data.get('week_number'):
             data['week_number'] = _current_iso_week()
 
+        year_value = data.get('year')
+        if year_value is None:
+            iso = datetime.now().isocalendar()
+            year_value = int(iso[0])
+        else:
+            year_value = int(year_value)
+
         with db_manager.get_connection() as conn:
+            conn.autocommit = False
             with conn.cursor() as cursor:
                 # Check which columns exist
                 cursor.execute("""
@@ -186,12 +200,12 @@ def api_add_calendar_idea():
                 fields = ['week_number', 'idea_title']
                 values = [
                     int(data['week_number']),
-                    data['idea_title'].strip()
+                    idea_title_input
                 ]
                 
-                if data.get('idea_description') and 'idea_description' in existing_columns:
+                if idea_summary_input and 'idea_description' in existing_columns:
                     fields.append('idea_description')
-                    values.append(data['idea_description'].strip())
+                    values.append(str(idea_summary_input).strip())
                 
                 if data.get('seasonal_context') and 'seasonal_context' in existing_columns:
                     fields.append('seasonal_context')
@@ -256,6 +270,25 @@ def api_add_calendar_idea():
                 )
                 row = cursor.fetchone()
                 idea_id = row['id']
+
+                cursor.execute("""
+                    INSERT INTO calendar_week_items (
+                        item_type, item_id, year, week_number, weekday, scheduled_date,
+                        is_selected, priority, position, metadata, notes, is_active,
+                        created_at, updated_at
+                    ) VALUES (
+                        'idea', %s, %s, %s, NULL, NULL,
+                        FALSE, 'normal', 0, '{}'::jsonb, NULL, TRUE,
+                        NOW(), NOW()
+                    )
+                    ON CONFLICT (year, week_number, item_type, item_id)
+                    DO UPDATE SET
+                        is_active = TRUE,
+                        updated_at = NOW()
+                    RETURNING id
+                """, (idea_id, year_value, int(data['week_number'])))
+                week_item_row = cursor.fetchone()
+                week_item_id = week_item_row['id'] if week_item_row else None
                 
                 # Handle categories
                 if data.get('categories'):
@@ -267,7 +300,7 @@ def api_add_calendar_idea():
                 
                 conn.commit()
 
-        return jsonify({'success': True, 'idea': row})
+        return jsonify({'success': True, 'week_item_id': week_item_id})
     except Exception as e:
         logger.error(f"Error adding calendar idea: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

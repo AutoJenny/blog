@@ -548,6 +548,32 @@
             gap: 8px;
             flex-shrink: 0;
         }
+
+        .channel-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .channel-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 22px;
+            border-radius: 999px;
+            padding: 0 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            background: #475569;
+        }
+
+        .channel-pill.blog { background: #0f766e; }
+        .channel-pill.facebook { background: #1877f2; }
+        .channel-pill.instagram { background: #e4405f; }
+        .channel-pill.twitter { background: #111827; }
+        .channel-pill.newsletter { background: #7c3aed; }
         
         .btn-send-now {
             background: #3b82f6;
@@ -806,19 +832,13 @@
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold text-white flex items-center gap-2">
                                 <i class="fa-solid fa-clock text-blue-400"></i>
-                                <span>Upcoming Posts</span>
+                                <span>Upcoming Items</span>
                             </h3>
-                            <div class="flex items-center gap-2">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="show-published-toggle" class="w-4 h-4">
-                                    <span class="text-sm text-dark-accent">Show published</span>
-                                </label>
-                            </div>
                         </div>
                         <div id="posts-timeline-container">
                             <div class="empty-state">
                                 <i class="fas fa-spinner fa-spin"></i>
-                                <p>Loading posts...</p>
+                                <p>Loading items...</p>
                             </div>
                         </div>
                     </div>
@@ -1027,130 +1047,106 @@
         
         async function loadPostsTimeline() {
             try {
-                const showPublished = document.getElementById('show-published-toggle')?.checked || false;
-                const url = `/api/posts/timeline?limit=20&show_published=${showPublished}`;
-                const response = await fetch(url);
+                const response = await fetch('/api/home/upcoming-items');
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success) {
-                        renderPostsTimeline(data.posts);
+                    if (Array.isArray(data.items)) {
+                        renderPostsTimeline(data.items);
                     } else {
-                        console.error('Failed to load posts timeline:', data.error);
-                        showTimelineError('Failed to load posts');
+                        console.error('Failed to load upcoming items:', data.error);
+                        showTimelineError('Failed to load upcoming items');
                     }
                 } else {
-                    console.error('Failed to load posts timeline:', response.status);
-                    showTimelineError('Failed to load posts');
+                    console.error('Failed to load upcoming items:', response.status);
+                    showTimelineError('Failed to load upcoming items');
                 }
             } catch (error) {
-                console.error('Error loading posts timeline:', error);
-                showTimelineError('Error loading posts');
+                console.error('Error loading upcoming items:', error);
+                showTimelineError('Error loading upcoming items');
             }
         }
         
-        function renderPostsTimeline(posts) {
+        function renderPostsTimeline(items) {
             const container = document.getElementById('posts-timeline-container');
             if (!container) return;
             
             // Clear container first to prevent duplicates
             container.innerHTML = '';
             
-            if (!posts || posts.length === 0) {
+            if (!items || items.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-inbox"></i>
-                        <p>No posts found</p>
+                        <p>No upcoming items found</p>
                     </div>
                 `;
                 return;
             }
             
-            // Remove duplicates by queue_id (defensive)
-            const seen = new Set();
-            const uniquePosts = posts.filter(post => {
-                const queueId = post.queue_id;
-                if (seen.has(queueId)) {
-                    console.warn(`Duplicate post detected: queue_id=${queueId}, skipping`);
-                    return false;
-                }
-                seen.add(queueId);
-                return true;
-            });
-            
             const html = `
                 <div class="posts-timeline">
-                    ${uniquePosts.map(post => renderPostItem(post)).join('')}
+                    ${items.map(item => renderPostItem(item)).join('')}
                 </div>
             `;
             container.innerHTML = html;
-            
-            // Attach event listeners to Send Now buttons
-            posts.forEach(post => {
-                const btn = document.getElementById(`send-now-${post.queue_id}`);
-                if (btn) {
-                    btn.addEventListener('click', () => publishPost(post.queue_id));
-                }
-            });
         }
         
-        function renderPostItem(post) {
-            // Format scheduled date/time properly
+        function renderPostItem(item) {
             let scheduledDisplay = 'Not scheduled';
-            if (post.scheduled_date) {
-                const dateObj = new Date(post.scheduled_date + 'T00:00:00');
+            if (item.date) {
+                const dateObj = new Date(item.date + 'T00:00:00');
                 const dateStr = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                if (post.scheduled_time) {
-                    const timeStr = post.scheduled_time.substring(0, 5); // HH:MM
-                    scheduledDisplay = `${dateStr} ${timeStr}`;
-                } else {
-                    scheduledDisplay = dateStr;
-                }
+                scheduledDisplay = dateStr;
             }
-            
-            // Format content type for display
-            const contentTypeDisplay = {
-                'weekly_word': 'Word',
-                'weekly_phrase': 'Phrase',
-                'weekly_insult': 'Insult',
-                'product': 'Product',
-                'message': 'Message'
-            }[post.content_type] || post.content_type || 'unknown';
-            
-            const statusClass = post.status ? post.status.toLowerCase() : 'unknown';
-            const dueClass = post.is_due && post.status !== 'published' ? 'due' : '';
-            const publishedClass = post.status === 'published' ? 'published' : '';
-            
-            const imageUrl = post.display_image_url || '/static/images/placeholder.png';
-            const imageSrc = imageUrl.startsWith('http') ? imageUrl : imageUrl;
-            
-            // Show Send Now button only if automated posting is disabled and post is not published
-            const showSendNow = !automatedPostingEnabled && post.status !== 'published' && post.status !== 'failed';
+
+            const title = item.title || `${item.item_type || 'item'} #${item.item_id || ''}`.trim();
+            const rawSummary = item.summary ? String(item.summary).trim() : '';
+            const summary = rawSummary
+                ? (rawSummary.length > 140 ? rawSummary.slice(0, 137) + '...' : rawSummary)
+                : null;
+            const summaryDisplay = summary
+                ? `${summary}${item.is_provisional ? ' (provisional)' : ''}`
+                : (item.is_provisional ? '(provisional)' : '—');
+            const deepLink = item.post_id
+                ? `/planning/posts/${item.post_id}/calendar`
+                : ((item.year && item.week_number)
+                    ? `/planning/calendar?year=${item.year}&week=${item.week_number}`
+                    : '/planning/calendar');
+
+            const channels = Array.isArray(item.channels) ? item.channels : [];
+            const channelLabel = {
+                blog: '📝',
+                facebook: '𝑓',
+                instagram: '📷',
+                twitter: '𝕏',
+                newsletter: '✉️'
+            };
+            const channelsHtml = channels.length
+                ? channels.map(ch => {
+                    const channel = ch.channel || 'other';
+                    const label = channelLabel[channel] || '•';
+                    return `<span class="channel-pill ${escapeHtml(channel)}" title="${escapeHtml(channel)}">${escapeHtml(label)}</span>`;
+                }).join('')
+                : '<span class="timeline-post-meta-item">—</span>';
             
             return `
-                <div class="timeline-post ${dueClass} ${publishedClass}" data-queue-id="${post.queue_id}">
-                    <img src="${imageSrc}" alt="${escapeHtml(post.title)}" class="timeline-post-image" onerror="this.src='/static/images/placeholder.png'">
+                <div class="timeline-post">
                     <div class="timeline-post-content">
-                        <div class="timeline-post-title">${escapeHtml(post.title)}</div>
+                        <div class="timeline-post-title">
+                            <a href="${deepLink}" class="text-blue-300 hover:text-blue-200">${escapeHtml(title)}</a>
+                        </div>
+                        <div class="text-slate-400 text-sm mb-2">${escapeHtml(summaryDisplay)}</div>
                         <div class="timeline-post-meta">
                             <span class="timeline-post-meta-item">
                                 <i class="fas fa-tag"></i>
-                                <span>${contentTypeDisplay}</span>
+                                <span>${escapeHtml(item.item_type || 'unknown')}</span>
                             </span>
                             <span class="timeline-post-meta-item">
                                 <i class="fas fa-calendar"></i>
                                 <span>${scheduledDisplay}</span>
                             </span>
-                            <span class="timeline-post-status ${statusClass}">${post.status || 'unknown'}</span>
-                            ${post.platform_post_id ? `<span class="timeline-post-meta-item"><i class="fas fa-check-circle"></i> Published</span>` : ''}
+                            <span class="channel-pills">${channelsHtml}</span>
                         </div>
-                    </div>
-                    <div class="timeline-post-actions">
-                        ${showSendNow ? `
-                            <button id="send-now-${post.queue_id}" class="btn-send-now" data-queue-id="${post.queue_id}">
-                                <i class="fas fa-paper-plane"></i>
-                                <span>Send Now</span>
-                            </button>
-                        ` : ''}
                     </div>
                 </div>
             `;
@@ -1231,14 +1227,6 @@
             
             // Load posts timeline
             loadPostsTimeline();
-            
-            // Set up published toggle handler
-            const showPublishedToggle = document.getElementById('show-published-toggle');
-            if (showPublishedToggle) {
-                showPublishedToggle.addEventListener('change', () => {
-                    loadPostsTimeline();
-                });
-            }
             
             // Refresh timeline every 60 seconds
             setInterval(loadPostsTimeline, 60000);

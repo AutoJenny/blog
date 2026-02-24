@@ -19,7 +19,7 @@ from blueprints.planning_calendar_clean import planning_calendar as calendar_fun
 from blueprints.planning_calendar import planning_calendar_taxonomy as taxonomy_func
 from blueprints.planning_calendar_product_data_review import planning_calendar_product_data_review as product_data_review_func, api_regenerate_heritage_data as regenerate_heritage_data_func
 from blueprints.planning_concept import planning_concept_brainstorm as brainstorm_func, planning_concept_section_structure as section_structure_func, planning_concept_topic_allocation as topic_allocation_func, planning_concept_titling as titling_func, planning_concept_outline as outline_func, planning_research_sources as sources_func, planning_research_visuals as visuals_func, planning_research_prompts as prompts_func, planning_research_verification as verification_func
-from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func, api_add_calendar_idea as add_idea_api_func, api_update_calendar_idea as update_idea_api_func, api_delete_calendar_idea as delete_idea_api_func, api_calendar_idea_status as idea_status_api_func, api_get_calendar_idea as get_idea_api_func, api_convert_event_to_idea as convert_event_to_idea_api_func, api_add_calendar_event as add_event_api_func, api_update_calendar_event as update_event_api_func, api_delete_calendar_event as delete_event_api_func, api_select_theme_idea as select_theme_idea_api_func, api_weekly_social_focus as social_focus_api_func, api_weekly_social_focus_day as social_focus_day_api_func, api_add_weekly_social_focus as add_social_focus_api_func, api_update_weekly_social_focus as update_social_focus_api_func, api_delete_weekly_social_focus as delete_social_focus_api_func
+from blueprints.planning_api_calendar import api_calendar_categories as categories_api_func, api_calendar_weeks as weeks_api_func, api_calendar_ideas as ideas_api_func, api_calendar_events as events_api_func, api_calendar_schedule as schedule_api_func, api_calendar_ideas_for_week as ideas_week_api_func, api_add_calendar_idea as add_idea_api_func, api_update_calendar_idea as update_idea_api_func, api_delete_calendar_idea as delete_idea_api_func, api_calendar_idea_status as idea_status_api_func, api_get_calendar_idea as get_idea_api_func, api_convert_event_to_idea as convert_event_to_idea_api_func, api_add_calendar_event as add_event_api_func, api_update_calendar_event as update_event_api_func, api_delete_calendar_event as delete_event_api_func, api_select_theme_idea as select_theme_idea_api_func, api_update_calendar_week_item as update_calendar_week_item_api_func, api_set_calendar_week_item_primary as set_calendar_week_item_primary_api_func, api_weekly_social_focus as social_focus_api_func, api_weekly_social_focus_day as social_focus_day_api_func, api_add_weekly_social_focus as add_social_focus_api_func, api_update_weekly_social_focus as update_social_focus_api_func, api_delete_weekly_social_focus as delete_social_focus_api_func
 from blueprints.planning_api_calendar_scheduling_cache import scheduling_all as scheduling_all_api_func
 # OLD IMPORTS REMOVED - Use planning_api_calendar_cyclic and planning_api_calendar_overrides instead
 # from blueprints.planning_api_calendar_reorder import api_reorder_item as reorder_item_api_func, api_position_for_week as position_for_week_api_func
@@ -278,7 +278,7 @@ def api_calendar_weeks(year):
     """Get all calendar weeks for a given year"""
     return weeks_api_func(year)
 
-@bp.route('/api/calendar/ideas/<int:idea_id>', methods=['GET', 'PUT'])
+@bp.route('/api/calendar/ideas/<int:idea_id>', methods=['GET', 'PUT', 'PATCH'])
 def api_calendar_idea(idea_id):
     """Get or update an idea - must come before week_number route"""
     if request.method == 'GET':
@@ -449,6 +449,17 @@ def api_calendar_idea_status(idea_id):
 def api_select_theme():
     """Select a theme/idea for a specific week/year"""
     return select_theme_idea_api_func()
+
+@bp.route('/api/calendar/week-items/<int:week_item_id>', methods=['PATCH'])
+def api_update_calendar_week_item_route(week_item_id):
+    """W2-OPS-6: Update calendar_week_items placement (weekday, scheduled_date, is_active)"""
+    return update_calendar_week_item_api_func(week_item_id)
+
+
+@bp.route('/api/calendar/week-items/<int:week_item_id>/primary', methods=['PATCH'])
+def api_set_calendar_week_item_primary_route(week_item_id):
+    """Set a single idea row as primary for its week."""
+    return set_calendar_week_item_primary_api_func(week_item_id)
 
 # ============================================================================
 # WEEKLY SOCIAL FOCUS API ENDPOINTS

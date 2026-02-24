@@ -71,6 +71,14 @@ def get_category_config(category: str, classification: str | None = None) -> dic
             "position_column": "position",
             "extra_filter": ("item_classification = %s", [classification]),
         }
+
+    if category == "idea":
+        return {
+            "table": "calendar_ideas",
+            "id_column": "id",
+            "position_column": "position",
+            "extra_filter": None,
+        }
     
     raise ValueError(f"Unknown category: {category}")
 

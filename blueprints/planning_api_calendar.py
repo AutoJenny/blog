@@ -42,6 +42,8 @@ from blueprints.planning_api_calendar_schedule import (
     api_select_theme_idea,
     api_calendar_idea_status,
     api_schedule_update_theme_to_idea,
+    api_update_calendar_week_item,
+    api_set_calendar_week_item_primary,
 )
 
 # Import from social focus
@@ -82,6 +84,8 @@ __all__ = [
     'api_select_theme_idea',
     'api_calendar_idea_status',
     'api_schedule_update_theme_to_idea',
+    'api_update_calendar_week_item',
+    'api_set_calendar_week_item_primary',
     # Social Focus
     'api_weekly_social_focus',
     'api_weekly_social_focus_day',

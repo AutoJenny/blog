@@ -698,6 +698,140 @@ def api_calendar_idea_status(theme_id: int):
         logger.error(f"Error getting theme status: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+def api_update_calendar_week_item(week_item_id):
+    """
+    PATCH: Update a calendar_week_items row (placement: weekday, scheduled_date, is_active).
+    W2-OPS-6: Minimal placement API for week items.
+    """
+    from datetime import datetime as dt
+    from utils.calendar_week_items import update_week_item
+
+    data = request.get_json(silent=True) or {}
+    year = data.get('year')
+    week_number = data.get('week_number')
+    weekday = data.get('weekday')
+    scheduled_date_raw = data.get('scheduled_date')
+    is_active = data.get('is_active')
+
+    updates = {}
+    if year is not None:
+        try:
+            updates['year'] = int(year)
+        except (TypeError, ValueError):
+            return jsonify({'success': False, 'error': 'year must be an integer'}), 400
+    if week_number is not None:
+        try:
+            wn = int(week_number)
+            if wn < 1 or wn > 52:
+                return jsonify({'success': False, 'error': 'week_number must be 1-52'}), 400
+            updates['week_number'] = wn
+        except (TypeError, ValueError):
+            return jsonify({'success': False, 'error': 'week_number must be an integer 1-52'}), 400
+    if weekday is not None:
+        try:
+            w = int(weekday)
+            if w < 1 or w > 7:
+                return jsonify({'success': False, 'error': 'weekday must be 1-7'}), 400
+            updates['weekday'] = w
+        except (TypeError, ValueError):
+            return jsonify({'success': False, 'error': 'weekday must be an integer 1-7'}), 400
+    if scheduled_date_raw is not None:
+        try:
+            if isinstance(scheduled_date_raw, str):
+                parsed = dt.strptime(scheduled_date_raw.strip(), '%Y-%m-%d').date()
+            else:
+                return jsonify({'success': False, 'error': 'scheduled_date must be YYYY-MM-DD string'}), 400
+            updates['scheduled_date'] = parsed
+        except ValueError:
+            return jsonify({'success': False, 'error': 'scheduled_date must be parseable as YYYY-MM-DD'}), 400
+    if is_active is not None:
+        updates['is_active'] = bool(is_active)
+
+    if not updates:
+        return jsonify({'success': False, 'error': 'No updatable fields provided'}), 400
+
+    try:
+        updated = update_week_item(week_item_id, **updates)
+        if not updated:
+            return jsonify({'success': False, 'error': 'Week item not found'}), 404
+    except Exception as e:
+        logger.error(f"Error updating calendar_week_item {week_item_id}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+    with db_manager.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT id, item_type, item_id, year, week_number, weekday, scheduled_date, is_active, updated_at
+            FROM calendar_week_items WHERE id = %s
+        """, (week_item_id,))
+        row = cursor.fetchone()
+    if not row:
+        return jsonify({'success': True, 'week_item_id': week_item_id, 'updated': dict(updates)}), 200
+
+    updated_payload = {
+        'id': row['id'],
+        'item_type': row['item_type'],
+        'item_id': row['item_id'],
+        'year': row['year'],
+        'week_number': row['week_number'],
+        'weekday': row['weekday'],
+        'scheduled_date': row['scheduled_date'].isoformat() if row.get('scheduled_date') else None,
+        'is_active': row['is_active'],
+        'updated_at': row['updated_at'].isoformat() if row.get('updated_at') else None,
+    }
+    return jsonify({'success': True, 'week_item_id': week_item_id, 'updated': updated_payload}), 200
+
+
+def api_set_calendar_week_item_primary(week_item_id):
+    """
+    PATCH: Set a single idea week-item as primary for its year/week.
+    """
+    try:
+        with db_manager.get_connection() as conn:
+            conn.autocommit = False
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT id, item_type, year, week_number
+                        FROM calendar_week_items
+                        WHERE id = %s
+                          AND is_active = TRUE
+                    """, (week_item_id,))
+                    row = cursor.fetchone()
+                    if not row:
+                        conn.rollback()
+                        return jsonify({'success': False, 'error': 'Week item not found'}), 404
+                    if row.get('item_type') != 'idea':
+                        conn.rollback()
+                        return jsonify({'success': False, 'error': 'Only idea week items can be primary'}), 400
+
+                    year = int(row['year'])
+                    week_number = int(row['week_number'])
+
+                    cursor.execute("""
+                        UPDATE calendar_week_items
+                        SET is_primary = FALSE, updated_at = NOW()
+                        WHERE item_type = 'idea'
+                          AND year = %s
+                          AND week_number = %s
+                    """, (year, week_number))
+
+                    cursor.execute("""
+                        UPDATE calendar_week_items
+                        SET is_primary = TRUE, updated_at = NOW()
+                        WHERE id = %s
+                    """, (week_item_id,))
+
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        logger.error(f"Error setting primary week item {week_item_id}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 def api_schedule_update_theme_to_idea():
     """DEPRECATED: This endpoint is no longer needed.
     idea_id is deprecated from week persistence. Only theme_id is supported.

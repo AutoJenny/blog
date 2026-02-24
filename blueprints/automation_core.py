@@ -635,6 +635,7 @@ def create_post_from_item():
         year = data.get('year')
         week = data.get('week')
         output_channel = data.get('output_channel', 'blog')
+        week_item_id = data.get('week_item_id')
         
         if not category or not item_id:
             return jsonify({"success": False, "error": "category and item_id are required"}), 400
@@ -645,6 +646,13 @@ def create_post_from_item():
         except (ValueError, TypeError):
             logger.error(f"Invalid item_id: {item_id} (type: {type(item_id)})")
             return jsonify({"success": False, "error": f"Invalid item_id: {item_id}. Must be a number."}), 400
+
+        week_item_id_int = None
+        if week_item_id is not None:
+            try:
+                week_item_id_int = int(week_item_id)
+            except (ValueError, TypeError):
+                return jsonify({"success": False, "error": f"Invalid week_item_id: {week_item_id}. Must be a number."}), 400
         
         # Get calendar item data
         from utils.calendar_resolver import get_category_config
@@ -670,7 +678,7 @@ def create_post_from_item():
             return jsonify({"success": False, "error": f"Invalid category configuration: {category}"}), 500
         
         # W2-FIX-9.1 Part D: Fail fast — require year+week for calendar-driven types before fetching item
-        if category in ("theme", "weekly_word", "weekly_phrase", "weekly_insult"):
+        if category in ("theme", "idea", "weekly_word", "weekly_phrase", "weekly_insult"):
             if not year or not week:
                 return jsonify({
                     "success": False,
@@ -704,6 +712,9 @@ def create_post_from_item():
             if category == 'theme':
                 post_type = 'themed'
                 title = item_dict.get('theme_title') or item_dict.get('title', '')
+            elif category == 'idea':
+                post_type = 'themed'
+                title = item_dict.get('idea_title') or item_dict.get('title', '')
             elif category == 'recipe':
                 post_type = 'recipe'
                 title = item_dict.get('recipe_title') or item_dict.get('title', '')
@@ -777,12 +788,69 @@ def create_post_from_item():
                     existing_post_id = result['id']
                     existing_post_status = result['status']
                     logger.info(f"Reusing theme post {existing_post_id} with status '{existing_post_status}' for week {year}/{week}")
+            elif category == 'idea' and year and week:
+                # For idea conversions, reuse an existing calendar-seeded idea post for the same week/item.
+                cursor.execute("""
+                    SELECT p.id, p.status
+                    FROM post p
+                    WHERE p.status IN ('draft', 'in_process')
+                      AND p.extra_settings->'calendar_seed'->>'type' = 'idea'
+                      AND (p.extra_settings->'calendar_seed'->>'year')::int = %s
+                      AND (p.extra_settings->'calendar_seed'->>'week_number')::int = %s
+                      AND (p.extra_settings->'calendar_seed'->>'item_id')::int = %s
+                    ORDER BY p.updated_at DESC, p.id DESC
+                    LIMIT 1
+                """, (year, week, item_id_int))
+                result = cursor.fetchone()
+                if result:
+                    existing_post_id = result['id']
+                    existing_post_status = result['status']
+                    logger.info(f"Reusing idea post {existing_post_id} with status '{existing_post_status}' for week {year}/{week}, item {item_id_int}")
             
             # If existing post found, return it instead of creating new
             if existing_post_id:
                 logger.info(f"Existing post found for {category} item {item_id}: post_id={existing_post_id}, status={existing_post_status}")
+                if category == 'idea' and week_item_id_int is not None:
+                    cursor.execute("""
+                        UPDATE calendar_week_items
+                        SET is_active = FALSE, is_primary = FALSE, updated_at = NOW()
+                        WHERE id = %s
+                          AND item_type = 'idea'
+                    """, (week_item_id_int,))
+                    cursor.execute("""
+                        INSERT INTO calendar_week_items (
+                            item_type,
+                            item_id,
+                            year,
+                            week_number,
+                            is_active,
+                            is_selected,
+                            priority,
+                            created_at,
+                            updated_at
+                        )
+                        VALUES (
+                            'theme',
+                            %s,
+                            %s,
+                            %s,
+                            TRUE,
+                            TRUE,
+                            'normal',
+                            NOW(),
+                            NOW()
+                        )
+                        ON CONFLICT (year, week_number, item_type, item_id) DO UPDATE SET
+                            is_active = TRUE,
+                            updated_at = NOW()
+                    """, (existing_post_id, int(year), int(week)))
                 # Check channel assignment rules for response
                 content_format = get_content_format(post_type, output_channel)
+                if category == 'idea':
+                    return jsonify({
+                        "success": True,
+                        "post_id": existing_post_id
+                    })
                 return jsonify({
                     "success": True,
                     "post_id": existing_post_id,
@@ -966,6 +1034,40 @@ def create_post_from_item():
                 "item_id": int(item_id),
                 "category": category,
             }, actor="create_post_from_item", cursor=cursor)
+            if category == 'idea' and week_item_id_int is not None:
+                cursor.execute("""
+                    UPDATE calendar_week_items
+                    SET is_active = FALSE, is_primary = FALSE, updated_at = NOW()
+                    WHERE id = %s
+                      AND item_type = 'idea'
+                """, (week_item_id_int,))
+                cursor.execute("""
+                    INSERT INTO calendar_week_items (
+                        item_type,
+                        item_id,
+                        year,
+                        week_number,
+                        is_active,
+                        is_selected,
+                        priority,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (
+                            'theme',
+                        %s,
+                        %s,
+                        %s,
+                        TRUE,
+                            TRUE,
+                        'normal',
+                        NOW(),
+                        NOW()
+                    )
+                    ON CONFLICT (year, week_number, item_type, item_id) DO UPDATE SET
+                        is_active = TRUE,
+                        updated_at = NOW()
+                """, (post_id, int(year), int(week)))
             # Link post to week in canonical week‑persistence table if year and week provided.
             # For themed blog posts this mirrors confirm_calendar_idea, writing into calendar_week_items
             # so that calendar_week_posts_v2 exposes the mapping.
@@ -1002,6 +1104,11 @@ def create_post_from_item():
                 "channel": output_channel,
                 "content_format": content_format or 'article'
             }
+            if category == 'idea':
+                return jsonify({
+                    "success": True,
+                    "post_id": post_id
+                })
             
             # If this is for a non-blog channel, include format info
             if output_channel != 'blog' and content_format:
