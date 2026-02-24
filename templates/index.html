@@ -582,6 +582,8 @@
 
 {% block content %}
 
+    <div id="governance-panel" class="mb-8"></div>
+
     <!-- Main Content -->
     <div class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="content-area">
@@ -972,6 +974,7 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="{{ url_for('static', filename='js/home_governance.js') }}"></script>
     <script>
         // Global state (for KPI updates)
         let timelineData = [];
