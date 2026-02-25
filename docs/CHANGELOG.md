@@ -1,5 +1,14 @@
 # Changelog
 
+## W2 — Governance blog candidates + convert flow (2026-02-23)
+
+- **Governance panel:** Blog Candidates section shows only active, non-system ideas; single selected candidate persisted via `is_selected`; Delete sets `is_active=false`; Convert persists linkage in week item metadata (`converted`, `post_id`).
+- **Backend:** `create_post_from_item` for idea no longer inserts a separate theme row; conversion links post via existing idea week item; governance summary surfaces active blog slot from candidate with `is_selected` and `metadata.post_id`.
+- **Data:** St David's Day (week_item_id 335) reactivated for W09 after delete test; W09 candidates: Celtic Jewellery Guide, St David's Day (Wales), Irish tartans (selected/converted).
+- **CHANGELOG:** docs/CHANGELOG.md.
+
+---
+
 ## W2-GOV-2 — Phase Close: Documentation Sync (2026-02-23)
 
 - **Architecture overview:** `docs/ARCHITECTURE_V2_OVERVIEW.md` — Layered architecture, validation order, automation control layers, calendar-driven model, actor model, block types.

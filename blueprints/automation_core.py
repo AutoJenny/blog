@@ -817,33 +817,6 @@ def create_post_from_item():
                         WHERE id = %s
                           AND item_type = 'idea'
                     """, (week_item_id_int,))
-                    cursor.execute("""
-                        INSERT INTO calendar_week_items (
-                            item_type,
-                            item_id,
-                            year,
-                            week_number,
-                            is_active,
-                            is_selected,
-                            priority,
-                            created_at,
-                            updated_at
-                        )
-                        VALUES (
-                            'theme',
-                            %s,
-                            %s,
-                            %s,
-                            TRUE,
-                            TRUE,
-                            'normal',
-                            NOW(),
-                            NOW()
-                        )
-                        ON CONFLICT (year, week_number, item_type, item_id) DO UPDATE SET
-                            is_active = TRUE,
-                            updated_at = NOW()
-                    """, (existing_post_id, int(year), int(week)))
                 # Check channel assignment rules for response
                 content_format = get_content_format(post_type, output_channel)
                 if category == 'idea':
@@ -1041,33 +1014,6 @@ def create_post_from_item():
                     WHERE id = %s
                       AND item_type = 'idea'
                 """, (week_item_id_int,))
-                cursor.execute("""
-                    INSERT INTO calendar_week_items (
-                        item_type,
-                        item_id,
-                        year,
-                        week_number,
-                        is_active,
-                        is_selected,
-                        priority,
-                        created_at,
-                        updated_at
-                    )
-                    VALUES (
-                            'theme',
-                        %s,
-                        %s,
-                        %s,
-                        TRUE,
-                            TRUE,
-                        'normal',
-                        NOW(),
-                        NOW()
-                    )
-                    ON CONFLICT (year, week_number, item_type, item_id) DO UPDATE SET
-                        is_active = TRUE,
-                        updated_at = NOW()
-                """, (post_id, int(year), int(week)))
             # Link post to week in canonical week‑persistence table if year and week provided.
             # For themed blog posts this mirrors confirm_calendar_idea, writing into calendar_week_items
             # so that calendar_week_posts_v2 exposes the mapping.
