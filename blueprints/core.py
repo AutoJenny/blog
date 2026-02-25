@@ -8,6 +8,90 @@ from config.database import db_manager
 bp = Blueprint('core', __name__)
 logger = logging.getLogger(__name__)
 
+
+def _ensure_weekly_content_seeded_for_week(year: int, week: int, today: date) -> None:
+    """
+    Ensure calendar_week_items has weekly_word/weekly_phrase entries for the given ISO week.
+    Uses the central cyclic resolver to pick items; creates week items only when none exist.
+    """
+    try:
+        from utils.calendar_week_items import create_week_item, ITEM_TYPE_WEEKLY_WORD, ITEM_TYPE_WEEKLY_PHRASE
+        from utils.calendar_resolver import resolve_item_for_week
+
+        iso_monday = date.fromisocalendar(year, week, 1)
+        iso_tuesday = date.fromisocalendar(year, week, 2)
+
+        # Check if week already has active weekly content rows; backfill NULL scheduled_date.
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, item_type, scheduled_date
+                    FROM calendar_week_items
+                    WHERE year = %s AND week_number = %s
+                      AND item_type IN ('weekly_word', 'weekly_phrase')
+                      AND is_active = TRUE
+                    """,
+                    (year, week),
+                )
+                rows = cursor.fetchall() or []
+            if rows:
+                # Backfill NULL scheduled_date: weekly_word -> Monday, weekly_phrase -> Tuesday.
+                with conn.cursor() as c2:
+                    for r in rows:
+                        rid = r.get("id") if isinstance(r, dict) else (r[0] if len(r) > 0 else None)
+                        itype = r.get("item_type") if isinstance(r, dict) else (r[1] if len(r) > 1 else None)
+                        sdate = r.get("scheduled_date") if isinstance(r, dict) else (r[2] if len(r) > 2 else None)
+                        if sdate is not None or not rid:
+                            continue
+                        target_date = iso_monday if itype == "weekly_word" else iso_tuesday
+                        c2.execute(
+                            "UPDATE calendar_week_items SET scheduled_date = %s, updated_at = NOW() WHERE id = %s",
+                            (target_date, rid),
+                        )
+                conn.commit()
+                return
+
+        # Resolve weekly_word / weekly_phrase for this ISO week using the cyclic resolver.
+        ww = resolve_item_for_week("weekly_word", year, week, classification="weekly_word")
+        wp = resolve_item_for_week("weekly_phrase", year, week, classification="weekly_phrase")
+
+        ww_date = iso_monday
+        wp_date = iso_tuesday
+
+        if ww and ww.get("id"):
+            create_week_item(
+                ITEM_TYPE_WEEKLY_WORD,
+                ww["id"],
+                year,
+                week,
+                weekday=None,
+                scheduled_date=ww_date,
+                is_selected=False,
+                priority="normal",
+                position=0,
+                metadata=None,
+                notes=None,
+                is_active=True,
+            )
+        if wp and wp.get("id"):
+            create_week_item(
+                ITEM_TYPE_WEEKLY_PHRASE,
+                wp["id"],
+                year,
+                week,
+                weekday=None,
+                scheduled_date=wp_date,
+                is_selected=False,
+                priority="normal",
+                position=0,
+                metadata=None,
+                notes=None,
+                is_active=True,
+            )
+    except Exception as e:
+        logger.warning(f"Auto-seed weekly content for {year}/W{week} failed: {e}")
+
 @bp.route('/')
 def index():
     """Main page with header and workflow navigation."""
@@ -148,6 +232,8 @@ def api_home_governance_summary():
         iso_year, iso_week, _ = today.isocalendar()
         current_year = iso_year
         current_week = iso_week
+        # Ensure the current ISO week has weekly_word / weekly_phrase seeded in calendar_week_items.
+        _ensure_weekly_content_seeded_for_week(current_year, current_week, today)
         window_start = today.isoformat()
         window_end = end.isoformat()
 
