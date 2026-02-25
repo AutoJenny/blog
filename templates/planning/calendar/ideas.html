@@ -721,14 +721,12 @@ async function loadPostMetadata() {
         if (data.success && data.post) {
             const subtitleInput = document.getElementById('post-subtitle');
             if (subtitleInput) {
-                // Post page: subtitle from postContext only; never overwrite with theme/schedule
+                // Canonical mapping: subtitle = post.subtitle first, fallback post.summary, else empty
                 if (window.postContext && window.postContext.post_id) {
-                    subtitleInput.value = window.postContext.summary || '';
+                    subtitleInput.value = (window.postContext.subtitle || window.postContext.summary || '').trim();
                 } else {
-                    subtitleInput.value = data.post.subtitle || '';
-                    if (!subtitleInput.value.trim() && selectedTheme && selectedTheme.theme_title) {
-                        await generateSubtitleFromTheme();
-                    }
+                    subtitleInput.value = (data.post.subtitle || data.post.summary || '').trim();
+                    // 7.4: No implicit generate-from-theme on load; only button-driven
                 }
                 // Attach auto-save listener if not already attached
                 if (!subtitleInput.hasAttribute('data-auto-save-attached')) {
@@ -963,11 +961,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         selectedTheme = {
             post_id: window.postContext.post_id,
             theme_title: window.postContext.title,
-            theme_description: window.postContext.summary || ''
+            theme_description: (window.postContext.summary || window.postContext.subtitle || '')
         };
         themeSelectedForWeek = true;
         const subtitleInput = document.getElementById('post-subtitle');
-        if (subtitleInput) subtitleInput.value = window.postContext.summary || '';
+        if (subtitleInput) subtitleInput.value = (window.postContext.subtitle || window.postContext.summary || '').trim();
         updateUIState();
         return;
     }

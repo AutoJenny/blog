@@ -18,7 +18,7 @@ def api_posts(post_id):
         with db_manager.get_cursor() as cursor:
             # Get post data - include publication verification fields
             cursor.execute("""
-                SELECT p.id, p.title, p.subtitle, p.status, p.created_at, p.updated_at,
+                SELECT p.id, p.title, p.subtitle, p.summary, p.status, p.created_at, p.updated_at,
                        p.profile_product_id, p.profile_category_id, p.profile_type,
                        p.clan_post_id, p.clan_uploaded_url, p.first_published_at,
                        pd.idea_scope, pd.section_structure, pd.topic_allocation,

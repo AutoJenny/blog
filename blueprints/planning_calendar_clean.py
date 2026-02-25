@@ -202,7 +202,7 @@ def planning_calendar_ideas(post_id):
         content_type_name = None
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT p.id, p.title, p.status, p.summary, p.created_at, p.updated_at,
+                SELECT p.id, p.title, p.status, p.summary, p.subtitle, p.created_at, p.updated_at,
                        p.content_type_id
                 FROM post p
                 WHERE p.id = %s
@@ -233,16 +233,19 @@ def planning_calendar_ideas(post_id):
         post_derived_theme = None
         post_context = None
         if post_type == 'themed' and post.get('id'):
+            # Theme description: post.summary first, fallback post.subtitle (canonical mapping 7.1)
+            theme_desc = (post.get('summary') or post.get('subtitle') or '')
             post_derived_theme = {
                 'post_id': post_id,
                 'theme_title': post.get('title'),
-                'theme_description': post.get('summary') or '',
+                'theme_description': theme_desc,
                 'priority': 'normal',
             }
             post_context = {
                 'post_id': post_id,
                 'title': post.get('title') or '',
                 'summary': post.get('summary') or '',
+                'subtitle': post.get('subtitle') or '',
             }
 
         return render_template('planning/calendar/ideas.html', 
@@ -272,7 +275,7 @@ def planning_calendar_ideas(post_id):
         try:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT p.id, p.title, p.status, p.summary, p.created_at, p.updated_at,
+                    SELECT p.id, p.title, p.status, p.summary, p.subtitle, p.created_at, p.updated_at,
                            p.content_type_id
                     FROM post p
                     WHERE p.id = %s
@@ -302,16 +305,18 @@ def planning_calendar_ideas(post_id):
         post_derived_theme = None
         post_context = None
         if post and post_type == 'themed' and post.get('title'):
+            theme_desc = (post.get('summary') or post.get('subtitle') or '')
             post_derived_theme = {
                 'post_id': post_id,
                 'theme_title': post.get('title'),
-                'theme_description': post.get('summary') or '',
+                'theme_description': theme_desc,
                 'priority': 'normal',
             }
             post_context = {
                 'post_id': post_id,
                 'title': post.get('title') or '',
                 'summary': post.get('summary') or '',
+                'subtitle': post.get('subtitle') or '',
             }
         
         return render_template('planning/calendar/ideas.html',
