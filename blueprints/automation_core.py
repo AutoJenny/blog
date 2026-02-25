@@ -965,14 +965,15 @@ def create_post_from_item():
             
             logger.info(f"Creating post with title: {title}, slug: {slug}, format: {content_format}")
             
-            # Create post (only if blog post is needed)
+            # Create post (only if blog post is needed). For theme/idea: title and summary from source.
             idea_seed = item_dict.get('theme_description') or item_dict.get('idea_description') or item_dict.get('description', '')
+            post_summary = (item_dict.get('theme_description') or item_dict.get('idea_description') or item_dict.get('description') or '')[:300] if category in ('theme', 'idea') else None
             
             cursor.execute("""
-                INSERT INTO post (title, slug, status, created_at, updated_at)
-                VALUES (%s, %s, 'draft', NOW(), NOW())
+                INSERT INTO post (title, slug, status, summary, subtitle, created_at, updated_at)
+                VALUES (%s, %s, 'draft', %s, %s, NOW(), NOW())
                 RETURNING id
-            """, (title, slug))
+            """, (title, slug, post_summary or None, post_summary or None))
             
             result = cursor.fetchone()
             if not result or 'id' not in result:
