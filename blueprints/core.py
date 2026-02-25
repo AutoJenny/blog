@@ -493,16 +493,11 @@ def api_home_governance_summary():
                     "is_active": bool(row.get('is_active')),
                 })
 
-            # Active blog slot: candidate with is_selected and metadata.post_id → surface as one scheduled_slots row
+            # Active blog slot: always show if there is a selected converted candidate (independent of date window).
+            # Rendered as unscheduled draft (scheduled_date = null).
             active_blog = next((c for c in blog_candidates if c.get('is_selected') and c.get('post_id')), None)
             if active_blog:
                 post_id = active_blog['post_id']
-                try:
-                    from datetime import date as _date
-                    iso_monday = _date.fromisocalendar(current_year, current_week, 1)
-                    scheduled_date_iso = iso_monday.isoformat()
-                except Exception:
-                    scheduled_date_iso = None
                 post_status = None
                 workflow_stage = None
                 try:
@@ -523,7 +518,7 @@ def api_home_governance_summary():
                     "item_id": active_blog["item_id"],
                     "role": "blog",
                     "weekday": None,
-                    "scheduled_date": scheduled_date_iso,
+                    "scheduled_date": None,
                     "metadata": active_blog.get("metadata") or {},
                     "created_at": None,
                     "updated_at": None,

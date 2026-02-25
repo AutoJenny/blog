@@ -455,9 +455,8 @@
     html += '</tbody></table></div>';
 
     html += '<details class="blog-candidates gov-accordion mt-4">';
-    html += '<summary class="gov-accordion-toggle cursor-pointer text-slate-300 hover:text-white font-medium">Blog ideas (optional)</summary>';
+    html += '<summary class="gov-accordion-toggle cursor-pointer text-slate-300 hover:text-white font-medium">Blog ideas (' + escapeHtml(String(candidates.length)) + ' available)</summary>';
     html += '<div class="gov-accordion-body mt-2">';
-    html += '<p class="text-slate-400 text-sm mb-2">Ideas for Week ' + escapeHtml(String(panelWeek)) + ' (' + escapeHtml(String(panelYear)) + ') — ' + escapeHtml(String(candidates.length)) + ' available.</p>';
     html += '<div class="blog-candidate-controls"><button id="addNewIdeaBtn">+ New Idea</button></div>';
     html += '<div id="blogCandidatesList">';
     candidateByWeekItemId = {};
