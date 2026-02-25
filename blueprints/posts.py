@@ -829,6 +829,47 @@ def api_advance_workflow_stage(post_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@bp.route('/api/posts/<int:post_id>/early-stage', methods=['GET'])
+def api_get_early_stage(post_id):
+    """Instruction Set 8: Get early development stage + counts for UI (from DB)."""
+    try:
+        from utils.posts.early_stage import get_early_stage
+        from config.database import db_manager
+        stage = get_early_stage(post_id)
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) AS c FROM post_required_idea WHERE post_id = %s", (post_id,))
+            r = cursor.fetchone()
+            required_ideas_count = int(r.get("c", 0) if isinstance(r, dict) else (r[0] if r else 0))
+            cursor.execute("SELECT COUNT(*) AS c FROM post_section WHERE post_id = %s", (post_id,))
+            r = cursor.fetchone()
+            sections_count = int(r.get("c", 0) if isinstance(r, dict) else (r[0] if r else 0))
+        return jsonify({
+            "success": True,
+            "workflow_stage": stage,
+            "required_ideas_count": required_ideas_count,
+            "sections_count": sections_count,
+        }), 200
+    except Exception as e:
+        logger.error(f"Error getting early stage: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route('/api/posts/<int:post_id>/advance-stage', methods=['POST'])
+def api_advance_early_stage(post_id):
+    """Instruction Set 8: Advance to next stage (explicit user action). Returns { success, new_stage } or { success: false, error }."""
+    try:
+        from utils.posts.early_stage import advance_post_stage
+        ok, err, new_stage = advance_post_stage(post_id)
+        if not ok:
+            return jsonify({"success": False, "error": err or "Advance failed"}), (
+                404 if err and "not found" in err.lower() else 400
+            )
+        return jsonify({"success": True, "new_stage": new_stage}), 200
+    except Exception as e:
+        logger.error(f"Error advancing early stage: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @bp.route('/api/posts/<int:post_id>/workflow-stage', methods=['GET'])
 def api_get_workflow_stage(post_id):
     """
