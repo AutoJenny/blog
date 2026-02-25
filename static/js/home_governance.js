@@ -448,7 +448,11 @@
           actions.push('<button type="button" class="gov-run-automation text-emerald-400 hover:text-emerald-300" data-post-id="' + escapeHtml(String(slot.post_id)) + '">Run Automation</button>');
         }
       } else {
-        actions.push('<a href="/launchpad/one-click-publication?slot_id=' + escapeHtml(String(slot.slot_id)) + '" class="text-blue-400 hover:text-blue-300">Create From Slot</a>');
+        if (slot.role === 'blog' || slot.item_type === 'blog') {
+          actions.push('<span class="text-slate-500" title="Start from ideas below">—</span>');
+        } else {
+          actions.push('<a href="/launchpad/one-click-publication?slot_id=' + escapeHtml(String(slot.slot_id)) + '" class="text-blue-400 hover:text-blue-300">Create From Slot</a>');
+        }
       }
       html += '<tr class="border-t border-slate-700">';
       html += '<td class="px-4 py-2">' + escapeHtml(roleLabel(slot.item_type, slot.role)) + '</td>';
