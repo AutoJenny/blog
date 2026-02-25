@@ -277,27 +277,34 @@
             alert('Candidate not found.');
             return;
           }
-          var convertPayload = {
+          var createPayload = {
             category: 'idea',
             item_id: selected.item_id,
             week_item_id: selected.week_item_id,
             year: panelYear,
             week: panelWeek
           };
-          console.log('[blog-candidate] convert request', convertPayload);
-          postJson(CONVERT_URL, {
-            category: 'idea',
-            item_id: selected.item_id,
-            week_item_id: selected.week_item_id,
-            year: panelYear,
-            week: panelWeek
-          }).then(function (result) {
-            console.log('[blog-candidate] convert response', { ok: result.ok, status: result.data && result.data.status, data: result.data });
-            if (result.ok && result.data && result.data.success) {
-              loadGovernancePanel();
-            } else {
-              alert((result.data && result.data.error) ? result.data.error : 'Convert failed.');
+          postJson(CONVERT_URL, createPayload).then(function (result) {
+            if (!result.ok || !result.data || !result.data.success) {
+              var msg = (result.data && (result.data.error || result.data.message)) || 'Convert failed.';
+              alert(msg);
+              return;
             }
+            var postId = result.data.post_id;
+            if (postId == null) return;
+            patchJson(WEEK_ITEM_API_PREFIX + selected.week_item_id, {
+              metadata: { converted: true, post_id: postId },
+              is_selected: true,
+              is_active: true
+            }).then(function (patchResult) {
+              if (patchResult.ok && patchResult.data && patchResult.data.success) {
+                loadGovernancePanel();
+              } else {
+                loadGovernancePanel();
+              }
+            }).catch(function () {
+              loadGovernancePanel();
+            });
           }).catch(function () {
             alert('Request failed.');
           });

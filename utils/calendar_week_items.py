@@ -215,13 +215,18 @@ def update_week_item(item_id: int, **kwargs) -> bool:
     set_clause = []
     params = []
     
+    import json as _json
     allowed_fields = ['year', 'week_number', 'weekday', 'scheduled_date', 'is_selected', 'priority',
                      'position', 'metadata', 'notes', 'is_active']
     
     for field, value in kwargs.items():
         if field in allowed_fields:
-            set_clause.append(f"{field} = %s")
-            params.append(value)
+            if field == 'metadata':
+                set_clause.append("metadata = %s::jsonb")
+                params.append(_json.dumps(value) if isinstance(value, dict) else value)
+            else:
+                set_clause.append(f"{field} = %s")
+                params.append(value)
     
     if not set_clause:
         return False

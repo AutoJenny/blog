@@ -713,8 +713,16 @@ def api_update_calendar_week_item(week_item_id):
     weekday = data.get('weekday')
     scheduled_date_raw = data.get('scheduled_date')
     is_active = data.get('is_active')
+    is_selected = data.get('is_selected')
+    metadata = data.get('metadata')
 
     updates = {}
+    if is_selected is not None:
+        updates['is_selected'] = bool(is_selected)
+    if metadata is not None:
+        if not isinstance(metadata, dict):
+            return jsonify({'success': False, 'error': 'metadata must be a JSON object'}), 400
+        updates['metadata'] = metadata
     if year is not None:
         try:
             updates['year'] = int(year)
@@ -761,7 +769,7 @@ def api_update_calendar_week_item(week_item_id):
 
     with db_manager.get_cursor() as cursor:
         cursor.execute("""
-            SELECT id, item_type, item_id, year, week_number, weekday, scheduled_date, is_active, updated_at
+            SELECT id, item_type, item_id, year, week_number, weekday, scheduled_date, is_active, metadata, updated_at
             FROM calendar_week_items WHERE id = %s
         """, (week_item_id,))
         row = cursor.fetchone()
@@ -777,6 +785,7 @@ def api_update_calendar_week_item(week_item_id):
         'weekday': row['weekday'],
         'scheduled_date': row['scheduled_date'].isoformat() if row.get('scheduled_date') else None,
         'is_active': row['is_active'],
+        'metadata': row.get('metadata') if isinstance(row.get('metadata'), dict) else (row.get('metadata') or {}),
         'updated_at': row['updated_at'].isoformat() if row.get('updated_at') else None,
     }
     return jsonify({'success': True, 'week_item_id': week_item_id, 'updated': updated_payload}), 200

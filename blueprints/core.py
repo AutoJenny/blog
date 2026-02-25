@@ -155,7 +155,7 @@ def api_home_governance_summary():
         try:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT cwi.id, cwi.item_type, cwi.item_id, cwi.is_primary, cwi.weekday, cwi.scheduled_date,
+                    SELECT cwi.id, cwi.item_type, cwi.item_id, cwi.is_primary, cwi.is_selected, cwi.weekday, cwi.scheduled_date,
                            cwi.metadata, cwi.created_at, cwi.updated_at, cwi.position,
                            p.id AS post_id, p.status AS post_status,
                            p.summary AS post_summary, p.profile_standfirst AS post_standfirst, p.subtitle AS post_subtitle,
@@ -319,8 +319,26 @@ def api_home_governance_summary():
                     summary = weekly_summary_by_id.get(item_id)
                     is_provisional = True
                 elif item_type == 'theme':
-                    summary = theme_summary_by_id.get(item_id)
-                    is_provisional = True
+                    # For blog slot, derive summary from post title/summary/subtitle when linked.
+                    if post_id is not None:
+                        try:
+                            with db_manager.get_cursor() as cursor:
+                                cursor.execute("""
+                                    SELECT COALESCE(title, summary, subtitle) AS display_text
+                                    FROM post
+                                    WHERE id = %s
+                                """, (post_id,))
+                                row_post = cursor.fetchone()
+                        except Exception as e:
+                            logger.warning(f"Theme summary resolution failed for post {post_id}: {e}")
+                            row_post = None
+                        summary = (row_post['display_text'] if row_post and isinstance(row_post, dict)
+                                   else row_post[0] if row_post and not isinstance(row_post, dict)
+                                   else None)
+                        is_provisional = False
+                    else:
+                        summary = theme_summary_by_id.get(item_id)
+                        is_provisional = True
                 elif item_type == 'recipe':
                     if post_id is not None:
                         summary = _non_empty(
@@ -378,6 +396,15 @@ def api_home_governance_summary():
                     "preflight_ok": None,
                     "automation_blocked_reason": None,
                 }
+                if item_type == 'theme':
+                    # Display-only scheduled date: ISO Monday for the slot's ISO week.
+                    try:
+                        from datetime import date as _date
+                        iso_monday = _date.fromisocalendar(current_year, current_week, 1)
+                        slot["scheduled_date"] = iso_monday.isoformat()
+                    except Exception as e:
+                        logger.warning(f"Could not compute ISO Monday for theme slot {row['id']}: {e}")
+
                 if post_id is not None:
                     block_reason = None
                     output_ok = None
@@ -424,12 +451,70 @@ def api_home_governance_summary():
                 idea_id = row.get('item_id')
                 title = _non_empty(idea_title_by_id.get(idea_id), f'Idea #{idea_id}')
                 summary = idea_summary_by_id.get(idea_id)
+                meta = row.get('metadata') or {}
+                if not isinstance(meta, dict):
+                    meta = {}
+                post_id_from_meta = meta.get('post_id')
+                if post_id_from_meta is not None:
+                    try:
+                        post_id_from_meta = int(post_id_from_meta)
+                    except (TypeError, ValueError):
+                        post_id_from_meta = None
                 blog_candidates.append({
                     "week_item_id": row['id'],
                     "item_id": idea_id,
                     "title": title,
                     "summary": summary,
                     "is_primary": bool(row.get('is_primary')),
+                    "is_selected": bool(row.get('is_selected')),
+                    "metadata": meta,
+                    "post_id": post_id_from_meta,
+                })
+
+            # Active blog slot: candidate with is_selected and metadata.post_id → surface as one scheduled_slots row
+            active_blog = next((c for c in blog_candidates if c.get('is_selected') and c.get('post_id')), None)
+            if active_blog:
+                post_id = active_blog['post_id']
+                try:
+                    from datetime import date as _date
+                    iso_monday = _date.fromisocalendar(current_year, current_week, 1)
+                    scheduled_date_iso = iso_monday.isoformat()
+                except Exception:
+                    scheduled_date_iso = None
+                post_status = None
+                workflow_stage = None
+                try:
+                    with db_manager.get_cursor() as cursor:
+                        cursor.execute("""
+                            SELECT p.status, p.extra_settings->>'workflow_stage' AS workflow_stage
+                            FROM post p WHERE p.id = %s
+                        """, (post_id,))
+                        pr = cursor.fetchone()
+                        if pr:
+                            post_status = pr.get('status')
+                            workflow_stage = (pr.get('workflow_stage') or '').strip() or None
+                except Exception:
+                    pass
+                scheduled_slots.append({
+                    "slot_id": active_blog["week_item_id"],
+                    "item_type": "idea",
+                    "item_id": active_blog["item_id"],
+                    "role": "blog",
+                    "weekday": None,
+                    "scheduled_date": scheduled_date_iso,
+                    "metadata": active_blog.get("metadata") or {},
+                    "created_at": None,
+                    "updated_at": None,
+                    "channels": [{"channel": "blog", "content_format": "article", "is_primary": True, "is_required": True}],
+                    "summary": active_blog.get("title") or "",
+                    "is_provisional": False,
+                    "post_id": post_id,
+                    "post_status": post_status,
+                    "workflow_stage": workflow_stage,
+                    "automation_enabled": None,
+                    "output_ready": None,
+                    "preflight_ok": None,
+                    "automation_blocked_reason": None,
                 })
 
         except Exception as db_err:
