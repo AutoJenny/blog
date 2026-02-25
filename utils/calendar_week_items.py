@@ -23,11 +23,12 @@ ITEM_TYPE_PROFILE = 'profile'
 ITEM_TYPE_WEEKLY_WORD = 'weekly_word'
 ITEM_TYPE_WEEKLY_PHRASE = 'weekly_phrase'
 ITEM_TYPE_SYNDICATION = 'syndication'
+ITEM_TYPE_BLOG = 'blog'
 
 VALID_ITEM_TYPES = {
     ITEM_TYPE_THEME, ITEM_TYPE_IDEA, ITEM_TYPE_ANNUAL_EVENT, ITEM_TYPE_SPECIAL_EVENT,
     ITEM_TYPE_RECIPE, ITEM_TYPE_PROFILE, ITEM_TYPE_WEEKLY_WORD, ITEM_TYPE_WEEKLY_PHRASE,
-    ITEM_TYPE_SYNDICATION
+    ITEM_TYPE_SYNDICATION, ITEM_TYPE_BLOG,
 }
 
 def get_item_type_from_source(source_table: str, item_classification: Optional[str] = None, 
@@ -93,7 +94,7 @@ def create_week_item(item_type: str, item_id: int, year: int, week_number: int,
         raise ValueError(f"Invalid item_type: {item_type}")
     
     # Validate weekday for week-level items
-    if item_type in (ITEM_TYPE_THEME, ITEM_TYPE_WEEKLY_WORD, ITEM_TYPE_WEEKLY_PHRASE):
+    if item_type in (ITEM_TYPE_THEME, ITEM_TYPE_WEEKLY_WORD, ITEM_TYPE_WEEKLY_PHRASE, ITEM_TYPE_BLOG):
         if weekday is not None:
             logger.warning(f"weekday should be NULL for {item_type}, ignoring provided value")
             weekday = None

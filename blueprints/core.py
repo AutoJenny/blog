@@ -11,15 +11,16 @@ logger = logging.getLogger(__name__)
 
 def _ensure_weekly_content_seeded_for_week(year: int, week: int, today: date) -> None:
     """
-    Ensure calendar_week_items has weekly_word/weekly_phrase entries for the given ISO week.
-    Uses the central cyclic resolver to pick items; creates week items only when none exist.
+    Ensure calendar_week_items has weekly_word, weekly_phrase, and blog entries for the given ISO week.
+    Uses the central cyclic resolver for word/phrase; blog slot is one per week (item_id=0, Thursday).
     """
     try:
-        from utils.calendar_week_items import create_week_item, ITEM_TYPE_WEEKLY_WORD, ITEM_TYPE_WEEKLY_PHRASE
+        from utils.calendar_week_items import create_week_item, ITEM_TYPE_WEEKLY_WORD, ITEM_TYPE_WEEKLY_PHRASE, ITEM_TYPE_BLOG
         from utils.calendar_resolver import resolve_item_for_week
 
         iso_monday = date.fromisocalendar(year, week, 1)
         iso_tuesday = date.fromisocalendar(year, week, 2)
+        iso_thursday = date.fromisocalendar(year, week, 4)
 
         # Check if week already has active weekly content rows; backfill NULL scheduled_date.
         with db_manager.get_connection() as conn:
@@ -50,6 +51,41 @@ def _ensure_weekly_content_seeded_for_week(year: int, week: int, today: date) ->
                             (target_date, rid),
                         )
                 conn.commit()
+            # Ensure blog slot for this week: one row (item_type=blog, item_id=0), scheduled_date = Thursday.
+            with conn.cursor() as c2:
+                c2.execute(
+                    """
+                    SELECT id, scheduled_date
+                    FROM calendar_week_items
+                    WHERE year = %s AND week_number = %s AND item_type = 'blog' AND item_id = 0 AND is_active = TRUE
+                    """,
+                    (year, week),
+                )
+                blog_row = c2.fetchone()
+            if blog_row:
+                if blog_row.get("scheduled_date") if isinstance(blog_row, dict) else blog_row[1] is None:
+                    with conn.cursor() as c2:
+                        c2.execute(
+                            "UPDATE calendar_week_items SET scheduled_date = %s, updated_at = NOW() WHERE id = %s",
+                            (iso_thursday, blog_row.get("id") if isinstance(blog_row, dict) else blog_row[0]),
+                        )
+                    conn.commit()
+            else:
+                create_week_item(
+                    ITEM_TYPE_BLOG,
+                    0,
+                    year,
+                    week,
+                    weekday=None,
+                    scheduled_date=iso_thursday,
+                    is_selected=False,
+                    priority="normal",
+                    position=0,
+                    metadata=None,
+                    notes=None,
+                    is_active=True,
+                )
+            if rows:
                 return
 
         # Resolve weekly_word / weekly_phrase for this ISO week using the cyclic resolver.
@@ -89,6 +125,29 @@ def _ensure_weekly_content_seeded_for_week(year: int, week: int, today: date) ->
                 notes=None,
                 is_active=True,
             )
+        # Ensure blog slot when we just created weekly_word/phrase (no existing rows path).
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, scheduled_date FROM calendar_week_items
+                    WHERE year = %s AND week_number = %s AND item_type = 'blog' AND item_id = 0 AND is_active = TRUE
+                    """,
+                    (year, week),
+                )
+                blog_row = cursor.fetchone()
+            if blog_row and (blog_row.get("scheduled_date") if isinstance(blog_row, dict) else blog_row[1]) is None:
+                with conn.cursor() as c2:
+                    c2.execute(
+                        "UPDATE calendar_week_items SET scheduled_date = %s, updated_at = NOW() WHERE id = %s",
+                        (iso_thursday, blog_row.get("id") if isinstance(blog_row, dict) else blog_row[0]),
+                    )
+                conn.commit()
+            elif not blog_row:
+                create_week_item(
+                    ITEM_TYPE_BLOG, 0, year, week, weekday=None, scheduled_date=iso_thursday,
+                    is_selected=False, priority="normal", position=0, metadata=None, notes=None, is_active=True,
+                )
     except Exception as e:
         logger.warning(f"Auto-seed weekly content for {year}/W{week} failed: {e}")
 
@@ -223,8 +282,8 @@ def ollama_status():
 def api_home_governance_summary():
     """
     Homepage governance: next 7 days (date-driven).
-    scheduled_slots: items with scheduled_date in [today .. today+7].
-    blog_candidates: ideas for current ISO week; Blog row injected if active blog in that week.
+    scheduled_slots: items with scheduled_date in [today .. today+7], including real blog slot (item_type=blog).
+    blog_candidates: ideas for current ISO week (candidate selection only; no synthetic blog row).
     """
     try:
         today = date.today()
@@ -258,7 +317,7 @@ def api_home_governance_summary():
                     WHERE cwi.is_active = TRUE
                       AND cwi.scheduled_date IS NOT NULL
                       AND cwi.scheduled_date >= %s AND cwi.scheduled_date <= %s
-                      AND cwi.item_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult', 'recipe', 'profile', 'theme')
+                      AND cwi.item_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult', 'recipe', 'profile', 'theme', 'blog')
                     ORDER BY cwi.scheduled_date, cwi.position, cwi.id
                 """, (today, end))
                 rows = cursor.fetchall() or []
@@ -474,6 +533,44 @@ def api_home_governance_summary():
                     else:
                         summary = profile_seed_summary_by_id.get(item_id)
                         is_provisional = True
+                elif item_type == 'blog':
+                    # Real blog slot: summary from metadata.post_id (post title) or metadata.idea_item_id (idea title) or "—".
+                    meta = row.get('metadata') or {}
+                    if not isinstance(meta, dict):
+                        meta = {}
+                    post_id_meta = meta.get('post_id')
+                    idea_id_meta = meta.get('idea_item_id')
+                    if post_id_meta is not None:
+                        try:
+                            post_id_meta = int(post_id_meta)
+                            with db_manager.get_cursor() as cursor:
+                                cursor.execute(
+                                    "SELECT COALESCE(title, summary, subtitle) AS display_text FROM post WHERE id = %s",
+                                    (post_id_meta,),
+                                )
+                                pr = cursor.fetchone()
+                            summary = (pr.get('display_text') if pr and isinstance(pr, dict) else (pr[0] if pr else None)) or "—"
+                        except (TypeError, ValueError, Exception):
+                            summary = "—"
+                    elif idea_id_meta is not None:
+                        try:
+                            idea_id_meta = int(idea_id_meta)
+                            summary = idea_title_by_id.get(idea_id_meta)
+                            if summary is None:
+                                with db_manager.get_cursor() as cursor:
+                                    cursor.execute(
+                                        "SELECT idea_title FROM calendar_ideas WHERE id = %s",
+                                        (idea_id_meta,),
+                                    )
+                                    ir = cursor.fetchone()
+                                summary = (ir.get('idea_title') if ir and isinstance(ir, dict) else (ir[0] if ir else None)) or "—"
+                        except (TypeError, ValueError, Exception):
+                            summary = "—"
+                    else:
+                        summary = "—"
+                    is_provisional = not meta.get('post_id')
+                    channels = [{"channel": "blog", "content_format": "article", "is_primary": True, "is_required": True}]
+                    post_id = post_id_meta if post_id_meta is not None else row.get('post_id')
                 else:
                     # Stop condition fallback for item types with no clean mapping.
                     channels = []
@@ -577,47 +674,6 @@ def api_home_governance_summary():
                     "metadata": meta,
                     "post_id": post_id_from_meta,
                     "is_active": bool(row.get('is_active')),
-                })
-
-            # Active blog slot: always show if there is a selected converted candidate (independent of date window).
-            # Rendered as unscheduled draft (scheduled_date = null).
-            active_blog = next((c for c in blog_candidates if c.get('is_selected') and c.get('post_id')), None)
-            if active_blog:
-                post_id = active_blog['post_id']
-                post_status = None
-                workflow_stage = None
-                try:
-                    with db_manager.get_cursor() as cursor:
-                        cursor.execute("""
-                            SELECT p.status, p.extra_settings->>'workflow_stage' AS workflow_stage
-                            FROM post p WHERE p.id = %s
-                        """, (post_id,))
-                        pr = cursor.fetchone()
-                        if pr:
-                            post_status = pr.get('status')
-                            workflow_stage = (pr.get('workflow_stage') or '').strip() or None
-                except Exception:
-                    pass
-                scheduled_slots.append({
-                    "slot_id": active_blog["week_item_id"],
-                    "item_type": "idea",
-                    "item_id": active_blog["item_id"],
-                    "role": "blog",
-                    "weekday": None,
-                    "scheduled_date": None,
-                    "metadata": active_blog.get("metadata") or {},
-                    "created_at": None,
-                    "updated_at": None,
-                    "channels": [{"channel": "blog", "content_format": "article", "is_primary": True, "is_required": True}],
-                    "summary": active_blog.get("title") or "",
-                    "is_provisional": False,
-                    "post_id": post_id,
-                    "post_status": post_status,
-                    "workflow_stage": workflow_stage,
-                    "automation_enabled": None,
-                    "output_ready": None,
-                    "preflight_ok": None,
-                    "automation_blocked_reason": None,
                 })
 
         except Exception as db_err:

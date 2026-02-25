@@ -810,13 +810,15 @@ def create_post_from_item():
             # If existing post found, return it instead of creating new
             if existing_post_id:
                 logger.info(f"Existing post found for {category} item {item_id}: post_id={existing_post_id}, status={existing_post_status}")
-                if category == 'idea' and week_item_id_int is not None:
+                if category == 'idea' and year and week:
+                    # Populate the real blog slot for this week (do not deactivate the idea row).
+                    import json as _json
+                    blog_meta = {"converted": True, "post_id": existing_post_id, "idea_item_id": item_id_int}
                     cursor.execute("""
                         UPDATE calendar_week_items
-                        SET is_active = FALSE, is_primary = FALSE, updated_at = NOW()
-                        WHERE id = %s
-                          AND item_type = 'idea'
-                    """, (week_item_id_int,))
+                        SET metadata = COALESCE(metadata, '{}'::jsonb) || %s::jsonb, updated_at = NOW()
+                        WHERE year = %s AND week_number = %s AND item_type = 'blog' AND item_id = 0
+                    """, (_json.dumps(blog_meta), int(year), int(week)))
                 # Check channel assignment rules for response
                 content_format = get_content_format(post_type, output_channel)
                 if category == 'idea':
@@ -1007,13 +1009,15 @@ def create_post_from_item():
                 "item_id": int(item_id),
                 "category": category,
             }, actor="create_post_from_item", cursor=cursor)
-            if category == 'idea' and week_item_id_int is not None:
+            if category == 'idea' and year and week:
+                # Populate the real blog slot for this week (do not deactivate the idea row).
+                import json as _json
+                blog_meta = {"converted": True, "post_id": post_id, "idea_item_id": item_id_int}
                 cursor.execute("""
                     UPDATE calendar_week_items
-                    SET is_active = FALSE, is_primary = FALSE, updated_at = NOW()
-                    WHERE id = %s
-                      AND item_type = 'idea'
-                """, (week_item_id_int,))
+                    SET metadata = COALESCE(metadata, '{}'::jsonb) || %s::jsonb, updated_at = NOW()
+                    WHERE year = %s AND week_number = %s AND item_type = 'blog' AND item_id = 0
+                """, (_json.dumps(blog_meta), int(year), int(week)))
             # Link post to week in canonical week‑persistence table if year and week provided.
             # For themed blog posts this mirrors confirm_calendar_idea, writing into calendar_week_items
             # so that calendar_week_posts_v2 exposes the mapping.
