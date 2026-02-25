@@ -779,6 +779,14 @@ class BlogPipelineHeader {
                             }
                             // For other generated posts, fall through to theme lookup
                         }
+                        if (postTypeData.success && postTypeData.post_type === 'themed') {
+                            // For themed (blog/article) posts, show post title — not "Unselected theme"
+                            const blogTitle = postTypeData.post_title || 'Blog post';
+                            if (themeEl) {
+                                themeEl.textContent = blogTitle;
+                            }
+                            return; // Don't continue with theme lookup
+                        }
                     }
                 } catch (e) {
                     console.warn('[Blog Pipeline Header] Error checking post type:', e);
