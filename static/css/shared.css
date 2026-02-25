@@ -1,8 +1,41 @@
-.blog-candidates {
+/* Governance panel: next 7 days heading + accordion */
+.gov-accordion {
     margin-top: 24px;
     padding: 16px;
     background: #151b2b;
     border-radius: 6px;
+}
+
+.gov-accordion summary.gov-accordion-toggle {
+    list-style: none;
+    user-select: none;
+}
+
+.gov-accordion summary.gov-accordion-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.gov-accordion summary.gov-accordion-toggle::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 0.7em;
+    transition: transform 0.2s ease;
+}
+
+.gov-accordion[open] summary.gov-accordion-toggle::before {
+    transform: rotate(90deg);
+}
+
+.blog-candidates {
+    margin-top: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.blog-candidates .gov-accordion-body {
+    padding-top: 8px;
 }
 
 .blog-candidate-card {

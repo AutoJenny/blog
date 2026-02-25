@@ -138,24 +138,30 @@ def ollama_status():
 @bp.route('/api/home/governance-summary', methods=['GET'])
 def api_home_governance_summary():
     """
-    Governance summary for current week.
-    scheduled_slots: non-idea week items
-    blog_candidates: idea week items
+    Homepage governance: next 7 days (date-driven).
+    scheduled_slots: items with scheduled_date in [today .. today+7].
+    blog_candidates: ideas for current ISO week; Blog row injected if active blog in that week.
     """
     try:
-        from datetime import datetime
-        now = datetime.now()
-        current_year = now.isocalendar()[0]
-        current_week = now.isocalendar()[1]
+        today = date.today()
+        end = today + timedelta(days=7)
+        iso_year, iso_week, _ = today.isocalendar()
+        current_year = iso_year
+        current_week = iso_week
+        window_start = today.isoformat()
+        window_end = end.isoformat()
+
         scheduled_slots = []
         blog_candidates = []
         ready_count = 0
         blocked_count = 0
         no_post_count = 0
         try:
+            # Scheduled slots: only rows with scheduled_date in the next 7 days (date-driven).
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT cwi.id, cwi.item_type, cwi.item_id, cwi.is_primary, cwi.is_selected, cwi.weekday, cwi.scheduled_date,
+                    SELECT cwi.id, cwi.item_type, cwi.item_id, cwi.year, cwi.week_number,
+                           cwi.is_primary, cwi.is_selected, cwi.weekday, cwi.scheduled_date,
                            cwi.metadata, cwi.created_at, cwi.updated_at, cwi.position,
                            p.id AS post_id, p.status AS post_status,
                            p.summary AS post_summary, p.profile_standfirst AS post_standfirst, p.subtitle AS post_subtitle,
@@ -163,10 +169,12 @@ def api_home_governance_summary():
                            COALESCE((p.extra_settings->'automation'->>'enabled') IS DISTINCT FROM 'false', TRUE) AS automation_enabled_raw
                     FROM calendar_week_items cwi
                     LEFT JOIN post p ON p.id = cwi.item_id AND cwi.item_type IN ('recipe', 'profile', 'theme')
-                    WHERE cwi.year = %s AND cwi.week_number = %s
-                      AND cwi.is_active = TRUE
-                    ORDER BY COALESCE(cwi.weekday, 0), cwi.position, cwi.id
-                """, (current_year, current_week))
+                    WHERE cwi.is_active = TRUE
+                      AND cwi.scheduled_date IS NOT NULL
+                      AND cwi.scheduled_date >= %s AND cwi.scheduled_date <= %s
+                      AND cwi.item_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult', 'recipe', 'profile', 'theme')
+                    ORDER BY cwi.scheduled_date, cwi.position, cwi.id
+                """, (today, end))
                 rows = cursor.fetchall() or []
 
             def _non_empty(*vals):
@@ -407,11 +415,13 @@ def api_home_governance_summary():
                     "preflight_ok": None,
                     "automation_blocked_reason": None,
                 }
-                if item_type == 'theme':
-                    # Display-only scheduled date: ISO Monday for the slot's ISO week.
+                if item_type == 'theme' and not slot.get("scheduled_date"):
+                    # Fallback: ISO Monday for the slot's week when row has no scheduled_date.
                     try:
                         from datetime import date as _date
-                        iso_monday = _date.fromisocalendar(current_year, current_week, 1)
+                        row_year = row.get('year') or current_year
+                        row_week = row.get('week_number') or current_week
+                        iso_monday = _date.fromisocalendar(int(row_year), int(row_week), 1)
                         slot["scheduled_date"] = iso_monday.isoformat()
                     except Exception as e:
                         logger.warning(f"Could not compute ISO Monday for theme slot {row['id']}: {e}")
@@ -532,6 +542,8 @@ def api_home_governance_summary():
         except Exception as db_err:
             logger.warning(f"Governance summary query failed (calendar_week_items may not exist): {db_err}")
         return jsonify({
+            "window_start": window_start,
+            "window_end": window_end,
             "current_week": current_week,
             "year": current_year,
             "scheduled_slots": scheduled_slots,

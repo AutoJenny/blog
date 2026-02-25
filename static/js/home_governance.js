@@ -383,6 +383,16 @@
       });
   }
 
+  function formatWindowDate(isoDate) {
+    if (!isoDate) return '';
+    try {
+      var d = new Date(isoDate + 'T00:00:00');
+      return isNaN(d.getTime()) ? isoDate : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    } catch (_) {
+      return isoDate;
+    }
+  }
+
   function renderPanel(data) {
     var panel = document.getElementById('governance-panel');
     if (!panel) return;
@@ -392,11 +402,19 @@
     var slots = Array.isArray(data.scheduled_slots) ? data.scheduled_slots : [];
     var candidates = Array.isArray(data.blog_candidates) ? data.blog_candidates : [];
     var summary = data.automation_summary || {};
+    var windowStart = data.window_start || '';
+    var windowEnd = data.window_end || '';
+    var headingLabel = windowStart && windowEnd
+      ? 'Next 7 days (' + formatWindowDate(windowStart) + ' – ' + formatWindowDate(windowEnd) + ')'
+      : 'Week ' + String(panelWeek) + ' (' + String(panelYear) + ')';
 
     console.log('[governance] scheduled_slots length=', slots.length, 'roles=', slots.map(function (s) { return s.role || s.item_type; }));
 
     var html = '';
-    html += '<h2 class="text-lg font-semibold text-white mb-4">Week ' + escapeHtml(String(panelWeek)) + ' (' + escapeHtml(String(panelYear)) + ')</h2>';
+    html += '<div class="flex flex-wrap items-center justify-between gap-2 mb-4">';
+    html += '<h2 class="text-lg font-semibold text-white">' + escapeHtml(headingLabel) + '</h2>';
+    html += '<a href="/planning/calendar" class="text-sm text-slate-400 hover:text-slate-200">View full calendar →</a>';
+    html += '</div>';
     html += '<div class="overflow-x-auto rounded-lg border border-slate-600">';
     html += '<table class="min-w-full text-left text-sm">';
     html += '<thead class="bg-slate-800 text-slate-300 uppercase tracking-wide"><tr>';
@@ -436,8 +454,10 @@
     }
     html += '</tbody></table></div>';
 
-    html += '<div class="blog-candidates">';
-    html += '<h3>Ideas Available for Week ' + escapeHtml(String(panelWeek)) + ' (' + escapeHtml(String(candidates.length)) + ')</h3>';
+    html += '<details class="blog-candidates gov-accordion mt-4">';
+    html += '<summary class="gov-accordion-toggle cursor-pointer text-slate-300 hover:text-white font-medium">Blog ideas (optional)</summary>';
+    html += '<div class="gov-accordion-body mt-2">';
+    html += '<p class="text-slate-400 text-sm mb-2">Ideas for Week ' + escapeHtml(String(panelWeek)) + ' (' + escapeHtml(String(panelYear)) + ') — ' + escapeHtml(String(candidates.length)) + ' available.</p>';
     html += '<div class="blog-candidate-controls"><button id="addNewIdeaBtn">+ New Idea</button></div>';
     html += '<div id="blogCandidatesList">';
     candidateByWeekItemId = {};
@@ -470,7 +490,7 @@
       html += '</div>';
       html += '</div>';
     }
-    html += '</div></div>';
+    html += '</div></div></details>';
 
     html += '<p class="text-slate-400 text-xs mt-2">Ready: ' + (summary.ready_count || 0) + ' · Blocked: ' + (summary.blocked_count || 0) + ' · No post: ' + (summary.no_post_count || 0) + '</p>';
 
