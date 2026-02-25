@@ -19,4 +19,9 @@ temp/
 static/content/instagram_hybrid/
 static/content/posts/0/
 static/images/instagram/
+node_modules/
+restart_server.sh.local
+*.png
+*.jpg
+*.jpeg
 
