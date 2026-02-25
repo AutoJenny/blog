@@ -890,6 +890,52 @@ def api_get_workflow_stage(post_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@bp.route('/api/posts/<int:post_id>/playbook', methods=['GET'])
+def api_get_playbook(post_id):
+    """W2 Phase 3: Get playbook and state. Idempotent init if missing. Does not mutate stage."""
+    try:
+        from utils.taxonomy_helpers import get_post_type
+        from utils.posts.playbooks import get_playbook_and_state
+        post_type = get_post_type(post_id)
+        playbook, state = get_playbook_and_state(post_id, post_type)
+        return jsonify({
+            "success": True,
+            "playbook": playbook,
+            "state": state,
+        }), 200
+    except Exception as e:
+        logger.error(f"Error getting playbook for post {post_id}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route('/api/posts/<int:post_id>/playbook', methods=['PATCH'])
+def api_patch_playbook(post_id):
+    """W2 Phase 3: Update one task status. Does not mutate stage. Does not trigger automation."""
+    try:
+        from utils.posts.playbooks import update_task_state
+        data = request.get_json() or {}
+        stage = (data.get("stage") or "").strip()
+        task_id = (data.get("task_id") or "").strip()
+        status = (data.get("status") or "").strip().lower()
+        note = (data.get("note") or "").strip() or None
+        if not stage or not task_id or not status:
+            return jsonify({
+                "success": False,
+                "error": "stage, task_id, and status are required",
+            }), 400
+        ok, err, playbook, state = update_task_state(post_id, stage=stage, task_id=task_id, status=status, note=note)
+        if not ok:
+            return jsonify({"success": False, "error": err or "Update failed"}), 400
+        return jsonify({
+            "success": True,
+            "playbook": playbook,
+            "state": state,
+        }), 200
+    except Exception as e:
+        logger.error(f"Error updating playbook for post {post_id}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @bp.route('/api/posts/<int:post_id>/fields/status', methods=['POST'])
 def api_update_post_status(post_id):
     """

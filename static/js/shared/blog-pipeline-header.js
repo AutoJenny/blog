@@ -208,6 +208,8 @@ class BlogPipelineHeader {
 
         // Instruction Set 8: Early stage indicator (from DB)
         await this.updateEarlyStageIndicator();
+        // W2 Phase 3: Playbook panel (metadata-only; does not affect stage or automation)
+        await this.updatePlaybookPanel();
 
         console.log('[Blog Pipeline Header] Header fields updated');
     }
@@ -241,6 +243,92 @@ class BlogPipelineHeader {
             line.style.display = '';
         } catch (e) {
             el.textContent = '—';
+        }
+    }
+
+    /** W2 Phase 3: Show playbook tasks for current stage only. Does not gate; does not auto-run. */
+    async updatePlaybookPanel() {
+        const panel = document.getElementById('playbook-panel');
+        const listEl = document.getElementById('playbook-tasks');
+        if (!panel || !listEl) return;
+        const postId = this.getPostId();
+        if (!postId || postId === '0' || parseInt(postId) === 0) {
+            panel.style.display = 'none';
+            return;
+        }
+        const stagesWithPlaybook = ['ideas', 'authoring', 'review'];
+        try {
+            const [stageRes, playbookRes] = await Promise.all([
+                fetch(`/api/posts/${postId}/early-stage`),
+                fetch(`/api/posts/${postId}/playbook`)
+            ]);
+            const stageData = stageRes.ok ? await stageRes.json() : {};
+            const playbookData = playbookRes.ok ? await playbookRes.json() : {};
+            const currentStage = (stageData.workflow_stage || '').toLowerCase();
+            if (!stagesWithPlaybook.includes(currentStage) || !playbookData.success || !playbookData.playbook || !playbookData.playbook[currentStage]) {
+                panel.style.display = 'none';
+                return;
+            }
+            const tasks = playbookData.playbook[currentStage] || [];
+            const state = (playbookData.state && playbookData.state[currentStage]) || {};
+            listEl.innerHTML = '';
+            tasks.forEach(t => {
+                const taskId = t.id;
+                const label = t.label || taskId;
+                const taskState = state[taskId] || {};
+                const status = taskState.status || 'todo';
+                const note = taskState.note || '';
+                const li = document.createElement('li');
+                li.className = 'playbook-task';
+                li.style.marginBottom = '0.25rem';
+                const statuses = currentStage === 'review' ? ['todo', 'done', 'skipped', 'fail'] : ['todo', 'done', 'skipped'];
+                const btnSpan = document.createElement('span');
+                btnSpan.style.marginLeft = '0.5rem';
+                statuses.forEach(s => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = s;
+                    btn.style.fontSize = '0.7rem';
+                    btn.style.padding = '0.1rem 0.35rem';
+                    btn.style.marginRight = '0.2rem';
+                    btn.style.cursor = 'pointer';
+                    if (s === status) btn.style.fontWeight = 'bold';
+                    btn.addEventListener('click', () => this.setPlaybookTaskStatus(postId, currentStage, taskId, s, listEl, panel));
+                    btnSpan.appendChild(btn);
+                });
+                li.appendChild(document.createTextNode(label));
+                li.appendChild(btnSpan);
+                if (status === 'fail' && note) {
+                    const noteEl = document.createElement('div');
+                    noteEl.style.fontSize = '0.7rem';
+                    noteEl.style.color = '#cbd5e1';
+                    noteEl.textContent = note;
+                    li.appendChild(noteEl);
+                }
+                listEl.appendChild(li);
+            });
+            panel.style.display = tasks.length ? '' : 'none';
+        } catch (e) {
+            panel.style.display = 'none';
+        }
+    }
+
+    async setPlaybookTaskStatus(postId, stage, taskId, status, listEl, panel) {
+        const body = { stage, task_id: taskId, status };
+        if (status === 'fail') {
+            const note = window.prompt('Note (optional):');
+            if (note !== null) body.note = note;
+        }
+        try {
+            const res = await fetch(`/api/posts/${postId}/playbook`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (data.success && listEl && panel) await this.updatePlaybookPanel();
+        } catch (e) {
+            console.warn('[Blog Pipeline Header] Playbook update failed:', e);
         }
     }
 
