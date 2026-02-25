@@ -65,94 +65,134 @@ def api_post_subtitle(post_id):
 
 @bp.route('/<int:post_id>/required-ideas', methods=['GET', 'POST'])
 def api_post_required_ideas(post_id):
-    """Get or update required ideas to include (stored in embedding_overrides)"""
+    """Get or replace required ideas (stored in post_required_idea). W2: single source of truth."""
     try:
         if request.method == 'GET':
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT embedding_overrides
-                    FROM post_development
+                    SELECT id, post_id, text, sort_order
+                    FROM post_required_idea
                     WHERE post_id = %s
+                    ORDER BY sort_order ASC, id ASC
                 """, (post_id,))
-                result = cursor.fetchone()
-                
-                if not result:
-                    return jsonify({
-                        'success': True,
-                        'required_ideas': []
-                    })
-                
-                overrides = result.get('embedding_overrides') or {}
-                if isinstance(overrides, str):
-                    try:
-                        overrides = json.loads(overrides)
-                    except:
-                        overrides = {}
-                
-                required_ideas = overrides.get('required_ideas', [])
-                if not isinstance(required_ideas, list):
-                    required_ideas = []
-                
-                return jsonify({
-                    'success': True,
-                    'required_ideas': required_ideas
-                })
-        
+                rows = cursor.fetchall()
+                required_ideas = [
+                    {'id': r.get('id'), 'text': r.get('text') or '', 'sort_order': r.get('sort_order', 0)}
+                    for r in rows
+                ]
+                return jsonify({'success': True, 'required_ideas': required_ideas})
+
         elif request.method == 'POST':
             data = request.get_json() or {}
             required_ideas = data.get('required_ideas', [])
-            
             if not isinstance(required_ideas, list):
                 return jsonify({'success': False, 'error': 'required_ideas must be an array'}), 400
-            
-            with db_manager.get_cursor() as cursor:
-                # Get existing embedding_overrides
-                cursor.execute("""
-                    SELECT embedding_overrides
-                    FROM post_development
-                    WHERE post_id = %s
-                """, (post_id,))
-                result = cursor.fetchone()
-                
-                # Parse existing overrides
-                overrides = {}
-                if result and result.get('embedding_overrides'):
-                    existing = result.get('embedding_overrides')
-                    if isinstance(existing, str):
-                        try:
-                            overrides = json.loads(existing)
-                        except:
-                            overrides = {}
-                    elif isinstance(existing, dict):
-                        overrides = existing
-                
-                # Update required_ideas
-                overrides['required_ideas'] = required_ideas
-                
-                # Ensure post_development record exists
-                cursor.execute("""
-                    SELECT id FROM post_development WHERE post_id = %s
-                """, (post_id,))
-                if not cursor.fetchone():
-                    cursor.execute("""
-                        INSERT INTO post_development (post_id, embedding_overrides, updated_at)
-                        VALUES (%s, %s, NOW())
-                    """, (post_id, json.dumps(overrides)))
+            # Normalize: allow [{ text, sort_order }] or ["text", ...]
+            normalized = []
+            for i, item in enumerate(required_ideas):
+                if isinstance(item, str):
+                    normalized.append((item.strip(), i))
+                elif isinstance(item, dict):
+                    text = (item.get('text') or item.get('idea') or '').strip()
+                    sort_order = item.get('sort_order', i)
+                    normalized.append((text, sort_order))
                 else:
-                    cursor.execute("""
-                        UPDATE post_development
-                        SET embedding_overrides = %s, updated_at = NOW()
-                        WHERE post_id = %s
-                    """, (json.dumps(overrides), post_id))
-            
-            return jsonify({
-                'success': True,
-                'required_ideas': required_ideas
-            })
-            
+                    normalized.append((str(item).strip(), i))
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("DELETE FROM post_required_idea WHERE post_id = %s", (post_id,))
+                for sort_order, (text, _) in enumerate(normalized):
+                    if text:
+                        cursor.execute(
+                            "INSERT INTO post_required_idea (post_id, text, sort_order) VALUES (%s, %s, %s)",
+                            (post_id, text, sort_order),
+                        )
+                cursor.connection.commit()
+                cursor.execute("""
+                    SELECT id, post_id, text, sort_order FROM post_required_idea
+                    WHERE post_id = %s ORDER BY sort_order ASC, id ASC
+                """, (post_id,))
+                rows = cursor.fetchall()
+                out = [{'id': r.get('id'), 'text': r.get('text') or '', 'sort_order': r.get('sort_order', 0)} for r in rows]
+            return jsonify({'success': True, 'required_ideas': out})
     except Exception as e:
         logger.error(f"Error handling required ideas for post {post_id}: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/<int:post_id>/required-ideas/items', methods=['POST'])
+def api_post_required_idea_add(post_id):
+    """Add one required idea (post_required_idea). Body: { text, sort_order? }."""
+    try:
+        data = request.get_json() or {}
+        text = (data.get('text') or data.get('idea') or '').strip()
+        if not text:
+            return jsonify({'success': False, 'error': 'text is required'}), 400
+        sort_order = data.get('sort_order')
+        with db_manager.get_cursor() as cursor:
+            if sort_order is None:
+                cursor.execute(
+                    "SELECT COALESCE(MAX(sort_order), -1) + 1 FROM post_required_idea WHERE post_id = %s",
+                    (post_id,)
+                )
+                row = cursor.fetchone()
+                sort_order = (row.get('coalesce') if isinstance(row, dict) else row[0]) or 0
+            cursor.execute(
+                "INSERT INTO post_required_idea (post_id, text, sort_order) VALUES (%s, %s, %s) RETURNING id, text, sort_order",
+                (post_id, text, sort_order)
+            )
+            row = cursor.fetchone()
+            cursor.connection.commit()
+        out = {'id': row.get('id'), 'text': row.get('text') or '', 'sort_order': row.get('sort_order', 0)}
+        return jsonify({'success': True, 'required_idea': out}), 201
+    except Exception as e:
+        logger.error(f"Error adding required idea for post {post_id}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/<int:post_id>/required-ideas/items/<int:item_id>', methods=['PATCH', 'DELETE'])
+def api_post_required_idea_item(post_id, item_id):
+    """Update or delete one required idea (post_required_idea)."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                "SELECT id, text, sort_order FROM post_required_idea WHERE post_id = %s AND id = %s",
+                (post_id, item_id)
+            )
+            row = cursor.fetchone()
+            if not row:
+                return jsonify({'success': False, 'error': 'Not found'}), 404
+            if request.method == 'DELETE':
+                cursor.execute("DELETE FROM post_required_idea WHERE post_id = %s AND id = %s", (post_id, item_id))
+                cursor.connection.commit()
+                return jsonify({'success': True, 'deleted': item_id}), 200
+            # PATCH
+            data = request.get_json() or {}
+            text = data.get('text')
+            sort_order = data.get('sort_order')
+            if text is not None:
+                cursor.execute(
+                    "UPDATE post_required_idea SET text = %s, sort_order = COALESCE(%s, sort_order) WHERE post_id = %s AND id = %s",
+                    (text.strip(), sort_order, post_id, item_id)
+                )
+            elif sort_order is not None:
+                cursor.execute(
+                    "UPDATE post_required_idea SET sort_order = %s WHERE post_id = %s AND id = %s",
+                    (sort_order, post_id, item_id)
+                )
+            else:
+                return jsonify({'success': False, 'error': 'text or sort_order required'}), 400
+            cursor.connection.commit()
+            cursor.execute(
+                "SELECT id, text, sort_order FROM post_required_idea WHERE post_id = %s AND id = %s",
+                (post_id, item_id)
+            )
+            row = cursor.fetchone()
+        out = {'id': row.get('id'), 'text': row.get('text') or '', 'sort_order': row.get('sort_order', 0)}
+        return jsonify({'success': True, 'required_idea': out}), 200
+    except Exception as e:
+        logger.error(f"Error updating required idea for post {post_id}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @bp.route('/<int:post_id>/generate-subtitle-from-theme', methods=['POST'])
 def api_generate_subtitle_from_theme(post_id):

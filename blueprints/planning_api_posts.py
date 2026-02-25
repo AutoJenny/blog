@@ -6,6 +6,7 @@ Micro-file for post-specific API endpoints
 
 from flask import request, jsonify
 from config.database import db_manager
+import json
 import logging
 from datetime import datetime
 import re
@@ -85,7 +86,25 @@ def api_posts(post_id):
             post_data['clan_post_id'] = result.get('clan_post_id')
             post_data['clan_uploaded_url'] = result.get('clan_uploaded_url')
             post_data['first_published_at'] = result.get('first_published_at')
-            
+
+            # W2: Required ideas from post_required_idea (single source of truth)
+            cursor.execute("""
+                SELECT id, text, sort_order FROM post_required_idea
+                WHERE post_id = %s ORDER BY sort_order ASC, id ASC
+            """, (post_id,))
+            required_rows = cursor.fetchall()
+            required_ideas = [{'id': r.get('id'), 'text': r.get('text') or '', 'sort_order': r.get('sort_order', 0)} for r in required_rows]
+            overrides = post_data.get('embedding_overrides') or {}
+            if isinstance(overrides, str):
+                try:
+                    overrides = json.loads(overrides) if overrides else {}
+                except Exception:
+                    overrides = {}
+            if not isinstance(overrides, dict):
+                overrides = {}
+            overrides['required_ideas'] = required_ideas
+            post_data['embedding_overrides'] = overrides
+
             return jsonify({
                 'success': True,
                 'post': post_data,
