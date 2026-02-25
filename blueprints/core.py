@@ -176,14 +176,15 @@ def api_home_governance_summary():
                 return None
 
             scheduled_rows = [r for r in rows if r.get('item_type') != 'idea']
-            # Idea candidates: include all idea rows for the week regardless of is_active
-            # (create-post-from-item may deactivate the source row; we still show it as candidate)
+            # Idea candidates: active only, exclude system/test items
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     SELECT cwi.id, cwi.item_type, cwi.item_id, cwi.is_primary, cwi.is_selected, cwi.weekday, cwi.scheduled_date,
                            cwi.metadata, cwi.created_at, cwi.updated_at, cwi.position, cwi.is_active
                     FROM calendar_week_items cwi
                     WHERE cwi.year = %s AND cwi.week_number = %s AND cwi.item_type = 'idea'
+                      AND cwi.is_active = TRUE
+                      AND (cwi.metadata->>'system') IS DISTINCT FROM 'true'
                     ORDER BY COALESCE(cwi.weekday, 0), cwi.position, cwi.id
                 """, (current_year, current_week))
                 candidate_rows = cursor.fetchall() or []

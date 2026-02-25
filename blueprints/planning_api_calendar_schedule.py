@@ -759,13 +759,68 @@ def api_update_calendar_week_item(week_item_id):
     if not updates:
         return jsonify({'success': False, 'error': 'No updatable fields provided'}), 400
 
-    try:
-        updated = update_week_item(week_item_id, **updates)
-        if not updated:
-            return jsonify({'success': False, 'error': 'Week item not found'}), 404
-    except Exception as e:
-        logger.error(f"Error updating calendar_week_item {week_item_id}: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+    # When setting is_selected=True on an idea, unset all other ideas for same year/week in one transaction
+    if updates.get('is_selected') is True:
+        try:
+            with db_manager.get_connection() as conn:
+                conn.autocommit = False
+                try:
+                    with conn.cursor() as cursor:
+                        cursor.execute(
+                            "SELECT year, week_number, item_type FROM calendar_week_items WHERE id = %s",
+                            (week_item_id,),
+                        )
+                        row = cursor.fetchone()
+                        if not row:
+                            conn.rollback()
+                            return jsonify({'success': False, 'error': 'Week item not found'}), 404
+                        if row.get('item_type') == 'idea':
+                            cursor.execute(
+                                """
+                                UPDATE calendar_week_items
+                                SET is_selected = FALSE, updated_at = NOW()
+                                WHERE year = %s AND week_number = %s AND item_type = 'idea'
+                                """,
+                                (row['year'], row['week_number']),
+                            )
+                        # Apply updates to this row in same transaction
+                        import json as _json
+                        allowed = ['year', 'week_number', 'weekday', 'scheduled_date', 'is_selected', 'priority', 'position', 'metadata', 'notes', 'is_active']
+                        set_parts = []
+                        params = []
+                        for k, v in updates.items():
+                            if k not in allowed:
+                                continue
+                            if k == 'metadata':
+                                set_parts.append("metadata = %s::jsonb")
+                                params.append(_json.dumps(v) if isinstance(v, dict) else v)
+                            else:
+                                set_parts.append(f"{k} = %s")
+                                params.append(v)
+                        if not set_parts:
+                            conn.rollback()
+                            return jsonify({'success': False, 'error': 'No updatable fields'}), 400
+                        set_parts.append("updated_at = NOW()")
+                        params.append(week_item_id)
+                        cursor.execute(
+                            f"UPDATE calendar_week_items SET {', '.join(set_parts)} WHERE id = %s",
+                            params,
+                        )
+                    conn.commit()
+                except Exception as e:
+                    conn.rollback()
+                    raise
+        except Exception as e:
+            logger.error(f"Error updating calendar_week_item {week_item_id}: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+    else:
+        try:
+            updated = update_week_item(week_item_id, **updates)
+            if not updated:
+                return jsonify({'success': False, 'error': 'Week item not found'}), 404
+        except Exception as e:
+            logger.error(f"Error updating calendar_week_item {week_item_id}: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
 
     with db_manager.get_cursor() as cursor:
         cursor.execute("""
