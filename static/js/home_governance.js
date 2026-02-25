@@ -35,7 +35,8 @@
     }
   }
 
-  function roleLabel(itemType) {
+  function roleLabel(itemType, role) {
+    if (role === 'blog') return 'Blog';
     if (!itemType) return '—';
     if (itemType === 'idea') return 'Blog Candidate';
     return String(itemType).charAt(0).toUpperCase() + String(itemType).slice(1);
@@ -390,6 +391,8 @@
     var candidates = Array.isArray(data.blog_candidates) ? data.blog_candidates : [];
     var summary = data.automation_summary || {};
 
+    console.log('[governance] scheduled_slots length=', slots.length, 'roles=', slots.map(function (s) { return s.role || s.item_type; }));
+
     var html = '';
     html += '<h2 class="text-lg font-semibold text-white mb-4">Week ' + escapeHtml(String(panelWeek)) + ' (' + escapeHtml(String(panelYear)) + ')</h2>';
     html += '<div class="overflow-x-auto rounded-lg border border-slate-600">';
@@ -408,7 +411,6 @@
 
     for (var i = 0; i < slots.length; i++) {
       var slot = slots[i];
-      if (slot.item_type === 'idea') continue;
       var actions = [];
       if (slot.post_id != null) {
         actions.push('<a href="/planning/posts/' + slot.post_id + '/calendar" class="text-blue-400 hover:text-blue-300">Open Post</a>');
@@ -419,7 +421,7 @@
         actions.push('<a href="/launchpad/one-click-publication?slot_id=' + escapeHtml(String(slot.slot_id)) + '" class="text-blue-400 hover:text-blue-300">Create From Slot</a>');
       }
       html += '<tr class="border-t border-slate-700">';
-      html += '<td class="px-4 py-2">' + escapeHtml(roleLabel(slot.item_type)) + '</td>';
+      html += '<td class="px-4 py-2">' + escapeHtml(roleLabel(slot.item_type, slot.role)) + '</td>';
       html += '<td class="px-4 py-2">' + escapeHtml(formatDate(slot.scheduled_date)) + '</td>';
       html += '<td class="px-4 py-2">' + renderChannels(slot.channels) + '</td>';
       html += '<td class="px-4 py-2 max-w-md">' + escapeHtml(summaryText(slot.summary)) + '</td>';
@@ -440,17 +442,29 @@
     for (var j = 0; j < candidates.length; j++) {
       var c = candidates[j];
       candidateByWeekItemId[String(c.week_item_id)] = c;
+      var meta = c.metadata || {};
+      var converted = meta.converted === true && (meta.post_id != null || c.post_id != null);
+      var postId = c.post_id != null ? c.post_id : (meta.post_id != null ? meta.post_id : null);
+      var isSelected = c.is_selected === true;
       html += '<div class="blog-candidate-card">';
       html += '<label>';
       html += '<input type="radio" name="blogCandidate" value="' + escapeHtml(String(c.week_item_id)) + '"' + (c.is_primary === true ? ' checked' : '') + '>';
       html += '<strong>' + escapeHtml(c.title || ('Idea #' + c.item_id)) + '</strong>';
+      if (isSelected) html += ' <span class="gov-candidate-active-tag">Active</span>';
       html += '</label>';
       html += '<div class="candidate-summary">' + escapeHtml(c.summary || '') + '</div>';
       html += '<div class="candidate-actions">';
-      html += '<button class="candidate-btn primary" data-action="convert" data-id="' + escapeHtml(String(c.week_item_id)) + '">Convert</button>';
-      html += '<button class="candidate-btn" data-action="edit" data-id="' + escapeHtml(String(c.week_item_id)) + '">Edit</button>';
-      html += '<button class="candidate-btn" data-action="move" data-id="' + escapeHtml(String(c.week_item_id)) + '">Move</button>';
-      html += '<button class="candidate-btn danger" data-action="delete" data-id="' + escapeHtml(String(c.week_item_id)) + '">Delete</button>';
+      if (converted && postId) {
+        html += '<a href="/planning/posts/' + escapeHtml(String(postId)) + '/calendar" class="candidate-btn primary">Open Post</a>';
+        html += '<button class="candidate-btn" data-action="edit" data-id="' + escapeHtml(String(c.week_item_id)) + '">Edit</button>';
+        html += '<button class="candidate-btn" data-action="move" data-id="' + escapeHtml(String(c.week_item_id)) + '">Move</button>';
+        html += '<button class="candidate-btn danger" data-action="delete" data-id="' + escapeHtml(String(c.week_item_id)) + '" disabled title="Converted item">Delete</button>';
+      } else {
+        html += '<button class="candidate-btn primary" data-action="convert" data-id="' + escapeHtml(String(c.week_item_id)) + '" title="Creates a draft blog post from this idea and sets it as this week\'s active blog.">Start Blog Post</button>';
+        html += '<button class="candidate-btn" data-action="edit" data-id="' + escapeHtml(String(c.week_item_id)) + '">Edit</button>';
+        html += '<button class="candidate-btn" data-action="move" data-id="' + escapeHtml(String(c.week_item_id)) + '">Move</button>';
+        html += '<button class="candidate-btn danger" data-action="delete" data-id="' + escapeHtml(String(c.week_item_id)) + '">Delete</button>';
+      }
       html += '</div>';
       html += '</div>';
     }

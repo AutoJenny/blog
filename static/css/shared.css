@@ -18,6 +18,14 @@
     font-size: 1rem;
 }
 
+.gov-candidate-active-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #5a8cff;
+    margin-left: 6px;
+    text-transform: uppercase;
+}
+
 .candidate-summary {
     font-size: 0.9rem;
     color: #a8b2c3;
