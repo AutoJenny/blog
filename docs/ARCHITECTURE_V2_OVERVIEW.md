@@ -101,6 +101,7 @@ The exact sequence for output-producing actions:
 - **Week controls** (`calendar_week_controls`): Per-week automation on/off and lock.
 - **Work selection** (`get_posts_for_week`): Automation selects posts from `calendar_week_items` and `calendar_seed`; ordered by workflow stage.
 - **Orphan prevention**: `create_post_from_item` requires year+week for theme/weekly types.
+- **Governance panel** (homepage): Modal showing current week’s scheduled content and **Blog Candidates** (ideas). One candidate can be selected (`is_selected`); **Start Blog Post** converts an idea to a draft and links it via the same week-item (no separate theme row). See `docs/page-reference/planning/governance-panel.md`.
 
 ---
 
@@ -135,6 +136,7 @@ The exact sequence for output-producing actions:
 | `docs/workflow/calendar_seed_model.md` | Calendar seed traceability |
 | `docs/workflow/week_automation_controls.md` | Week controls, work selection |
 | `docs/workflow/status_transitions.md` | Status transition rules |
+| `docs/page-reference/planning/governance-panel.md` | Homepage Governance panel, blog candidates, convert flow |
 | `docs/api/workflow_stage_api.md` | Workflow stage API |
 | `docs/POST_STATUS_MANAGEMENT.md` | Status and reuse rules |
 

@@ -92,9 +92,11 @@ Returns `(ok: bool, reason: str | None)`.
 |---------------|-----------|-------|
 | `confirm_calendar_idea` | theme | confirm_idea |
 | Recipe create-post | recipe | recipe_create |
-| Automation `create_post_from_item` | theme, recipe, weekly_* | create_post_from_item |
+| Automation `create_post_from_item` | theme, recipe, weekly_*, idea | create_post_from_item |
 | `create_post` (generic) | manual | create_post |
 | `content_generation_api` create | manual | content_generation |
+
+**Idea conversion (Governance panel):** When converting an idea to a blog post via **Start Blog Post**, `create_post_from_item(category="idea")` creates (or reuses) the post and sets `calendar_seed` on the post. The system does **not** insert a separate `calendar_week_items` theme row; the existing idea row is updated with `metadata.converted` and `metadata.post_id` by the client, and the governance summary surfaces that as the week’s blog slot. See `docs/page-reference/planning/governance-panel.md`.
 
 ---
 

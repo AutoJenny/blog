@@ -12,7 +12,7 @@ python unified_app.py
 ```
 
 ### Access Points
-- **Homepage:** http://localhost:5000
+- **Homepage:** http://localhost:5000 (Governance panel: week overview, Blog Candidates, convert idea to post)
 - **Database Management:** http://localhost:5000/db/
 - **Launchpad (Syndication):** http://localhost:5000/launchpad/
 - **LLM Actions:** http://localhost:5000/llm-actions/

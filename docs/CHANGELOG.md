@@ -9,6 +9,14 @@
 
 ---
 
+## W2 — Docs & KB sync: Governance panel and convert flow (2026-02-23)
+
+- **Technical docs:** New `docs/page-reference/planning/governance-panel.md` (Governance modal, API, convert flow). Updated `docs/ARCHITECTURE_V2_OVERVIEW.md` (Governance panel summary + link), `docs/workflow/calendar_seed_model.md` (idea conversion, no theme row), `docs/page-reference/planning/calendar-ideas.md` (Governance as alternative entry), `docs/quick-reference.md` (Access Points).
+- **Knowledge Base:** `docs/kb/blog_post_workflow.md` (Choosing the week’s blog / Governance panel), `docs/kb/how_to_publish.md` (Starting the week’s blog from Governance), `docs/kb/status_and_stage_guide.md` (Governance panel pointer).
+- **Recent:** `docs/RECENT_CHANGES.md` (2026-02-23 section).
+
+---
+
 ## W2-GOV-2 — Phase Close: Documentation Sync (2026-02-23)
 
 - **Architecture overview:** `docs/ARCHITECTURE_V2_OVERVIEW.md` — Layered architecture, validation order, automation control layers, calendar-driven model, actor model, block types.

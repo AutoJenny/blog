@@ -4,6 +4,8 @@
 
 The Calendar Ideas page (`/planning/posts/<id>/calendar/ideas`) serves as the initial idea generation stage in the planning workflow. It allows users to select from pre-generated calendar ideas for a specific week and create or reuse blog posts based on those ideas.
 
+**Alternative entry: Governance panel (homepage).** The homepage **Governance** modal shows the current week’s **Blog Candidates** (ideas in `calendar_week_items` with `item_type='idea'`). From there you can select one candidate as “this week’s blog”, click **Start Blog Post** to convert it to a draft post, or add **+ New Idea**. See `docs/page-reference/planning/governance-panel.md`.
+
 ## Purpose and Scope
 
 - **Primary Function**: Select and confirm calendar ideas to create blog post foundations

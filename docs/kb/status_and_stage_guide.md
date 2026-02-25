@@ -67,6 +67,8 @@ In **Planning → Week View**, each week has:
 - **Automation** — On/Off. If Off, automation skips that week.
 - **Lock** — If Locked, automation cannot modify posts for that week.
 
+**Governance panel (homepage):** Use the Governance modal to choose which idea is “this week’s blog” (Blog Candidates), convert an idea to a post (**Start Blog Post**), or add a new idea. See `docs/kb/blog_post_workflow.md`.
+
 ---
 
 ## Related

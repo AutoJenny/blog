@@ -55,6 +55,19 @@ If you see a message like *"Post is at stage 'idea'. This action requires stage:
 
 ---
 
+## Choosing the Week’s Blog Post (Governance Panel)
+
+On the **homepage**, open the **Governance** panel to see the current week’s scheduled content and **Blog Candidates** (ideas that can become the week’s blog post).
+
+- **Select** one candidate with the radio button — that becomes “this week’s blog” (the selection is saved).
+- **Start Blog Post** — Converts the selected idea into a draft post and links it to the week. You can then open the post from the panel or from Planning.
+- **+ New Idea** — Add a new idea for the week (title and optional summary).
+- **Edit / Move / Delete** — Edit the idea, move it to another week, or remove it from the list (delete deactivates the idea for this week).
+
+If a candidate has already been converted, the panel shows **Open Post** instead of Start Blog Post, and the **Blog** row appears in the scheduled table at the top.
+
+---
+
 ## Week-Level Controls (Planning Calendar)
 
 In the **Week View**, you can:
@@ -67,4 +80,6 @@ In the **Week View**, you can:
 ## Related
 
 - `docs/kb/status_and_stage_guide.md` — Status and stage meanings, block types
+- `docs/kb/how_to_publish.md` — Publishing checklist
 - `docs/workflow/workflow_stage_model.md` — Technical reference
+- `docs/page-reference/planning/governance-panel.md` — Governance panel (technical)

@@ -18,6 +18,12 @@
 
 ---
 
+## Starting the Week’s Blog Post
+
+You can start the week’s blog post from the **homepage Governance panel**: open Governance → under **Blog Candidates** select an idea → click **Start Blog Post**. That creates a draft and links it to the week; then follow the steps below to complete and publish.
+
+---
+
 ## Steps
 
 1. Open **Launchpad** in the main navigation
