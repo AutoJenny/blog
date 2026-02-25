@@ -247,13 +247,15 @@
         if (!this.checked) return;
         var weekItemId = parseInt(this.value, 10);
         if (!weekItemId) return;
-        patchJson(WEEK_ITEM_API_PREFIX + weekItemId + '/primary', {}).then(function (result) {
+        patchJson(WEEK_ITEM_API_PREFIX + weekItemId, { is_selected: true }).then(function (result) {
           if (!(result.ok && result.data && result.data.success)) {
-            alert((result.data && result.data.error) ? result.data.error : 'Could not set primary candidate.');
+            alert((result.data && result.data.error) ? result.data.error : 'Could not set selected candidate.');
+            loadGovernancePanel();
+          } else {
             loadGovernancePanel();
           }
         }).catch(function () {
-          alert('Could not set primary candidate.');
+          alert('Could not set selected candidate.');
           loadGovernancePanel();
         });
       });
@@ -448,7 +450,7 @@
       var isSelected = c.is_selected === true;
       html += '<div class="blog-candidate-card">';
       html += '<label>';
-      html += '<input type="radio" name="blogCandidate" value="' + escapeHtml(String(c.week_item_id)) + '"' + (c.is_primary === true ? ' checked' : '') + '>';
+      html += '<input type="radio" name="blogCandidate" value="' + escapeHtml(String(c.week_item_id)) + '"' + (c.is_selected === true ? ' checked' : '') + '>';
       html += '<strong>' + escapeHtml(c.title || ('Idea #' + c.item_id)) + '</strong>';
       if (isSelected) html += ' <span class="gov-candidate-active-tag">Active</span>';
       html += '</label>';
