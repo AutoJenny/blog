@@ -810,22 +810,32 @@ def create_post_from_item():
             # If existing post found, return it instead of creating new
             if existing_post_id:
                 logger.info(f"Existing post found for {category} item {item_id}: post_id={existing_post_id}, status={existing_post_status}")
+                blog_week_item_id = None
                 if category == 'idea' and year and week:
                     # Populate the real blog slot for this week (do not deactivate the idea row).
                     import json as _json
-                    blog_meta = {"converted": True, "post_id": existing_post_id, "idea_item_id": item_id_int}
+                    blog_meta = {
+                        "converted": True,
+                        "post_id": existing_post_id,
+                        "idea_item_id": item_id_int,
+                        "idea_week_item_id": week_item_id_int,
+                    }
                     cursor.execute("""
                         UPDATE calendar_week_items
                         SET metadata = COALESCE(metadata, '{}'::jsonb) || %s::jsonb, updated_at = NOW()
                         WHERE year = %s AND week_number = %s AND item_type = 'blog' AND item_id = 0
+                        RETURNING id
                     """, (_json.dumps(blog_meta), int(year), int(week)))
+                    row = cursor.fetchone()
+                    if row:
+                        blog_week_item_id = row.get('id') if isinstance(row, dict) else (row[0] if row else None)
                 # Check channel assignment rules for response
                 content_format = get_content_format(post_type, output_channel)
                 if category == 'idea':
-                    return jsonify({
-                        "success": True,
-                        "post_id": existing_post_id
-                    })
+                    out = {"success": True, "post_id": existing_post_id}
+                    if blog_week_item_id is not None:
+                        out["blog_week_item_id"] = blog_week_item_id
+                    return jsonify(out)
                 return jsonify({
                     "success": True,
                     "post_id": existing_post_id,
@@ -1009,15 +1019,25 @@ def create_post_from_item():
                 "item_id": int(item_id),
                 "category": category,
             }, actor="create_post_from_item", cursor=cursor)
+            blog_week_item_id = None
             if category == 'idea' and year and week:
                 # Populate the real blog slot for this week (do not deactivate the idea row).
                 import json as _json
-                blog_meta = {"converted": True, "post_id": post_id, "idea_item_id": item_id_int}
+                blog_meta = {
+                    "converted": True,
+                    "post_id": post_id,
+                    "idea_item_id": item_id_int,
+                    "idea_week_item_id": week_item_id_int,
+                }
                 cursor.execute("""
                     UPDATE calendar_week_items
                     SET metadata = COALESCE(metadata, '{}'::jsonb) || %s::jsonb, updated_at = NOW()
                     WHERE year = %s AND week_number = %s AND item_type = 'blog' AND item_id = 0
+                    RETURNING id
                 """, (_json.dumps(blog_meta), int(year), int(week)))
+                row = cursor.fetchone()
+                if row:
+                    blog_week_item_id = row.get('id') if isinstance(row, dict) else (row[0] if row else None)
             # Link post to week in canonical week‑persistence table if year and week provided.
             # For themed blog posts this mirrors confirm_calendar_idea, writing into calendar_week_items
             # so that calendar_week_posts_v2 exposes the mapping.
@@ -1055,10 +1075,10 @@ def create_post_from_item():
                 "content_format": content_format or 'article'
             }
             if category == 'idea':
-                return jsonify({
-                    "success": True,
-                    "post_id": post_id
-                })
+                out = {"success": True, "post_id": post_id}
+                if blog_week_item_id is not None:
+                    out["blog_week_item_id"] = blog_week_item_id
+                return jsonify(out)
             
             # If this is for a non-blog channel, include format info
             if output_channel != 'blog' and content_format:

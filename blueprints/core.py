@@ -317,7 +317,7 @@ def api_home_governance_summary():
                     WHERE cwi.is_active = TRUE
                       AND cwi.scheduled_date IS NOT NULL
                       AND cwi.scheduled_date >= %s AND cwi.scheduled_date <= %s
-                      AND cwi.item_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult', 'recipe', 'profile', 'theme', 'blog')
+                      AND cwi.item_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult', 'blog', 'theme', 'profile', 'recipe', 'syndication', 'annual_event', 'special_event')
                     ORDER BY cwi.scheduled_date, cwi.position, cwi.id
                 """, (today, end))
                 rows = cursor.fetchall() or []
@@ -536,6 +536,11 @@ def api_home_governance_summary():
                 elif item_type == 'blog':
                     # Real blog slot: summary from metadata.post_id (post title) or metadata.idea_item_id (idea title) or "—".
                     meta = row.get('metadata') or {}
+                    if isinstance(meta, str):
+                        try:
+                            meta = json.loads(meta) if meta else {}
+                        except Exception:
+                            meta = {}
                     if not isinstance(meta, dict):
                         meta = {}
                     post_id_meta = meta.get('post_id')
