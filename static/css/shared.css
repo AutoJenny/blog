@@ -106,6 +106,34 @@
     border-radius: 4px;
 }
 
+/* Governance modals: backdrop + panel structure */
+.gov-modal-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gov-modal-wrapper .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    cursor: pointer;
+}
+
+.gov-modal-wrapper .modal {
+    position: relative;
+    z-index: 9999;
+    background-color: #0f172a !important;
+    max-width: 90vw;
+}
+
+.gov-modal-wrapper .modal .gov-modal-panel-inner {
+    background-color: #0f172a;
+}
+
 /* Force dark inputs inside any modal */
 .modal input,
 .modal textarea,

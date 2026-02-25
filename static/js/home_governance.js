@@ -100,14 +100,25 @@
     });
   }
 
+  function createGovModalWrapper(id) {
+    var wrapper = document.createElement('div');
+    wrapper.id = id;
+    wrapper.className = 'gov-modal-wrapper';
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    var panel = document.createElement('div');
+    panel.className = 'modal modal-dark';
+    wrapper.appendChild(backdrop);
+    wrapper.appendChild(panel);
+    return { wrapper: wrapper, backdrop: backdrop, panel: panel };
+  }
+
   function openNewIdeaModal() {
     var existing = document.getElementById('gov-new-idea-modal');
     if (existing) existing.remove();
-    var modal = document.createElement('div');
-    modal.id = 'gov-new-idea-modal';
-    modal.className = 'modal modal-dark fixed inset-0 z-50 flex items-center justify-center bg-black/60';
-    modal.innerHTML =
-      '<div class="w-full max-w-md rounded-lg border border-slate-600 bg-slate-900 p-4">' +
+    var struct = createGovModalWrapper('gov-new-idea-modal');
+    struct.panel.innerHTML =
+      '<div class="gov-modal-panel-inner w-full max-w-md rounded-lg border border-slate-600 p-4">' +
       '<h3 class="text-lg font-semibold text-white mb-3">New Idea</h3>' +
       '<label class="block text-sm text-slate-300 mb-2">Title</label>' +
       '<input id="gov-new-idea-title" type="text" class="w-full mb-3 rounded border border-slate-600 bg-slate-800 text-slate-100 px-3 py-2">' +
@@ -118,10 +129,11 @@
       '<button type="button" id="gov-new-idea-save" class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm">Save</button>' +
       '</div>' +
       '</div>';
-    document.body.appendChild(modal);
+    struct.backdrop.addEventListener('click', function () { struct.wrapper.remove(); });
+    document.body.appendChild(struct.wrapper);
 
     document.getElementById('gov-new-idea-cancel').addEventListener('click', function () {
-      modal.remove();
+      struct.wrapper.remove();
     });
     document.getElementById('gov-new-idea-save').addEventListener('click', function () {
       var title = (document.getElementById('gov-new-idea-title').value || '').trim();
@@ -137,7 +149,7 @@
         week_number: panelWeek
       }).then(function (result) {
         if (result.ok && result.data && result.data.success) {
-          modal.remove();
+          struct.wrapper.remove();
           loadGovernancePanel();
         } else {
           alert((result.data && result.data.error) ? result.data.error : 'Create failed.');
@@ -151,11 +163,9 @@
   function openEditModal(candidate) {
     var existing = document.getElementById('gov-edit-modal');
     if (existing) existing.remove();
-    var modal = document.createElement('div');
-    modal.id = 'gov-edit-modal';
-    modal.className = 'modal modal-dark fixed inset-0 z-50 flex items-center justify-center bg-black/60';
-    modal.innerHTML =
-      '<div class="w-full max-w-md rounded-lg border border-slate-600 bg-slate-900 p-4">' +
+    var struct = createGovModalWrapper('gov-edit-modal');
+    struct.panel.innerHTML =
+      '<div class="gov-modal-panel-inner w-full max-w-md rounded-lg border border-slate-600 p-4">' +
       '<h3 class="text-lg font-semibold text-white mb-3">Edit Blog Candidate</h3>' +
       '<label class="block text-sm text-slate-300 mb-2">Title</label>' +
       '<input id="gov-edit-title" type="text" value="' + escapeHtml(candidate.title || '') + '" class="w-full mb-3 rounded border border-slate-600 bg-slate-800 text-slate-100 px-3 py-2">' +
@@ -166,10 +176,11 @@
       '<button type="button" id="gov-edit-save" class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm">Save</button>' +
       '</div>' +
       '</div>';
-    document.body.appendChild(modal);
+    struct.backdrop.addEventListener('click', function () { struct.wrapper.remove(); });
+    document.body.appendChild(struct.wrapper);
 
     document.getElementById('gov-edit-cancel').addEventListener('click', function () {
-      modal.remove();
+      struct.wrapper.remove();
     });
     document.getElementById('gov-edit-save').addEventListener('click', function () {
       var title = (document.getElementById('gov-edit-title').value || '').trim();
@@ -179,7 +190,7 @@
         idea_description: summary
       }).then(function (result) {
         if (result.ok && result.data && result.data.success) {
-          modal.remove();
+          struct.wrapper.remove();
           loadGovernancePanel();
         } else {
           alert((result.data && result.data.error) ? result.data.error : 'Edit failed.');
@@ -193,11 +204,9 @@
   function openMoveModal(candidate) {
     var existing = document.getElementById('gov-move-modal');
     if (existing) existing.remove();
-    var modal = document.createElement('div');
-    modal.id = 'gov-move-modal';
-    modal.className = 'modal modal-dark fixed inset-0 z-50 flex items-center justify-center bg-black/60';
-    modal.innerHTML =
-      '<div class="w-full max-w-sm rounded-lg border border-slate-600 bg-slate-900 p-4">' +
+    var struct = createGovModalWrapper('gov-move-modal');
+    struct.panel.innerHTML =
+      '<div class="gov-modal-panel-inner w-full max-w-sm rounded-lg border border-slate-600 p-4">' +
       '<h3 class="text-lg font-semibold text-white mb-3">Move Blog Candidate</h3>' +
       '<label class="block text-sm text-slate-300 mb-2">Scheduled date</label>' +
       '<input id="gov-move-date" type="date" class="w-full mb-4 rounded border border-slate-600 bg-slate-800 text-slate-100 px-3 py-2">' +
@@ -206,10 +215,11 @@
       '<button type="button" id="gov-move-save" class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm">Save</button>' +
       '</div>' +
       '</div>';
-    document.body.appendChild(modal);
+    struct.backdrop.addEventListener('click', function () { struct.wrapper.remove(); });
+    document.body.appendChild(struct.wrapper);
 
     document.getElementById('gov-move-cancel').addEventListener('click', function () {
-      modal.remove();
+      struct.wrapper.remove();
     });
     document.getElementById('gov-move-save').addEventListener('click', function () {
       var dateValue = (document.getElementById('gov-move-date').value || '').trim();
@@ -223,7 +233,7 @@
         scheduled_date: dateValue
       }).then(function (result) {
         if (result.ok && result.data && result.data.success) {
-          modal.remove();
+          struct.wrapper.remove();
           loadGovernancePanel();
         } else {
           alert((result.data && result.data.error) ? result.data.error : 'Move failed.');
