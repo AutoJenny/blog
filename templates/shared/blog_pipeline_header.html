@@ -40,6 +40,12 @@
         {# Removed content_type_name display - it duplicates taxonomy display #}
     </div>
     
+    <!-- Early stage indicator (Instruction Set 8: from DB, not heuristic) -->
+    {% if post_id is defined and post_id %}
+    <div class="early-stage-line" id="early-stage-line" style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.25rem;">
+        Stage: <span id="early-stage-value">—</span>
+    </div>
+    {% endif %}
     <!-- Post Details Line - ALWAYS DISPLAYED -->
     <div class="post-details-line">
         <span class="status-label">Status:</span>

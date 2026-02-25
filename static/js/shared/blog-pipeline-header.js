@@ -206,7 +206,42 @@ class BlogPipelineHeader {
         // Update taxonomy display
         await this.updateTaxonomyDisplay();
 
+        // Instruction Set 8: Early stage indicator (from DB)
+        await this.updateEarlyStageIndicator();
+
         console.log('[Blog Pipeline Header] Header fields updated');
+    }
+
+    async updateEarlyStageIndicator() {
+        const el = document.getElementById('early-stage-value');
+        const line = document.getElementById('early-stage-line');
+        if (!el || !line) return;
+        const postId = this.getPostId();
+        if (!postId || postId === '0' || parseInt(postId) === 0) {
+            line.style.display = 'none';
+            return;
+        }
+        try {
+            const res = await fetch(`/api/posts/${postId}/early-stage`);
+            const data = await res.json();
+            if (!data.success) {
+                el.textContent = '—';
+                return;
+            }
+            const stage = (data.workflow_stage || 'metadata').toUpperCase();
+            const ideasCount = data.required_ideas_count ?? 0;
+            const sectionsCount = data.sections_count ?? 0;
+            if (stage === 'IDEAS') {
+                el.textContent = `IDEAS (${ideasCount}/3 min)`;
+            } else if (stage === 'STRUCTURE') {
+                el.textContent = `STRUCTURE (${sectionsCount} sections)`;
+            } else {
+                el.textContent = stage;
+            }
+            line.style.display = '';
+        } catch (e) {
+            el.textContent = '—';
+        }
     }
 
     async updateTaxonomyDisplay() {
