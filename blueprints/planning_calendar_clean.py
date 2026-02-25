@@ -198,17 +198,17 @@ def planning_calendar_ideas(post_id):
         # Week parameters are context only, not for changing post_id
         target_post_id = post_id
         
-        # Get post data with all required fields for header
+        # Get post data with all required fields for header and body
         content_type_name = None
         with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                SELECT p.id, p.title, p.status, p.summary, p.created_at, p.updated_at,
                        p.content_type_id
                 FROM post p
                 WHERE p.id = %s
             """, (target_post_id,))
             post = cursor.fetchone()
-            
+
             if not post:
                 return render_template('planning/calendar/ideas.html', 
                                       post_id=post_id,
@@ -217,7 +217,7 @@ def planning_calendar_ideas(post_id):
                                       blueprint_name='planning',
                                       mode='post-based',
                                       error='Post not found')
-            
+
             # Get content type name for category banner
             cursor.execute("""
                 SELECT ti.display_name as content_type_name
@@ -228,7 +228,23 @@ def planning_calendar_ideas(post_id):
             result = cursor.fetchone()
             if result:
                 content_type_name = result.get('content_type_name')
-        
+
+        # Post-authoritative context: no week/theme overwrite; theme + subtitle from post only
+        post_derived_theme = None
+        post_context = None
+        if post_type == 'themed' and post.get('id'):
+            post_derived_theme = {
+                'post_id': post_id,
+                'theme_title': post.get('title'),
+                'theme_description': post.get('summary') or '',
+                'priority': 'normal',
+            }
+            post_context = {
+                'post_id': post_id,
+                'title': post.get('title') or '',
+                'summary': post.get('summary') or '',
+            }
+
         return render_template('planning/calendar/ideas.html', 
                                post_id=post_id,
                                post=post,
@@ -238,6 +254,8 @@ def planning_calendar_ideas(post_id):
                                post_created=post.get('created_at'),
                                post_updated=post.get('updated_at'),
                                content_type_name=content_type_name,
+                               post_derived_theme=post_derived_theme,
+                               post_context=post_context,
                                year=year,
                                week_number=week_number,
                                blueprint_name='planning',
@@ -254,7 +272,7 @@ def planning_calendar_ideas(post_id):
         try:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT p.id, p.title, p.status, p.created_at, p.updated_at,
+                    SELECT p.id, p.title, p.status, p.summary, p.created_at, p.updated_at,
                            p.content_type_id
                     FROM post p
                     WHERE p.id = %s
@@ -280,8 +298,23 @@ def planning_calendar_ideas(post_id):
             post_type = get_post_type(post_id)
         except:
             post_type = None
+
+        post_derived_theme = None
+        post_context = None
+        if post and post_type == 'themed' and post.get('title'):
+            post_derived_theme = {
+                'post_id': post_id,
+                'theme_title': post.get('title'),
+                'theme_description': post.get('summary') or '',
+                'priority': 'normal',
+            }
+            post_context = {
+                'post_id': post_id,
+                'title': post.get('title') or '',
+                'summary': post.get('summary') or '',
+            }
         
-        return render_template('planning/calendar/ideas.html', 
+        return render_template('planning/calendar/ideas.html',
                                post_id=post_id,
                                post=post,
                                post_type=post_type,
@@ -290,6 +323,8 @@ def planning_calendar_ideas(post_id):
                                post_created=post.get('created_at') if post else None,
                                post_updated=post.get('updated_at') if post else None,
                                content_type_name=content_type_name,
+                               post_derived_theme=post_derived_theme,
+                               post_context=post_context,
                                year=year,
                                week_number=week_number,
                                blueprint_name='planning',

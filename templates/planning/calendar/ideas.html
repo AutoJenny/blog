@@ -14,6 +14,9 @@
     {% set mode = mode|default('post-based') %}
     <script>
     window.postId = {{ post_id }};
+    // Post-authoritative context: theme + subtitle from post only; no week/theme overwrite
+    {% if post_derived_theme %}window.postDerivedTheme = {{ post_derived_theme | tojson }};{% else %}window.postDerivedTheme = null;{% endif %}
+    {% if post_context %}window.postContext = {{ post_context | tojson }};{% else %}window.postContext = null;{% endif %}
     // window.currentStage will be set in DOMContentLoaded to 'concept'
     window.currentSubstage = 'ideas';
     
@@ -716,17 +719,17 @@ async function loadPostMetadata() {
         const data = await response.json();
         
         if (data.success && data.post) {
-            // Load subtitle
             const subtitleInput = document.getElementById('post-subtitle');
             if (subtitleInput) {
-                subtitleInput.value = data.post.subtitle || '';
-                
-                // Auto-generate subtitle if not already set and theme is available
-                if (!subtitleInput.value.trim() && selectedTheme && selectedTheme.theme_title) {
-                    console.log('[loadPostMetadata] Auto-generating subtitle from theme');
-                    await generateSubtitleFromTheme();
+                // Post page: subtitle from postContext only; never overwrite with theme/schedule
+                if (window.postContext && window.postContext.post_id) {
+                    subtitleInput.value = window.postContext.summary || '';
+                } else {
+                    subtitleInput.value = data.post.subtitle || '';
+                    if (!subtitleInput.value.trim() && selectedTheme && selectedTheme.theme_title) {
+                        await generateSubtitleFromTheme();
+                    }
                 }
-                
                 // Attach auto-save listener if not already attached
                 if (!subtitleInput.hasAttribute('data-auto-save-attached')) {
                     subtitleInput.setAttribute('data-auto-save-attached', 'true');
@@ -756,6 +759,7 @@ async function loadPostMetadata() {
 }
 
 async function generateSubtitleFromTheme() {
+    if (window.postContext && window.postContext.post_id) return;
     if (!selectedTheme || !selectedTheme.theme_title) {
         console.warn('No theme selected for subtitle generation');
         return;
@@ -953,14 +957,36 @@ let availableThemes = [];
 let selectedTheme = null;
 let themeSelectedForWeek = false;
 
-// Check if theme is already selected and load themes
+// Post page: use postContext only; no week/theme resolution. Week page: resolve theme from schedule.
 document.addEventListener('DOMContentLoaded', async function() {
-    await checkThemeSelection();
-    await loadThemesForWeek();
+    if (window.postContext && window.postContext.post_id) {
+        selectedTheme = {
+            post_id: window.postContext.post_id,
+            theme_title: window.postContext.title,
+            theme_description: window.postContext.summary || ''
+        };
+        themeSelectedForWeek = true;
+        const subtitleInput = document.getElementById('post-subtitle');
+        if (subtitleInput) subtitleInput.value = window.postContext.summary || '';
+        updateUIState();
+        return;
+    }
+    if (window.postDerivedTheme && window.postDerivedTheme.theme_title) {
+        selectedTheme = window.postDerivedTheme;
+        themeSelectedForWeek = true;
+    } else {
+        await checkThemeSelection();
+        await loadThemesForWeek();
+        if (selectedTheme && window.postId && selectedTheme.post_id != null && selectedTheme.post_id !== window.postId) {
+            selectedTheme = null;
+            themeSelectedForWeek = false;
+        }
+    }
     updateUIState();
 });
 
 async function checkThemeSelection() {
+    if (window.postContext && window.postContext.post_id) return;
     try {
         // Get year/week from URL or WeekContext
         let year = null;
@@ -1044,6 +1070,11 @@ async function checkThemeSelection() {
             }
         }
         
+        if (selectedTheme && window.postId && selectedTheme.post_id != null && selectedTheme.post_id !== window.postId) {
+            selectedTheme = null;
+            themeSelectedForWeek = false;
+        }
+        
         console.log('[checkThemeSelection] Final state - themeSelectedForWeek:', themeSelectedForWeek, 'selectedTheme:', selectedTheme);
     } catch (error) {
         console.error('Error checking theme selection:', error);
@@ -1051,6 +1082,7 @@ async function checkThemeSelection() {
 }
 
 async function loadThemesForWeek() {
+    if (window.postContext && window.postContext.post_id) return;
     try {
         let year = null;
         let week = null;
