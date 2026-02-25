@@ -810,6 +810,14 @@ def create_post_from_item():
             # If existing post found, return it instead of creating new
             if existing_post_id:
                 logger.info(f"Existing post found for {category} item {item_id}: post_id={existing_post_id}, status={existing_post_status}")
+                # 7.3: When reusing, ensure subtitle/summary set from source if post has none
+                if category in ('theme', 'idea'):
+                    _desc = (item_dict.get('theme_description') or item_dict.get('idea_description') or item_dict.get('description') or '').strip()[:300] or None
+                    if _desc:
+                        cursor.execute("""
+                            UPDATE post SET subtitle = %s, summary = %s, updated_at = NOW()
+                            WHERE id = %s AND (subtitle IS NULL OR subtitle = '') AND (summary IS NULL OR summary = '')
+                        """, (_desc, _desc, existing_post_id))
                 blog_week_item_id = None
                 if category == 'idea' and year and week:
                     # Populate the real blog slot for this week (do not deactivate the idea row).
