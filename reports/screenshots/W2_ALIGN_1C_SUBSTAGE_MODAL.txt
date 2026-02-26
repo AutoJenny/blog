@@ -1,0 +1,8 @@
+Replace this file with a real PNG screenshot: W2_ALIGN_1C_SUBSTAGE_MODAL.png
+
+Capture: Substage-management modal (Post Type Settings with post_id=729, post_type=themed) showing:
+- Canonical modes (manual/assisted/auto) for substages
+- Ideas stage with Generate Idea Set / Curate ideas
+- No "No configuration found" for Ideas
+
+Save as: reports/screenshots/W2_ALIGN_1C_SUBSTAGE_MODAL.png

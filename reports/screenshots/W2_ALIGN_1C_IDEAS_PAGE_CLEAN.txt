@@ -1,0 +1,10 @@
+Replace this file with a real PNG screenshot: W2_ALIGN_1C_IDEAS_PAGE_CLEAN.png
+
+Capture: Ideas page (/planning/posts/729/calendar/ideas) showing:
+- Header pipeline strip (Current / Next / Jump)
+- Viewing line below strip
+- No legacy substage row visible
+- No duplicate theme block in content
+- Single Run (Generate Idea Set) and required-ideas editor in body
+
+Save as: reports/screenshots/W2_ALIGN_1C_IDEAS_PAGE_CLEAN.png
