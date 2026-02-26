@@ -5,9 +5,82 @@ Helper functions for executing automation substages
 
 import json
 import logging
+import re
 from config.database import db_manager
 
 logger = logging.getLogger(__name__)
+
+
+def execute_generate_idea_set(post_id, data):
+    """
+    W2 Phase 2.3/2.4: Generate idea set and write to post_required_idea.
+    Uses expanded_idea (from DB or generated via planning API) and parses into required-ideas list.
+    """
+    try:
+        year = data.get("target_year") or data.get("year")
+        week = data.get("target_week") or data.get("week")
+        expanded_idea = None
+
+        # Try existing expanded_idea in post_development first
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                "SELECT expanded_idea FROM post_development WHERE post_id = %s",
+                (post_id,),
+            )
+            row = cursor.fetchone()
+            if row and row.get("expanded_idea"):
+                expanded_idea = (row["expanded_idea"] or "").strip()
+
+        # If no expanded_idea and we have year/week, trigger expanded-idea generation via internal POST
+        if not expanded_idea and year and week:
+            try:
+                import flask
+                client = flask.current_app.test_client()
+                resp = client.post(
+                    f"/planning/api/posts/{post_id}/expanded-idea",
+                    query_string={"year": year, "week": week},
+                    data=json.dumps({}),
+                    content_type="application/json",
+                )
+                if resp.status_code == 200:
+                    out = resp.get_json()
+                    if out and out.get("success") and out.get("expanded_idea"):
+                        expanded_idea = (out["expanded_idea"] or "").strip()
+            except Exception as e:
+                logger.warning("Expanded-idea internal call failed: %s", e)
+
+        # Parse into list of required-idea strings (lines or bullets), max 12
+        ideas = []
+        if expanded_idea:
+            for line in expanded_idea.split("\n"):
+                line = re.sub(r"^[\s\-*•]+\s*", "", line.strip())
+                if line and len(ideas) < 12:
+                    ideas.append(line[:500])
+        if not ideas:
+            with db_manager.get_cursor() as cur:
+                cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
+                r = cur.fetchone()
+            title = (r.get("title") or "Generated idea") if r else "Generated idea"
+            ideas = [title[:500]]
+
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("DELETE FROM post_required_idea WHERE post_id = %s", (post_id,))
+            for i, text in enumerate(ideas):
+                cursor.execute(
+                    "INSERT INTO post_required_idea (post_id, text, sort_order) VALUES (%s, %s, %s)",
+                    (post_id, text, i),
+                )
+            cursor.connection.commit()
+
+        return {
+            "success": True,
+            "required_ideas_count": len(ideas),
+            "message": f"Generated {len(ideas)} required idea(s).",
+        }
+    except Exception as e:
+        logger.error("execute_generate_idea_set failed: %s", e)
+        return {"success": False, "error": str(e)}, 500
+
 
 def execute_topic_allocation(post_id, data):
     """Execute topic allocation for a post using the same logic as template page"""

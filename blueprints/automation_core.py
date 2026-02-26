@@ -24,7 +24,8 @@ from blueprints.automation_execute import (
     execute_author_first_drafts,
     execute_image_concepts,
     execute_image_prompts,
-    execute_image_captions
+    execute_image_captions,
+    execute_generate_idea_set,
 )
 
 # Import other modules
@@ -143,23 +144,143 @@ def run_week_automation():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+# W2 Phase 2: min_stage per (stage, substage). No automation mutates stage. (Legacy fallback.)
+AUTOMATION_MIN_STAGE = {
+    ("planning", "topic_brainstorming"): "ideas",
+    ("planning", "section_structure"): "ideas",
+    ("planning", "topic_allocation"): "structure",
+    ("planning", "section_titling"): "structure",
+    ("authoring", "author_first_drafts"): "titling",
+    ("authoring", "image_concepts"): "authoring",
+    ("authoring", "image_prompts"): "authoring",
+    ("authoring", "image_captions"): "authoring",
+    ("content", "format_for_facebook"): "authoring",
+    ("content", "add_translation"): "authoring",
+    ("content", "add_hashtags"): "authoring",
+    ("content", "generate_caption"): "authoring",
+    ("imaging", "optimize_for_facebook"): "imaging",
+    ("publish", "publish_to_facebook"): "review",
+}
+AUTOMATION_MIN_STAGE_BY_STAGE = {
+    "planning": "ideas",
+    "authoring": "titling",
+    "content": "authoring",
+    "imaging": "imaging",
+    "syndication": "review",
+    "publish": "review",
+}
+
+# W2 Phase 2.3: Canonical handler dispatch (stage/substage resolved via registry)
+CANONICAL_HANDLERS = {
+    "generate_idea_set": execute_generate_idea_set,
+    "topic_brainstorming": execute_topic_brainstorming,
+    "section_structure": execute_section_structure,
+    "topic_allocation": execute_topic_allocation,
+    "section_titling": execute_section_titling,
+    "author_first_drafts": execute_author_first_drafts,
+    "image_concepts": execute_image_concepts,
+    "image_prompts": execute_image_prompts,
+    "image_captions": execute_image_captions,
+}
+
+
+def _get_substage_modes(post_id):
+    """Return post.extra_settings.substage_modes (used for mode gating)."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("SELECT extra_settings FROM post WHERE id = %s", (post_id,))
+            row = cursor.fetchone()
+        if not row:
+            return {}
+        extra = row.get("extra_settings") if isinstance(row, dict) else getattr(row, "extra_settings", None)
+        if not extra:
+            return {}
+        if isinstance(extra, str):
+            try:
+                extra = json.loads(extra) if extra else {}
+            except Exception:
+                return {}
+        modes = extra.get("substage_modes") if isinstance(extra, dict) else {}
+        return modes if isinstance(modes, dict) else {}
+    except Exception:
+        return {}
+
+
 @bp.route('/execute-substage/<stage>/<substage>', methods=['POST'])
 def execute_substage(stage, substage):
-    """Main router for substage execution, optionally filtered by output channel"""
+    """Main router for substage execution. W2 Phase 2.3: canonical registry + stage + mode gating."""
     try:
         data = request.get_json() or {}
         post_id = data.get('post_id')
-        output_channel = data.get('output', 'blog').lower()  # Get output channel from request
-        
+        output_channel = (data.get('output') or 'blog').lower()
+
         if not post_id:
             return jsonify({"success": False, "error": "Post ID is required"}), 400
-        
-        # Validate output channel
+
+        from utils.posts.early_stage import get_canonical_stage
+        from utils.posts.stage_order import stage_index
+        from utils.posts.canonical_substages import find_substage_by_nav, get_canonical_exec
+
+        current_stage = get_canonical_stage(post_id)
+        canonical_result = find_substage_by_nav(stage, substage)
+        exec_info = None
+        canon_stage = None
+        sub_dict = None
+
+        if canonical_result:
+            canon_stage, sub_dict = canonical_result
+            exec_info = get_canonical_exec(canon_stage, sub_dict.get("id") or sub_dict.get("substage_key"))
+
+        if exec_info and sub_dict and exec_info.get("handler") in CANONICAL_HANDLERS:
+            # Canonical path: stage gate + mode gate then dispatch
+            min_stage = sub_dict.get("min_stage") or canon_stage
+            if stage_index(current_stage) < stage_index(min_stage):
+                return jsonify({
+                    "success": False,
+                    "error": f"Stage {min_stage.upper()} required to run this operation.",
+                    "current_stage": current_stage,
+                    "required_stage": min_stage,
+                }), 403
+
+            mode_key = f"{canon_stage}.{sub_dict.get('id', '')}"
+            modes = _get_substage_modes(post_id)
+            current_mode = modes.get(mode_key) or "manual"
+            is_pipeline = data.get("source") == "pipeline" or (
+                data.get("target_year") is not None and data.get("target_week") is not None
+            )
+            if is_pipeline and current_mode == "manual":
+                return jsonify({
+                    "success": False,
+                    "error": "Substage is in manual mode; pipeline execution not allowed.",
+                    "current_mode": current_mode,
+                }), 403
+
+            handler_fn = CANONICAL_HANDLERS[exec_info["handler"]]
+            result = handler_fn(post_id, data)
+            if isinstance(result, tuple):
+                response_data, status_code = result
+                if isinstance(response_data, dict):
+                    response_data["output_channel"] = output_channel
+                return jsonify(response_data), status_code
+            if isinstance(result, dict):
+                result["output_channel"] = output_channel
+            return jsonify(result)
+
+        # Legacy path: explicit min_stage gate
+        min_stage = AUTOMATION_MIN_STAGE.get((stage, substage)) or AUTOMATION_MIN_STAGE_BY_STAGE.get(stage)
+        if min_stage:
+            if stage_index(current_stage) < stage_index(min_stage):
+                return jsonify({
+                    "success": False,
+                    "error": f"Stage {min_stage.upper()} required to run this operation.",
+                    "current_stage": current_stage,
+                    "required_stage": min_stage,
+                }), 403
+
         valid_channels = ['blog', 'facebook', 'instagram', 'twitter', 'newsletter']
         if output_channel not in valid_channels:
             output_channel = 'blog'
-        
-        # Validate that substage is valid for this output channel
+
         if not validate_substage_for_output(post_id, stage, substage, output_channel):
             available_channels = get_available_output_channels_for_post(post_id)
             return jsonify({
@@ -167,15 +288,13 @@ def execute_substage(stage, substage):
                 "error": f"Substage '{substage}' is not valid for output channel '{output_channel}'. Available channels: {', '.join(available_channels)}"
             }), 400
 
-        # W2-FIX-9.1 Part B: Verify calendar_seed exists before automation advances
         from utils.posts.calendar_seed import verify_calendar_seed_for_automation
-        target_year = data.get("target_year")  # Optional: for week-driven automation
+        target_year = data.get("target_year")
         target_week = data.get("target_week")
         ok, err, code = verify_calendar_seed_for_automation(post_id, target_year, target_week)
         if not ok:
             return jsonify({**err, "success": False}), code
 
-        # W2-FIX-9.2 Part D: If target week provided and week is locked, block
         if target_year is not None and target_week is not None:
             from utils.calendar.week_controls import is_week_locked
             if is_week_locked(target_year, target_week):
@@ -186,13 +305,9 @@ def execute_substage(stage, substage):
                     "year": target_year,
                     "week_number": target_week,
                 }), 409
-        
-        # Add output_channel to data for execution functions (for future channel-specific logic)
+
         data['output_channel'] = output_channel
-        
-        # Route to appropriate execution function
-        # Note: Most execution functions currently don't use output_channel, but it's available
-        # for future channel-specific implementations (e.g., format_for_facebook, publish_to_instagram)
+
         if stage == 'planning':
             if substage == 'topic_brainstorming':
                 result = execute_topic_brainstorming(post_id, data)
@@ -202,8 +317,15 @@ def execute_substage(stage, substage):
                 result = execute_topic_allocation(post_id, data)
             elif substage == 'section_titling':
                 result = execute_section_titling(post_id, data)
+            elif substage == 'ideas' or substage == 'generate_idea_set':
+                result = execute_generate_idea_set(post_id, data)
             else:
                 return jsonify({"success": False, "error": f"Unknown planning substage: {substage}"}), 400
+        elif stage == 'ideas':
+            if substage == 'generate_idea_set' or substage == 'generate-idea-set':
+                result = execute_generate_idea_set(post_id, data)
+            else:
+                return jsonify({"success": False, "error": f"Unknown ideas substage: {substage}"}), 400
         elif stage == 'authoring':
             if substage == 'author_first_drafts':
                 result = execute_author_first_drafts(post_id, data)
