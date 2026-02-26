@@ -972,7 +972,7 @@ def api_get_pipeline_state(post_id):
                 if not reg:
                     continue
                 key = f"{stage}.{sub_id}"
-                nav_url = _get_pipeline_nav_url(stage, sub_id, post_id)
+                nav_url, nav_exists = _get_pipeline_nav(stage, sub_id, post_id)
                 pipeline.append({
                     "stage": stage,
                     "substage": sub_id,
@@ -981,6 +981,7 @@ def api_get_pipeline_state(post_id):
                     "can_execute": s.get("can_execute", True),
                     "current_mode": s.get("current_mode"),
                     "nav_url": nav_url,
+                    "nav_exists": nav_exists,
                     "key": key,
                 })
 
@@ -1007,64 +1008,81 @@ def api_get_pipeline_state(post_id):
             r2 = cursor.fetchone() or {}
             sections_count = int(r2.get("sections", 0)) if isinstance(r2, dict) else 0
 
-        # Completion flags
+        # Completion flags for substage-level artefacts
         idea_complete = required_total >= 30
         cluster_complete = sections_count >= 6
 
-        # Current and next based on first incomplete
-        current = None
-        next_sub = None
         reasons_blocked = {}
 
-        # Compute reasons_blocked for key substages
-        # ideas.generate_idea_set: artifact gate: >=30 ideas
+        # Key substage keys
         ideas_key = "ideas.generate_idea_set"
-        if required_total < 30:
-            reasons_blocked[ideas_key] = f"Need at least 30 ideas (have {required_total})."
-        # structure.cluster_into_sections: selection + category diversity + sections
         cluster_key = "structure.cluster_into_sections"
-        cluster_reasons = []
-        if selected_total < 10:
-            cluster_reasons.append(f"Need at least 10 selected ideas (have {selected_total}).")
-        if selected_categories < 3:
-            cluster_reasons.append(f"Need at least 3 categories (have {selected_categories}).")
-        if sections_count < 6:
-            cluster_reasons.append(f"Need at least 6 sections (have {sections_count}).")
-        if cluster_reasons:
-            reasons_blocked[cluster_key] = " ".join(cluster_reasons)
 
-        # Determine current/next
-        # First incomplete substage in pipeline is current; next is the one after it.
-        for idx, item in enumerate(pipeline):
-            key = item["key"]
-            if key == ideas_key and idea_complete:
-                continue
-            if key == cluster_key and cluster_complete:
-                continue
-            current = {"stage": item["stage"], "substage": item["substage"]}
-            if idx + 1 < len(pipeline):
-                nxt = pipeline[idx + 1]
-                next_sub = {"stage": nxt["stage"], "substage": nxt["substage"]}
-            break
-        if current is None and pipeline:
-            # Everything complete: current = last, next = None
-            last = pipeline[-1]
-            current = {"stage": last["stage"], "substage": last["substage"]}
-            next_sub = None
+        # Reasons for structure.cluster_into_sections (selection + categories + sections)
+        cluster_reason = (
+            f"Need at least 10 selected ideas (have {selected_total}); "
+            f"at least 3 categories (have {selected_categories}); "
+            f"and at least 6 sections (have {sections_count})."
+        )
+        if selected_total < 10 or selected_categories < 3 or sections_count < 6:
+            reasons_blocked[cluster_key] = cluster_reason
+
+        # ideas.generate_idea_set completion (no execution gate here, only completion definition)
+        if not idea_complete:
+            reasons_blocked[ideas_key] = f"Need at least 30 ideas (have {required_total})."
+
+        # Determine current and next, anchored to workflow_stage
+        current = None
+        next_sub = None
+
+        if workflow_stage in CANONICAL_STAGE_ORDER:
+            stage_idx = CANONICAL_STAGE_ORDER.index(workflow_stage)
+
+            # Current: first substage in workflow_stage that is not "complete"
+            stage_items = [p for p in pipeline if p["stage"] == workflow_stage]
+
+            def is_complete(item):
+                k = item["key"]
+                if k == ideas_key:
+                    return idea_complete
+                if k == cluster_key:
+                    return cluster_complete
+                # Other substages: no artefact-based completion defined yet
+                return False
+
+            for item in stage_items:
+                if not is_complete(item):
+                    current = {"stage": item["stage"], "substage": item["substage"]}
+                    break
+
+            # Next: first substage of the immediate next stage in canonical order
+            if stage_idx + 1 < len(CANONICAL_STAGE_ORDER):
+                next_stage = CANONICAL_STAGE_ORDER[stage_idx + 1]
+                for item in pipeline:
+                    if item["stage"] == next_stage:
+                        next_sub = {"stage": item["stage"], "substage": item["substage"]}
+                        break
 
         # Strip helper 'key' before returning
-        substages_out = [
-            {
+        # can_execute: canonical stage gate + artefact prerequisites (for cluster_into_sections)
+        substages_out = []
+        for p in pipeline:
+            k = p["key"]
+            can_exec = bool(p["can_execute"])
+            if can_exec and k == cluster_key:
+                # Block execution unless all three artefact conditions are met
+                if selected_total < 10 or selected_categories < 3 or sections_count < 6:
+                    can_exec = False
+            substages_out.append({
                 "stage": p["stage"],
                 "substage": p["substage"],
                 "label": p["label"],
                 "min_stage": p["min_stage"],
-                "can_execute": p["can_execute"],
+                "can_execute": can_exec,
                 "current_mode": p["current_mode"],
                 "nav_url": p["nav_url"],
-            }
-            for p in pipeline
-        ]
+                "nav_exists": p["nav_exists"],
+            })
 
         return jsonify({
             "success": True,
@@ -1081,22 +1099,25 @@ def api_get_pipeline_state(post_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-def _get_pipeline_nav_url(stage: str, substage: str, post_id: int) -> str:
-    """Hard-coded canonical nav_url mappings for pipeline navigation."""
-    # Normalise stage families
+def _get_pipeline_nav(stage: str, substage: str, post_id: int):
+    """Hard-coded canonical nav_url mappings for pipeline navigation, with nav_exists flag."""
+    # metadata.* → /calendar/metadata (page may not exist yet)
+    if stage == "metadata":
+        return f"/planning/posts/{post_id}/calendar/metadata", False
     if stage == "ideas":
-        return f"/planning/posts/{post_id}/calendar/ideas"
+        return f"/planning/posts/{post_id}/calendar/ideas", True
     if stage == "structure":
-        # Specific mapping for cluster_into_sections; others use /structure as well.
-        return f"/planning/posts/{post_id}/calendar/structure"
+        return f"/planning/posts/{post_id}/calendar/structure", False
+    if stage == "titling":
+        return f"/planning/posts/{post_id}/calendar/titling", False
     if stage == "authoring":
-        return f"/planning/posts/{post_id}/calendar/authoring"
+        return f"/planning/posts/{post_id}/calendar/authoring", False
     if stage == "imaging":
-        return f"/planning/posts/{post_id}/calendar/imaging"
+        return f"/planning/posts/{post_id}/calendar/imaging", False
     if stage == "review":
-        return f"/planning/posts/{post_id}/calendar/review"
-    # Fallback: ideas page
-    return f"/planning/posts/{post_id}/calendar/ideas"
+        return f"/planning/posts/{post_id}/calendar/review", False
+    # Fallback: intended ideas URL, but mark as unknown
+    return f"/planning/posts/{post_id}/calendar/ideas", False
 
 @bp.route('/api/posts/<int:post_id>/early-stage', methods=['GET'])
 def api_get_early_stage(post_id):
