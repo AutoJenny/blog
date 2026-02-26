@@ -5,6 +5,7 @@ Helper functions for executing automation substages
 
 import json
 import logging
+import time
 from typing import List, Dict, Any
 
 from config.database import db_manager
@@ -192,6 +193,7 @@ def execute_generate_idea_set(post_id, data):
     """
     try:
         # Single or double attempt for category diversity
+        started = time.time()
         best_ideas: List[Dict[str, Any]] = []
         categories_set = set()
         attempts = 2
@@ -223,6 +225,15 @@ def execute_generate_idea_set(post_id, data):
                     },
                     400,
                 )
+
+        duration = time.time() - started
+        logger.info(
+            "[IDEA_SET] post=%s ideas=%d categories=%d duration=%.1fs",
+            post_id,
+            len(best_ideas),
+            len(categories_set),
+            duration,
+        )
 
         # Persist to post_required_idea (replace-all semantics)
         with db_manager.get_cursor() as cursor:
