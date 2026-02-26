@@ -6,196 +6,7 @@
 (function() {
     'use strict';
 
-    // Substage to configuration mapping
-    const SUBSTAGE_CONFIG_MAP = {
-        // Calendar substages
-        'view': {
-            template: 'planning/calendar/view.html',
-            llmConfig: null,
-            pipelineStep: null,
-            panels: null,
-            route: 'planning.planning_calendar_view'
-        },
-        'week-view': {
-            template: 'planning/calendar/week_view.html',
-            llmConfig: null,
-            pipelineStep: null,
-            panels: null,
-            route: 'planning.planning_calendar_week_view'
-        },
-        'ideas-week': {
-            template: 'planning/calendar/ideas_week.html',
-            llmConfig: null,
-            pipelineStep: 'week-ideas',
-            panels: null,
-            route: null
-        },
-        
-        // Planning substages
-        'taxonomy': {
-            template: 'planning/calendar/taxonomy.html',
-            llmConfig: null,
-            pipelineStep: 'taxonomy',
-            panels: null,
-            route: 'planning.planning_calendar_taxonomy'
-        },
-        'section-structure': {
-            template: {
-                'profile': 'planning/concept/section_structure_profile.html',
-                'default': 'planning/concept/section_structure.html'
-            },
-            llmConfig: null, // Profile uses different endpoint
-            llmConfigProfile: 'section_structure_profile', // Custom for profile
-            pipelineStep: 'section-structure-design',
-            panels: null,
-            route: 'planning.planning_concept_section_structure'
-        },
-        'topic-allocation': {
-            template: {
-                'profile': 'planning/concept/topic_allocation_profile.html',
-                'default': 'planning/concept/topic_allocation.html'
-            },
-            llmConfig: 'topic_allocation',
-            pipelineStep: 'section-ideas',
-            panels: null,
-            route: 'planning.planning_concept_topic_allocation'
-        },
-        'titling': {
-            template: {
-                'profile': 'planning/concept/titling_profile.html',
-                'default': 'planning/concept/titling.html'
-            },
-            llmConfig: 'titling',
-            pipelineStep: 'section-titling',
-            panels: null,
-            route: 'planning.planning_concept_titling'
-        },
-        
-        // Research substages
-        'research': {
-            template: 'planning/research/index.html',
-            llmConfig: null,
-            pipelineStep: null,
-            panels: null,
-            route: 'planning.planning_research'
-        },
-        'sources': {
-            template: 'planning/research/sources.html',
-            llmConfig: null,
-            pipelineStep: null,
-            panels: null,
-            route: 'planning.planning_research_sources'
-        },
-        'visuals': {
-            template: 'planning/research/visuals.html',
-            llmConfig: null,
-            pipelineStep: null,
-            panels: null,
-            route: 'planning.planning_research_visuals'
-        },
-        'prompts': {
-            template: 'planning/research/prompts.html',
-            llmConfig: null,
-            pipelineStep: null,
-            panels: null,
-            route: 'planning.planning_research_prompts'
-        },
-        'verification': {
-            template: 'planning/research/verification.html',
-            llmConfig: null,
-            pipelineStep: null,
-            panels: null,
-            route: 'planning.planning_research_verification'
-        },
-        
-        // Authoring substages
-        'drafting': {
-            template: 'authoring/sections/drafting.html',
-            llmConfig: 'author_draft',
-            pipelineStep: 'drafting',
-            panels: 'authoring',
-            route: 'authoring.authoring_sections_drafting'
-        },
-        'image-concepts': {
-            template: 'authoring/sections/image_concepts.html',
-            llmConfig: 'image_concepts',
-            pipelineStep: 'image-concepts',
-            panels: 'authoring',
-            route: 'authoring_imaging.authoring_sections_image_concepts'
-        },
-        'image-prompts': {
-            template: 'authoring/sections/image_prompts.html',
-            llmConfig: 'image_prompts',
-            pipelineStep: 'image-prompts',
-            panels: 'authoring',
-            route: 'authoring_imaging.authoring_sections_image_prompts'
-        },
-        'image-captions': {
-            template: 'authoring/sections/image_captions.html',
-            llmConfig: 'image_captions',
-            pipelineStep: 'image-captions',
-            panels: 'authoring',
-            route: 'authoring_imaging.authoring_sections_image_captions'
-        },
-        
-        // Imaging substages
-        'image-generation': {
-            template: {
-                'profile': 'imaging/sections/image_generation_profile.html',
-                'default': 'imaging/sections/image_generation.html'
-            },
-            llmConfig: 'image_generation',
-            pipelineStep: 'image-generation',
-            panels: null,
-            route: 'imaging.imaging_sections_image_generation'
-        },
-        'optimise': {
-            template: 'imaging/sections/optimise.html',
-            llmConfig: null,
-            pipelineStep: 'optimise',
-            panels: null,
-            route: 'imaging.imaging_sections_optimise'
-        },
-        
-        // Header substages
-        'title-summary': {
-            template: 'header/title_summary.html',
-            llmConfig: null,
-            pipelineStep: 'header-title-summary',
-            panels: null,
-            route: 'header.header_title_summary'
-        },
-        'image-prompt': {
-            template: 'header/image_prompt.html',
-            llmConfig: null,
-            pipelineStep: 'header-image-prompt',
-            panels: null,
-            route: 'header.header_image_prompt'
-        },
-        'image-details': {
-            template: 'header/image_details.html',
-            llmConfig: null,
-            pipelineStep: 'header-image-details',
-            panels: null,
-            route: 'header.header_image_details'
-        },
-        'image-generate': {
-            template: 'header/image_generate.html',
-            llmConfig: null,
-            pipelineStep: 'header-image-generate',
-            panels: null,
-            route: 'header.header_image_generate'
-        },
-        'seo-meta': {
-            template: 'header/seo_meta.html',
-            llmConfig: null,
-            pipelineStep: 'header-seo-meta',
-            panels: null,
-            route: 'header.header_seo_meta'
-        }
-    };
-
-    // Navigation structure
+    // Navigation structure (fallback when canonical API not used)
     const NAVIGATION_STRUCTURE = {
         'calendar': {
             label: 'Calendar',
@@ -256,16 +67,56 @@
         'seo-meta': 'SEO Meta'
     };
 
+    // W2 Phase 1: Canonical substage registry (replaces SUBSTAGE_CONFIG_MAP when post context exists)
+    const CANONICAL_STAGE_LABELS = {
+        'metadata': 'Metadata',
+        'ideas': 'Ideas',
+        'structure': 'Structure',
+        'titling': 'Titling',
+        'authoring': 'Authoring',
+        'imaging': 'Imaging',
+        'review': 'Review'
+    };
+
+    // Minimal fallback when no post context (no canonical API). Keys match canonical substage ids.
+    const FALLBACK_SUBSTAGE_CONFIG = {
+        'ideas': { fromRegistry: false, title: 'Ideas', route: '-', template: null, pipelineStep: null, panels: null, llmConfig: null },
+        'generate_idea_set': { fromRegistry: false, title: 'Generate Idea Set', route: '-', template: null, pipelineStep: null, panels: null, llmConfig: null },
+        'generate-idea-set': { fromRegistry: false, title: 'Generate Idea Set', route: '-', template: null, pipelineStep: null, panels: null, llmConfig: null }
+    };
+
+    // For pipeline prev/next when not using canonical (stepId -> { stage, substage })
+    const LEGACY_STEP_TO_SUBSTAGE = {
+        'taxonomy': { stage: 'concept', substage: 'taxonomy' },
+        'section-structure-design': { stage: 'concept', substage: 'section-structure' },
+        'section-ideas': { stage: 'concept', substage: 'topic-allocation' },
+        'section-titling': { stage: 'concept', substage: 'titling' },
+        'week-ideas': { stage: 'calendar', substage: 'ideas-week' },
+        'drafting': { stage: 'authoring', substage: 'drafting' },
+        'image-concepts': { stage: 'authoring', substage: 'image-concepts' },
+        'image-prompts': { stage: 'authoring', substage: 'image-prompts' },
+        'image-captions': { stage: 'authoring', substage: 'image-captions' },
+        'image-generation': { stage: 'imaging', substage: 'image-generation' },
+        'optimise': { stage: 'imaging', substage: 'optimise' },
+        'header-title-summary': { stage: 'header', substage: 'title-summary' },
+        'header-image-prompt': { stage: 'header', substage: 'image-prompt' },
+        'header-image-details': { stage: 'header', substage: 'image-details' },
+        'header-image-generate': { stage: 'header', substage: 'image-generate' },
+        'header-seo-meta': { stage: 'header', substage: 'seo-meta' }
+    };
+
     class PostTypeSettingsModal {
         constructor() {
             this.modal = null;
             this.currentPostType = null;
+            this.currentPostId = null;
             this.currentStage = null;
             this.currentSubstage = null;
             this.pipelineSteps = null;
             this.llmConfigs = null;
             this.panelConfigs = null;
-            this.navigationStructure = null; // Will be populated from API
+            this.navigationStructure = null;
+            this.canonicalSubstages = null; // From GET /api/posts/<id>/canonical-substages
             
             this.init();
         }
@@ -345,7 +196,8 @@
         open() {
             if (!this.modal) return;
 
-            // Get current context
+            // Get current context (W2 Phase 1: post ID for canonical registry)
+            this.currentPostId = (typeof window.postId !== 'undefined' && window.postId) ? Number(window.postId) : null;
             this.currentPostType = this.getPostType();
             this.currentStage = window.currentStage || null;
             this.currentSubstage = window.currentSubstage || null;
@@ -391,17 +243,30 @@
             if (!tree) return;
 
             tree.innerHTML = '<div style="padding: 1rem; color: #94a3b8;">Loading navigation...</div>';
+            this.canonicalSubstages = null;
+
+            // W2 Phase 1: Prefer canonical registry when post context exists
+            if (this.currentPostId) {
+                try {
+                    const response = await fetch(`/api/posts/${this.currentPostId}/canonical-substages`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.canonicalSubstages = data;
+                        this.navigationStructure = this._navFromCanonical(data.stages || []);
+                        this._renderNavTree(tree, this.navigationStructure, true);
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('PostTypeSettingsModal: Canonical substages fetch failed, falling back', e);
+                }
+            }
 
             try {
-                // Fetch substage config from API
                 const response = await fetch(`/api/post-types/${this.currentPostType}/substages`);
                 const data = await response.json();
-                
                 if (!data.success || !data.substages) {
                     throw new Error('Failed to load substage configuration');
                 }
-
-                // Stage metadata (icons and labels)
                 const stageMetadata = {
                     'calendar': { label: 'Calendar', icon: 'fa-calendar-alt' },
                     'planning': { label: 'Planning', icon: 'fa-lightbulb' },
@@ -410,77 +275,105 @@
                     'imaging': { label: 'Imaging', icon: 'fa-magic' },
                     'header': { label: 'Header', icon: 'fa-heading' }
                 };
-
-                // Map config substage keys to data-substage format
-                const substageKeyToDataAttr = (key) => {
-                    return key.replace(/_/g, '-');
-                };
-
-                tree.innerHTML = '';
-
-                // Build navigation tree from API data
-                Object.keys(data.substages).forEach(stageKey => {
-                    const substages = data.substages[stageKey];
-                    if (!substages || substages.length === 0) return;
-
-                    const stageMeta = stageMetadata[stageKey] || { label: stageKey, icon: 'fa-circle' };
-                    const isExpanded = stageKey === this.currentStage;
-                    const isActive = stageKey === this.currentStage;
-
-                    const stageDiv = document.createElement('div');
-                    stageDiv.className = `nav-stage ${isExpanded ? 'expanded' : ''}`;
-
-                    const header = document.createElement('div');
-                    header.className = `nav-stage-header ${isActive ? 'active' : ''}`;
-                    header.innerHTML = `
-                        <i class="fas ${stageMeta.icon} nav-stage-icon"></i>
-                        <span>${stageMeta.label}</span>
-                    `;
-                    header.addEventListener('click', () => {
-                        const isCurrentlyExpanded = stageDiv.classList.contains('expanded');
-                        document.querySelectorAll('.nav-stage').forEach(s => s.classList.remove('expanded'));
-                        if (!isCurrentlyExpanded) {
-                            stageDiv.classList.add('expanded');
-                        }
-                    });
-
-                    const substagesDiv = document.createElement('div');
-                    substagesDiv.className = 'nav-substages';
-
-                    substages.forEach(substage => {
-                        const substageKey = substageKeyToDataAttr(substage.key);
-                        const substageLabel = substage.label || substage.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                        const isSubstageActive = stageKey === this.currentStage && substageKey === this.currentSubstage;
-
-                        const substageDiv = document.createElement('div');
-                        substageDiv.className = `nav-substage ${isSubstageActive ? 'active' : ''}`;
-                        substageDiv.textContent = substageLabel;
-                        substageDiv.addEventListener('click', () => {
-                            this.loadSettings(stageKey, substageKey);
-                            // Update active states
-                            document.querySelectorAll('.nav-substage').forEach(s => s.classList.remove('active'));
-                            document.querySelectorAll('.nav-stage-header').forEach(s => s.classList.remove('active'));
-                            substageDiv.classList.add('active');
-                            header.classList.add('active');
-                        });
-
-                        substagesDiv.appendChild(substageDiv);
-                    });
-
-                    stageDiv.appendChild(header);
-                    stageDiv.appendChild(substagesDiv);
-                    tree.appendChild(stageDiv);
-                });
-
-                // Store navigation structure for use in other methods
                 this.navigationStructure = data.substages;
-                
+                this._renderNavTree(tree, data.substages, false, stageMetadata);
             } catch (error) {
                 console.error('Error building navigation:', error);
                 tree.innerHTML = `<div style="padding: 1rem; color: #ef4444;">Error loading navigation: ${error.message}</div>`;
-                // Fallback to hardcoded structure
                 this.buildNavigationFallback();
             }
+        }
+
+        _navFromCanonical(stages) {
+            const out = {};
+            (stages || []).forEach(s => {
+                const stageKey = s.stage;
+                out[stageKey] = (s.substages || []).map(sub => ({
+                    key: sub.id,
+                    label: sub.title || sub.id
+                }));
+            });
+            return out;
+        }
+
+        _renderNavTree(tree, navStruct, fromCanonical, stageMetadata) {
+            const meta = fromCanonical ? Object.fromEntries(
+                Object.entries(CANONICAL_STAGE_LABELS).map(([k, v]) => [k, { label: v, icon: 'fa-circle' }])
+            ) : (stageMetadata || {});
+            const substageKeyToDataAttr = (key) => (key || '').replace(/_/g, '-');
+            tree.innerHTML = '';
+            Object.keys(navStruct).forEach(stageKey => {
+                const substages = navStruct[stageKey];
+                if (!substages || substages.length === 0) return;
+                const stageMeta = meta[stageKey] || { label: stageKey, icon: 'fa-circle' };
+                const isExpanded = stageKey === this.currentStage;
+                const isActive = stageKey === this.currentStage;
+                const stageDiv = document.createElement('div');
+                stageDiv.className = `nav-stage ${isExpanded ? 'expanded' : ''}`;
+                const header = document.createElement('div');
+                header.className = `nav-stage-header ${isActive ? 'active' : ''}`;
+                header.innerHTML = `<i class="fas ${stageMeta.icon} nav-stage-icon"></i><span>${stageMeta.label}</span>`;
+                header.addEventListener('click', () => {
+                    const isCurrentlyExpanded = stageDiv.classList.contains('expanded');
+                    document.querySelectorAll('.nav-stage').forEach(s => s.classList.remove('expanded'));
+                    if (!isCurrentlyExpanded) stageDiv.classList.add('expanded');
+                });
+                const substagesDiv = document.createElement('div');
+                substagesDiv.className = 'nav-substages';
+                substages.forEach(substage => {
+                    const subKey = typeof substage === 'object' ? substage.key : substage;
+                    const substageKey = substageKeyToDataAttr(subKey);
+                    const substageLabel = (typeof substage === 'object' ? substage.label : null) || (subKey || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const isSubstageActive = stageKey === this.currentStage && substageKey === this.currentSubstage;
+                    const substageDiv = document.createElement('div');
+                    substageDiv.className = `nav-substage ${isSubstageActive ? 'active' : ''}`;
+                    substageDiv.textContent = substageLabel;
+                    substageDiv.addEventListener('click', () => {
+                        this.loadSettings(stageKey, substageKey);
+                        document.querySelectorAll('.nav-substage').forEach(s => s.classList.remove('active'));
+                        document.querySelectorAll('.nav-stage-header').forEach(s => s.classList.remove('active'));
+                        substageDiv.classList.add('active');
+                        header.classList.add('active');
+                    });
+                    substagesDiv.appendChild(substageDiv);
+                });
+                stageDiv.appendChild(header);
+                stageDiv.appendChild(substagesDiv);
+                tree.appendChild(stageDiv);
+            });
+        }
+
+        _findConfigFromCanonical(stage, substage) {
+            if (!this.canonicalSubstages || !this.canonicalSubstages.stages) return null;
+            const stages = this.canonicalSubstages.stages;
+            const substageNorm = (substage || '').replace(/-/g, '_');
+            // Map planning+ideas to canonical ideas stage
+            if ((stage === 'planning' || stage === 'ideas') && (substage === 'ideas' || substage === 'generate-idea-set' || substageNorm === 'generate_idea_set')) {
+                const ideasStage = stages.find(s => s.stage === 'ideas');
+                if (ideasStage && ideasStage.substages && ideasStage.substages.length) {
+                    const sub = ideasStage.substages.find(s => s.id === 'generate_idea_set') || ideasStage.substages[0];
+                    return { fromRegistry: true, title: sub.title, id: sub.id, route: '-', template: null, pipelineStep: null, panels: null, llmConfig: null };
+                }
+            }
+            for (const s of stages) {
+                const canonicalStage = s.stage;
+                if (s.substages) {
+                    for (const sub of s.substages) {
+                        if ((s.stage === stage || (stage === 'planning' && canonicalStage === 'ideas')) && (sub.id === substageNorm || sub.id === substage)) {
+                            return { fromRegistry: true, title: sub.title, id: sub.id, route: '-', template: null, pipelineStep: null, panels: null, llmConfig: null };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        _getSubstageLabel(stage, substage) {
+            const fromCanon = this._findConfigFromCanonical(stage, substage);
+            if (fromCanon) return fromCanon.title;
+            const fallback = FALLBACK_SUBSTAGE_CONFIG[substage] || FALLBACK_SUBSTAGE_CONFIG[substage.replace(/-/g, '_')];
+            if (fallback) return fallback.title;
+            return (substage || '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
         buildNavigationFallback() {
@@ -560,22 +453,18 @@
 
             // Update context
             if (contextValue) {
-                const stageMetadata = {
-                    'calendar': 'Calendar',
-                    'planning': 'Planning',
-                    'research': 'Research',
-                    'authoring': 'Authoring',
-                    'imaging': 'Imaging',
-                    'header': 'Header'
-                };
-                const stageLabel = stageMetadata[stage] || stage;
-                const substageLabel = SUBSTAGE_LABELS[substage] || substage.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const stageLabels = { ...CANONICAL_STAGE_LABELS, calendar: 'Calendar', planning: 'Planning', research: 'Research', authoring: 'Authoring', imaging: 'Imaging', header: 'Header' };
+                const stageLabel = stageLabels[stage] || stage;
+                const substageLabel = this._getSubstageLabel(stage, substage);
                 contextValue.textContent = `${stageLabel} > ${substageLabel}`;
             }
 
             try {
-                // Get configuration
-                const config = SUBSTAGE_CONFIG_MAP[substage];
+                // W2 Phase 1: Resolve config from canonical registry first, then minimal fallback
+                let config = this._findConfigFromCanonical(stage, substage);
+                if (!config) {
+                    config = FALLBACK_SUBSTAGE_CONFIG[substage] || FALLBACK_SUBSTAGE_CONFIG[substage.replace(/-/g, '_')];
+                }
                 if (!config) {
                     throw new Error(`No configuration found for substage: ${substage}`);
                 }
@@ -717,9 +606,9 @@
                 if (actionSection) actionSection.style.display = 'none';
             }
 
-            // Pipeline Step
+            // Pipeline Step (hidden when from canonical registry; prev/next use LEGACY_STEP_TO_SUBSTAGE)
             const pipelineSection = document.getElementById('pipeline-step-section');
-            if (config.pipelineStep && this.pipelineSteps) {
+            if (config.pipelineStep && !config.fromRegistry && this.pipelineSteps) {
                 const step = this.pipelineSteps.find(s => s.stepId === config.pipelineStep);
                 if (step) {
                     document.getElementById('pipeline-step-id').textContent = step.stepId || '-';
@@ -727,33 +616,14 @@
                     document.getElementById('pipeline-step-label').textContent = step.label || '-';
                     document.getElementById('pipeline-step-function').textContent = step.function || '-';
 
-                    // Navigation
                     const nav = document.getElementById('pipeline-navigation');
                     if (step.previous || step.next) {
                         if (step.previous) {
                             document.getElementById('pipeline-prev-label').textContent = step.previous.label;
                             document.getElementById('pipeline-prev').classList.remove('disabled');
                             document.getElementById('pipeline-prev').onclick = () => {
-                                const prevSubstage = Object.keys(SUBSTAGE_CONFIG_MAP).find(
-                                    k => SUBSTAGE_CONFIG_MAP[k].pipelineStep === step.previous.stepId
-                                );
-                                if (prevSubstage) {
-                                    // Find stage from navigation structure (API or fallback)
-                                    let prevStage = null;
-                                    if (this.navigationStructure) {
-                                        prevStage = Object.keys(this.navigationStructure).find(s => 
-                                            this.navigationStructure[s].some(sub => 
-                                                sub.key.replace(/_/g, '-') === prevSubstage
-                                            )
-                                        );
-                                    }
-                                    if (!prevStage) {
-                                        prevStage = Object.keys(NAVIGATION_STRUCTURE).find(
-                                            s => NAVIGATION_STRUCTURE[s].substages.includes(prevSubstage)
-                                        );
-                                    }
-                                    if (prevStage) this.loadSettings(prevStage, prevSubstage);
-                                }
+                                const prevInfo = LEGACY_STEP_TO_SUBSTAGE[step.previous.stepId];
+                                if (prevInfo) this.loadSettings(prevInfo.stage, prevInfo.substage);
                             };
                         } else {
                             document.getElementById('pipeline-prev').classList.add('disabled');
@@ -762,26 +632,8 @@
                             document.getElementById('pipeline-next-label').textContent = step.next.label;
                             document.getElementById('pipeline-next').classList.remove('disabled');
                             document.getElementById('pipeline-next').onclick = () => {
-                                const nextSubstage = Object.keys(SUBSTAGE_CONFIG_MAP).find(
-                                    k => SUBSTAGE_CONFIG_MAP[k].pipelineStep === step.next.stepId
-                                );
-                                if (nextSubstage) {
-                                    // Find stage from navigation structure (API or fallback)
-                                    let nextStage = null;
-                                    if (this.navigationStructure) {
-                                        nextStage = Object.keys(this.navigationStructure).find(s => 
-                                            this.navigationStructure[s].some(sub => 
-                                                sub.key.replace(/_/g, '-') === nextSubstage
-                                            )
-                                        );
-                                    }
-                                    if (!nextStage) {
-                                        nextStage = Object.keys(NAVIGATION_STRUCTURE).find(
-                                            s => NAVIGATION_STRUCTURE[s].substages.includes(nextSubstage)
-                                        );
-                                    }
-                                    if (nextStage) this.loadSettings(nextStage, nextSubstage);
-                                }
+                                const nextInfo = LEGACY_STEP_TO_SUBSTAGE[step.next.stepId];
+                                if (nextInfo) this.loadSettings(nextInfo.stage, nextInfo.substage);
                             };
                         } else {
                             document.getElementById('pipeline-next').classList.add('disabled');
@@ -814,23 +666,33 @@
                 if (panelSection) panelSection.style.display = 'none';
             }
 
-            // Navbar
-            const navbarVisible = Object.values(NAVIGATION_STRUCTURE).some(
-                s => s.substages.includes(substage)
-            );
+            // Navbar (use current nav structure when from canonical)
+            let navbarVisible = false;
+            if (this.navigationStructure) {
+                const subToKey = (sub) => ((typeof sub === 'object' ? sub.key : sub) || '').replace(/_/g, '-');
+                navbarVisible = Object.keys(this.navigationStructure).some(s =>
+                    (this.navigationStructure[s] || []).some(sub => subToKey(sub) === substage)
+                );
+            }
+            if (!navbarVisible) {
+                navbarVisible = Object.values(NAVIGATION_STRUCTURE).some(s => s.substages.includes(substage));
+            }
             document.getElementById('navbar-visible').textContent = navbarVisible ? 'Yes' : 'No';
             document.getElementById('navbar-post-types').textContent = 
                 this.getNavbarPostTypes(stage, substage).join(', ') || 'All';
         }
 
         displayTemplateFromConfig(config) {
-            // Fallback: Use config mapping if API fails
-            const template = typeof config.template === 'object' 
+            if (!config || config.template == null) {
+                document.getElementById('template-path').textContent = '-';
+                document.getElementById('template-post-type-specific').textContent = 'No';
+                return;
+            }
+            const template = typeof config.template === 'object'
                 ? (config.template[this.currentPostType] || config.template['default'])
                 : config.template;
-            
             document.getElementById('template-path').textContent = template || '-';
-            document.getElementById('template-post-type-specific').textContent = 
+            document.getElementById('template-post-type-specific').textContent =
                 typeof config.template === 'object' ? 'Yes' : 'No';
         }
 

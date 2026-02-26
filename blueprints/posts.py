@@ -829,6 +829,29 @@ def api_advance_workflow_stage(post_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@bp.route('/api/posts/<int:post_id>/canonical-substages', methods=['GET'])
+def api_get_canonical_substages(post_id):
+    """W2 Phase 1: Canonical substage registry for post. Read-only; no execution."""
+    try:
+        from utils.taxonomy_helpers import get_post_type
+        from utils.posts.early_stage import get_canonical_stage
+        from utils.posts.stage_order import stage_index
+        from utils.posts.canonical_substages import get_canonical_substages_for_post
+
+        post_type = get_post_type(post_id)
+        current_stage = get_canonical_stage(post_id)
+        payload = get_canonical_substages_for_post(
+            post_id=post_id,
+            post_type=post_type,
+            current_stage=current_stage,
+            stage_index_fn=stage_index,
+        )
+        return jsonify(payload), 200
+    except Exception as e:
+        logger.error(f"Error getting canonical substages for post {post_id}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @bp.route('/api/posts/<int:post_id>/early-stage', methods=['GET'])
 def api_get_early_stage(post_id):
     """Instruction Set 8: Get early development stage + counts for UI (from DB)."""
