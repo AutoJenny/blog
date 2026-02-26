@@ -935,6 +935,169 @@ def api_get_canonical_substages(post_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@bp.route('/api/posts/<int:post_id>/pipeline-state', methods=['GET'])
+def api_get_pipeline_state(post_id):
+    """W2 Pipeline Nav N1: Single-source pipeline state for current/next/jump."""
+    try:
+        from utils.taxonomy_helpers import get_post_type
+        from utils.posts.early_stage import get_canonical_stage
+        from utils.posts.stage_order import stage_index
+        from utils.posts.canonical_substages import CANONICAL_STAGE_ORDER, CANONICAL_SUBSTAGES
+
+        post_type = get_post_type(post_id)
+        workflow_stage = get_canonical_stage(post_id)
+
+        # Fetch canonical substages with modes and basic gating
+        substage_modes = _get_substage_modes(post_id)
+        from utils.posts.canonical_substages import get_canonical_substages_for_post
+        canonical = get_canonical_substages_for_post(
+            post_id=post_id,
+            post_type=post_type,
+            current_stage=workflow_stage,
+            stage_index_fn=stage_index,
+            substage_modes=substage_modes,
+        )
+
+        # Flatten substages into linear pipeline list
+        pipeline = []
+        for stage_entry in canonical.get("stages", []):
+            stage = stage_entry.get("stage")
+            for s in stage_entry.get("substages", []):
+                sub_id = s.get("id") or s.get("substage_key")
+                if not sub_id:
+                    continue
+                # Only include substages defined in registry for this stage
+                registry_items = CANONICAL_SUBSTAGES.get(stage, [])
+                reg = next((r for r in registry_items if r.get("id") == sub_id), None)
+                if not reg:
+                    continue
+                key = f"{stage}.{sub_id}"
+                nav_url = _get_pipeline_nav_url(stage, sub_id, post_id)
+                pipeline.append({
+                    "stage": stage,
+                    "substage": sub_id,
+                    "label": s.get("label") or s.get("title") or reg.get("title") or sub_id,
+                    "min_stage": s.get("min_stage") or reg.get("min_stage") or stage,
+                    "can_execute": s.get("can_execute", True),
+                    "current_mode": s.get("current_mode"),
+                    "nav_url": nav_url,
+                    "key": key,
+                })
+
+        # Minimal artefact completion checks
+        with db_manager.get_cursor() as cursor:
+            # Required ideas
+            cursor.execute(
+                "SELECT COUNT(*) AS total, "
+                "       COUNT(*) FILTER (WHERE is_selected) AS selected, "
+                "       COUNT(DISTINCT category) FILTER (WHERE is_selected) AS selected_categories "
+                "FROM post_required_idea WHERE post_id = %s",
+                (post_id,),
+            )
+            r = cursor.fetchone() or {}
+            required_total = int(r.get("total", 0)) if isinstance(r, dict) else 0
+            selected_total = int(r.get("selected", 0)) if isinstance(r, dict) else 0
+            selected_categories = int(r.get("selected_categories", 0)) if isinstance(r, dict) else 0
+
+            # Sections
+            cursor.execute(
+                "SELECT COUNT(*) AS sections FROM post_section WHERE post_id = %s",
+                (post_id,),
+            )
+            r2 = cursor.fetchone() or {}
+            sections_count = int(r2.get("sections", 0)) if isinstance(r2, dict) else 0
+
+        # Completion flags
+        idea_complete = required_total >= 30
+        cluster_complete = sections_count >= 6
+
+        # Current and next based on first incomplete
+        current = None
+        next_sub = None
+        reasons_blocked = {}
+
+        # Compute reasons_blocked for key substages
+        # ideas.generate_idea_set: artifact gate: >=30 ideas
+        ideas_key = "ideas.generate_idea_set"
+        if required_total < 30:
+            reasons_blocked[ideas_key] = f"Need at least 30 ideas (have {required_total})."
+        # structure.cluster_into_sections: selection + category diversity + sections
+        cluster_key = "structure.cluster_into_sections"
+        cluster_reasons = []
+        if selected_total < 10:
+            cluster_reasons.append(f"Need at least 10 selected ideas (have {selected_total}).")
+        if selected_categories < 3:
+            cluster_reasons.append(f"Need at least 3 categories (have {selected_categories}).")
+        if sections_count < 6:
+            cluster_reasons.append(f"Need at least 6 sections (have {sections_count}).")
+        if cluster_reasons:
+            reasons_blocked[cluster_key] = " ".join(cluster_reasons)
+
+        # Determine current/next
+        # First incomplete substage in pipeline is current; next is the one after it.
+        for idx, item in enumerate(pipeline):
+            key = item["key"]
+            if key == ideas_key and idea_complete:
+                continue
+            if key == cluster_key and cluster_complete:
+                continue
+            current = {"stage": item["stage"], "substage": item["substage"]}
+            if idx + 1 < len(pipeline):
+                nxt = pipeline[idx + 1]
+                next_sub = {"stage": nxt["stage"], "substage": nxt["substage"]}
+            break
+        if current is None and pipeline:
+            # Everything complete: current = last, next = None
+            last = pipeline[-1]
+            current = {"stage": last["stage"], "substage": last["substage"]}
+            next_sub = None
+
+        # Strip helper 'key' before returning
+        substages_out = [
+            {
+                "stage": p["stage"],
+                "substage": p["substage"],
+                "label": p["label"],
+                "min_stage": p["min_stage"],
+                "can_execute": p["can_execute"],
+                "current_mode": p["current_mode"],
+                "nav_url": p["nav_url"],
+            }
+            for p in pipeline
+        ]
+
+        return jsonify({
+            "success": True,
+            "post_id": post_id,
+            "post_type": post_type,
+            "workflow_stage": workflow_stage,
+            "current": current,
+            "next": next_sub,
+            "substages": substages_out,
+            "reasons_blocked": reasons_blocked,
+        }), 200
+    except Exception as e:
+        logger.error(f"Error getting pipeline state for post {post_id}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+def _get_pipeline_nav_url(stage: str, substage: str, post_id: int) -> str:
+    """Hard-coded canonical nav_url mappings for pipeline navigation."""
+    # Normalise stage families
+    if stage == "ideas":
+        return f"/planning/posts/{post_id}/calendar/ideas"
+    if stage == "structure":
+        # Specific mapping for cluster_into_sections; others use /structure as well.
+        return f"/planning/posts/{post_id}/calendar/structure"
+    if stage == "authoring":
+        return f"/planning/posts/{post_id}/calendar/authoring"
+    if stage == "imaging":
+        return f"/planning/posts/{post_id}/calendar/imaging"
+    if stage == "review":
+        return f"/planning/posts/{post_id}/calendar/review"
+    # Fallback: ideas page
+    return f"/planning/posts/{post_id}/calendar/ideas"
+
 @bp.route('/api/posts/<int:post_id>/early-stage', methods=['GET'])
 def api_get_early_stage(post_id):
     """Instruction Set 8: Get early development stage + counts for UI (from DB)."""
