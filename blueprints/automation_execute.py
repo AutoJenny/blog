@@ -267,8 +267,17 @@ def execute_generate_idea_set(post_id, data):
             "message": f"Generated {len(best_ideas)} required idea(s) across {len(categories_set)} categories.",
         }
     except Exception as e:
-        logger.error("execute_generate_idea_set failed: %s", e)
-        return {"success": False, "error": str(e)}, 500
+        # Phase 3.2-H3: sanitize LLM/backend errors for clients; log full details server-side only.
+        logger.error(
+            "execute_generate_idea_set failed for post %s: %s",
+            post_id,
+            e,
+            exc_info=True,
+        )
+        return {
+            "success": False,
+            "error": "LLM backend unavailable or exceeded timeout; generation aborted.",
+        }, 500
 
 
 def execute_topic_allocation(post_id, data):
