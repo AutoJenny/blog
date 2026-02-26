@@ -23,6 +23,14 @@ CANONICAL_STAGE_ORDER = [
     "review",
 ]
 
+# N-ALIGN-2B: Themed pipeline uses planned spec v1; legacy structure substages are excluded from
+# canonical nav but not deleted. For post_type=themed only, these substage ids are allowed per stage.
+THEMED_PLANNED_SUBSTAGE_IDS = {
+    "metadata": {"edit_metadata"},
+    "ideas": {"generate_idea_set", "curate_ideas"},
+    "structure": {"cluster_into_sections", "edit_section_plan"},
+}
+
 # Each substage: id, title, description, min_stage, post_types, artefacts_written, supports_web_research
 # Runner not implemented; no function pointer.
 CANONICAL_SUBSTAGES: Dict[str, List[Dict[str, Any]]] = {
@@ -48,8 +56,35 @@ CANONICAL_SUBSTAGES: Dict[str, List[Dict[str, Any]]] = {
             "supports_web_research": True,
             "nav_key": "ideas",  # legacy navbar key for lookup
         },
+        {
+            "id": "curate_ideas",
+            "title": "Curate ideas",
+            "description": "Select and curate ideas (min 10 selected, 3 categories).",
+            "min_stage": "ideas",
+            "post_types": ["themed", "recipe", "profile", "clan", "generated"],
+            "artefacts_written": [],
+            "supports_web_research": False,
+        },
     ],
     "structure": [
+        {
+            "id": "cluster_into_sections",
+            "title": "Cluster into Sections",
+            "description": "Produce 6–7 sections from selected ideas.",
+            "min_stage": "ideas",
+            "post_types": ["themed", "recipe", "profile", "generated"],
+            "artefacts_written": ["post_section"],
+            "supports_web_research": False,
+        },
+        {
+            "id": "edit_section_plan",
+            "title": "Edit section plan",
+            "description": "Edit section headings, briefs, and idea assignments.",
+            "min_stage": "structure",
+            "post_types": ["themed", "recipe", "profile", "generated"],
+            "artefacts_written": ["post_section"],
+            "supports_web_research": False,
+        },
         {
             "id": "topic_brainstorming",
             "title": "Topic brainstorming",
@@ -183,6 +218,8 @@ CANONICAL_SUBSTAGES: Dict[str, List[Dict[str, Any]]] = {
 # Phase 2.1: Canonical execution registry. Key: (stage, substage_id). Value: handler name (used by execute endpoint).
 CANONICAL_EXEC_REGISTRY: Dict[Tuple[str, str], Dict[str, Any]] = {
     ("ideas", "generate_idea_set"): {"handler": "generate_idea_set", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("ideas", "curate_ideas"): {"handler": "curate_ideas", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("structure", "cluster_into_sections"): {"handler": "cluster_into_sections", "mode_default": DEFAULT_SUBSTAGE_MODE},
     ("structure", "topic_brainstorming"): {"handler": "topic_brainstorming", "mode_default": DEFAULT_SUBSTAGE_MODE},
     ("structure", "section_structure"): {"handler": "section_structure", "mode_default": DEFAULT_SUBSTAGE_MODE},
     ("structure", "topic_allocation"): {"handler": "topic_allocation", "mode_default": DEFAULT_SUBSTAGE_MODE},
@@ -212,6 +249,11 @@ def get_canonical_substages_for_post(
     stages_out = []
     for stage in CANONICAL_STAGE_ORDER:
         substages_raw = CANONICAL_SUBSTAGES.get(stage, [])
+        # N-ALIGN-2B: Themed pipeline uses planned spec v1; legacy structure substages are excluded
+        # from canonical nav but not deleted.
+        if post_type == "themed" and stage in THEMED_PLANNED_SUBSTAGE_IDS:
+            allowed = THEMED_PLANNED_SUBSTAGE_IDS[stage]
+            substages_raw = [s for s in substages_raw if s.get("id") in allowed]
         current_idx = stage_index_fn(current_stage)
         stage_available = current_idx >= stage_index_fn(stage)
         substages_out = []
