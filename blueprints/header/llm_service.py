@@ -5,6 +5,9 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+# Phase 3.2-H1: Increase Ollama timeout headroom for large JSON generations.
+LLM_TIMEOUT_SECONDS = 180
+
 
 class LLMService:
     """Service for interacting with LLM providers."""
@@ -52,7 +55,7 @@ class LLMService:
                 response = requests.post(
                     f"{self.providers[provider]['base_url']}/api/chat",
                     json=data,
-                    timeout=60
+                    timeout=LLM_TIMEOUT_SECONDS
                 )
             else:
                 return {'error': f'Unknown provider: {provider}'}
