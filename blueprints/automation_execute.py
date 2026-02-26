@@ -5,77 +5,255 @@ Helper functions for executing automation substages
 
 import json
 import logging
-import re
+from typing import List, Dict, Any
+
 from config.database import db_manager
+from blueprints.header.llm_service import LLMService
 
 logger = logging.getLogger(__name__)
 
 
+THEMED_IDEA_CATEGORIES: List[str] = [
+    "history_timeline",
+    "definitions_differences",
+    "material_craft",
+    "regional_variation",
+    "myths_misconceptions",
+    "notable_examples",
+    "modern_revival",
+    "how_to_practical",
+    "sources_further_reading",
+]
+
+
+def _normalize_source_urls(raw) -> List[str]:
+    urls: List[str] = []
+    if isinstance(raw, list):
+        for u in raw:
+            if isinstance(u, str):
+                u = u.strip()
+                if u:
+                    urls.append(u)
+    elif isinstance(raw, str):
+        u = raw.strip()
+        if u:
+            urls.append(u)
+    return urls[:3]
+
+
+def _parse_ideas_from_llm_content(content: str) -> List[Dict[str, Any]]:
+    """
+    Parse JSON from LLM content into a list[idea], tolerating code fences and extra text.
+    Expected shape: { "ideas": [ {text, category, rationale, source_urls, rank?}, ... ] }.
+    """
+    text = content.strip()
+    # Strip Markdown fences if present
+    if text.startswith("```"):
+        # Remove first line and any trailing ```
+        lines = text.splitlines()
+        # drop first fence line
+        lines = lines[1:]
+        # drop final fence line if it's just ```
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+
+    # Try direct parse first
+    parsed = None
+    try:
+        parsed = json.loads(text)
+    except Exception:
+        # Fallback: extract first outer {...}
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            try:
+                parsed = json.loads(text[start : end + 1])
+            except Exception:
+                parsed = None
+    if parsed is None:
+        raise ValueError("LLM response is not valid JSON.")
+
+    ideas_raw = parsed.get("ideas") if isinstance(parsed, dict) else parsed
+    if not isinstance(ideas_raw, list):
+        raise ValueError("LLM JSON must contain an 'ideas' array.")
+
+    ideas: List[Dict[str, Any]] = []
+    for item in ideas_raw:
+        if not isinstance(item, dict):
+            continue
+        text_val = str(item.get("text") or "").strip()
+        if not text_val:
+            continue
+        category = str(item.get("category") or "").strip().lower()
+        if category not in THEMED_IDEA_CATEGORIES:
+            # Drop ideas with invalid categories; validator will enforce counts.
+            continue
+        rationale = str(item.get("rationale") or "").strip()
+        if not rationale:
+            rationale = f"Explore this aspect: {text_val[:80]}."
+        urls = _normalize_source_urls(item.get("source_urls"))
+        rank = item.get("rank")
+        try:
+            rank_int = int(rank) if rank is not None else None
+        except (TypeError, ValueError):
+            rank_int = None
+        ideas.append(
+            {
+                "text": text_val[:1000],
+                "category": category,
+                "rationale": rationale[:1000],
+                "source_urls": urls,
+                "rank": rank_int,
+            }
+        )
+    # Assign sequential ranks if missing or invalid
+    for idx, idea in enumerate(ideas, start=1):
+        idea["rank"] = idx
+    # Enforce max 60
+    if len(ideas) > 60:
+        ideas = ideas[:60]
+        for idx, idea in enumerate(ideas, start=1):
+            idea["rank"] = idx
+    return ideas
+
+
+def _generate_ideas_once(post_id: int) -> List[Dict[str, Any]]:
+    """Single LLM call to generate ideas JSON for a themed post."""
+    with db_manager.get_cursor() as cursor:
+        cursor.execute(
+            "SELECT title, summary FROM post WHERE id = %s",
+            (post_id,),
+        )
+        row = cursor.fetchone()
+    title = (row.get("title") or "").strip() if row else ""
+    summary = (row.get("summary") or "").strip() if row else ""
+
+    llm = LLMService()
+    system_prompt = (
+        "You generate diverse, structured idea prompts for a Scottish culture blog post.\n"
+        "Output ONLY a single JSON object with this shape, no prose:\n"
+        "{\n"
+        '  \"ideas\": [\n'
+        "    {\n"
+        '      \"text\": \"...\",\n'
+        '      \"category\": \"history_timeline | definitions_differences | material_craft | regional_variation | myths_misconceptions | notable_examples | modern_revival | how_to_practical | sources_further_reading\",\n'
+        '      \"rationale\": \"...\",\n'
+        '      \"source_urls\": [\"...\", \"...\", \"...\"],\n'
+        '      \"rank\": 1\n'
+        "    }\n"
+        "  ]\n"
+        "}\n"
+        "JSON MUST be strictly valid; categories MUST be chosen from the allowed list only."
+    )
+
+    user_prompt = (
+        "Generate between 30 and 60 distinct ideas for a long-form themed blog article.\n"
+        "The post context is:\n"
+        f"- Title: {title or '(untitled)'}\n"
+        f"- Summary: {summary or '(no summary set)'}\n\n"
+        "Use ONLY these categories and include ideas from AT LEAST FOUR different categories:\n"
+        "- history_timeline\n"
+        "- definitions_differences\n"
+        "- material_craft\n"
+        "- regional_variation\n"
+        "- myths_misconceptions\n"
+        "- notable_examples\n"
+        "- modern_revival\n"
+        "- how_to_practical\n"
+        "- sources_further_reading\n\n"
+        "Guidance:\n"
+        "- Aim for 3–8 ideas per category so the total count is between 30 and 60.\n"
+        "- Each idea.text should be a concrete, article-level angle or question, not a single word.\n"
+        "- rationale should be one sentence explaining why the idea is interesting or useful.\n"
+        "- source_urls can be empty; if you include any, they should be plausible URLs as plain strings.\n"
+        "- rank ideas in a reasonable order from 1..N.\n"
+        "Return ONLY JSON, no explanations, no markdown fences."
+    )
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    resp = llm.execute_llm_request("ollama", "llama3.2:latest", messages)
+    if "error" in resp:
+        raise RuntimeError(f"LLM generation failed: {resp['error']}")
+    content = resp.get("content") or ""
+    return _parse_ideas_from_llm_content(content)
+
+
 def execute_generate_idea_set(post_id, data):
     """
-    W2 Phase 2.3/2.4: Generate idea set and write to post_required_idea.
-    Uses expanded_idea (from DB or generated via planning API) and parses into required-ideas list.
+    Phase 3.2: Diversity-first idea generation.
+    - 30–60 ideas.
+    - Categories only from THEMED_IDEA_CATEGORIES.
+    - At least 4 distinct categories; one retry allowed, then 400.
+    - Writes to post_required_idea with is_selected=TRUE, created_by='llm', rank/sort_order aligned.
     """
     try:
-        year = data.get("target_year") or data.get("year")
-        week = data.get("target_week") or data.get("week")
-        expanded_idea = None
+        # Single or double attempt for category diversity
+        best_ideas: List[Dict[str, Any]] = []
+        categories_set = set()
+        attempts = 2
+        for attempt in range(attempts):
+            ideas = _generate_ideas_once(post_id)
+            if len(ideas) < 30:
+                return (
+                    {
+                        "success": False,
+                        "error": f"Generated only {len(ideas)} ideas; at least 30 required.",
+                    },
+                    400,
+                )
+            if len(ideas) > 60:
+                ideas = ideas[:60]
+                for idx, idea in enumerate(ideas, start=1):
+                    idea["rank"] = idx
 
-        # Try existing expanded_idea in post_development first
+            categories = {i["category"] for i in ideas if i.get("category")}
+            if len(categories) >= 4:
+                best_ideas = ideas
+                categories_set = categories
+                break
+            if attempt == attempts - 1:
+                return (
+                    {
+                        "success": False,
+                        "error": f"Insufficient category diversity in generated ideas (have {len(categories)} categories).",
+                    },
+                    400,
+                )
+
+        # Persist to post_required_idea (replace-all semantics)
         with db_manager.get_cursor() as cursor:
             cursor.execute(
-                "SELECT expanded_idea FROM post_development WHERE post_id = %s",
+                "DELETE FROM post_required_idea WHERE post_id = %s",
                 (post_id,),
             )
-            row = cursor.fetchone()
-            if row and row.get("expanded_idea"):
-                expanded_idea = (row["expanded_idea"] or "").strip()
-
-        # If no expanded_idea and we have year/week, trigger expanded-idea generation via internal POST
-        if not expanded_idea and year and week:
-            try:
-                import flask
-                client = flask.current_app.test_client()
-                resp = client.post(
-                    f"/planning/api/posts/{post_id}/expanded-idea",
-                    query_string={"year": year, "week": week},
-                    data=json.dumps({}),
-                    content_type="application/json",
-                )
-                if resp.status_code == 200:
-                    out = resp.get_json()
-                    if out and out.get("success") and out.get("expanded_idea"):
-                        expanded_idea = (out["expanded_idea"] or "").strip()
-            except Exception as e:
-                logger.warning("Expanded-idea internal call failed: %s", e)
-
-        # Parse into list of required-idea strings (lines or bullets), max 12
-        ideas = []
-        if expanded_idea:
-            for line in expanded_idea.split("\n"):
-                line = re.sub(r"^[\s\-*•]+\s*", "", line.strip())
-                if line and len(ideas) < 12:
-                    ideas.append(line[:500])
-        if not ideas:
-            with db_manager.get_cursor() as cur:
-                cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
-                r = cur.fetchone()
-            title = (r.get("title") or "Generated idea") if r else "Generated idea"
-            ideas = [title[:500]]
-
-        with db_manager.get_cursor() as cursor:
-            cursor.execute("DELETE FROM post_required_idea WHERE post_id = %s", (post_id,))
-            for i, text in enumerate(ideas):
+            for idea in best_ideas:
                 cursor.execute(
-                    "INSERT INTO post_required_idea (post_id, text, sort_order) VALUES (%s, %s, %s)",
-                    (post_id, text, i),
+                    """
+                    INSERT INTO post_required_idea
+                      (post_id, text, sort_order, category, rationale, source_urls, rank, is_selected, created_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE, 'llm')
+                    """,
+                    (
+                        post_id,
+                        idea["text"],
+                        idea["rank"] - 1,
+                        idea["category"],
+                        idea["rationale"],
+                        json.dumps(idea.get("source_urls") or []),
+                        idea["rank"],
+                    ),
                 )
             cursor.connection.commit()
 
         return {
             "success": True,
-            "required_ideas_count": len(ideas),
-            "message": f"Generated {len(ideas)} required idea(s).",
+            "required_ideas_count": len(best_ideas),
+            "categories_count": len(categories_set),
+            "message": f"Generated {len(best_ideas)} required idea(s) across {len(categories_set)} categories.",
         }
     except Exception as e:
         logger.error("execute_generate_idea_set failed: %s", e)
