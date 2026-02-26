@@ -854,6 +854,62 @@ def _get_substage_modes(post_id: int):
         return {}
 
 
+@bp.route('/api/posts/<int:post_id>/substage-modes', methods=['GET'])
+def api_get_substage_modes(post_id):
+    """W2 Phase 2.2: Get per-post per-substage modes (manual/assisted/auto)."""
+    try:
+        modes = _get_substage_modes(post_id)
+        return jsonify({"success": True, "substage_modes": modes}), 200
+    except Exception as e:
+        logger.error(f"Error getting substage modes for post {post_id}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route('/api/posts/<int:post_id>/substage-modes', methods=['PATCH'])
+def api_patch_substage_mode(post_id):
+    """W2 Phase 2.2: Set one substage mode. Body: { \"key\": \"ideas.generate_idea_set\", \"mode\": \"manual\"|\"assisted\"|\"auto\" }."""
+    try:
+        from utils.posts.canonical_substages import SUBSTAGE_MODES
+        data = request.get_json() or {}
+        key = (data.get("key") or "").strip()
+        mode = (data.get("mode") or "").strip().lower()
+        if not key:
+            return jsonify({"success": False, "error": "key is required"}), 400
+        if mode not in SUBSTAGE_MODES:
+            return jsonify({"success": False, "error": f"mode must be one of {list(SUBSTAGE_MODES)}"}), 400
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("SELECT extra_settings FROM post WHERE id = %s", (post_id,))
+            row = cursor.fetchone()
+        if not row:
+            return jsonify({"success": False, "error": "Post not found"}), 404
+        import json
+        extra = row.get("extra_settings") if isinstance(row, dict) else getattr(row, "extra_settings", None)
+        if extra is None:
+            extra = {}
+        if isinstance(extra, str):
+            try:
+                extra = json.loads(extra) if extra else {}
+            except Exception:
+                extra = {}
+        if not isinstance(extra, dict):
+            extra = {}
+        extra = dict(extra)
+        if "substage_modes" not in extra or not isinstance(extra["substage_modes"], dict):
+            extra["substage_modes"] = {}
+        extra["substage_modes"] = dict(extra["substage_modes"])
+        extra["substage_modes"][key] = mode
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                "UPDATE post SET extra_settings = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                (json.dumps(extra), post_id),
+            )
+            cursor.connection.commit()
+        return jsonify({"success": True, "substage_modes": extra["substage_modes"]}), 200
+    except Exception as e:
+        logger.error(f"Error patching substage mode for post {post_id}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @bp.route('/api/posts/<int:post_id>/canonical-substages', methods=['GET'])
 def api_get_canonical_substages(post_id):
     """W2 Phase 1/2.1: Canonical substage registry for post. Returns current_mode, can_execute. Read-only; no execution."""

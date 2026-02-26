@@ -554,6 +554,56 @@
             
             document.getElementById('template-route').textContent = config.route || '-';
 
+            // W2 Phase 2.2: Substage mode (when from canonical registry)
+            const modeSection = document.getElementById('substage-mode-section');
+            const modeSelect = document.getElementById('substage-mode-select');
+            const minStageEl = document.getElementById('substage-min-stage');
+            const canExecuteEl = document.getElementById('substage-can-execute');
+            if (this.canonicalSubstages && config.fromRegistry && config.id && modeSection && minStageEl && canExecuteEl) {
+                const canonicalStage = (stage === 'planning' && (substage === 'ideas' || substage === 'generate-idea-set')) ? 'ideas' : stage;
+                const substageId = (config.id || substage || '').replace(/-/g, '_');
+                const modeKey = `${canonicalStage}.${substageId}`;
+                let subInfo = null;
+                const stages = this.canonicalSubstages.stages || [];
+                for (const s of stages) {
+                    if (s.stage !== canonicalStage) continue;
+                    const sub = (s.substages || []).find(x => (x.id || x.substage_key) === substageId);
+                    if (sub) { subInfo = sub; break; }
+                }
+                if (subInfo) {
+                    modeSection.style.display = 'block';
+                    minStageEl.textContent = subInfo.min_stage || '-';
+                    canExecuteEl.textContent = subInfo.can_execute ? 'Yes' : 'No' + (subInfo.can_execute ? '' : ' (stage gate)');
+                    if (modeSelect) {
+                        modeSelect.value = subInfo.current_mode || 'manual';
+                        modeSelect.onchange = () => {
+                            const newMode = modeSelect.value;
+                            if (!this.currentPostId) return;
+                            fetch(`/api/posts/${this.currentPostId}/substage-modes`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ key: modeKey, mode: newMode })
+                            }).then(r => r.json()).then(data => {
+                                if (data.success && this.canonicalSubstages) {
+                                    if (!this.canonicalSubstages._modes) this.canonicalSubstages._modes = {};
+                                    this.canonicalSubstages._modes[modeKey] = newMode;
+                                    for (const s of (this.canonicalSubstages.stages || [])) {
+                                        for (const sub of (s.substages || [])) {
+                                            const k = `${s.stage}.${(sub.id || sub.substage_key)}`;
+                                            if (k === modeKey) sub.current_mode = newMode;
+                                        }
+                                    }
+                                }
+                            }).catch(err => console.warn('Failed to update substage mode', err));
+                        };
+                    }
+                } else {
+                    if (modeSection) modeSection.style.display = 'none';
+                }
+            } else {
+                if (modeSection) modeSection.style.display = 'none';
+            }
+
             // Action Buttons
             const actionSection = document.getElementById('action-buttons-section');
             const actionList = document.getElementById('action-buttons-list');
