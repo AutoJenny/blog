@@ -61,6 +61,8 @@
             <div id="pipeline-jump-menu" class="pipeline-jump-menu" role="menu" aria-hidden="true"></div>
         </div>
     </div>
+    <!-- W2 Option B: Viewing line (page context; shows mismatch with pipeline cursor when different) -->
+    <div id="pipeline-viewing-line" class="pipeline-viewing-line"></div>
     {% endif %}
     <!-- Post Details Line - ALWAYS DISPLAYED -->
     <div class="post-details-line">
@@ -197,9 +199,9 @@
     {% endif %}
     
     <!-- Sub-stages with Subtitle and Tabs -->
-    <!-- CRITICAL: Hide sub-stages navbar in calendar week view -->
+    <!-- W2 Option B: Legacy substage row hidden on post pages; pipeline strip is the only substage nav -->
     {% if post_type is defined %}
-    <div class="sub-stages-line" id="sub-stages-line">
+    <div class="sub-stages-line" id="sub-stages-line"{% if post_id is defined and post_id %} style="display: none;"{% endif %}>
         <!-- Sub-stage Navigation -->
         <div class="sub-stages" id="sub-stages">
             <!-- Calendar sub-stages - DEPRECATED: Calendar stage has been removed -->

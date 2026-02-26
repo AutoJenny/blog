@@ -1,0 +1,3 @@
+Placeholder for W2_PIPELINE_NAV_OPTIONB_MISMATCH.png
+Capture: Case where pipeline cursor stage ≠ viewing context (e.g. workflow_stage=structure but on Ideas page), showing "Pipeline cursor: Structure → Topic brainstorming" and "Viewing: Planning → Ideas".
+Replace this file with a PNG screenshot named W2_PIPELINE_NAV_OPTIONB_MISMATCH.png when available.

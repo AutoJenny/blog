@@ -337,6 +337,74 @@ class BlogPipelineHeader {
         }
 
         strip.style.display = 'flex';
+        this.updateViewingLine(data);
+    }
+
+    /**
+     * W2 Option B: Derive viewing context from current URL for the Viewing line.
+     * Returns { label: "Planning → Ideas", stage: "ideas" } for mismatch check.
+     */
+    getViewingContextFromPath() {
+        const path = window.location.pathname || '';
+        // Post calendar routes: /planning/posts/<id>/calendar/<segment>
+        const calendarMatch = path.match(/\/calendar\/([^/]+)/);
+        if (calendarMatch) {
+            const seg = calendarMatch[1];
+            if (seg === 'ideas') return { label: 'Planning → Ideas', stage: 'ideas' };
+            if (seg === 'structure') return { label: 'Planning → Structure', stage: 'structure' };
+            if (seg === 'titling') return { label: 'Planning → Titling', stage: 'titling' };
+            if (seg === 'metadata') return { label: 'Planning → Metadata', stage: 'metadata' };
+            if (seg === 'authoring') return { label: 'Authoring', stage: 'authoring' };
+            if (seg === 'imaging') return { label: 'Imaging', stage: 'imaging' };
+            if (seg === 'review') return { label: 'Review', stage: 'review' };
+        }
+        // Concept routes: /planning/posts/<id>/concept/<segment>
+        const conceptMatch = path.match(/\/concept\/([^/]+)/);
+        if (conceptMatch) {
+            const seg = conceptMatch[1];
+            if (seg === 'brainstorm') return { label: 'Planning → Topic Brainstorming', stage: 'structure' };
+            if (seg === 'section-structure' || seg === 'section_structure') return { label: 'Planning → Section Structure', stage: 'structure' };
+            if (seg === 'topic-allocation' || seg === 'topic_allocation') return { label: 'Planning → Section Ideas', stage: 'structure' };
+            if (seg === 'titling') return { label: 'Planning → Section Titling', stage: 'structure' };
+        }
+        // Authoring, imaging, header routes
+        if (path.includes('/authoring/')) return { label: 'Authoring', stage: 'authoring' };
+        if (path.includes('/imaging/')) return { label: 'Imaging', stage: 'imaging' };
+        if (path.includes('/header/') || path.includes('title-summary') || path.includes('seo-meta') || path.includes('header-image')) return { label: 'Review', stage: 'review' };
+        return { label: '', stage: null };
+    }
+
+    /**
+     * W2 Option B: Update the Viewing line. If viewing context ≠ pipeline current stage, show both.
+     */
+    updateViewingLine(data) {
+        const el = document.getElementById('pipeline-viewing-line');
+        if (!el) return;
+        const viewing = this.getViewingContextFromPath();
+        if (!viewing.label) {
+            el.textContent = '';
+            el.style.display = 'none';
+            return;
+        }
+        const current = data && data.current || null;
+        const substages = (data && data.substages) || [];
+        const stageTitle = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+        const findSubstage = (stage, substage) => substages.find(s => s.stage === stage && s.substage === substage);
+
+        const cursorStage = current ? current.stage : null;
+        const viewingStage = viewing.stage;
+        const mismatch = cursorStage && viewingStage && cursorStage !== viewingStage;
+
+        let html = '';
+        if (mismatch && current) {
+            const sub = findSubstage(current.stage, current.substage);
+            const label = sub ? sub.label : current.substage;
+            html = `Pipeline cursor: ${stageTitle(current.stage)} → ${label}<br>Viewing: ${viewing.label}`;
+        } else {
+            html = `Viewing: ${viewing.label}`;
+        }
+        el.innerHTML = html;
+        el.style.display = '';
     }
 
     async updateEarlyStageIndicator() {

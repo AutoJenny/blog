@@ -186,6 +186,21 @@
     color: #64748b;
 }
 
+/* W2 Option B: Viewing line under pipeline strip */
+.pipeline-viewing-line {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.pipeline-viewing-line br {
+    display: block;
+    content: "";
+    margin-top: 0.2rem;
+}
+
 /* Main Stage Navigation */
 .main-stages-line {
     display: flex;
