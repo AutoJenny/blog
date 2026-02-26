@@ -62,7 +62,7 @@
           "available_now": true,
           "can_execute": true,
           "current_mode": "manual",
-          "description": "Produce 6\u20137 sections from selected ideas.",
+          "description": "Produce 6–7 sections from selected ideas.",
           "id": "cluster_into_sections",
           "label": "Cluster into Sections",
           "min_stage": "ideas",

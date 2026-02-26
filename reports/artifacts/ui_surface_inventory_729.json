@@ -1,0 +1,33 @@
+{
+  "capture_date": "2026-02-23",
+  "source": "Code and template inspection + API responses for post 729",
+  "pages_checked": [
+    "/planning/posts/729/calendar/ideas",
+    "Substage-management modal (post_id=729, post_type=themed)",
+    "One-click header entrypoint on ideas page"
+  ],
+  "calendar_ideas": {
+    "current_url": "/planning/posts/729/calendar/ideas",
+    "legacy_substage_row_exists_visible": false,
+    "legacy_substage_row_notes": "sub-stages-line has style display:none when post_id is defined (blog_pipeline_header.html)",
+    "pipeline_strip_exists": true,
+    "pipeline_strip_notes": "pipeline-nav-strip in header when post_id defined",
+    "viewing_line_exists": true,
+    "viewing_line_notes": "pipeline-viewing-line under strip",
+    "page_local_next_or_run_besides_header_strip": false,
+    "page_local_next_notes": "workflow-navigation-container is hidden when post_id (display:none in ideas.html)",
+    "theme_shown_more_than_once": false,
+    "theme_notes": "Theme only in header (Theme | <title>); no in-content theme block on ideas body"
+  },
+  "substage_modal": {
+    "opens_via": "Post Type Settings / substage-management with post_id=729",
+    "shows_canonical_modes": true,
+    "no_configuration_found_for_ideas": false,
+    "notes": "Modal reads from GET /api/posts/<id>/canonical-substages; Ideas resolves to generate_idea_set"
+  },
+  "redundancy_summary": {
+    "duplicate_theme": false,
+    "duplicate_next_current": false,
+    "legacy_row_visible_on_post_pages": false
+  }
+}
