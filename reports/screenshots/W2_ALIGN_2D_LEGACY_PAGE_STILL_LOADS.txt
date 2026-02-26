@@ -1,0 +1,6 @@
+Capture instruction for W2_ALIGN_2D_LEGACY_PAGE_STILL_LOADS.png
+
+1. Open http://localhost:5000/planning/posts/729/concept/section-structure (excluded legacy URL).
+2. Confirm the page loads (HTTP 200) and renders non-empty content.
+3. Screenshot the page to prove it is still reachable.
+4. Save as reports/screenshots/W2_ALIGN_2D_LEGACY_PAGE_STILL_LOADS.png

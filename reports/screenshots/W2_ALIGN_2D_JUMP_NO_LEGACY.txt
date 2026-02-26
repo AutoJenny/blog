@@ -1,0 +1,6 @@
+Capture instruction for W2_ALIGN_2D_JUMP_NO_LEGACY.png
+
+1. Open http://localhost:5000/planning/posts/729/calendar/ideas (or any post 729 calendar page).
+2. In the header, open the "Jump" dropdown.
+3. Screenshot the dropdown. It must show only the planned substages for structure: "Cluster into Sections" and "Edit section plan". No legacy items: Topic brainstorming, Section structure, Section ideas, Section titling.
+4. Save as reports/screenshots/W2_ALIGN_2D_JUMP_NO_LEGACY.png
