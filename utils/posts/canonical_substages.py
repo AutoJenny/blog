@@ -3,10 +3,15 @@ Canonical authoring substage registry (Instruction Set 16 / W2 Phase 1).
 Single server-side authority for substages aligned to:
   metadata → ideas → structure → titling → authoring → imaging → review
 
-Registry-only. No runner functions. No execution.
+Phase 2.1: Adds canonical exec registry (handler key, mode_default) and API fields
+current_mode, can_execute. No execution in this module.
 """
 
 from typing import List, Dict, Any, Tuple, Optional
+
+# Valid substage modes (Phase 2.2)
+SUBSTAGE_MODES = ("manual", "assisted", "auto")
+DEFAULT_SUBSTAGE_MODE = "manual"
 
 CANONICAL_STAGE_ORDER = [
     "metadata",
@@ -175,17 +180,35 @@ CANONICAL_SUBSTAGES: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
+# Phase 2.1: Canonical execution registry. Key: (stage, substage_id). Value: handler name (used by execute endpoint).
+CANONICAL_EXEC_REGISTRY: Dict[Tuple[str, str], Dict[str, Any]] = {
+    ("ideas", "generate_idea_set"): {"handler": "generate_idea_set", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("structure", "topic_brainstorming"): {"handler": "topic_brainstorming", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("structure", "section_structure"): {"handler": "section_structure", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("structure", "topic_allocation"): {"handler": "topic_allocation", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("structure", "section_titling"): {"handler": "section_titling", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("authoring", "author_first_drafts"): {"handler": "author_first_drafts", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("authoring", "image_concepts"): {"handler": "image_concepts", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("authoring", "image_prompts"): {"handler": "image_prompts", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("authoring", "image_captions"): {"handler": "image_captions", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("imaging", "image_generation"): {"handler": "image_generation", "mode_default": DEFAULT_SUBSTAGE_MODE},
+    ("imaging", "optimise"): {"handler": "optimise", "mode_default": DEFAULT_SUBSTAGE_MODE},
+}
+
 
 def get_canonical_substages_for_post(
     post_id: int,
     post_type: str,
     current_stage: str,
     stage_index_fn,
+    substage_modes: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """
     Build canonical substages response for a post. Filters by post_type, sets available_now by min_stage.
+    Phase 2.1: Adds substage_key, label, current_mode, can_execute per substage.
     No execution. Registry-only.
     """
+    modes = substage_modes if isinstance(substage_modes, dict) else {}
     stages_out = []
     for stage in CANONICAL_STAGE_ORDER:
         substages_raw = CANONICAL_SUBSTAGES.get(stage, [])
@@ -197,12 +220,21 @@ def get_canonical_substages_for_post(
                 continue
             min_stage = s.get("min_stage") or stage
             available_now = current_idx >= stage_index_fn(min_stage)
+            substage_key = s["id"]
+            mode_key = f"{stage}.{substage_key}"
+            current_mode = modes.get(mode_key) or DEFAULT_SUBSTAGE_MODE
+            if current_mode not in SUBSTAGE_MODES:
+                current_mode = DEFAULT_SUBSTAGE_MODE
             substages_out.append({
                 "id": s["id"],
+                "substage_key": substage_key,
                 "title": s["title"],
+                "label": s["title"],
                 "description": s.get("description", ""),
                 "min_stage": min_stage,
                 "available_now": available_now,
+                "can_execute": available_now,
+                "current_mode": current_mode,
                 "nav_key": s.get("nav_key"),
                 "supports_web_research": s.get("supports_web_research", False),
             })
@@ -218,6 +250,22 @@ def get_canonical_substages_for_post(
         "current_stage": current_stage,
         "stages": stages_out,
     }
+
+
+def get_canonical_exec(stage: str, substage_key: str) -> Optional[Dict[str, Any]]:
+    """
+    Look up execution registry for (stage, substage_key). Returns handler info or None.
+    Accepts canonical stage + id (e.g. ideas, generate_idea_set) or legacy (e.g. planning, ideas).
+    """
+    key_norm = (substage_key or "").replace("-", "_").strip()
+    # Direct
+    entry = CANONICAL_EXEC_REGISTRY.get((stage, key_norm)) or CANONICAL_EXEC_REGISTRY.get((stage, substage_key))
+    if entry:
+        return entry
+    # Legacy: planning + ideas -> ideas.generate_idea_set
+    if stage == "planning" and (substage_key == "ideas" or key_norm == "ideas"):
+        return CANONICAL_EXEC_REGISTRY.get(("ideas", "generate_idea_set"))
+    return None
 
 
 def find_substage_by_nav(stage: str, substage_key: str) -> Optional[Tuple[str, Dict[str, Any]]]:

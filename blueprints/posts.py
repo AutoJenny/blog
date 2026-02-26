@@ -829,9 +829,34 @@ def api_advance_workflow_stage(post_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+def _get_substage_modes(post_id: int):
+    """Return post.extra_settings.substage_modes dict (Phase 2.2)."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("SELECT extra_settings FROM post WHERE id = %s", (post_id,))
+            row = cursor.fetchone()
+        if not row:
+            return {}
+        extra = row.get("extra_settings") if isinstance(row, dict) else getattr(row, "extra_settings", None)
+        if extra is None:
+            return {}
+        if isinstance(extra, str):
+            import json
+            try:
+                extra = json.loads(extra) if extra else {}
+            except Exception:
+                return {}
+        if not isinstance(extra, dict):
+            return {}
+        modes = extra.get("substage_modes")
+        return modes if isinstance(modes, dict) else {}
+    except Exception:
+        return {}
+
+
 @bp.route('/api/posts/<int:post_id>/canonical-substages', methods=['GET'])
 def api_get_canonical_substages(post_id):
-    """W2 Phase 1: Canonical substage registry for post. Read-only; no execution."""
+    """W2 Phase 1/2.1: Canonical substage registry for post. Returns current_mode, can_execute. Read-only; no execution."""
     try:
         from utils.taxonomy_helpers import get_post_type
         from utils.posts.early_stage import get_canonical_stage
@@ -840,11 +865,13 @@ def api_get_canonical_substages(post_id):
 
         post_type = get_post_type(post_id)
         current_stage = get_canonical_stage(post_id)
+        substage_modes = _get_substage_modes(post_id)
         payload = get_canonical_substages_for_post(
             post_id=post_id,
             post_type=post_type,
             current_stage=current_stage,
             stage_index_fn=stage_index,
+            substage_modes=substage_modes,
         )
         return jsonify(payload), 200
     except Exception as e:
