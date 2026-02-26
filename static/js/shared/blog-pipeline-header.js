@@ -371,7 +371,7 @@ class BlogPipelineHeader {
         if (path.includes('/authoring/')) return { label: 'Authoring', stage: 'authoring' };
         if (path.includes('/imaging/')) return { label: 'Imaging', stage: 'imaging' };
         if (path.includes('/header/') || path.includes('title-summary') || path.includes('seo-meta') || path.includes('header-image')) return { label: 'Review', stage: 'review' };
-        return { label: '', stage: null };
+        return { label: '(unknown)', stage: null };
     }
 
     /**
@@ -396,12 +396,13 @@ class BlogPipelineHeader {
         const mismatch = cursorStage && viewingStage && cursorStage !== viewingStage;
 
         let html = '';
+        const displayViewing = viewing.label === '(unknown)' ? 'Viewing: (unknown)' : `Viewing: ${viewing.label}`;
         if (mismatch && current) {
             const sub = findSubstage(current.stage, current.substage);
             const label = sub ? sub.label : current.substage;
-            html = `Pipeline cursor: ${stageTitle(current.stage)} → ${label}<br>Viewing: ${viewing.label}`;
+            html = `Pipeline cursor: ${stageTitle(current.stage)} → ${label}<br>${displayViewing}`;
         } else {
-            html = `Viewing: ${viewing.label}`;
+            html = displayViewing;
         }
         el.innerHTML = html;
         el.style.display = '';
