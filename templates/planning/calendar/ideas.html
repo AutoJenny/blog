@@ -77,28 +77,6 @@
                 <!-- Status messages will appear here -->
             </div>
             
-            <!-- Pipeline Step Panel (W2 N3: explicit guided panel) -->
-            <div id="ideas-pipeline-panel" style="display: none;">
-                <div class="ideas-pipeline-current" id="ideas-pipeline-current"></div>
-                <div class="ideas-pipeline-next" id="ideas-pipeline-next">
-                    <button type="button"
-                            class="btn btn-secondary"
-                            id="ideas-pipeline-next-btn">
-                    </button>
-                    <div class="ideas-pipeline-next-reason" id="ideas-pipeline-next-reason"></div>
-                </div>
-            </div>
-
-            <!-- Theme Display -->
-            <div id="theme-display" class="theme-display" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; display: none;">
-                <div style="display: flex; align-items: center; gap: 0.75rem; color: #f1f5f9;">
-                    <i class="fas fa-palette" style="color: #f97316; font-size: 1.25rem;"></i>
-                    <strong style="font-size: 1.5rem;">Theme:</strong>
-                    <span id="theme-title-display" style="color: #f97316; font-weight: 600; font-size: 1.5rem;"></span>
-                </div>
-                <div id="theme-description-display" style="color: #94a3b8; font-size: 1rem; margin-top: 0.75rem; display: none;"></div>
-            </div>
-            
             <!-- Post Metadata Editor -->
             <div class="post-metadata-editor" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
                 <h4 style="color: #f1f5f9; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -143,6 +121,7 @@
                                     Selected: <span id="required-ideas-selected-count">0</span> (min 10),
                                     Categories: <span id="required-ideas-category-count">0</span> (min 3)
                                 </small>
+                                <p style="color: #64748b; font-size: 0.75rem; margin: 0.25rem 0 0 0;">To advance to Structure, you need at least: 10 selected ideas, 3 categories, 6 sections.</p>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <button type="button" 
@@ -752,72 +731,6 @@ function getIdeaText(idea) {
     return String(idea);
 }
 
-// W2 N3: Update Ideas page pipeline panel using shared pipeline-state (no extra fetch)
-function updateIdeasPipelinePanel(pipelineState) {
-    if (!pipelineState || !pipelineState.substages) return;
-    const panel = document.getElementById('ideas-pipeline-panel');
-    const currentEl = document.getElementById('ideas-pipeline-current');
-    const nextContainer = document.getElementById('ideas-pipeline-next');
-    const nextBtn = document.getElementById('ideas-pipeline-next-btn');
-    const nextReasonEl = document.getElementById('ideas-pipeline-next-reason');
-    if (!panel || !currentEl || !nextContainer || !nextBtn || !nextReasonEl) return;
-
-    const substages = pipelineState.substages || [];
-    const reasons = pipelineState.reasons_blocked || {};
-    const current = pipelineState.current || null;
-    const next = pipelineState.next || null;
-
-    const stageTitle = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
-    const findSubstage = (stage, substage) => substages.find(s => s.stage === stage && s.substage === substage);
-
-    // Current step
-    if (current) {
-        const sub = findSubstage(current.stage, current.substage);
-        const label = sub ? sub.label : current.substage;
-        currentEl.textContent = `Current step: ${stageTitle(current.stage)} \u2192 ${label}`;
-    } else {
-        currentEl.textContent = 'Current step: (stage complete)';
-    }
-
-    // Next step
-    if (!next) {
-        nextContainer.style.display = 'none';
-    } else {
-        nextContainer.style.display = 'flex';
-        const sub = findSubstage(next.stage, next.substage);
-        const label = sub ? sub.label : next.substage;
-        const nextKey = `${next.stage}.${next.substage}`;
-        const blockedReason = reasons[nextKey];
-        nextBtn.textContent = `Next step: ${stageTitle(next.stage)} \u2192 ${label}`;
-        nextBtn.disabled = !!blockedReason;
-        nextReasonEl.textContent = blockedReason || '';
-
-        nextBtn.onclick = () => {
-            if (nextBtn.disabled) return;
-            const navSub = findSubstage(next.stage, next.substage);
-            if (!navSub || !navSub.nav_url) return;
-            let url = navSub.nav_url;
-            const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
-            if (weekContext && weekContext.year && weekContext.week) {
-                url = url.includes('?')
-                    ? `${url}&year=${weekContext.year}&week=${weekContext.week}`
-                    : `${url}?year=${weekContext.year}&week=${weekContext.week}`;
-            }
-            window.location.href = url;
-        };
-    }
-
-    panel.style.display = 'block';
-}
-
-// Wire Ideas page pipeline panel to shared pipeline-state
-document.addEventListener('blog-pipeline-state-ready', function (e) {
-    updateIdeasPipelinePanel(e.detail);
-});
-if (window.BlogPipelineState) {
-    updateIdeasPipelinePanel(window.BlogPipelineState);
-}
-
 // W2 Phase 2.4: Run Generate Idea Set via unified execute endpoint
 async function runGenerateIdeaSet() {
     const btn = document.getElementById('generate-idea-set-btn');
@@ -867,22 +780,6 @@ async function loadPostMetadata() {
         const expandedIdeaSection = document.getElementById('expanded-idea-section');
         if (!expandedIdeaSection || expandedIdeaSection.style.display === 'none') {
             return;
-        }
-        
-        // Display theme if available
-        if (selectedTheme && selectedTheme.theme_title) {
-            const themeDisplay = document.getElementById('theme-display');
-            const themeTitleDisplay = document.getElementById('theme-title-display');
-            const themeDescDisplay = document.getElementById('theme-description-display');
-            
-            if (themeDisplay && themeTitleDisplay) {
-                themeDisplay.style.display = 'block';
-                themeTitleDisplay.textContent = selectedTheme.theme_title;
-                if (selectedTheme.theme_description && themeDescDisplay) {
-                    themeDescDisplay.textContent = selectedTheme.theme_description;
-                    themeDescDisplay.style.display = 'block';
-                }
-            }
         }
         
         // Load post data first
