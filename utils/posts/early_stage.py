@@ -2,39 +2,27 @@
 Early development round stage model (Instruction Set 8).
 Explicit workflow_stage column on post. No silent auto-advance.
 Stage only advances when user explicitly calls advance_post_stage (e.g. "Advance Stage" button).
+W2 Phase 2: Stage ordering from utils.posts.stage_order only.
 """
 
 import logging
 from typing import Tuple, Optional
 
 from config.database import db_manager
+from utils.posts.stage_order import STAGE_ORDER, stage_index
 
 logger = logging.getLogger(__name__)
 
-EARLY_STAGES = [
-    "metadata",
-    "ideas",
-    "structure",
-    "titling",
-    "authoring",
-    "imaging",
-    "review",
-]
 
-
-def _stage_index(stage: str) -> int:
-    try:
-        return EARLY_STAGES.index(stage)
-    except ValueError:
-        return -1
-
-
-def get_early_stage(post_id: int) -> str:
-    """Read workflow_stage from post column. Fallback to extra_settings then 'metadata'."""
+def get_canonical_stage(post_id: int) -> str:
+    """
+    Read authoring stage from post.workflow_stage ONLY.
+    No fallback. No inference. Single source of truth (W2 Phase 1).
+    """
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute(
-                "SELECT workflow_stage, extra_settings FROM post WHERE id = %s",
+                "SELECT workflow_stage FROM post WHERE id = %s",
                 (post_id,),
             )
             row = cursor.fetchone()
@@ -43,12 +31,14 @@ def get_early_stage(post_id: int) -> str:
     if not row:
         return "metadata"
     col = getattr(row, "workflow_stage", None) or (row.get("workflow_stage") if isinstance(row, dict) else None)
-    if col and str(col).strip() in EARLY_STAGES:
+    if col and str(col).strip() in STAGE_ORDER:
         return str(col).strip()
-    extra = row.get("extra_settings") if isinstance(row, dict) else getattr(row, "extra_settings", None)
-    if extra and isinstance(extra, dict) and extra.get("workflow_stage") in EARLY_STAGES:
-        return extra["workflow_stage"]
     return "metadata"
+
+
+def get_early_stage(post_id: int) -> str:
+    """Alias for get_canonical_stage. Reads post.workflow_stage only (no fallback)."""
+    return get_canonical_stage(post_id)
 
 
 def _meets_metadata_to_ideas(post_id: int, cursor) -> bool:
@@ -124,14 +114,10 @@ def _condition_met(post_id: int, from_stage: str, cursor) -> Tuple[bool, Optiona
         ok = _meets_metadata_to_ideas(post_id, cursor)
         return (ok, None if ok else "Title and subtitle are required before advancing to Ideas.")
     if from_stage == "ideas":
-        n = _count_required_ideas(post_id, cursor)
-        if n < 3:
-            return (False, "Minimum 3 required ideas not met")
+        # N4: Gated by get_stage_advancement_requirements (10 selected, 3 categories).
         return (True, None)
     if from_stage == "structure":
-        n = _count_sections(post_id, cursor)
-        if n < 3:
-            return (False, "Minimum 3 sections required before advancing to Titling")
+        # N4: Gated by get_stage_advancement_requirements (6 sections).
         return (True, None)
     if from_stage == "titling":
         ok = _all_sections_have_titles(post_id, cursor)
@@ -151,15 +137,20 @@ def advance_post_stage(post_id: int) -> Tuple[bool, Optional[str], Optional[str]
     Advance post to the next stage if condition is met. No skipping.
     Returns (success, error_message, new_stage).
     Does NOT auto-advance; call only from explicit user action (e.g. Advance Stage button).
+    N4: Artefact gates (ideas/structure) enforced via get_stage_advancement_requirements.
     """
     current = get_early_stage(post_id)
-    idx = _stage_index(current)
-    if idx < 0:
-        return (False, f"Invalid current stage: {current}", None)
-    if idx >= len(EARLY_STAGES) - 1:
+    idx = stage_index(current)
+    if idx >= len(STAGE_ORDER) - 1:
         return (False, "Already at final stage", current)
 
-    next_stage = EARLY_STAGES[idx + 1]
+    # N4: Single source of truth for artefact gates (same as pipeline-state).
+    from utils.posts.pipeline_gates import get_stage_advancement_requirements
+    requirements = get_stage_advancement_requirements(post_id)
+    if not requirements.get("can_advance", True):
+        return (False, requirements.get("reason") or "Artefact requirements not met", None)
+
+    next_stage = STAGE_ORDER[idx + 1]
     with db_manager.get_cursor() as cursor:
         met, err = _condition_met(post_id, current, cursor)
         if not met:

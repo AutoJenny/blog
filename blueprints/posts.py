@@ -985,51 +985,26 @@ def api_get_pipeline_state(post_id):
                     "key": key,
                 })
 
-        # Minimal artefact completion checks
-        with db_manager.get_cursor() as cursor:
-            # Required ideas
-            cursor.execute(
-                "SELECT COUNT(*) AS total, "
-                "       COUNT(*) FILTER (WHERE is_selected) AS selected, "
-                "       COUNT(DISTINCT category) FILTER (WHERE is_selected) AS selected_categories "
-                "FROM post_required_idea WHERE post_id = %s",
-                (post_id,),
-            )
-            r = cursor.fetchone() or {}
-            required_total = int(r.get("total", 0)) if isinstance(r, dict) else 0
-            selected_total = int(r.get("selected", 0)) if isinstance(r, dict) else 0
-            selected_categories = int(r.get("selected_categories", 0)) if isinstance(r, dict) else 0
+        # N4: Single source of truth for artefact gates (shared with advance_post_stage).
+        from utils.posts.pipeline_gates import get_stage_advancement_requirements
 
-            # Sections
-            cursor.execute(
-                "SELECT COUNT(*) AS sections FROM post_section WHERE post_id = %s",
-                (post_id,),
-            )
-            r2 = cursor.fetchone() or {}
-            sections_count = int(r2.get("sections", 0)) if isinstance(r2, dict) else 0
+        gate = get_stage_advancement_requirements(post_id)
+        deficits = gate.get("deficits", {})
+        required_total = deficits.get("total_ideas", {}).get("have", 0)
+        selected_total = deficits.get("selected", {}).get("have", 0)
+        selected_categories = deficits.get("categories", {}).get("have", 0)
+        sections_count = deficits.get("sections", {}).get("have", 0)
 
-        # Completion flags for substage-level artefacts
         idea_complete = required_total >= 30
         cluster_complete = sections_count >= 6
 
-        reasons_blocked = {}
-
-        # Key substage keys
         ideas_key = "ideas.generate_idea_set"
         cluster_key = "structure.cluster_into_sections"
-
-        # Reasons for structure.cluster_into_sections (selection + categories + sections)
-        cluster_reason = (
-            f"Need at least 10 selected ideas (have {selected_total}); "
-            f"at least 3 categories (have {selected_categories}); "
-            f"and at least 6 sections (have {sections_count})."
-        )
+        reasons_blocked = {}
+        if gate.get("ideas_reason"):
+            reasons_blocked[ideas_key] = gate["ideas_reason"]
         if selected_total < 10 or selected_categories < 3 or sections_count < 6:
-            reasons_blocked[cluster_key] = cluster_reason
-
-        # ideas.generate_idea_set completion (no execution gate here, only completion definition)
-        if not idea_complete:
-            reasons_blocked[ideas_key] = f"Need at least 30 ideas (have {required_total})."
+            reasons_blocked[cluster_key] = gate.get("cluster_reason", "")
 
         # Determine current and next, anchored to workflow_stage
         current = None
