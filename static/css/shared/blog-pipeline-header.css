@@ -76,6 +76,116 @@
     border: 1px solid #334155;
 }
 
+/* W2 N2: Pipeline strip (Current / Next / Jump) */
+.pipeline-nav-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background: #1e293b;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    font-size: 0.8rem;
+}
+
+.pipeline-current {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.pipeline-next-btn {
+    padding: 0.25rem 0.6rem;
+    background: #3b82f6;
+    border: 1px solid #2563eb;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pipeline-next-btn:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.pipeline-next-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #475569;
+    border-color: #64748b;
+}
+
+.pipeline-jump-wrapper {
+    position: relative;
+}
+
+.pipeline-jump-toggle {
+    padding: 0.25rem 0.6rem;
+    background: #334155;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pipeline-jump-toggle:hover {
+    background: #475569;
+}
+
+.pipeline-jump-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.25rem;
+    min-width: 220px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    padding: 0.25rem 0;
+}
+
+.pipeline-jump-menu.pipeline-jump-menu-open {
+    display: block;
+}
+
+.pipeline-jump-item {
+    display: block;
+    width: 100%;
+    padding: 0.35rem 0.75rem;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.pipeline-jump-item:hover:not(.pipeline-jump-item-disabled) {
+    background: #334155;
+}
+
+.pipeline-jump-item-current {
+    background: rgba(59, 130, 246, 0.2);
+    font-weight: 600;
+}
+
+.pipeline-jump-item-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    color: #64748b;
+}
+
 /* Main Stage Navigation */
 .main-stages-line {
     display: flex;

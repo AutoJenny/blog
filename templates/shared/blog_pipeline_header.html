@@ -51,6 +51,17 @@
         <ul id="playbook-tasks" class="playbook-tasks" style="margin: 0.25rem 0 0 1rem; padding-left: 1rem; list-style: none;"></ul>
     </div>
     {% endif %}
+    <!-- W2 N2: Pipeline strip (Current / Next / Jump) - consumes pipeline-state API -->
+    {% if post_id is defined and post_id %}
+    <div id="pipeline-nav-strip" class="pipeline-nav-strip" style="display: none;">
+        <span id="pipeline-current" class="pipeline-current"></span>
+        <button type="button" id="pipeline-next-btn" class="pipeline-next-btn" style="display: none;"></button>
+        <div class="pipeline-jump-wrapper">
+            <button type="button" id="pipeline-jump-toggle" class="pipeline-jump-toggle" aria-haspopup="true" aria-expanded="false">Jump</button>
+            <div id="pipeline-jump-menu" class="pipeline-jump-menu" role="menu" aria-hidden="true"></div>
+        </div>
+    </div>
+    {% endif %}
     <!-- Post Details Line - ALWAYS DISPLAYED -->
     <div class="post-details-line">
         <span class="status-label">Status:</span>

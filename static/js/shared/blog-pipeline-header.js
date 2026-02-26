@@ -210,8 +210,124 @@ class BlogPipelineHeader {
         await this.updateEarlyStageIndicator();
         // W2 Phase 3: Playbook panel (metadata-only; does not affect stage or automation)
         await this.updatePlaybookPanel();
+        // W2 N2: Pipeline strip (Current / Next / Jump) from pipeline-state API
+        await this.updatePipelineStrip();
 
         console.log('[Blog Pipeline Header] Header fields updated');
+    }
+
+    /**
+     * W2 N2: Fetch pipeline-state and render Current / Next / Jump. Navigation only; no auto-execute.
+     */
+    async updatePipelineStrip() {
+        const strip = document.getElementById('pipeline-nav-strip');
+        const postId = this.getPostId();
+        if (!strip || !postId || postId === '0' || parseInt(postId) === 0) return;
+        try {
+            const response = await fetch(`/api/posts/${postId}/pipeline-state`);
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data.success || !data.substages) return;
+            this.renderPipelineStrip(data);
+        } catch (e) {
+            console.warn('[Blog Pipeline Header] Pipeline strip fetch failed:', e);
+        }
+    }
+
+    /**
+     * Render Current, Next button, and Jump dropdown from pipeline-state payload.
+     */
+    renderPipelineStrip(data) {
+        const strip = document.getElementById('pipeline-nav-strip');
+        const currentEl = document.getElementById('pipeline-current');
+        const nextBtn = document.getElementById('pipeline-next-btn');
+        const jumpMenu = document.getElementById('pipeline-jump-menu');
+        const jumpToggle = document.querySelector('.pipeline-jump-toggle');
+        if (!strip || !currentEl || !nextBtn || !jumpMenu) return;
+
+        const substages = data.substages || [];
+        const reasons = data.reasons_blocked || {};
+        const current = data.current || null;
+        const next = data.next || null;
+
+        const stageTitle = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+        const findSubstage = (stage, substage) => substages.find(s => s.stage === stage && s.substage === substage);
+
+        // 1) Current
+        if (current) {
+            const sub = findSubstage(current.stage, current.substage);
+            const label = sub ? sub.label : current.substage;
+            currentEl.textContent = `Current: ${stageTitle(current.stage)} → ${label}`;
+        } else {
+            currentEl.textContent = 'Current: (stage complete)';
+        }
+
+        // 2) Next button
+        if (!next) {
+            nextBtn.style.display = 'none';
+        } else {
+            nextBtn.style.display = '';
+            const sub = findSubstage(next.stage, next.substage);
+            const label = sub ? sub.label : next.substage;
+            const nextKey = `${next.stage}.${next.substage}`;
+            const blockedReason = reasons[nextKey];
+            nextBtn.textContent = `Next: ${stageTitle(next.stage)} → ${label}`;
+            nextBtn.disabled = !!blockedReason;
+            nextBtn.title = blockedReason || '';
+            nextBtn.onclick = () => {
+                if (nextBtn.disabled) return;
+                const navSub = findSubstage(next.stage, next.substage);
+                if (!navSub || !navSub.nav_url) return;
+                let url = navSub.nav_url;
+                const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
+                if (weekContext && weekContext.year && weekContext.week) {
+                    url = url.includes('?') ? `${url}&year=${weekContext.year}&week=${weekContext.week}` : `${url}?year=${weekContext.year}&week=${weekContext.week}`;
+                }
+                window.location.href = url;
+            };
+        }
+
+        // 3) Jump dropdown: list all substages, disabled when !can_execute, tooltip = reasons_blocked
+        jumpMenu.innerHTML = '';
+        substages.forEach(s => {
+            const key = `${s.stage}.${s.substage}`;
+            const isCurrent = current && current.stage === s.stage && current.substage === s.substage;
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.role = 'menuitem';
+            item.className = 'pipeline-jump-item' + (isCurrent ? ' pipeline-jump-item-current' : '') + (!s.can_execute ? ' pipeline-jump-item-disabled' : '');
+            item.textContent = `${stageTitle(s.stage)} → ${s.label}`;
+            item.disabled = !s.can_execute;
+            item.title = !s.can_execute && reasons[key] ? reasons[key] : '';
+            item.addEventListener('click', () => {
+                if (!s.can_execute) return;
+                let url = s.nav_url;
+                const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
+                if (weekContext && weekContext.year && weekContext.week) {
+                    url = url.includes('?') ? `${url}&year=${weekContext.year}&week=${weekContext.week}` : `${url}?year=${weekContext.year}&week=${weekContext.week}`;
+                }
+                window.location.href = url;
+            });
+            jumpMenu.appendChild(item);
+        });
+
+        // Jump toggle: show/hide menu; close on outside click
+        if (jumpToggle) {
+            const closeMenu = () => {
+                jumpMenu.classList.remove('pipeline-jump-menu-open');
+                jumpToggle.setAttribute('aria-expanded', 'false');
+                document.removeEventListener('click', closeMenu);
+            };
+            jumpToggle.onclick = (e) => {
+                e.stopPropagation();
+                const open = jumpMenu.classList.toggle('pipeline-jump-menu-open');
+                jumpToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                if (open) setTimeout(() => document.addEventListener('click', closeMenu), 0);
+                else document.removeEventListener('click', closeMenu);
+            };
+        }
+
+        strip.style.display = 'flex';
     }
 
     async updateEarlyStageIndicator() {
