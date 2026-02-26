@@ -1,0 +1,257 @@
+{
+  "current_stage": "structure",
+  "post_id": 729,
+  "post_type": "themed",
+  "stages": [
+    {
+      "available": true,
+      "stage": "metadata",
+      "substages": [
+        {
+          "available_now": true,
+          "can_execute": true,
+          "current_mode": "manual",
+          "description": "Set title, subtitle, and basic post metadata.",
+          "id": "edit_metadata",
+          "label": "Edit metadata",
+          "min_stage": "metadata",
+          "nav_key": null,
+          "substage_key": "edit_metadata",
+          "supports_web_research": false,
+          "title": "Edit metadata"
+        }
+      ]
+    },
+    {
+      "available": true,
+      "stage": "ideas",
+      "substages": [
+        {
+          "available_now": true,
+          "can_execute": true,
+          "current_mode": "manual",
+          "description": "Generate or curate required ideas for the post (research-backed for themed).",
+          "id": "generate_idea_set",
+          "label": "Generate Idea Set",
+          "min_stage": "ideas",
+          "nav_key": "ideas",
+          "substage_key": "generate_idea_set",
+          "supports_web_research": true,
+          "title": "Generate Idea Set"
+        },
+        {
+          "available_now": true,
+          "can_execute": true,
+          "current_mode": "manual",
+          "description": "Select and curate ideas (min 10 selected, 3 categories).",
+          "id": "curate_ideas",
+          "label": "Curate ideas",
+          "min_stage": "ideas",
+          "nav_key": null,
+          "substage_key": "curate_ideas",
+          "supports_web_research": false,
+          "title": "Curate ideas"
+        }
+      ]
+    },
+    {
+      "available": true,
+      "stage": "structure",
+      "substages": [
+        {
+          "available_now": true,
+          "can_execute": true,
+          "current_mode": "manual",
+          "description": "Produce 6\u20137 sections from selected ideas.",
+          "id": "cluster_into_sections",
+          "label": "Cluster into Sections",
+          "min_stage": "ideas",
+          "nav_key": null,
+          "substage_key": "cluster_into_sections",
+          "supports_web_research": false,
+          "title": "Cluster into Sections"
+        },
+        {
+          "available_now": true,
+          "can_execute": true,
+          "current_mode": "manual",
+          "description": "Generate and cluster topics for sections.",
+          "id": "topic_brainstorming",
+          "label": "Topic brainstorming",
+          "min_stage": "ideas",
+          "nav_key": "topic_brainstorming",
+          "substage_key": "topic_brainstorming",
+          "supports_web_research": true,
+          "title": "Topic brainstorming"
+        },
+        {
+          "available_now": true,
+          "can_execute": true,
+          "current_mode": "manual",
+          "description": "Define section outline and structure.",
+          "id": "section_structure",
+          "label": "Section structure",
+          "min_stage": "structure",
+          "nav_key": "section_structure",
+          "substage_key": "section_structure",
+          "supports_web_research": false,
+          "title": "Section structure"
+        },
+        {
+          "available_now": true,
+          "can_execute": true,
+          "current_mode": "manual",
+          "description": "Allocate ideas to sections.",
+          "id": "topic_allocation",
+          "label": "Section ideas",
+          "min_stage": "structure",
+          "nav_key": "topic_allocation",
+          "substage_key": "topic_allocation",
+          "supports_web_research": false,
+          "title": "Section ideas"
+        },
+        {
+          "available_now": true,
+          "can_execute": true,
+          "current_mode": "manual",
+          "description": "Create section titles and briefs.",
+          "id": "section_titling",
+          "label": "Section titling",
+          "min_stage": "structure",
+          "nav_key": "section_titling",
+          "substage_key": "section_titling",
+          "supports_web_research": false,
+          "title": "Section titling"
+        }
+      ]
+    },
+    {
+      "available": false,
+      "stage": "titling",
+      "substages": [
+        {
+          "available_now": false,
+          "can_execute": false,
+          "current_mode": "manual",
+          "description": "Finalise section titles and order.",
+          "id": "section_titling_final",
+          "label": "Section titling (final)",
+          "min_stage": "titling",
+          "nav_key": null,
+          "substage_key": "section_titling_final",
+          "supports_web_research": false,
+          "title": "Section titling (final)"
+        }
+      ]
+    },
+    {
+      "available": false,
+      "stage": "authoring",
+      "substages": [
+        {
+          "available_now": false,
+          "can_execute": false,
+          "current_mode": "manual",
+          "description": "Draft section content.",
+          "id": "author_first_drafts",
+          "label": "First drafts",
+          "min_stage": "titling",
+          "nav_key": "drafting",
+          "substage_key": "author_first_drafts",
+          "supports_web_research": true,
+          "title": "First drafts"
+        },
+        {
+          "available_now": false,
+          "can_execute": false,
+          "current_mode": "manual",
+          "description": "Define image concepts per section.",
+          "id": "image_concepts",
+          "label": "Image concepts",
+          "min_stage": "authoring",
+          "nav_key": "image_concepts",
+          "substage_key": "image_concepts",
+          "supports_web_research": false,
+          "title": "Image concepts"
+        },
+        {
+          "available_now": false,
+          "can_execute": false,
+          "current_mode": "manual",
+          "description": "Generate image prompts per section.",
+          "id": "image_prompts",
+          "label": "Image prompts",
+          "min_stage": "authoring",
+          "nav_key": "image_prompts",
+          "substage_key": "image_prompts",
+          "supports_web_research": false,
+          "title": "Image prompts"
+        },
+        {
+          "available_now": false,
+          "can_execute": false,
+          "current_mode": "manual",
+          "description": "Write image captions and alt text.",
+          "id": "image_captions",
+          "label": "Image captions",
+          "min_stage": "authoring",
+          "nav_key": "image_captions",
+          "substage_key": "image_captions",
+          "supports_web_research": false,
+          "title": "Image captions"
+        }
+      ]
+    },
+    {
+      "available": false,
+      "stage": "imaging",
+      "substages": [
+        {
+          "available_now": false,
+          "can_execute": false,
+          "current_mode": "manual",
+          "description": "Generate section images.",
+          "id": "image_generation",
+          "label": "Image generation",
+          "min_stage": "authoring",
+          "nav_key": "image_generation",
+          "substage_key": "image_generation",
+          "supports_web_research": false,
+          "title": "Image generation"
+        },
+        {
+          "available_now": false,
+          "can_execute": false,
+          "current_mode": "manual",
+          "description": "Resize, compress, watermark images.",
+          "id": "optimise",
+          "label": "Optimise",
+          "min_stage": "imaging",
+          "nav_key": "optimise",
+          "substage_key": "optimise",
+          "supports_web_research": false,
+          "title": "Optimise"
+        }
+      ]
+    },
+    {
+      "available": false,
+      "stage": "review",
+      "substages": [
+        {
+          "available_now": false,
+          "can_execute": false,
+          "current_mode": "manual",
+          "description": "Review and finalise before publish.",
+          "id": "final_review",
+          "label": "Final review",
+          "min_stage": "review",
+          "nav_key": "final_review",
+          "substage_key": "final_review",
+          "supports_web_research": false,
+          "title": "Final review"
+        }
+      ]
+    }
+  ]
+}
