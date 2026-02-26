@@ -70,16 +70,32 @@ def api_post_required_ideas(post_id):
         if request.method == 'GET':
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT id, post_id, text, sort_order
+                    SELECT id,
+                           post_id,
+                           text,
+                           sort_order,
+                           category,
+                           rationale,
+                           source_urls,
+                           rank,
+                           is_selected
                     FROM post_required_idea
                     WHERE post_id = %s
                     ORDER BY sort_order ASC, id ASC
                 """, (post_id,))
                 rows = cursor.fetchall()
-                required_ideas = [
-                    {'id': r.get('id'), 'text': r.get('text') or '', 'sort_order': r.get('sort_order', 0)}
-                    for r in rows
-                ]
+                required_ideas = []
+                for r in rows:
+                    required_ideas.append({
+                        'id': r.get('id'),
+                        'text': r.get('text') or '',
+                        'sort_order': r.get('sort_order', 0),
+                        'category': r.get('category'),
+                        'rationale': r.get('rationale'),
+                        'source_urls': r.get('source_urls') or [],
+                        'rank': r.get('rank'),
+                        'is_selected': r.get('is_selected', True),
+                    })
                 return jsonify({'success': True, 'required_ideas': required_ideas})
 
         elif request.method == 'POST':
@@ -155,39 +171,101 @@ def api_post_required_idea_item(post_id, item_id):
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute(
-                "SELECT id, text, sort_order FROM post_required_idea WHERE post_id = %s AND id = %s",
-                (post_id, item_id)
+                """
+                SELECT id, text, sort_order, category, rationale, source_urls, rank, is_selected
+                FROM post_required_idea
+                WHERE post_id = %s AND id = %s
+                """,
+                (post_id, item_id),
             )
             row = cursor.fetchone()
             if not row:
                 return jsonify({'success': False, 'error': 'Not found'}), 404
             if request.method == 'DELETE':
-                cursor.execute("DELETE FROM post_required_idea WHERE post_id = %s AND id = %s", (post_id, item_id))
+                cursor.execute(
+                    "DELETE FROM post_required_idea WHERE post_id = %s AND id = %s",
+                    (post_id, item_id),
+                )
                 cursor.connection.commit()
                 return jsonify({'success': True, 'deleted': item_id}), 200
             # PATCH
             data = request.get_json() or {}
             text = data.get('text')
             sort_order = data.get('sort_order')
+            category = data.get('category')
+            is_selected = data.get('is_selected')
+            rank = data.get('rank')
+            rationale = data.get('rationale')
+            source_urls = data.get('source_urls')
+
+            # Start from current values
+            new_text = row.get('text') or ''
+            new_sort_order = row.get('sort_order', 0)
+            new_category = row.get('category')
+            new_is_selected = row.get('is_selected', True)
+            new_rank = row.get('rank')
+            new_rationale = row.get('rationale')
+            new_source_urls = row.get('source_urls')
+
             if text is not None:
-                cursor.execute(
-                    "UPDATE post_required_idea SET text = %s, sort_order = COALESCE(%s, sort_order) WHERE post_id = %s AND id = %s",
-                    (text.strip(), sort_order, post_id, item_id)
-                )
-            elif sort_order is not None:
-                cursor.execute(
-                    "UPDATE post_required_idea SET sort_order = %s WHERE post_id = %s AND id = %s",
-                    (sort_order, post_id, item_id)
-                )
-            else:
-                return jsonify({'success': False, 'error': 'text or sort_order required'}), 400
+                new_text = text.strip()
+            if sort_order is not None:
+                new_sort_order = sort_order
+            if category is not None:
+                new_category = category or None
+            if is_selected is not None:
+                new_is_selected = bool(is_selected)
+            if rank is not None:
+                new_rank = rank
+            if rationale is not None:
+                new_rationale = rationale
+            if source_urls is not None:
+                new_source_urls = source_urls
+
+            cursor.execute(
+                """
+                UPDATE post_required_idea
+                   SET text = %s,
+                       sort_order = %s,
+                       category = %s,
+                       rationale = %s,
+                       source_urls = %s,
+                       rank = %s,
+                       is_selected = %s
+                 WHERE post_id = %s AND id = %s
+                """,
+                (
+                    new_text,
+                    new_sort_order,
+                    new_category,
+                    new_rationale,
+                    json.dumps(new_source_urls) if isinstance(new_source_urls, (list, dict)) else new_source_urls,
+                    new_rank,
+                    new_is_selected,
+                    post_id,
+                    item_id,
+                ),
+            )
             cursor.connection.commit()
             cursor.execute(
-                "SELECT id, text, sort_order FROM post_required_idea WHERE post_id = %s AND id = %s",
-                (post_id, item_id)
+                """
+                SELECT id, text, sort_order, category, rationale, source_urls, rank, is_selected
+                FROM post_required_idea
+                WHERE post_id = %s AND id = %s
+                """,
+                (post_id, item_id),
             )
             row = cursor.fetchone()
-        out = {'id': row.get('id'), 'text': row.get('text') or '', 'sort_order': row.get('sort_order', 0)}
+        out = {
+            'id': row.get('id'),
+            'text': row.get('text') or '',
+            'sort_order': row.get('sort_order', 0),
+            'category': row.get('category'),
+            'rationale': row.get('rationale'),
+            'source_urls': row.get('source_urls') or [],
+            'rank': row.get('rank'),
+            'is_selected': row.get('is_selected', True),
+        }
         return jsonify({'success': True, 'required_idea': out}), 200
     except Exception as e:
         logger.error(f"Error updating required idea for post {post_id}: {e}")

@@ -122,20 +122,38 @@
                     <!-- Required Ideas to Include Field -->
                     <div class="metadata-field">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <label style="display: block; color: #cbd5e1; font-weight: 500; margin: 0;">
-                                <i class="fas fa-list-check"></i> Required Ideas to Include
-                            </label>
-                            <button type="button" 
-                                    id="add-idea-btn" 
-                                    class="btn btn-primary" 
-                                    style="white-space: nowrap;"
-                                    onclick="showAddIdeaModal()">
-                                <i class="fas fa-plus"></i> Add Idea
-                            </button>
+                            <div>
+                                <label style="display: block; color: #cbd5e1; font-weight: 500; margin: 0;">
+                                    <i class="fas fa-list-check"></i> Required Ideas to Include
+                                </label>
+                                <small style="color: #94a3b8; font-size: 0.75rem;">
+                                    Selected: <span id="required-ideas-selected-count">0</span> (min 10),
+                                    Categories: <span id="required-ideas-category-count">0</span> (min 3)
+                                </small>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <button type="button" 
+                                        class="btn btn-secondary"
+                                        onclick="selectAllRequiredIdeas()">
+                                    Select all
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-secondary"
+                                        onclick="selectNoneRequiredIdeas()">
+                                    Select none
+                                </button>
+                                <button type="button" 
+                                        id="add-idea-btn" 
+                                        class="btn btn-primary" 
+                                        style="white-space: nowrap;"
+                                        onclick="showAddIdeaModal()">
+                                    <i class="fas fa-plus"></i> Add Idea
+                                </button>
+                            </div>
                         </div>
                         <div id="required-ideas-list" style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 0.75rem; min-height: 100px; max-height: 300px; overflow-y: auto;">
                             <div id="no-ideas-message" style="color: #64748b; font-size: 0.875rem; text-align: center; padding: 1rem;">
-                                No required ideas added yet. Click "Add Idea" to add one.
+                                No required ideas added yet. Click "Add Idea" or "Generate Idea Set" to add some.
                             </div>
                         </div>
                     </div>
@@ -697,14 +715,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Expanded idea is now generated and displayed via the LLM module below
 });
 
-// Store required ideas in memory (string or { id, text, sort_order })
+// Store required ideas in memory (objects from API)
 let requiredIdeas = [];
 
-// W2 Phase 2.4: Get display text from idea (string or object)
+// Controlled category list for curation UI (Phase 3.3)
+const IDEA_CATEGORY_OPTIONS = [
+    'history_timeline',
+    'definitions_differences',
+    'material_craft',
+    'regional_variation',
+    'myths_misconceptions',
+    'notable_examples',
+    'modern_revival',
+    'how_to_practical',
+    'sources_further_reading'
+];
+
+// Get display text from idea
 function getIdeaText(idea) {
-    if (idea == null) return '';
+    if (!idea) return '';
     if (typeof idea === 'string') return idea;
-    if (typeof idea === 'object' && idea !== null) return (idea.text != null ? idea.text : idea.idea) || '';
+    if (typeof idea === 'object') return (idea.text != null ? idea.text : idea.idea) || '';
     return String(idea);
 }
 
@@ -903,15 +934,46 @@ function renderRequiredIdeasList() {
         if (noIdeasMessage) {
             noIdeasMessage.style.display = 'none';
         }
-        ideasList.innerHTML = requiredIdeas.map((idea, index) => `
-            <div class="idea-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #f1f5f9; flex: 1;">${escapeHtml(getIdeaText(idea))}</span>
-                <button type="button" onclick="removeRequiredIdea(${index})" style="background: #dc2626; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; margin-left: 0.5rem;">
+        ideasList.innerHTML = requiredIdeas.map((idea) => {
+            const id = idea.id;
+            const text = escapeHtml(getIdeaText(idea));
+            const category = idea.category || '';
+            const isSelected = idea.is_selected !== false;
+            const categoryOptions = IDEA_CATEGORY_OPTIONS.map(cat => `
+                <option value="${cat}" ${cat === category ? 'selected' : ''}>${cat}</option>
+            `).join('');
+            const customSelected = category && !IDEA_CATEGORY_OPTIONS.includes(category) ? 'selected' : '';
+            const customValue = !IDEA_CATEGORY_OPTIONS.includes(category || '') ? escapeHtml(category || '') : '';
+            return `
+            <div class="idea-item" style="display: flex; align-items: center; padding: 0.5rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; margin-bottom: 0.5rem; gap: 0.5rem;">
+                <input type="checkbox"
+                       ${isSelected ? 'checked' : ''}
+                       onchange="updateIdeaSelected(${id}, this.checked)">
+                <input type="text"
+                       value="${text}"
+                       onblur="updateIdeaText(${id}, this.value)"
+                       style="flex: 1; padding: 0.25rem 0.5rem; background: #020617; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+                <select onchange="updateIdeaCategory(${id}, this.value, this.nextElementSibling)"
+                        style="min-width: 12rem; padding: 0.25rem 0.5rem; background: #020617; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0;">
+                    <option value="">(uncategorised)</option>
+                    ${categoryOptions}
+                    <option value="__custom__" ${customSelected}>custom…</option>
+                </select>
+                <input type="text"
+                       placeholder="Custom category"
+                       value="${customValue}"
+                       onblur="updateIdeaCustomCategory(${id}, this.value)"
+                       style="min-width: 10rem; padding: 0.25rem 0.5rem; background: #020617; border: 1px solid #334155; border-radius: 4px; color: #e2e8f0;">
+                <button type="button"
+                        onclick="deleteRequiredIdea(${id})"
+                        style="background: #dc2626; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
+    updateRequiredIdeasCounters();
 }
 
 function escapeHtml(text) {
@@ -920,60 +982,117 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function removeRequiredIdea(index) {
-    if (index >= 0 && index < requiredIdeas.length) {
-        requiredIdeas.splice(index, 1);
-        renderRequiredIdeasList();
-        // Auto-save when removed
-        saveRequiredIdeas();
-    }
-}
-
 async function showAddIdeaModal() {
     const ideaText = prompt('Enter a required idea to include in the post:');
-    if (ideaText && ideaText.trim()) {
-        requiredIdeas.push(ideaText.trim());
-        renderRequiredIdeasList();
-        // Auto-save when added
-        await saveRequiredIdeas();
+    if (!ideaText || !ideaText.trim()) return;
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/required-ideas/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: ideaText.trim() })
+        });
+        const data = await response.json();
+        if (data.success && data.required_idea) {
+            requiredIdeas.push(data.required_idea);
+            renderRequiredIdeasList();
+        } else {
+            alert('Failed to add idea: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('[showAddIdeaModal] Error:', error);
+        alert('Error adding idea: ' + error.message);
     }
 }
 
-async function saveRequiredIdeas() {
+async function deleteRequiredIdea(id) {
+    if (!window.postId) return;
     try {
-        console.log('[saveRequiredIdeas] Saving:', requiredIdeas);
-        const response = await fetch(`/planning/api/posts/${window.postId}/required-ideas`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ required_ideas: requiredIdeas })
+        const response = await fetch(`/planning/api/posts/${window.postId}/required-ideas/items/${id}`, {
+            method: 'DELETE'
         });
-        
         const data = await response.json();
         if (data.success) {
-            console.log('[saveRequiredIdeas] Saved successfully:', data.required_ideas);
-                // Show brief success indicator
-                const ideasList = document.getElementById('required-ideas-list');
-                if (ideasList) {
-                    // Remove any existing indicator
-                    const existing = ideasList.querySelector('.save-indicator');
-                    if (existing) existing.remove();
-                    
-                    const savedIndicator = document.createElement('div');
-                    savedIndicator.className = 'save-indicator';
-                    savedIndicator.style.cssText = 'position: absolute; top: 0.5rem; right: 0.5rem; background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; z-index: 10;';
-                    savedIndicator.innerHTML = '<i class="fas fa-check"></i> Saved';
-                    ideasList.style.position = 'relative';
-                    ideasList.appendChild(savedIndicator);
-                    setTimeout(() => savedIndicator.remove(), 2000);
-                }
+            requiredIdeas = requiredIdeas.filter(idea => idea.id !== id);
+            renderRequiredIdeasList();
         } else {
-            console.error('[saveRequiredIdeas] Save failed:', data.error);
-            alert('Failed to save required ideas: ' + (data.error || 'Unknown error'));
+            alert('Failed to delete idea: ' + (data.error || 'Unknown error'));
         }
     } catch (error) {
-        console.error('[saveRequiredIdeas] Error:', error);
-        alert('Error saving required ideas: ' + error.message);
+        console.error('[deleteRequiredIdea] Error:', error);
+        alert('Error deleting idea: ' + error.message);
     }
+}
+
+async function patchRequiredIdea(id, payload) {
+    if (!window.postId) return;
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/required-ideas/items/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (data.success && data.required_idea) {
+            requiredIdeas = requiredIdeas.map(idea => idea.id === id ? data.required_idea : idea);
+            renderRequiredIdeasList();
+        } else {
+            console.error('[patchRequiredIdea] Failed:', data.error);
+        }
+    } catch (error) {
+        console.error('[patchRequiredIdea] Error:', error);
+    }
+}
+
+function updateIdeaSelected(id, isSelected) {
+    patchRequiredIdea(id, { is_selected: isSelected });
+}
+
+function updateIdeaText(id, text) {
+    patchRequiredIdea(id, { text: text });
+}
+
+function updateIdeaCategory(id, value, customInput) {
+    if (value === '__custom__') {
+        if (customInput) customInput.focus();
+        return;
+    }
+    patchRequiredIdea(id, { category: value || null });
+}
+
+function updateIdeaCustomCategory(id, value) {
+    const trimmed = value.trim();
+    if (!trimmed) {
+        patchRequiredIdea(id, { category: null });
+    } else {
+        patchRequiredIdea(id, { category: trimmed });
+    }
+}
+
+function updateRequiredIdeasCounters() {
+    const selected = requiredIdeas.filter(idea => idea.is_selected !== false);
+    const categories = new Set(
+        selected
+            .map(idea => idea.category)
+            .filter(cat => typeof cat === 'string' && cat.trim().length > 0)
+    );
+    const selectedEl = document.getElementById('required-ideas-selected-count');
+    const catEl = document.getElementById('required-ideas-category-count');
+    if (selectedEl) selectedEl.textContent = String(selected.length);
+    if (catEl) catEl.textContent = String(categories.size);
+}
+
+function selectAllRequiredIdeas() {
+    const updates = requiredIdeas.filter(idea => idea.is_selected === false).map(idea => patchRequiredIdea(idea.id, { is_selected: true }));
+    Promise.all(updates).then(() => {
+        // renderRequiredIdeasList is called in patchRequiredIdea
+    });
+}
+
+function selectNoneRequiredIdeas() {
+    const updates = requiredIdeas.filter(idea => idea.is_selected !== false).map(idea => patchRequiredIdea(idea.id, { is_selected: false }));
+    Promise.all(updates).then(() => {
+        // renderRequiredIdeasList is called in patchRequiredIdea
+    });
 }
 
 // Auto-save subtitle when it changes (with debounce)
