@@ -1,0 +1,27 @@
+/* W2 N3: Ideas page pipeline panel */
+#ideas-pipeline-panel {
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-left: 4px solid #283C66;
+    background: #020617;
+    font-size: 0.85rem;
+}
+
+#ideas-pipeline-panel .ideas-pipeline-current {
+    color: #e2e8f0;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+#ideas-pipeline-panel .ideas-pipeline-next {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+#ideas-pipeline-panel .ideas-pipeline-next-reason {
+    color: #f97316;
+    font-size: 0.8rem;
+}
+

@@ -327,6 +327,15 @@ class BlogPipelineHeader {
             };
         }
 
+        // Expose pipeline-state globally for other pages (e.g. Ideas panel).
+        // UI-only: does not auto-run, only shares state.
+        window.BlogPipelineState = data;
+        try {
+            document.dispatchEvent(new CustomEvent('blog-pipeline-state-ready', { detail: data }));
+        } catch (e) {
+            // CustomEvent may not be supported in very old browsers; ignore
+        }
+
         strip.style.display = 'flex';
     }
 

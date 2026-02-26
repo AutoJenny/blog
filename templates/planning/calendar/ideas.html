@@ -3,6 +3,7 @@
 {% block css_assets %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-module.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planning/ideas.css') }}">
 {% endblock %}
 
 {% block title %}Idea Generation - Content Calendar - Planning - BlogForge{% endblock %}
@@ -76,6 +77,18 @@
                 <!-- Status messages will appear here -->
             </div>
             
+            <!-- Pipeline Step Panel (W2 N3: explicit guided panel) -->
+            <div id="ideas-pipeline-panel" style="display: none;">
+                <div class="ideas-pipeline-current" id="ideas-pipeline-current"></div>
+                <div class="ideas-pipeline-next" id="ideas-pipeline-next">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            id="ideas-pipeline-next-btn">
+                    </button>
+                    <div class="ideas-pipeline-next-reason" id="ideas-pipeline-next-reason"></div>
+                </div>
+            </div>
+
             <!-- Theme Display -->
             <div id="theme-display" class="theme-display" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; display: none;">
                 <div style="display: flex; align-items: center; gap: 0.75rem; color: #f1f5f9;">
@@ -737,6 +750,72 @@ function getIdeaText(idea) {
     if (typeof idea === 'string') return idea;
     if (typeof idea === 'object') return (idea.text != null ? idea.text : idea.idea) || '';
     return String(idea);
+}
+
+// W2 N3: Update Ideas page pipeline panel using shared pipeline-state (no extra fetch)
+function updateIdeasPipelinePanel(pipelineState) {
+    if (!pipelineState || !pipelineState.substages) return;
+    const panel = document.getElementById('ideas-pipeline-panel');
+    const currentEl = document.getElementById('ideas-pipeline-current');
+    const nextContainer = document.getElementById('ideas-pipeline-next');
+    const nextBtn = document.getElementById('ideas-pipeline-next-btn');
+    const nextReasonEl = document.getElementById('ideas-pipeline-next-reason');
+    if (!panel || !currentEl || !nextContainer || !nextBtn || !nextReasonEl) return;
+
+    const substages = pipelineState.substages || [];
+    const reasons = pipelineState.reasons_blocked || {};
+    const current = pipelineState.current || null;
+    const next = pipelineState.next || null;
+
+    const stageTitle = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+    const findSubstage = (stage, substage) => substages.find(s => s.stage === stage && s.substage === substage);
+
+    // Current step
+    if (current) {
+        const sub = findSubstage(current.stage, current.substage);
+        const label = sub ? sub.label : current.substage;
+        currentEl.textContent = `Current step: ${stageTitle(current.stage)} \u2192 ${label}`;
+    } else {
+        currentEl.textContent = 'Current step: (stage complete)';
+    }
+
+    // Next step
+    if (!next) {
+        nextContainer.style.display = 'none';
+    } else {
+        nextContainer.style.display = 'flex';
+        const sub = findSubstage(next.stage, next.substage);
+        const label = sub ? sub.label : next.substage;
+        const nextKey = `${next.stage}.${next.substage}`;
+        const blockedReason = reasons[nextKey];
+        nextBtn.textContent = `Next step: ${stageTitle(next.stage)} \u2192 ${label}`;
+        nextBtn.disabled = !!blockedReason;
+        nextReasonEl.textContent = blockedReason || '';
+
+        nextBtn.onclick = () => {
+            if (nextBtn.disabled) return;
+            const navSub = findSubstage(next.stage, next.substage);
+            if (!navSub || !navSub.nav_url) return;
+            let url = navSub.nav_url;
+            const weekContext = window.WeekContext ? window.WeekContext.getWeekContext() : null;
+            if (weekContext && weekContext.year && weekContext.week) {
+                url = url.includes('?')
+                    ? `${url}&year=${weekContext.year}&week=${weekContext.week}`
+                    : `${url}?year=${weekContext.year}&week=${weekContext.week}`;
+            }
+            window.location.href = url;
+        };
+    }
+
+    panel.style.display = 'block';
+}
+
+// Wire Ideas page pipeline panel to shared pipeline-state
+document.addEventListener('blog-pipeline-state-ready', function (e) {
+    updateIdeasPipelinePanel(e.detail);
+});
+if (window.BlogPipelineState) {
+    updateIdeasPipelinePanel(window.BlogPipelineState);
 }
 
 // W2 Phase 2.4: Run Generate Idea Set via unified execute endpoint
