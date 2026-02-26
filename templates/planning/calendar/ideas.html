@@ -108,6 +108,17 @@
                         <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem; display: block;">Expanded description of what the article will cover (2-4 sentences, max 300 characters). Auto-generated from theme, but editable.</small>
                     </div>
                     
+                    <!-- W2 Phase 2.4: Generate Idea Set Run button (unified execute endpoint) -->
+                    <div class="metadata-field" style="margin-bottom: 1rem;">
+                        <button type="button" 
+                                id="generate-idea-set-btn" 
+                                class="btn btn-primary"
+                                style="display: inline-flex; align-items: center; gap: 0.5rem;"
+                                onclick="runGenerateIdeaSet()">
+                            <i class="fas fa-magic"></i> Generate Idea Set
+                        </button>
+                        <span id="generate-idea-set-status" style="margin-left: 0.75rem; color: #94a3b8; font-size: 0.875rem;"></span>
+                    </div>
                     <!-- Required Ideas to Include Field -->
                     <div class="metadata-field">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -686,8 +697,58 @@ document.addEventListener('DOMContentLoaded', function() {
     // Expanded idea is now generated and displayed via the LLM module below
 });
 
-// Store required ideas in memory
+// Store required ideas in memory (string or { id, text, sort_order })
 let requiredIdeas = [];
+
+// W2 Phase 2.4: Get display text from idea (string or object)
+function getIdeaText(idea) {
+    if (idea == null) return '';
+    if (typeof idea === 'string') return idea;
+    if (typeof idea === 'object' && idea !== null) return (idea.text != null ? idea.text : idea.idea) || '';
+    return String(idea);
+}
+
+// W2 Phase 2.4: Run Generate Idea Set via unified execute endpoint
+async function runGenerateIdeaSet() {
+    const btn = document.getElementById('generate-idea-set-btn');
+    const status = document.getElementById('generate-idea-set-status');
+    if (!btn || !window.postId) return;
+    btn.disabled = true;
+    if (status) status.textContent = 'Running...';
+    try {
+        const response = await fetch('/launchpad/one-click-publication/api/execute-substage/ideas/generate_idea_set', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ post_id: window.postId })
+        });
+        const data = await response.json();
+        if (data.success) {
+            if (status) status.textContent = data.message || `Generated ${data.required_ideas_count || 0} idea(s).`;
+            await loadRequiredIdeasFromApi();
+            renderRequiredIdeasList();
+        } else {
+            if (status) status.textContent = data.error || 'Failed';
+        }
+    } catch (e) {
+        if (status) status.textContent = 'Error: ' + (e.message || 'Request failed');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// Load required ideas from canonical API (post_required_idea)
+async function loadRequiredIdeasFromApi() {
+    if (!window.postId) return;
+    try {
+        const response = await fetch(`/planning/api/posts/${window.postId}/required-ideas`);
+        const data = await response.json();
+        if (data.success && Array.isArray(data.required_ideas)) {
+            requiredIdeas = data.required_ideas;
+        }
+    } catch (e) {
+        console.warn('Load required-ideas failed:', e);
+    }
+}
 
 // Load and save post metadata (subtitle, required ideas)
 async function loadPostMetadata() {
@@ -735,18 +796,26 @@ async function loadPostMetadata() {
                 }
             }
             
-            // Load required ideas from embedding_overrides
+            // Load required ideas: prefer canonical API (post_required_idea), fallback to embedding_overrides
             requiredIdeas = [];
-            if (data.post.embedding_overrides) {
-                try {
-                    const overrides = typeof data.post.embedding_overrides === 'string' 
-                        ? JSON.parse(data.post.embedding_overrides) 
-                        : data.post.embedding_overrides;
-                    if (overrides && overrides.required_ideas && Array.isArray(overrides.required_ideas)) {
-                        requiredIdeas = overrides.required_ideas;
+            try {
+                const r = await fetch(`/planning/api/posts/${window.postId}/required-ideas`);
+                const rData = await r.json();
+                if (rData.success && Array.isArray(rData.required_ideas)) {
+                    requiredIdeas = rData.required_ideas;
+                }
+            } catch (e) {
+                if (data.post.embedding_overrides) {
+                    try {
+                        const overrides = typeof data.post.embedding_overrides === 'string' 
+                            ? JSON.parse(data.post.embedding_overrides) 
+                            : data.post.embedding_overrides;
+                        if (overrides && overrides.required_ideas && Array.isArray(overrides.required_ideas)) {
+                            requiredIdeas = overrides.required_ideas;
+                        }
+                    } catch (e2) {
+                        console.warn('Error parsing embedding_overrides:', e2);
                     }
-                } catch (e) {
-                    console.warn('Error parsing embedding_overrides:', e);
                 }
             }
             renderRequiredIdeasList();
@@ -829,14 +898,14 @@ function renderRequiredIdeasList() {
         if (noIdeasMessage) {
             noIdeasMessage.style.display = 'block';
         }
-        ideasList.innerHTML = '<div id="no-ideas-message" style="color: #64748b; font-size: 0.875rem; text-align: center; padding: 1rem;">No required ideas added yet. Click "Add Idea" to add one.</div>';
+        ideasList.innerHTML = '<div id="no-ideas-message" style="color: #64748b; font-size: 0.875rem; text-align: center; padding: 1rem;">No required ideas added yet. Click "Add Idea" or "Generate Idea Set" to add some.</div>';
     } else {
         if (noIdeasMessage) {
             noIdeasMessage.style.display = 'none';
         }
         ideasList.innerHTML = requiredIdeas.map((idea, index) => `
             <div class="idea-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #f1f5f9; flex: 1;">${escapeHtml(idea)}</span>
+                <span style="color: #f1f5f9; flex: 1;">${escapeHtml(getIdeaText(idea))}</span>
                 <button type="button" onclick="removeRequiredIdea(${index})" style="background: #dc2626; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; margin-left: 0.5rem;">
                     <i class="fas fa-times"></i>
                 </button>
