@@ -995,10 +995,13 @@ def api_get_pipeline_state(post_id):
         selected_categories = deficits.get("categories", {}).get("have", 0)
         sections_count = deficits.get("sections", {}).get("have", 0)
 
-        idea_complete = required_total >= 30
+        # N-PIPE-2: Completion rules (minimal set)
+        idea_set_complete = required_total >= 30
+        curate_complete = selected_total >= 10 and selected_categories >= 3
         cluster_complete = sections_count >= 6
 
         ideas_key = "ideas.generate_idea_set"
+        curate_key = "ideas.curate_ideas"
         cluster_key = "structure.cluster_into_sections"
         reasons_blocked = {}
         if gate.get("ideas_reason"):
@@ -1006,48 +1009,48 @@ def api_get_pipeline_state(post_id):
         if selected_total < 10 or selected_categories < 3 or sections_count < 6:
             reasons_blocked[cluster_key] = gate.get("cluster_reason", "")
 
-        # Determine current and next, anchored to workflow_stage
+        def _is_complete(key):
+            if key == ideas_key:
+                return idea_set_complete
+            if key == curate_key:
+                return curate_complete
+            if key == cluster_key:
+                return cluster_complete
+            return False
+
+        # Attach is_complete and is_blocked to each pipeline item
+        for p in pipeline:
+            p["_complete"] = _is_complete(p["key"])
+            can_exec = bool(p["can_execute"])
+            if can_exec and p["key"] == cluster_key:
+                if selected_total < 10 or selected_categories < 3 or sections_count < 6:
+                    can_exec = False
+            p["_can_execute"] = can_exec
+            p["_blocked"] = not can_exec or (p["key"] in reasons_blocked)
+
+        # N-PIPE-2: current = first incomplete at-or-after workflow_stage; next = next substage after current
         current = None
         next_sub = None
-
         if workflow_stage in CANONICAL_STAGE_ORDER:
             stage_idx = CANONICAL_STAGE_ORDER.index(workflow_stage)
-
-            # Current: first substage in workflow_stage that is not "complete"
-            stage_items = [p for p in pipeline if p["stage"] == workflow_stage]
-
-            def is_complete(item):
-                k = item["key"]
-                if k == ideas_key:
-                    return idea_complete
-                if k == cluster_key:
-                    return cluster_complete
-                # Other substages: no artefact-based completion defined yet
-                return False
-
-            for item in stage_items:
-                if not is_complete(item):
+            # Build linear list from workflow_stage onward
+            pipeline_from_stage = [
+                item for item in pipeline
+                if CANONICAL_STAGE_ORDER.index(item["stage"]) >= stage_idx
+            ]
+            for i, item in enumerate(pipeline_from_stage):
+                if not item["_complete"]:
                     current = {"stage": item["stage"], "substage": item["substage"]}
+                    if i + 1 < len(pipeline_from_stage):
+                        n = pipeline_from_stage[i + 1]
+                        next_sub = {"stage": n["stage"], "substage": n["substage"]}
                     break
 
-            # Next: first substage of the immediate next stage in canonical order
-            if stage_idx + 1 < len(CANONICAL_STAGE_ORDER):
-                next_stage = CANONICAL_STAGE_ORDER[stage_idx + 1]
-                for item in pipeline:
-                    if item["stage"] == next_stage:
-                        next_sub = {"stage": item["stage"], "substage": item["substage"]}
-                        break
-
-        # Strip helper 'key' before returning
-        # can_execute: canonical stage gate + artefact prerequisites (for cluster_into_sections)
+        # Strip helper keys; include is_complete and is_blocked in output
         substages_out = []
         for p in pipeline:
             k = p["key"]
-            can_exec = bool(p["can_execute"])
-            if can_exec and k == cluster_key:
-                # Block execution unless all three artefact conditions are met
-                if selected_total < 10 or selected_categories < 3 or sections_count < 6:
-                    can_exec = False
+            can_exec = p["_can_execute"]
             substages_out.append({
                 "stage": p["stage"],
                 "substage": p["substage"],
@@ -1057,6 +1060,8 @@ def api_get_pipeline_state(post_id):
                 "current_mode": p["current_mode"],
                 "nav_url": p["nav_url"],
                 "nav_exists": p["nav_exists"],
+                "is_complete": p["_complete"],
+                "is_blocked": p["_blocked"],
             })
 
         return jsonify({
@@ -1080,6 +1085,11 @@ def _get_pipeline_nav(stage: str, substage: str, post_id: int):
     if stage == "metadata":
         return f"/planning/posts/{post_id}/calendar/metadata", False
     if stage == "ideas":
+        # N-PAGE-IMPL-1: split Ideas into generate vs curate pages
+        if substage == "generate_idea_set":
+            return f"/planning/posts/{post_id}/calendar/ideas/generate", True
+        if substage == "curate_ideas":
+            return f"/planning/posts/{post_id}/calendar/ideas/curate", True
         return f"/planning/posts/{post_id}/calendar/ideas", True
     if stage == "structure":
         return f"/planning/posts/{post_id}/calendar/structure", False

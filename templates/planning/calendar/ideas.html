@@ -12,6 +12,7 @@
 <div class="container">
     <!-- Include condensed header -->
     {% set page_title = 'Planning' %}
+    {% set page_mode = page_mode|default('curate') %}
     {% set mode = mode|default('post-based') %}
     <script>
     window.postId = {{ post_id }};
@@ -99,7 +100,8 @@
                         <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem; display: block;">Expanded description of what the article will cover (2-4 sentences, max 300 characters). Auto-generated from theme, but editable.</small>
                     </div>
                     
-                    <!-- W2 Phase 2.4: Generate Idea Set Run button (unified execute endpoint) -->
+                    {% if page_mode == 'generate' %}
+                    <!-- Generate Idea Set RUN_PAGE (no editor table) -->
                     <div class="metadata-field" style="margin-bottom: 1rem;">
                         <button type="button" 
                                 id="generate-idea-set-btn" 
@@ -110,7 +112,9 @@
                         </button>
                         <span id="generate-idea-set-status" style="margin-left: 0.75rem; color: #94a3b8; font-size: 0.875rem;"></span>
                     </div>
-                    <!-- Required Ideas to Include Field -->
+                    {% endif %}
+
+                    <!-- Required Ideas to Include Field (summary only on generate; full editor on curate) -->
                     <div class="metadata-field">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                             <div>
@@ -118,11 +122,13 @@
                                     <i class="fas fa-list-check"></i> Required Ideas to Include
                                 </label>
                                 <small style="color: #94a3b8; font-size: 0.75rem;">
+                                    Total: <span id="required-ideas-total-count">0</span>,
                                     Selected: <span id="required-ideas-selected-count">0</span> (min 10),
                                     Categories: <span id="required-ideas-category-count">0</span> (min 3)
                                 </small>
                                 <p style="color: #64748b; font-size: 0.75rem; margin: 0.25rem 0 0 0;">To advance to Structure, you need at least: 10 selected ideas, 3 categories, 6 sections.</p>
                             </div>
+                            {% if page_mode == 'curate' %}
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <button type="button" 
                                         class="btn btn-secondary"
@@ -142,13 +148,34 @@
                                     <i class="fas fa-plus"></i> Add Idea
                                 </button>
                             </div>
+                            {% endif %}
                         </div>
+                        {% if page_mode == 'curate' %}
                         <div id="required-ideas-list" style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 0.75rem; min-height: 100px; max-height: 300px; overflow-y: auto;">
                             <div id="no-ideas-message" style="color: #64748b; font-size: 0.875rem; text-align: center; padding: 1rem;">
                                 No required ideas added yet. Click "Add Idea" or "Generate Idea Set" to add some.
                             </div>
                         </div>
+                        {% else %}
+                        <div style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.8rem;">
+                            Use this summary to confirm that idea generation has produced enough raw material. Detailed selection and category editing happens on the Curate Ideas page.
+                        </div>
+                        {% endif %}
                     </div>
+
+                    {% if page_mode == 'generate' %}
+                    <div class="metadata-field" style="margin-top: 0.5rem;">
+                        <a href="{{ url_for('planning.planning_calendar_ideas_curate', post_id=post_id) }}" class="btn btn-primary">
+                            Next: Curate Ideas
+                        </a>
+                    </div>
+                    {% elif page_mode == 'curate' %}
+                    <div class="metadata-field" style="margin-top: 0.5rem;">
+                        <a href="/planning/posts/{{ post_id }}/calendar/structure" class="btn btn-primary">
+                            Next: Structure → Cluster
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             
@@ -196,9 +223,9 @@
                 </div>
             </div>
             
-            <!-- Next Button Container -->
-            <div id="workflow-navigation-container" style="display: flex; justify-content: center; margin: 0.75rem 0;">
-                <!-- Next button will be inserted here by workflow-navigation.js -->
+            <!-- N-UI-1: Only one Next/Current (header strip). Hide legacy Next on post pages. -->
+            <div id="workflow-navigation-container" style="display: {% if post_id is defined and post_id %}none{% else %}flex{% endif %}; justify-content: center; margin: 0.75rem 0;">
+                <!-- Next button will be inserted here by workflow-navigation.js (hidden when post_id set) -->
             </div>
         </div>
         </div>
@@ -1051,8 +1078,10 @@ function updateRequiredIdeasCounters() {
             .map(idea => idea.category)
             .filter(cat => typeof cat === 'string' && cat.trim().length > 0)
     );
+    const totalEl = document.getElementById('required-ideas-total-count');
     const selectedEl = document.getElementById('required-ideas-selected-count');
     const catEl = document.getElementById('required-ideas-category-count');
+    if (totalEl) totalEl.textContent = String(requiredIdeas.length);
     if (selectedEl) selectedEl.textContent = String(selected.length);
     if (catEl) catEl.textContent = String(categories.size);
 }

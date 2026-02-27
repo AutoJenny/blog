@@ -171,10 +171,140 @@ def planning_calendar_ideas_week(week_number):
     """Week-based idea generation"""
     return ideas_week_func(week_number)
 
+def _render_ideas_page(post_id: int, page_mode: str):
+    """
+    Shared renderer for post-based ideas pages.
+
+    page_mode:
+      - \"generate\" for RUN_PAGE (/calendar/ideas/generate)
+      - \"curate\" for EDIT_PAGE (/calendar/ideas/curate)
+    """
+    try:
+        from flask import request, redirect, url_for
+        from datetime import datetime
+        from utils.taxonomy_helpers import get_post_type
+
+        # Check post type - redirect recipe/generated posts to their canonical entry points
+        post_type = get_post_type(post_id)
+        if post_type == 'recipe':
+            return redirect(url_for('authoring.authoring_sections_drafting', post_id=post_id))
+        elif post_type == 'generated':
+            return redirect(url_for('planning.planning_calendar_taxonomy', post_id=post_id))
+
+        # Week context from URL (post-based ideas still aware of week)
+        url_year = request.args.get('year', type=int)
+        url_week = request.args.get('week', type=int)
+        if url_year and url_week:
+            year = url_year
+            week_number = url_week
+        else:
+            now = datetime.now()
+            year = now.year
+            week_number = now.isocalendar()[1]
+
+        target_post_id = post_id
+
+        # Post data for header and body
+        content_type_name = None
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT p.id, p.title, p.status, p.summary, p.subtitle, p.created_at, p.updated_at,
+                       p.content_type_id
+                FROM post p
+                WHERE p.id = %s
+                """,
+                (target_post_id,),
+            )
+            post = cursor.fetchone()
+
+            if not post:
+                return render_template(
+                    'planning/calendar/ideas.html',
+                    post_id=post_id,
+                    year=year,
+                    week_number=week_number,
+                    blueprint_name='planning',
+                    mode='post-based',
+                    page_mode=page_mode,
+                    error='Post not found',
+                )
+
+            cursor.execute(
+                """
+                SELECT ti.display_name as content_type_name
+                FROM post p
+                LEFT JOIN taxonomy_item ti ON p.content_type_id = ti.id
+                WHERE p.id = %s
+                """,
+                (target_post_id,),
+            )
+            result = cursor.fetchone()
+            if result:
+                content_type_name = result.get('content_type_name')
+
+        # Post-authoritative context: theme + subtitle from post only
+        post_derived_theme = None
+        post_context = None
+        if post_type == 'themed' and post.get('id'):
+            theme_desc = (post.get('summary') or post.get('subtitle') or '')
+            post_derived_theme = {
+                'post_id': post_id,
+                'theme_title': post.get('title'),
+                'theme_description': theme_desc,
+                'priority': 'normal',
+            }
+            post_context = {
+                'post_id': post_id,
+                'title': post.get('title') or '',
+                'summary': post.get('summary') or '',
+                'subtitle': post.get('subtitle') or '',
+            }
+
+        return render_template(
+            'planning/calendar/ideas.html',
+            post_id=post_id,
+            post=post,
+            post_type=post_type,
+            post_title=post.get('title'),
+            post_status=post.get('status'),
+            post_created=post.get('created_at'),
+            post_updated=post.get('updated_at'),
+            content_type_name=content_type_name,
+            post_derived_theme=post_derived_theme,
+            post_context=post_context,
+            year=year,
+            week_number=week_number,
+            blueprint_name='planning',
+            mode='post-based',
+            page_mode=page_mode,
+        )
+    except Exception as e:
+        logger.error(f"Error in _render_ideas_page({page_mode}) for post {post_id}: {e}")
+        # Fallback: reuse existing ideas_func behaviour
+        return ideas_func(post_id)
+
+
+@bp.route('/posts/<int:post_id>/calendar/ideas/generate')
+def planning_calendar_ideas_generate(post_id):
+    """Ideas Generate page (RUN_PAGE: ideas.generate_idea_set)."""
+    return _render_ideas_page(post_id, page_mode="generate")
+
+
+@bp.route('/posts/<int:post_id>/calendar/ideas/curate')
+def planning_calendar_ideas_curate(post_id):
+    """Ideas Curate page (EDIT_PAGE: ideas.curate_ideas)."""
+    return _render_ideas_page(post_id, page_mode="curate")
+
+
 @bp.route('/posts/<int:post_id>/calendar/ideas')
 def planning_calendar_ideas(post_id):
-    """Calendar ideas page"""
-    return ideas_func(post_id)
+    """Legacy ideas calendar entry; redirect to generate page for post-based flow."""
+    from flask import redirect, url_for, request
+
+    year = request.args.get('year', type=int)
+    week = request.args.get('week', type=int)
+    return redirect(url_for('planning.planning_calendar_ideas_generate', post_id=post_id, year=year, week=week))
 
 @bp.route('/posts/<int:post_id>/calendar/taxonomy')
 def planning_calendar_taxonomy(post_id):
