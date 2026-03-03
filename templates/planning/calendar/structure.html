@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% set page_mode = page_mode|default('edit') %}
+
+{% block title %}Structure - Planning{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-main">
+        <div style="margin: 1.5rem 0;">
+            <h2 style="color:#f1f5f9; margin-bottom:0.25rem;">
+                Structure —
+                {% if page_mode == 'cluster' %}
+                    Cluster into Sections
+                {% else %}
+                    Edit Sections
+                {% endif %}
+            </h2>
+            <p style="color:#94a3b8; margin:0;">
+                Post ID: {{ post_id }}
+            </p>
+        </div>
+
+        {% if page_mode == 'cluster' %}
+        <!-- RUN_PAGE: Cluster Into Sections (no editing UI) -->
+        <div style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:1.25rem; margin-bottom:1.25rem;">
+            <h3 style="color:#e5e7eb; margin-top:0; margin-bottom:0.75rem;">Cluster Into Sections</h3>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">
+                Run the clustering step to turn curated ideas into a structured set of sections.
+            </p>
+            <div style="display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+                <div>
+                    <div style="color:#94a3b8; font-size:0.75rem;">Sections</div>
+                    <div id="structure-sections-count" style="color:#e5e7eb; font-size:1.1rem;">—</div>
+                </div>
+            </div>
+            <button type="button"
+                    id="cluster-into-sections-btn"
+                    class="btn btn-primary"
+                    style="display:inline-flex; align-items:center; gap:0.5rem;">
+                <i class="fas fa-layer-group"></i> Cluster Into Sections
+            </button>
+        </div>
+        <div style="margin-top:0.5rem;">
+            <a href="{{ url_for('planning.planning_calendar_structure_edit', post_id=post_id) }}" class="btn btn-secondary">
+                Next: Edit Sections
+            </a>
+        </div>
+        {% elif page_mode == 'edit' %}
+        <!-- EDIT_PAGE: Full sections editing interface (no cluster button) -->
+        <div style="margin-bottom:1.25rem;">
+            <p style="color:#94a3b8; font-size:0.9rem; margin:0 0 0.75rem 0;">
+                Edit section titles, order, and content below. Changes are saved via the existing Sections panel.
+            </p>
+            <iframe src="/post-sections/?post_id={{ post_id }}"
+                    style="width:100%; min-height:600px; border:none; border-radius:8px; overflow:hidden;"
+                    title="Sections editor for post {{ post_id }}"></iframe>
+        </div>
+        <div style="margin-top:0.5rem;">
+            <a href="/planning/posts/{{ post_id }}/calendar/titling" class="btn btn-primary">
+                Next: Titling
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

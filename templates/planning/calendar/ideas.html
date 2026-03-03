@@ -171,7 +171,7 @@
                     </div>
                     {% elif page_mode == 'curate' %}
                     <div class="metadata-field" style="margin-top: 0.5rem;">
-                        <a href="/planning/posts/{{ post_id }}/calendar/structure" class="btn btn-primary">
+                        <a href="{{ url_for('planning.planning_calendar_structure_cluster', post_id=post_id) }}" class="btn btn-primary">
                             Next: Structure → Cluster
                         </a>
                     </div>

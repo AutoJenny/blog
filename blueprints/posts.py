@@ -1092,6 +1092,11 @@ def _get_pipeline_nav(stage: str, substage: str, post_id: int):
             return f"/planning/posts/{post_id}/calendar/ideas/curate", True
         return f"/planning/posts/{post_id}/calendar/ideas", True
     if stage == "structure":
+        # Stage 25: split Structure into cluster vs edit pages
+        if substage == "cluster_into_sections":
+            return f"/planning/posts/{post_id}/calendar/structure/cluster", True
+        if substage == "edit_section_plan":
+            return f"/planning/posts/{post_id}/calendar/structure/edit", True
         return f"/planning/posts/{post_id}/calendar/structure", False
     if stage == "titling":
         return f"/planning/posts/{post_id}/calendar/titling", False
