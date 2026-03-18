@@ -23,3 +23,15 @@
 2. **Lean Root Rule**: No new scripts/docs at root. Operational files only.
 3. **500-Line Limit**: All modules must remain under 500 lines to ensure maintainability.
 
+## V. The Discovery-First Protocol
+
+### Mandatory Discovery Steps
+
+1. **Database Audit**: Identify all relevant tables, including those in migrations or isolated "Data Intelligence" layers.
+2. **Infrastructure Audit**: Check for installed packages (e.g., faiss, sentence-transformers) that indicate existing, hidden capabilities.
+3. **Logic Trace**: Follow the data flow of existing scripts (e.g., research_family_web.py) to the storage layer (FAISS/PostgreSQL).
+4. **Existing Asset Map**: Present a report to the Human Supervisor verifying what is already available before proposing new code.
+
+### New Operational Rule
+"From this point forward, every new Phase or Task must begin with an Investigation Report verifying what currently exists in the blog repository (including all archives/ folders)".
+
