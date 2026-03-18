@@ -2,6 +2,7 @@
 Calendar-Driven Automation Work Selection — W2-FIX-9.2
 
 Returns posts to process for a given (year, week), ordered by workflow stage.
+W2 Phase 2: Uses utils.posts.stage_order (single source) for ordering.
 Sources: calendar_week_items (item_type recipe/profile) and post.extra_settings.calendar_seed.
 """
 
@@ -9,14 +10,9 @@ from typing import List, Dict, Any
 from datetime import date
 import logging
 from config.database import db_manager
+from utils.posts.stage_order import STAGE_ORDER, stage_index
 
 logger = logging.getLogger(__name__)
-
-# Workflow stage order for sorting (earliest first = process first)
-STAGE_ORDER = (
-    "idea", "structured", "drafted", "imaged",
-    "essentials_complete", "ready", "published"
-)
 
 
 def get_posts_for_week(
@@ -88,25 +84,20 @@ def get_posts_for_week(
             if not post_ids:
                 return []
 
-            # Get workflow_stage for each
+            # Get workflow_stage for each (canonical column only). W2 Phase 1.
             placeholders = ",".join(["%s"] * len(post_ids))
             cursor.execute(f"""
                 SELECT p.id AS post_id,
-                       COALESCE(
-                           p.extra_settings->>'workflow_stage',
-                           'idea'
-                       )::text AS workflow_stage
+                       COALESCE(p.workflow_stage, 'metadata')::text AS workflow_stage
                 FROM post p
                 WHERE p.id IN ({placeholders})
             """, tuple(post_ids))
 
             rows = cursor.fetchall() or []
-            stage_idx = {s: i for i, s in enumerate(STAGE_ORDER)}
-
             result = []
             for r in rows:
-                stage = (r.get("workflow_stage") or "idea").strip()
-                order = stage_idx.get(stage, 99)
+                stage = (r.get("workflow_stage") or "metadata").strip()
+                order = stage_index(stage)
                 result.append({
                     "post_id": r["post_id"],
                     "workflow_stage": stage,

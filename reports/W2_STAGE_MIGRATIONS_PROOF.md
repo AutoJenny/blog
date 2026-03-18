@@ -99,9 +99,9 @@ Foreign-key constraints:
 ## Proof block
 
 ```
-git rev-parse HEAD
-git status
-git log -1 --oneline
+bc5e5225
+ M blueprints/planning_api_post_metadata.py
+ M blueprints/planning_api_posts.py
+ ...
+bc5e5225 W2: DB migrations proof report (workflow_stage column, post_required_idea table)
 ```
-
-(To be filled after commits.)

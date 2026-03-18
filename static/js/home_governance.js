@@ -403,120 +403,144 @@
     }
   }
 
+  function isoWeekFromDateStr(isoDateStr) {
+    if (!isoDateStr) return { year: null, week: null };
+    try {
+      var d = new Date(isoDateStr + 'T12:00:00');
+      if (isNaN(d.getTime())) return { year: null, week: null };
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+      var y = d.getFullYear();
+      var start = new Date(y, 0, 1);
+      var week = Math.ceil((((d - start) / 86400000) + 1) / 7);
+      return { year: y, week: week };
+    } catch (_) {
+      return { year: null, week: null };
+    }
+  }
+
   function renderPanel(data) {
     var panel = document.getElementById('governance-panel');
     if (!panel) return;
 
-    panelYear = data.year;
-    panelWeek = data.current_week;
-    var slots = Array.isArray(data.scheduled_slots) ? data.scheduled_slots : [];
-    var candidates = Array.isArray(data.blog_candidates) ? data.blog_candidates : [];
-    var summary = data.automation_summary || {};
-    var windowStart = data.window_start || '';
-    var windowEnd = data.window_end || '';
-    var headingLabel = windowStart && windowEnd
-      ? 'Next 7 days (' + formatWindowDate(windowStart) + ' – ' + formatWindowDate(windowEnd) + ')'
-      : 'Week ' + String(panelWeek) + ' (' + String(panelYear) + ')';
+    try {
+      var windowStart = data.window_start || '';
+      var windowEnd = data.window_end || '';
+      var iso = isoWeekFromDateStr(windowStart);
+      panelYear = iso.year;
+      panelWeek = iso.week;
+      var slots = Array.isArray(data.scheduled_slots) ? data.scheduled_slots : [];
+      var candidates = Array.isArray(data.blog_candidates) ? data.blog_candidates : [];
+      var summary = data.automation_summary || {};
+      var headingLabel = windowStart && windowEnd
+        ? 'Next 7 days (' + formatWindowDate(windowStart) + ' – ' + formatWindowDate(windowEnd) + ')'
+        : 'Next 7 days';
 
-    console.log('[governance] scheduled_slots length=', slots.length, 'roles=', slots.map(function (s) { return s.role || s.item_type; }));
+      var html = '';
+      html += '<div class="flex flex-wrap items-center justify-between gap-2 mb-4">';
+      html += '<div>';
+      html += '<h2 class="text-lg font-semibold text-white">' + escapeHtml(headingLabel) + '</h2>';
+      html += '</div>';
+      html += '<a href="/planning/calendar" class="text-sm text-slate-400 hover:text-slate-200">View full calendar →</a>';
+      html += '</div>';
+      html += '<div class="overflow-x-auto rounded-lg border border-slate-600">';
+      html += '<table class="min-w-full text-left text-sm">';
+      html += '<thead class="bg-slate-800 text-slate-300 uppercase tracking-wide"><tr>';
+      html += '<th class="px-4 py-2 font-medium">Role</th>';
+      html += '<th class="px-4 py-2 font-medium">Scheduled Date</th>';
+      html += '<th class="px-4 py-2 font-medium">Channels</th>';
+      html += '<th class="px-4 py-2 font-medium">Summary</th>';
+      html += '<th class="px-4 py-2 font-medium">Post Status</th>';
+      html += '<th class="px-4 py-2 font-medium">Workflow Stage</th>';
+      html += '<th class="px-4 py-2 font-medium">Automation Enabled</th>';
+      html += '<th class="px-4 py-2 font-medium">Output Ready</th>';
+      html += '<th class="px-4 py-2 font-medium">Actions</th>';
+      html += '</tr></thead><tbody class="bg-slate-900/50 text-slate-200">';
 
-    var html = '';
-    html += '<div class="flex flex-wrap items-center justify-between gap-2 mb-4">';
-    html += '<h2 class="text-lg font-semibold text-white">' + escapeHtml(headingLabel) + '</h2>';
-    html += '<a href="/planning/calendar" class="text-sm text-slate-400 hover:text-slate-200">View full calendar →</a>';
-    html += '</div>';
-    html += '<div class="overflow-x-auto rounded-lg border border-slate-600">';
-    html += '<table class="min-w-full text-left text-sm">';
-    html += '<thead class="bg-slate-800 text-slate-300 uppercase tracking-wide"><tr>';
-    html += '<th class="px-4 py-2 font-medium">Role</th>';
-    html += '<th class="px-4 py-2 font-medium">Scheduled Date</th>';
-    html += '<th class="px-4 py-2 font-medium">Channels</th>';
-    html += '<th class="px-4 py-2 font-medium">Summary</th>';
-    html += '<th class="px-4 py-2 font-medium">Post Status</th>';
-    html += '<th class="px-4 py-2 font-medium">Workflow Stage</th>';
-    html += '<th class="px-4 py-2 font-medium">Automation Enabled</th>';
-    html += '<th class="px-4 py-2 font-medium">Output Ready</th>';
-    html += '<th class="px-4 py-2 font-medium">Actions</th>';
-    html += '</tr></thead><tbody class="bg-slate-900/50 text-slate-200">';
-
-    for (var i = 0; i < slots.length; i++) {
-      var slot = slots[i];
-      var actions = [];
-      if (slot.post_id != null) {
-        actions.push('<a href="/planning/posts/' + slot.post_id + '/calendar" class="text-blue-400 hover:text-blue-300">Open Post</a>');
-        if (slot.automation_enabled === true && slot.output_ready === true && slot.automation_blocked_reason == null) {
-          actions.push('<button type="button" class="gov-run-automation text-emerald-400 hover:text-emerald-300" data-post-id="' + escapeHtml(String(slot.post_id)) + '">Run Automation</button>');
-        }
-      } else {
-        if (slot.role === 'blog' || slot.item_type === 'blog') {
-          actions.push('<span class="text-slate-500" title="Start from ideas below">—</span>');
+      if (slots.length === 0) {
+        html += '<tr class="border-t border-slate-700"><td colspan="9" class="px-4 py-4 text-slate-400">No scheduled content in the next 7 days.</td></tr>';
+      }
+      for (var i = 0; i < slots.length; i++) {
+        var slot = slots[i];
+        var actions = [];
+        if (slot.post_id != null) {
+          actions.push('<a href="/planning/posts/' + slot.post_id + '/calendar" class="text-blue-400 hover:text-blue-300">Open Post</a>');
+          if (slot.automation_enabled === true && slot.output_ready === true && slot.automation_blocked_reason == null) {
+            actions.push('<button type="button" class="gov-run-automation text-emerald-400 hover:text-emerald-300" data-post-id="' + escapeHtml(String(slot.post_id)) + '">Run Automation</button>');
+          }
         } else {
-          actions.push('<a href="/launchpad/one-click-publication?slot_id=' + escapeHtml(String(slot.slot_id)) + '" class="text-blue-400 hover:text-blue-300">Create From Slot</a>');
+          if (slot.role === 'blog' || slot.item_type === 'blog') {
+            actions.push('<span class="text-slate-500" title="Start from ideas below">—</span>');
+          } else {
+            actions.push('<a href="/launchpad/one-click-publication?slot_id=' + escapeHtml(String(slot.slot_id)) + '" class="text-blue-400 hover:text-blue-300">Create From Slot</a>');
+          }
         }
+        html += '<tr class="border-t border-slate-700">';
+        html += '<td class="px-4 py-2">' + escapeHtml(roleLabel(slot.item_type, slot.role)) + '</td>';
+        html += '<td class="px-4 py-2">' + escapeHtml(formatDate(slot.scheduled_date)) + '</td>';
+        html += '<td class="px-4 py-2">' + renderChannels(slot.channels) + '</td>';
+        html += '<td class="px-4 py-2 max-w-md">' + escapeHtml(summaryText(slot.summary)) + '</td>';
+        html += '<td class="px-4 py-2">' + escapeHtml(slot.post_status != null ? String(slot.post_status) : '—') + '</td>';
+        html += '<td class="px-4 py-2">' + escapeHtml(slot.workflow_stage != null ? String(slot.workflow_stage) : '—') + '</td>';
+        html += '<td class="px-4 py-2">' + escapeHtml(formatBool(slot.automation_enabled)) + '</td>';
+        html += '<td class="px-4 py-2">' + escapeHtml(formatBool(slot.output_ready)) + '</td>';
+        html += '<td class="px-4 py-2">' + actions.join(' · ') + '</td>';
+        html += '</tr>';
       }
-      html += '<tr class="border-t border-slate-700">';
-      html += '<td class="px-4 py-2">' + escapeHtml(roleLabel(slot.item_type, slot.role)) + '</td>';
-      html += '<td class="px-4 py-2">' + escapeHtml(formatDate(slot.scheduled_date)) + '</td>';
-      html += '<td class="px-4 py-2">' + renderChannels(slot.channels) + '</td>';
-      html += '<td class="px-4 py-2 max-w-md">' + escapeHtml(summaryText(slot.summary)) + '</td>';
-      html += '<td class="px-4 py-2">' + escapeHtml(slot.post_status != null ? String(slot.post_status) : '—') + '</td>';
-      html += '<td class="px-4 py-2">' + escapeHtml(slot.workflow_stage != null ? String(slot.workflow_stage) : '—') + '</td>';
-      html += '<td class="px-4 py-2">' + escapeHtml(formatBool(slot.automation_enabled)) + '</td>';
-      html += '<td class="px-4 py-2">' + escapeHtml(formatBool(slot.output_ready)) + '</td>';
-      html += '<td class="px-4 py-2">' + actions.join(' · ') + '</td>';
-      html += '</tr>';
-    }
-    html += '</tbody></table></div>';
+      html += '</tbody></table></div>';
 
-    html += '<details class="blog-candidates gov-accordion mt-4">';
-    html += '<summary class="gov-accordion-toggle cursor-pointer text-slate-300 hover:text-white font-medium">Blog ideas (' + escapeHtml(String(candidates.length)) + ' available)</summary>';
-    html += '<div class="gov-accordion-body mt-2">';
-    html += '<div class="blog-candidate-controls"><button id="addNewIdeaBtn">+ New Idea</button></div>';
-    html += '<div id="blogCandidatesList">';
-    candidateByWeekItemId = {};
-    for (var j = 0; j < candidates.length; j++) {
-      var c = candidates[j];
-      candidateByWeekItemId[String(c.week_item_id)] = c;
-      var meta = c.metadata || {};
-      var converted = meta.converted === true && (meta.post_id != null || c.post_id != null);
-      var postId = c.post_id != null ? c.post_id : (meta.post_id != null ? meta.post_id : null);
-      var isSelected = c.is_selected === true;
-      html += '<div class="blog-candidate-card">';
-      html += '<label>';
-      html += '<input type="radio" name="blogCandidate" value="' + escapeHtml(String(c.week_item_id)) + '"' + (c.is_selected === true ? ' checked' : '') + '>';
-      html += '<strong>' + escapeHtml(c.title || ('Idea #' + c.item_id)) + '</strong>';
-      if (isSelected) html += ' <span class="gov-candidate-active-tag">Active</span>';
-      html += '</label>';
-      html += '<div class="candidate-summary">' + escapeHtml(c.summary || '') + '</div>';
-      html += '<div class="candidate-actions">';
-      if (converted && postId) {
-        html += '<a href="/planning/posts/' + escapeHtml(String(postId)) + '/calendar" class="candidate-btn primary">Open Post</a>';
-        html += '<button class="candidate-btn" data-action="edit" data-id="' + escapeHtml(String(c.week_item_id)) + '">Edit</button>';
-        html += '<button class="candidate-btn" data-action="move" data-id="' + escapeHtml(String(c.week_item_id)) + '">Move</button>';
-        html += '<button class="candidate-btn danger" data-action="delete" data-id="' + escapeHtml(String(c.week_item_id)) + '" disabled title="Converted item">Delete</button>';
-      } else {
-        html += '<button class="candidate-btn primary" data-action="convert" data-id="' + escapeHtml(String(c.week_item_id)) + '" title="Creates a draft blog post from this idea and sets it as this week\'s active blog.">Start Blog Post</button>';
-        html += '<button class="candidate-btn" data-action="edit" data-id="' + escapeHtml(String(c.week_item_id)) + '">Edit</button>';
-        html += '<button class="candidate-btn" data-action="move" data-id="' + escapeHtml(String(c.week_item_id)) + '">Move</button>';
-        html += '<button class="candidate-btn danger" data-action="delete" data-id="' + escapeHtml(String(c.week_item_id)) + '">Delete</button>';
+      html += '<details class="blog-candidates gov-accordion mt-4">';
+      html += '<summary class="gov-accordion-toggle cursor-pointer text-slate-300 hover:text-white font-medium">Blog ideas (' + escapeHtml(String(candidates.length)) + ' available)</summary>';
+      html += '<div class="gov-accordion-body mt-2">';
+      html += '<div class="blog-candidate-controls"><button id="addNewIdeaBtn">+ New Idea</button></div>';
+      html += '<div id="blogCandidatesList">';
+      candidateByWeekItemId = {};
+      for (var j = 0; j < candidates.length; j++) {
+        var c = candidates[j];
+        candidateByWeekItemId[String(c.week_item_id)] = c;
+        var meta = c.metadata || {};
+        var converted = meta.converted === true && (meta.post_id != null || c.post_id != null);
+        var postId = c.post_id != null ? c.post_id : (meta.post_id != null ? meta.post_id : null);
+        var isSelected = c.is_selected === true;
+        html += '<div class="blog-candidate-card">';
+        html += '<label>';
+        html += '<input type="radio" name="blogCandidate" value="' + escapeHtml(String(c.week_item_id)) + '"' + (c.is_selected === true ? ' checked' : '') + '>';
+        html += '<strong>' + escapeHtml(c.title || ('Idea #' + c.item_id)) + '</strong>';
+        if (isSelected) html += ' <span class="gov-candidate-active-tag">Active</span>';
+        html += '</label>';
+        html += '<div class="candidate-summary">' + escapeHtml(c.summary || '') + '</div>';
+        html += '<div class="candidate-actions">';
+        if (converted && postId) {
+          html += '<a href="/planning/posts/' + escapeHtml(String(postId)) + '/calendar" class="candidate-btn primary">Open Post</a>';
+          html += '<button class="candidate-btn" data-action="edit" data-id="' + escapeHtml(String(c.week_item_id)) + '">Edit</button>';
+          html += '<button class="candidate-btn" data-action="move" data-id="' + escapeHtml(String(c.week_item_id)) + '">Move</button>';
+          html += '<button class="candidate-btn danger" data-action="delete" data-id="' + escapeHtml(String(c.week_item_id)) + '" disabled title="Converted item">Delete</button>';
+        } else {
+          html += '<button class="candidate-btn primary" data-action="convert" data-id="' + escapeHtml(String(c.week_item_id)) + '" title="Creates a draft blog post from this idea and sets it as this week\'s active blog.">Start Blog Post</button>';
+          html += '<button class="candidate-btn" data-action="edit" data-id="' + escapeHtml(String(c.week_item_id)) + '">Edit</button>';
+          html += '<button class="candidate-btn" data-action="move" data-id="' + escapeHtml(String(c.week_item_id)) + '">Move</button>';
+          html += '<button class="candidate-btn danger" data-action="delete" data-id="' + escapeHtml(String(c.week_item_id)) + '">Delete</button>';
+        }
+        html += '</div>';
+        html += '</div>';
       }
-      html += '</div>';
-      html += '</div>';
-    }
-    html += '</div></div></details>';
+      html += '</div></div></details>';
 
-    html += '<p class="text-slate-400 text-xs mt-2">Ready: ' + (summary.ready_count || 0) + ' · Blocked: ' + (summary.blocked_count || 0) + ' · No post: ' + (summary.no_post_count || 0) + '</p>';
+      html += '<p class="text-slate-400 text-xs mt-2">Ready: ' + (summary.ready_count || 0) + ' · Blocked: ' + (summary.blocked_count || 0) + ' · No post: ' + (summary.no_post_count || 0) + '</p>';
 
-    panel.innerHTML = '<div class="card-dark rounded-xl p-6 border border-slate-700">' + html + '</div>';
+      panel.innerHTML = '<div class="card-dark rounded-xl p-6 border border-slate-700">' + html + '</div>';
 
-    panel.querySelectorAll('.gov-run-automation').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var postId = this.getAttribute('data-post-id');
-        if (!postId) return;
-        runAutomation(parseInt(postId, 10));
+      panel.querySelectorAll('.gov-run-automation').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var postId = this.getAttribute('data-post-id');
+          if (!postId) return;
+          runAutomation(parseInt(postId, 10));
+        });
       });
-    });
-    bindCandidateEvents();
+      bindCandidateEvents();
+    } catch (err) {
+      panel.innerHTML = '<div class="card-dark rounded-xl p-6 border border-slate-700"><p class="text-red-400 text-sm">Render error: ' + escapeHtml((err && (err.message || String(err))) ? String(err.message || err).slice(0, 80) : 'Unknown error') + '</p></div>';
+    }
   }
 
   function loadGovernancePanel() {
@@ -526,7 +550,7 @@
         return res.json();
       })
       .then(function (data) {
-        if (!data || typeof data.current_week === 'undefined' || typeof data.year === 'undefined') {
+        if (!data || data.window_start === undefined) {
           renderError('Governance panel unavailable.');
           return;
         }

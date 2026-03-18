@@ -1,9 +1,8 @@
 """
-Persisted workflow stage model for posts.
-W2-FIX-5: Strict internal progression inside status=draft.
-
-Stages: idea → structured → drafted → imaged → essentials_complete → ready → published
-Stored in post.extra_settings.workflow_stage.
+Legacy workflow stage module. W2 Phase 1: Canonical authoring stage is post.workflow_stage only.
+This module provides require_workflow_stage (gates) and backward-compat get_workflow_stage.
+Stage mutation is ONLY via POST /api/posts/<id>/advance-stage (early_stage.advance_post_stage).
+Legacy stages (idea, structured, ...) and extra_settings.workflow_stage are deprecated; not read for logic, not written.
 """
 
 import json
@@ -27,7 +26,15 @@ STAGES: List[str] = [
     "published",
 ]
 
-# Route groups and their allowed stages (from W2-DESIGN-2)
+# Route groups and allowed canonical stages (post.workflow_stage). W2 Phase 1.
+CANONICAL_ROUTE_GATES = {
+    "planning": {"ideas", "structure"},
+    "authoring": {"titling", "authoring"},
+    "imaging": {"imaging"},
+    "launchpad_essentials": {"imaging", "review"},
+    "publish": {"review"},
+}
+# Legacy (deprecated); kept for reference only.
 ROUTE_GATES = {
     "planning": {"idea", "structured"},
     "authoring": {"structured", "drafted"},
@@ -186,42 +193,12 @@ def _compute_highest_valid_stage(post_id: int) -> str:
 
 def validate_workflow_stage(post_id: int) -> Tuple[str, bool]:
     """
-    W2-FIX-6: Re-evaluate criteria for current stage. If criteria no longer met,
-    downgrade to highest valid stage and persist. Returns (stage, was_downgraded).
+    W2 Phase 1: No persistence. Returns current canonical stage and was_downgraded=False.
+    Stage must not be mutated outside advance-stage endpoint.
     """
-    with db_manager.get_cursor() as cursor:
-        cursor.execute(
-            "SELECT extra_settings FROM post WHERE id = %s",
-            (post_id,),
-        )
-        row = cursor.fetchone()
-    if not row:
-        return "idea", False
-
-    extra = row.get("extra_settings") or {}
-    if isinstance(extra, str):
-        try:
-            extra = json.loads(extra) if extra else {}
-        except json.JSONDecodeError:
-            extra = {}
-    current = extra.get("workflow_stage") or "idea"
-    if current not in STAGES:
-        current = "idea"
-
-    highest_valid = _compute_highest_valid_stage(post_id)
-    curr_idx = _stage_index(current)
-    valid_idx = _stage_index(highest_valid)
-
-    if curr_idx <= valid_idx:
-        return current, False
-
-    reason = f"criteria for '{current}' no longer met; highest valid: {highest_valid}"
-    logger.warning(
-        "Workflow stage downgrade: post_id=%s old_stage=%s new_stage=%s reason=%s",
-        post_id, current, highest_valid, reason,
-    )
-    set_workflow_stage(post_id, highest_valid, actor="validate_integrity")
-    return highest_valid, True
+    from utils.posts.early_stage import get_canonical_stage
+    current = get_canonical_stage(post_id)
+    return current, False
 
 
 def infer_workflow_stage(post_id: int) -> str:
@@ -285,35 +262,11 @@ def infer_workflow_stage(post_id: int) -> str:
 
 def get_workflow_stage(post_id: int, persist_if_missing: bool = True, validate: bool = True) -> str:
     """
-    Get current workflow stage. If missing from extra_settings, infer and optionally persist.
-    W2-FIX-6: When validate=True, runs validate_workflow_stage to correct drift.
+    W2 Phase 1: Return canonical authoring stage (post.workflow_stage only).
+    persist_if_missing and validate are ignored; no inference, no write.
     """
-    with db_manager.get_cursor() as cursor:
-        cursor.execute(
-            "SELECT extra_settings FROM post WHERE id = %s",
-            (post_id,),
-        )
-        row = cursor.fetchone()
-    if not row:
-        return "idea"
-
-    extra = row.get("extra_settings") or {}
-    if isinstance(extra, str):
-        try:
-            extra = json.loads(extra) if extra else {}
-        except json.JSONDecodeError:
-            extra = {}
-
-    stage = extra.get("workflow_stage")
-    if stage and stage in STAGES:
-        if validate:
-            stage, _ = validate_workflow_stage(post_id)
-        return stage
-
-    inferred = infer_workflow_stage(post_id)
-    if persist_if_missing:
-        set_workflow_stage(post_id, inferred, actor="system")
-    return inferred
+    from utils.posts.early_stage import get_canonical_stage
+    return get_canonical_stage(post_id)
 
 
 def set_workflow_stage(
@@ -323,54 +276,18 @@ def set_workflow_stage(
     merge_extra: Optional[dict] = None,
 ) -> Tuple[bool, Optional[str]]:
     """
-    Persist workflow_stage in extra_settings. Merge with existing keys.
-    Returns (success, error_message).
+    W2 Phase 1: No-op. Authoring stage may only be set via POST /api/posts/<id>/advance-stage.
+    extra_settings.workflow_stage is never written again.
     """
-    if stage not in STAGES:
-        return False, f"Invalid stage: {stage}"
-
-    with db_manager.get_cursor() as cursor:
-        cursor.execute(
-            "SELECT extra_settings FROM post WHERE id = %s",
-            (post_id,),
-        )
-        row = cursor.fetchone()
-    if not row:
-        return False, "Post not found"
-
-    extra = row.get("extra_settings") or {}
-    if isinstance(extra, str):
-        try:
-            extra = json.loads(extra) if extra else {}
-        except json.JSONDecodeError:
-            extra = {}
-
-    if not isinstance(extra, dict):
-        extra = {}
-
-    extra["workflow_stage"] = stage
-    extra["workflow_stage_updated_at"] = datetime.now(timezone.utc).isoformat()
-    if merge_extra:
-        extra.update(merge_extra)
-
-    with db_manager.get_cursor() as cursor:
-        cursor.execute(
-            "UPDATE post SET extra_settings = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
-            (json.dumps(extra), post_id),
-        )
-        if cursor.rowcount == 0:
-            return False, "Post not found"
-        cursor.connection.commit()
-
-    logger.info(f"Post {post_id} workflow_stage set to {stage} (actor={actor})")
+    logger.debug("W2: set_workflow_stage is deprecated (no-op); post_id=%s stage=%s actor=%s", post_id, stage, actor)
     return True, None
 
 
 def ensure_workflow_stage_idea(post_id: int) -> None:
     """
-    Set workflow_stage=idea for newly created posts. Call from post creation paths.
+    W2 Phase 1: No-op. New posts get workflow_stage=metadata from DB default.
     """
-    set_workflow_stage(post_id, "idea", actor="post_creation")
+    pass
 
 
 def can_transition(
@@ -379,8 +296,8 @@ def can_transition(
     override: bool = False,
 ) -> Tuple[bool, Optional[str]]:
     """
-    Check if transition to target_stage is allowed.
-    Returns (allowed, error_message). Allowed = True means no error.
+    Check if transition to target_stage is allowed (legacy stages; for backward compat only).
+    W2 Phase 1: Stage advances only via advance_post_stage; this is advisory.
     """
     if override:
         return True, None
@@ -428,18 +345,16 @@ def criteria_met_for_stage(post_id: int, target_stage: str) -> bool:
 
 def get_next_advanceable_stage(post_id: int) -> Optional[str]:
     """
-    Return the next stage we can advance to (criteria met and transition allowed), or None.
+    Return the next canonical stage we can advance to, or None.
+    W2 Phase 2: Uses utils.posts.stage_order only.
     """
-    current = get_workflow_stage(post_id, persist_if_missing=True)
-    idx = _stage_index(current)
-    if idx < 0 or idx >= len(STAGES) - 1:
+    from utils.posts.early_stage import get_canonical_stage
+    from utils.posts.stage_order import STAGE_ORDER, stage_index
+    current = get_canonical_stage(post_id)
+    idx = stage_index(current)
+    if idx >= len(STAGE_ORDER) - 1:
         return None
-    next_stage = STAGES[idx + 1]
-    if next_stage == "published":
-        return None  # published is via publish action, not advance
-    if criteria_met_for_stage(post_id, next_stage):
-        return next_stage
-    return None
+    return STAGE_ORDER[idx + 1]
 
 
 def advance_stage(
@@ -449,23 +364,11 @@ def advance_stage(
     override: bool = False,
 ) -> Tuple[bool, Optional[str]]:
     """
-    Transition to target_stage if allowed. Persists on success.
-    For non-override: also requires criteria for target_stage to be met.
-    When advancing to 'ready', also sets status=in_process (Mark Ready).
-    Returns (success, error_message).
+    W2 Phase 1: No-op for persistence. Stage may only advance via POST /api/posts/<id>/advance-stage.
+    Returns (True, None) so callers do not break; no DB write.
     """
-    ok, err = can_transition(post_id, target_stage, override=override)
-    if not ok:
-        return False, err
-    if not override and target_stage not in ("ready", "published"):
-        if not criteria_met_for_stage(post_id, target_stage):
-            return False, f"Criteria for '{target_stage}' not met. Complete required work first."
-    if target_stage == "ready":
-        from utils.posts.status_transitions import transition_post_status
-        ok_status, err_status = transition_post_status(post_id, "in_process", actor=actor, override=override)
-        if not ok_status:
-            return False, err_status or "Could not set status to in_process"
-    return set_workflow_stage(post_id, target_stage, actor=actor)
+    logger.debug("W2: advance_stage is deprecated (no-op); post_id=%s target=%s actor=%s", post_id, target_stage, actor)
+    return True, None
 
 
 def require_workflow_stage(
@@ -475,11 +378,11 @@ def require_workflow_stage(
     override_param: str = "override",
 ) -> Tuple[Optional[Dict], Optional[int]]:
     """
-    Gate: require post to be in an allowed stage for the route group.
+    Gate: require post to be in an allowed canonical stage for the route group.
+    Reads post.workflow_stage only (W2 Phase 1).
     Returns (error_dict, status_code) if blocked, else (None, None).
-    error_dict includes: stage_blocked, current_stage, required_stage, message.
     """
-    if route_group not in ROUTE_GATES:
+    if route_group not in CANONICAL_ROUTE_GATES:
         return None, None
 
     override = False
@@ -492,8 +395,9 @@ def require_workflow_stage(
     if override:
         return None, None
 
-    current = get_workflow_stage(post_id, persist_if_missing=True)
-    allowed = ROUTE_GATES[route_group]
+    from utils.posts.early_stage import get_canonical_stage
+    current = get_canonical_stage(post_id)
+    allowed = CANONICAL_ROUTE_GATES[route_group]
 
     if current in allowed:
         return None, None

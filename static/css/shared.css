@@ -1,3 +1,9 @@
+/* Governance panel: diagnostics strip (always visible at top of modal) */
+.gov-diagnostics-strip {
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+}
+
 /* Governance panel: next 7 days heading + accordion */
 .gov-accordion {
     margin-top: 24px;

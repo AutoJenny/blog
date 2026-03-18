@@ -1,12 +1,91 @@
 # blueprints/core.py
-from flask import Blueprint, render_template, jsonify, request, redirect
+from flask import Blueprint, render_template, jsonify, request, redirect, current_app
 import logging
 import json
-from datetime import date, timedelta
+import os
+import subprocess
+import hashlib
+from datetime import date, timedelta, datetime, timezone
+
 from config.database import db_manager
 
 bp = Blueprint('core', __name__)
 logger = logging.getLogger(__name__)
+
+
+def _runtime_signature():
+    """Build runtime signature dict for diag endpoints and index stamp. Uses current_app."""
+    app = current_app
+    root = app.root_path
+    git_head = "unknown"
+    try:
+        git_cwd = root
+        if os.path.basename(root) == "blueprints":
+            git_cwd = os.path.dirname(root)
+        r = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+            cwd=git_cwd,
+        )
+        if r.returncode == 0 and r.stdout:
+            git_head = r.stdout.strip()
+    except Exception:
+        pass
+    git_short = git_head[:7] if len(git_head) >= 7 else git_head
+    index_path = os.path.join(root, "templates", "index.html")
+    index_abs = os.path.abspath(index_path)
+    index_mtime = 0
+    index_sha = ""
+    if os.path.isfile(index_abs):
+        try:
+            index_mtime = int(os.path.getmtime(index_abs))
+            with open(index_abs, "rb") as f:
+                index_sha = hashlib.sha256(f.read()).hexdigest()
+        except Exception:
+            pass
+    index_sha_short = index_sha[:12] if len(index_sha) >= 12 else index_sha
+    js_path = os.path.join(root, "static", "js", "home_governance.js")
+    js_abs = os.path.abspath(js_path)
+    js_mtime = 0
+    js_sha = ""
+    if os.path.isfile(js_abs):
+        try:
+            js_mtime = int(os.path.getmtime(js_abs))
+            with open(js_abs, "rb") as f:
+                js_sha = hashlib.sha256(f.read()).hexdigest()
+        except Exception:
+            pass
+    js_sha_short = js_sha[:12] if len(js_sha) >= 12 else js_sha
+    debug = bool(app.debug)
+    env = getattr(app, "env", None)
+    templates_auto_reload = app.config.get("TEMPLATES_AUTO_RELOAD")
+    jinja_auto_reload = getattr(app.jinja_env, "auto_reload", None)
+    send_file_max_age = app.config.get("SEND_FILE_MAX_AGE_DEFAULT")
+    pid = os.getpid()
+    cwd = os.getcwd()
+    server_time_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return {
+        "server_time_utc": server_time_utc,
+        "pid": pid,
+        "cwd": cwd,
+        "git_head": git_head,
+        "git_short": git_short,
+        "debug": debug,
+        "env": env,
+        "templates_auto_reload": templates_auto_reload,
+        "jinja_auto_reload": jinja_auto_reload,
+        "send_file_max_age_default": send_file_max_age,
+        "index_template_abs_path": index_abs,
+        "index_template_mtime": index_mtime,
+        "index_template_sha256": index_sha,
+        "index_sha_short": index_sha_short,
+        "home_governance_js_abs_path": js_abs,
+        "home_governance_js_mtime": js_mtime,
+        "home_governance_js_sha256": js_sha,
+        "home_governance_js_sha_short": js_sha_short,
+    }
 
 
 def _ensure_weekly_content_seeded_for_week(year: int, week: int, today: date) -> None:
@@ -220,7 +299,20 @@ def index():
         current_year = datetime.now().isocalendar()[0]
         current_week = datetime.now().isocalendar()[1]
         stats = {'post_count': 0, 'image_count': 0, 'workflow_count': 0, 'llm_count': 0}
-    
+
+    runtime_stamp = "RUNTIME_STAMP (unavailable)"
+    try:
+        sig = _runtime_signature()
+        runtime_stamp = "RUNTIME_STAMP git={} pid={} index_sha={} js_sha={} time={}".format(
+            sig.get("git_short", "?"),
+            sig.get("pid", "?"),
+            sig.get("index_sha_short", "?"),
+            sig.get("home_governance_js_sha_short", "?"),
+            sig.get("server_time_utc", "?"),
+        )
+    except Exception:
+        pass
+
     return render_template('index.html', 
                          first_post_id=first_post_id,
                          current_year=current_year,
@@ -229,7 +321,8 @@ def index():
                          image_count=stats['image_count'],
                          workflow_count=stats['workflow_count'],
                          llm_count=stats['llm_count'],
-                         blueprint_name='core')
+                         blueprint_name='core',
+                         runtime_stamp=runtime_stamp)
 
 # ARCHIVED: Old workflow routes have been moved to ARCHIVED_OLD_WORKFLOW/routes/workflow_routes.py
 # The following routes were removed:
@@ -252,6 +345,58 @@ def index():
 def health():
     """Health check endpoint."""
     return jsonify({"status": "healthy", "service": "core"})
+
+
+@bp.route('/api/diag/runtime-signature', methods=['GET'])
+def api_diag_runtime_signature():
+    """Return runtime signature for UI/build diagnosis. No-store."""
+    sig = _runtime_signature()
+    logger.info(
+        "RUNTIME_SIGNATURE %s %s %s %s %s",
+        sig.get("git_short", "?"),
+        sig.get("pid", "?"),
+        sig.get("debug", "?"),
+        sig.get("index_sha_short", "?"),
+        sig.get("home_governance_js_sha_short", "?"),
+    )
+    out = {
+        "server_time_utc": sig["server_time_utc"],
+        "pid": sig["pid"],
+        "cwd": sig["cwd"],
+        "git_head": sig["git_head"],
+        "git_short": sig["git_short"],
+        "debug": sig["debug"],
+        "env": sig["env"],
+        "templates_auto_reload": sig["templates_auto_reload"],
+        "jinja_auto_reload": sig["jinja_auto_reload"],
+        "send_file_max_age_default": sig["send_file_max_age_default"],
+        "index_template_abs_path": sig["index_template_abs_path"],
+        "index_template_mtime": sig["index_template_mtime"],
+        "index_template_sha256": sig["index_template_sha256"],
+        "index_sha_short": sig["index_sha_short"],
+        "home_governance_js_abs_path": sig["home_governance_js_abs_path"],
+        "home_governance_js_mtime": sig["home_governance_js_mtime"],
+        "home_governance_js_sha256": sig["home_governance_js_sha256"],
+        "home_governance_js_sha_short": sig["home_governance_js_sha_short"],
+    }
+    resp = jsonify(out)
+    resp.headers["Cache-Control"] = "no-store, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
+
+
+@bp.route('/api/diag/headers', methods=['GET'])
+def api_diag_headers():
+    """Return request and response headers for diagnosis. No-store."""
+    req_headers = dict(request.headers)
+    resp = jsonify({
+        "request_headers": req_headers,
+        "response_headers": {"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache"},
+    })
+    resp.headers["Cache-Control"] = "no-store, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
+
 
 @bp.route('/api/ollama/status')
 def ollama_status():
@@ -281,20 +426,17 @@ def ollama_status():
 @bp.route('/api/home/governance-summary', methods=['GET'])
 def api_home_governance_summary():
     """
-    Homepage governance: next 7 days (date-driven).
-    scheduled_slots: items with scheduled_date in [today .. today+7], including real blog slot (item_type=blog).
-    blog_candidates: ideas for current ISO week (candidate selection only; no synthetic blog row).
+    Strict rolling 7-day operational dashboard.
+    scheduled_slots: only rows where scheduled_date is between today and today+7 (inclusive).
+    No ISO week, no current_week/year in response, no seeding, no synthetic rows.
+    blog_candidates: ideas for current ISO week (does not influence scheduled_slots).
     """
     try:
-        today = date.today()
-        end = today + timedelta(days=7)
-        iso_year, iso_week, _ = today.isocalendar()
-        current_year = iso_year
-        current_week = iso_week
-        # Ensure the current ISO week has weekly_word / weekly_phrase seeded in calendar_week_items.
-        _ensure_weekly_content_seeded_for_week(current_year, current_week, today)
-        window_start = today.isoformat()
-        window_end = end.isoformat()
+        window_start_d = date.today()
+        window_end_d = window_start_d + timedelta(days=7)
+        window_start = window_start_d.isoformat()
+        window_end = window_end_d.isoformat()
+        iso_year, iso_week, _ = window_start_d.isocalendar()
 
         scheduled_slots = []
         blog_candidates = []
@@ -302,7 +444,6 @@ def api_home_governance_summary():
         blocked_count = 0
         no_post_count = 0
         try:
-            # Scheduled slots: only rows with scheduled_date in the next 7 days (date-driven).
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     SELECT cwi.id, cwi.item_type, cwi.item_id, cwi.year, cwi.week_number,
@@ -310,16 +451,15 @@ def api_home_governance_summary():
                            cwi.metadata, cwi.created_at, cwi.updated_at, cwi.position,
                            p.id AS post_id, p.status AS post_status,
                            p.summary AS post_summary, p.profile_standfirst AS post_standfirst, p.subtitle AS post_subtitle,
-                           p.extra_settings->>'workflow_stage' AS workflow_stage_raw,
+                           p.workflow_stage AS workflow_stage_raw,
                            COALESCE((p.extra_settings->'automation'->>'enabled') IS DISTINCT FROM 'false', TRUE) AS automation_enabled_raw
                     FROM calendar_week_items cwi
                     LEFT JOIN post p ON p.id = cwi.item_id AND cwi.item_type IN ('recipe', 'profile', 'theme')
                     WHERE cwi.is_active = TRUE
                       AND cwi.scheduled_date IS NOT NULL
-                      AND cwi.scheduled_date >= %s AND cwi.scheduled_date <= %s
-                      AND cwi.item_type IN ('weekly_word', 'weekly_phrase', 'weekly_insult', 'blog', 'theme', 'profile', 'recipe', 'syndication', 'annual_event', 'special_event')
-                    ORDER BY cwi.scheduled_date, cwi.position, cwi.id
-                """, (today, end))
+                      AND cwi.scheduled_date BETWEEN %s AND %s
+                    ORDER BY cwi.scheduled_date ASC
+                """, (window_start_d, window_end_d))
                 rows = cursor.fetchall() or []
 
             def _non_empty(*vals):
@@ -329,7 +469,7 @@ def api_home_governance_summary():
                 return None
 
             scheduled_rows = [r for r in rows if r.get('item_type') != 'idea']
-            # Idea candidates: active only, exclude system/test items
+            # Idea candidates: week-based (does not influence scheduled_slots)
             with db_manager.get_cursor() as cursor:
                 cursor.execute("""
                     SELECT cwi.id, cwi.item_type, cwi.item_id, cwi.is_primary, cwi.is_selected, cwi.weekday, cwi.scheduled_date,
@@ -339,7 +479,7 @@ def api_home_governance_summary():
                       AND cwi.is_active = TRUE
                       AND (cwi.metadata->>'system') IS DISTINCT FROM 'true'
                     ORDER BY COALESCE(cwi.weekday, 0), cwi.position, cwi.id
-                """, (current_year, current_week))
+                """, (iso_year, iso_week))
                 candidate_rows = cursor.fetchall() or []
 
             # Map scheduled item_type -> post_type aligned to create-from-item categories.
@@ -597,23 +737,12 @@ def api_home_governance_summary():
                     "is_provisional": is_provisional,
                     "post_id": post_id,
                     "post_status": row.get('post_status') if post_id is not None else None,
-                    "workflow_stage": (row.get('workflow_stage_raw') or 'idea').strip() if post_id is not None else None,
+                    "workflow_stage": (row.get('workflow_stage_raw') or 'metadata').strip() if post_id is not None else None,
                     "automation_enabled": bool(row.get('automation_enabled_raw') if row.get('automation_enabled_raw') is not None else True) if post_id is not None else None,
                     "output_ready": None,
                     "preflight_ok": None,
                     "automation_blocked_reason": None,
                 }
-                if item_type == 'theme' and not slot.get("scheduled_date"):
-                    # Fallback: ISO Monday for the slot's week when row has no scheduled_date.
-                    try:
-                        from datetime import date as _date
-                        row_year = row.get('year') or current_year
-                        row_week = row.get('week_number') or current_week
-                        iso_monday = _date.fromisocalendar(int(row_year), int(row_week), 1)
-                        slot["scheduled_date"] = iso_monday.isoformat()
-                    except Exception as e:
-                        logger.warning(f"Could not compute ISO Monday for theme slot {row['id']}: {e}")
-
                 if post_id is not None:
                     block_reason = None
                     output_ok = None
@@ -625,11 +754,10 @@ def api_home_governance_summary():
                             if not is_automation_enabled(post_id):
                                 block_reason = "automation_blocked"
                             else:
-                                from utils.posts.workflow_stage import get_workflow_stage, STAGES
-                                stage = get_workflow_stage(post_id, persist_if_missing=False, validate=False)
-                                req_idx = STAGES.index('essentials_complete') if 'essentials_complete' in STAGES else 4
-                                curr_idx = STAGES.index(stage) if stage in STAGES else -1
-                                if curr_idx < req_idx:
+                                from utils.posts.early_stage import get_canonical_stage
+                                from utils.posts.stage_order import stage_index
+                                stage = get_canonical_stage(post_id)
+                                if stage_index(stage) < stage_index("imaging"):
                                     block_reason = "stage_blocked"
                                 else:
                                     from utils.posts.output_readiness import get_output_readiness
@@ -686,8 +814,6 @@ def api_home_governance_summary():
         return jsonify({
             "window_start": window_start,
             "window_end": window_end,
-            "current_week": current_week,
-            "year": current_year,
             "scheduled_slots": scheduled_slots,
             "blog_candidates": blog_candidates,
             "automation_summary": {

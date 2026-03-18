@@ -153,9 +153,11 @@ Shows the destination page after clicking Open Post (or navigating to `/planning
 
 ## 5.6 Commit
 
-```bash
-git add <changed files> reports/W2_POST_OPEN_CONTEXT_BUG.md reports/screenshots/W2_POST_OPEN_CONTEXT_FIXED.png
-git commit -m "W2: fix Open Post landing to use post context (no unselected theme mismatch)"
-git log -1 --oneline
-git status
-```
+**Done:**
+
+- `git add static/js/shared/blog-pipeline-header.js reports/W2_POST_OPEN_CONTEXT_BUG.md reports/screenshots/W2_POST_OPEN_CONTEXT_FIXED.png`
+- `git commit -m "W2: fix Open Post landing to use post context (no unselected theme mismatch)"`
+
+**git log -1 --oneline:** `b3c91e4f W2: fix Open Post landing to use post context (no unselected theme mismatch)`
+
+**git status:** 3 files changed (report, screenshot, blog-pipeline-header.js); other local changes remain unstaged.

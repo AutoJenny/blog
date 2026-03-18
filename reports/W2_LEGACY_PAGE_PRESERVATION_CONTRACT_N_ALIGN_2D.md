@@ -17,7 +17,7 @@ git show --name-status --oneline HEAD
 **Verbatim output:**
 
 ```
-f66f4ab2 W2: N-ALIGN-2D preserve legacy pipeline pages (exclude only)
+80c1a0db W2: N-ALIGN-2D preserve legacy pipeline pages (exclude only)
 A	reports/W2_LEGACY_PAGE_PRESERVATION_CONTRACT_N_ALIGN_2D.md
 A	reports/screenshots/W2_ALIGN_2D_JUMP_NO_LEGACY.txt
 A	reports/screenshots/W2_ALIGN_2D_LEGACY_PAGE_STILL_LOADS.txt

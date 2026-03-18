@@ -105,4 +105,6 @@ static/js/shared/blog-pipeline-header.js:238:     * Render Current, Next button,
 git log -1 --oneline
 ```
 
-(To be filled after commit: `W2: pipeline navigation N2 header current/next/jump`)
+```
+063a8a8b W2: pipeline navigation N2 header current/next/jump
+```

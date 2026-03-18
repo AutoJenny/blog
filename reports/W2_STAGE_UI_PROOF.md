@@ -33,7 +33,7 @@ Path: `reports/screenshots/W2_STAGE_UI_INDICATOR.png`
 ## Proof block
 
 ```
-git rev-parse HEAD
-git status
-git log -1 --oneline
+c0a3a287
+...
+c0a3a287 W2: UI stage indicator proof report + screenshot
 ```

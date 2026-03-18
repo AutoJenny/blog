@@ -75,7 +75,7 @@ curl -s http://localhost:5000/api/posts/729/early-stage | jq
 ## Proof block
 
 ```
-git rev-parse HEAD
-git status
-git log -1 --oneline
+bd336c11
+...
+bd336c11 W2: Required ideas CRUD (post_required_idea) + proof report
 ```

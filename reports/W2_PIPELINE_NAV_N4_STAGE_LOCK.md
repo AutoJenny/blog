@@ -147,7 +147,9 @@ Output (verbatim):
 git log -1 --oneline
 ```
 
-(To be filled after commit.)
+```
+85626c95 W2: pipeline navigation N4 stage advancement locked to artefact gates
+```
 
 ---
 

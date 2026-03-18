@@ -55,7 +55,7 @@ curl -s http://localhost:5000/api/posts/729/early-stage | jq
 ## Proof block
 
 ```
-git rev-parse HEAD
-git status
-git log -1 --oneline
+329589ba
+...
+329589ba W2: Backend early-stage logic + API proof report
 ```

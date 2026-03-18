@@ -30,7 +30,7 @@ Path: `reports/screenshots/W2_POST_729_THEME_SUBTITLE_CORRECT.png` — post 729 
 ## Proof block
 
 ```
-git rev-parse HEAD
-git status
-git log -1 --oneline
+9bfc29c4
+...
+9bfc29c4 W2: Leak enforcement + audit report and screenshot
 ```

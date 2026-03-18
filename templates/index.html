@@ -994,7 +994,7 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/home_governance.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/home_governance.js') }}?v=20260225_1"></script>
     <script>
         // Global state (for KPI updates)
         let timelineData = [];
@@ -1380,4 +1380,5 @@
             }
         }
     </script>
+    <!-- {{ runtime_stamp }} -->
 {% endblock %}

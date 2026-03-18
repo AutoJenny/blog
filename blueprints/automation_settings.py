@@ -40,21 +40,19 @@ def start_automation():
                     'automation_blocked': True,
                 }), 403
 
-            from utils.posts.workflow_stage import get_workflow_stage, STAGES
+            from utils.posts.early_stage import get_canonical_stage
+            from utils.posts.stage_order import stage_index
 
-            current = get_workflow_stage(post_id, persist_if_missing=True)
-            req_idx = STAGES.index('essentials_complete') if 'essentials_complete' in STAGES else 4
-            curr_idx = STAGES.index(current) if current in STAGES else -1
-
-            if curr_idx < req_idx:
-                required_stage = 'essentials_complete'
+            current = get_canonical_stage(post_id)
+            min_stage = "imaging"
+            if stage_index(current) < stage_index(min_stage):
                 return jsonify({
                     'success': False,
-                    'error': f'Post is at stage "{current}". Start automation requires stage >= {required_stage}. Run automation steps (drafts, images, essentials) first.',
-                    'required_stage': required_stage,
+                    'error': f'Stage {min_stage.upper()} required to run this operation.',
+                    'required_stage': min_stage,
                     'current_stage': current,
                     'stage_blocked': True,
-                }), 409
+                }), 403
 
             # W2-FIX-8: Output readiness check before preflight
             from utils.posts.output_readiness import get_output_readiness

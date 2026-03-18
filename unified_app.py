@@ -15,7 +15,12 @@ def create_app(config_name=None):
     # Load configuration
     config_class = get_config(config_name)
     app.config.from_object(config_class)
-    
+
+    # Dev: force template/JS reload so UI changes are visible without restart
+    if app.config.get('DEBUG'):
+        app.config['TEMPLATES_AUTO_RELOAD'] = True
+        app.jinja_env.auto_reload = True
+
     # Enable CORS for all routes
     CORS(app, origins=config_class.CORS_ORIGINS, supports_credentials=True)
     
@@ -315,6 +320,9 @@ def create_app(config_name=None):
 
     from blueprints.families import bp as families_bp
     app.register_blueprint(families_bp)
+
+    from blueprints.chat_history import bp as chat_history_bp
+    app.register_blueprint(chat_history_bp)
 
     # Register publish blueprint (for recipe post publishing)
     try:

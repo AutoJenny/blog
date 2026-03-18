@@ -149,4 +149,4 @@ Mismatch case (e.g. workflow_stage=structure but user is on Ideas page): both â€
 git log -1 --oneline
 ```
 
-`dbbcba9d W2: pipeline nav UI alignment option B (strip-only + viewing + theme dedupe)`
+`38587ef5 W2: pipeline nav UI alignment option B (strip-only + viewing + theme dedupe)`

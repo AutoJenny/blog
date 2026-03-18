@@ -410,9 +410,7 @@ def publish_post_to_clan(post_id):
             )
             if not ok:
                 logger.error(f"Publish success but status transition failed: {err}")
-            # W2-FIX-6: Sync workflow_stage to published
-            from utils.posts.workflow_stage import set_workflow_stage
-            set_workflow_stage(post_id, 'published', actor='publish')
+            # W2 Phase 1: Do not write authoring stage. post.workflow_stage is unchanged.
             return jsonify({
                 'success': True, 
                 'message': 'Post published successfully to clan.com',

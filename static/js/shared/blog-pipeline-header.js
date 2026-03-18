@@ -341,31 +341,28 @@ class BlogPipelineHeader {
     }
 
     /**
-     * W2 Option B: Derive viewing context from current URL for the Viewing line.
-     * Returns { label: "Planning → Ideas", stage: "ideas" } for mismatch check.
+     * N-UI-1: Derive viewing context from URL. Canonical stage labels only (no "Planning →").
+     * Returns { label: "Ideas"|"Structure"|..., stage: "ideas"|... } for post calendar routes.
      */
     getViewingContextFromPath() {
         const path = window.location.pathname || '';
-        // Post calendar routes: /planning/posts/<id>/calendar/<segment>
+        // Post calendar routes: /planning/posts/<id>/calendar/<segment> — canonical labels only
         const calendarMatch = path.match(/\/calendar\/([^/]+)/);
         if (calendarMatch) {
             const seg = calendarMatch[1];
-            if (seg === 'ideas') return { label: 'Planning → Ideas', stage: 'ideas' };
-            if (seg === 'structure') return { label: 'Planning → Structure', stage: 'structure' };
-            if (seg === 'titling') return { label: 'Planning → Titling', stage: 'titling' };
-            if (seg === 'metadata') return { label: 'Planning → Metadata', stage: 'metadata' };
+            if (seg === 'ideas') return { label: 'Ideas', stage: 'ideas' };
+            if (seg === 'structure') return { label: 'Structure', stage: 'structure' };
+            if (seg === 'titling') return { label: 'Titling', stage: 'titling' };
+            if (seg === 'metadata') return { label: 'Metadata', stage: 'metadata' };
             if (seg === 'authoring') return { label: 'Authoring', stage: 'authoring' };
             if (seg === 'imaging') return { label: 'Imaging', stage: 'imaging' };
             if (seg === 'review') return { label: 'Review', stage: 'review' };
         }
-        // Concept routes: /planning/posts/<id>/concept/<segment>
+        // Concept routes → map to canonical stage label
         const conceptMatch = path.match(/\/concept\/([^/]+)/);
         if (conceptMatch) {
             const seg = conceptMatch[1];
-            if (seg === 'brainstorm') return { label: 'Planning → Topic Brainstorming', stage: 'structure' };
-            if (seg === 'section-structure' || seg === 'section_structure') return { label: 'Planning → Section Structure', stage: 'structure' };
-            if (seg === 'topic-allocation' || seg === 'topic_allocation') return { label: 'Planning → Section Ideas', stage: 'structure' };
-            if (seg === 'titling') return { label: 'Planning → Section Titling', stage: 'structure' };
+            if (seg === 'brainstorm' || seg === 'section-structure' || seg === 'section_structure' || seg === 'topic-allocation' || seg === 'topic_allocation' || seg === 'titling') return { label: 'Structure', stage: 'structure' };
         }
         // Authoring, imaging, header routes
         if (path.includes('/authoring/')) return { label: 'Authoring', stage: 'authoring' };
