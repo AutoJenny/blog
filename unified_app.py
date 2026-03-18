@@ -324,37 +324,6 @@ def create_app(config_name=None):
     from blueprints.chat_history import bp as chat_history_bp
     app.register_blueprint(chat_history_bp)
 
-    # Register publish blueprint (for recipe post publishing)
-    try:
-        import sys
-        import os
-        # Add blog-launchpad to path to import publish module
-        blog_launchpad_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'blog-launchpad')
-        if blog_launchpad_path not in sys.path:
-            sys.path.insert(0, blog_launchpad_path)
-        from publish import register_blueprint as register_publish_blueprint
-        register_publish_blueprint(app)
-        logging.getLogger(__name__).info("✅ Registered publish blueprint")
-        
-        # Register preview route (unified preview endpoint)
-        from publish.preview_handler import preview_post, clan_post_html
-        @app.route('/preview/<int:post_id>')
-        @app.route('/preview/<int:post_id>/')
-        def preview_post_route(post_id):
-            """Preview a specific post."""
-            return preview_post(post_id)
-        
-        @app.route('/clan-post-html/<int:post_id>')
-        def clan_post_html_route(post_id):
-            """View the clan_post HTML that will be uploaded to Clan.com."""
-            return clan_post_html(post_id)
-        
-        logging.getLogger(__name__).info("✅ Registered preview routes")
-    except Exception as e:
-        logging.getLogger(__name__).warning(f"Could not register publish blueprint: {e}")
-        import traceback
-        logging.getLogger(__name__).error(f"Traceback: {traceback.format_exc()}")
-
     # Additional blueprints will be added in Phase 2
     from blueprints.database import bp as database_bp
     app.register_blueprint(database_bp)
@@ -398,11 +367,6 @@ def create_app(config_name=None):
                 return jsonify({"tables": [t['table_name'] for t in tables], "count": len(tables)})
         except Exception as e:
             return jsonify({"error": str(e), "tables": []}), 500
-    
-    # Test route for state manager
-    @app.route('/test_state_manager.html')
-    def test_state_manager():
-        return app.send_static_file('test_state_manager.html')
     
     # Register Jinja2 template globals
     from utils.template_helpers import get_substages_for_navbar
