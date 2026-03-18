@@ -7,6 +7,8 @@
 - **The Scout**: `scripts/market_scout.py` (Future) - Monitors trends.
 - **Goal**: Every post must have a `marketing_intent` (Brand, Soft-Sell, or Conversion).
 
+Tech Standards (Gold Standard): `docs/system/TECH_STANDARDS.md`
+
 ## II. The Production Domains (The Factory Floor)
 1. **The Clock (Scheduling)**: `utils/calendar_resolver.py`. Resolves ideas 1 year out.
 2. **The Library (Research)**: `modules/research_orchestrator.py`. Fetches facts before writing.
@@ -36,4 +38,7 @@
 
 ### New Operational Rule
 "From this point forward, every new Phase or Task must begin with an Investigation Report verifying what currently exists in the blog repository (including all archives/ folders)".
+
+## VIII. Domain 8: Infrastructure
+- `docs/system/INFRASTRUCTURE_MAP.md` (Unified Cockpit baseline: ports, routing, and current “ghost” footprint).
 
