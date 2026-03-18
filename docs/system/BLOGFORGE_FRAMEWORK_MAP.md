@@ -10,6 +10,7 @@
 ## II. The Production Domains (The Factory Floor)
 1. **The Clock (Scheduling)**: `utils/calendar_resolver.py`. Resolves ideas 1 year out.
 2. **The Library (Research)**: `modules/research_orchestrator.py`. Fetches facts before writing.
+   - Uses SQL full-text search over `clan_kb_articles` (FAISS + vectors are for semantic augmentation) and FAISS-backed `utils.vector_search.retrieval.ContentRetriever` as primary internal sources.
 3. **The Eye (Imaging)**: `environments/sdxl/` & `blueprints/images.py`. Generates assets during downtime.
 4. **The Brain (Writing)**: `blueprints/llm_actions.py`. Compiles DNA + Research + Idea into text.
 

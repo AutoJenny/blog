@@ -12,5 +12,6 @@
 ## 3. Marketing Priorities (Soft-Sell Strategy)
 - **Awareness**: Focus on storytelling and "Did you know?" heritage facts.
 - **Soft-Sell**: Link heritage stories to [Product Category] without hard-sell calls to action.
+- **Privileged Links**: Automatically resolve Clan.com product URLs via `clan_products` (PostgreSQL) and tartan-design side data to keep outbound references commercially aligned.
 - **Target Channels**: [Facebook, Instagram, Newsletter, etc.]
 
