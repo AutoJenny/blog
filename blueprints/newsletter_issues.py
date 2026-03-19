@@ -4,8 +4,12 @@ from flask import Blueprint, render_template, redirect, url_for, request, jsonif
 from typing import List, Dict, Any
 import os, sys
 
-# Ensure the newsletter package (under blog-core/newsletter) is importable
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-core'))
+# Ensure the newsletter package is importable.
+# The legacy implementation lives under `archives/legacy_services/blog-core/` after root triage.
+_ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+_candidate_1 = os.path.join(_ROOT_DIR, 'blog-core')
+_candidate_2 = os.path.join(_ROOT_DIR, 'archives', 'legacy_services', 'blog-core')
+sys.path.append(_candidate_1 if os.path.exists(_candidate_1) else _candidate_2)
 
 # Import common dependencies
 from newsletter.db.queries_issue import (

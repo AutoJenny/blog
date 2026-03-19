@@ -130,6 +130,19 @@ def posts_list():
     
     try:
         with db_manager.get_cursor() as cursor:
+            # Detect minimal post schema (recovery / partial restores).
+            # Some environments may only have post.id + post.title, which makes the
+            # full posts listing query invalid (status/created_at/etc).
+            cursor.execute(
+                """
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = 'post'
+                """
+            )
+            post_cols = {r.get('column_name') if isinstance(r, dict) else r[0] for r in (cursor.fetchall() or [])}
+            has_full_post_schema = all(c in post_cols for c in ('status', 'created_at', 'updated_at'))
+
             # Check if calendar_week_posts_v2 table exists (current table)
             cursor.execute("""
                 SELECT EXISTS (
@@ -163,7 +176,25 @@ def posts_list():
             else:
                 has_week_posts_table = False
             
-            if has_v2_table:
+            if not has_full_post_schema:
+                # Minimal schema mode: list what we can, without filters/joins.
+                cursor.execute(
+                    """
+                    SELECT p.id, p.title,
+                           NULL::text AS status,
+                           NULL::timestamp AS created_at,
+                           NULL::timestamp AS updated_at,
+                           NULL::integer AS recipe_week_number,
+                           NULL::integer AS profile_category_id,
+                           NULL::integer AS sched_year,
+                           NULL::integer AS sched_week,
+                           NULL::date AS scheduled_date,
+                           NULL::integer AS weekday
+                    FROM post p
+                    ORDER BY p.id DESC
+                    """
+                )
+            elif has_v2_table:
                 # Use calendar_week_posts_v2 table (current)
                 if show_deleted:
                     cursor.execute("""
@@ -252,7 +283,13 @@ def posts_list():
                         ORDER BY p.updated_at DESC, p.id DESC
                     """)
             posts = cursor.fetchall()
-            
+
+        # Temporary diagnosis line for supervisor: count rows handed to template.
+        try:
+            logger.info(f"DEBUG(posts_list): raw_posts={len(posts) if posts else 0} show_deleted={show_deleted} full_schema={has_full_post_schema}")
+        except Exception:
+            pass
+
         # Helper function to determine post type
         def determine_post_type(post_row):
             """Determine post type: recipe, profile, or themed."""
@@ -279,8 +316,24 @@ def posts_list():
         # Format posts for template
         formatted_posts = []
         for post in posts:
-            sched_year = post.get('sched_year') if isinstance(post, dict) else post['sched_year']
-            sched_week = post.get('sched_week') if isinstance(post, dict) else post['sched_week']
+            # psycopg may return dict rows OR tuple rows depending on config.
+            if isinstance(post, dict):
+                sched_year = post.get('sched_year')
+                sched_week = post.get('sched_week')
+                pid = post.get('id')
+                title = post.get('title')
+                status = post.get('status')
+                created_at = post.get('created_at')
+                updated_at = post.get('updated_at')
+            else:
+                # positional mapping per SELECT clause above
+                pid = post[0] if len(post) > 0 else None
+                title = post[1] if len(post) > 1 else None
+                status = post[2] if len(post) > 2 else None
+                created_at = post[3] if len(post) > 3 else None
+                updated_at = post[4] if len(post) > 4 else None
+                sched_year = post[7] if len(post) > 7 else None
+                sched_week = post[8] if len(post) > 8 else None
             
             # For recipe posts, calculate calendar week from recipe_week_number if not scheduled
             post_type = determine_post_type(post)
@@ -317,16 +370,16 @@ def posts_list():
                 if recipe_week_number:
                     recipe_week_label = f"Recipe Week {recipe_week_number}"
 
-            created_ts = int(post['created_at'].timestamp() * 1000) if post.get('created_at') else 0
-            updated_ts = int(post['updated_at'].timestamp() * 1000) if post.get('updated_at') else 0
+            created_ts = int(created_at.timestamp() * 1000) if created_at else 0
+            updated_ts = int(updated_at.timestamp() * 1000) if updated_at else 0
 
             formatted_posts.append({
-                'id': post['id'],
-                'title': post['title'] or 'Untitled',
-                'status': post['status'],
-                'display_status': get_display_status(post['status']),
-                'created_ago': format_time_ago(post['created_at']),
-                'updated_ago': format_time_ago(post['updated_at']),
+                'id': pid,
+                'title': title or 'Untitled',
+                'status': status,
+                'display_status': get_display_status(status),
+                'created_ago': format_time_ago(created_at),
+                'updated_ago': format_time_ago(updated_at),
                 'created_ts': created_ts,
                 'updated_ts': updated_ts,
                 'week_label': week_label,

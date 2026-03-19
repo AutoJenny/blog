@@ -21,7 +21,14 @@ static/content/posts/0/
 static/images/instagram/
 node_modules/
 restart_server.sh.local
+master_venv
+master_venv/
+ai-hub_9000.out
+blogforge_5000.out
 *.png
 *.jpg
 *.jpeg
 
+
+# Postgres recovery archives
+backups/*.dump

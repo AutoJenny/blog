@@ -12,7 +12,7 @@
 | AI Hub / AI Governance Hub (FastAPI/uvicorn) | `9000` | `/Users/autojenny/Documents/ai-hub` | `http://127.0.0.1:9000` (local only; not currently tunneled to public) | Active (listening; bound to `127.0.0.1`) |
 | PostgreSQL | `5432` | n/a | n/a | Active (listening on `127.0.0.1`) |
 | Cloudflare Tunnel local listeners | `20241`, `20242` | n/a (cloudflared) | n/a | Active (tunnel endpoints; not public) |
-| BlogForge unified_app.py (Flask) | `5000` | `/Users/autojenny/Documents/projects/blog` | n/a (not currently tunneled) | **Expected but currently not listening** |
+| BlogForge unified_app.py (Flask) | `5000` | `/Users/autojenny/Documents/projects/blog` | `http://127.0.0.1:5000` (local only) | Active (verified) |
 | Nginx | `80/443` | `/opt/homebrew/etc/nginx` | n/a | No listener detected (not currently serving) |
 | Ollama | `11434` | n/a | n/a | Active (local) |
 
@@ -57,9 +57,6 @@ Local Python/Node process:
 
 ## 3. The “Ghost” List (Orphans / Redundant UIs)
 
-1. **BlogForge unified_app expected server is not currently running**
-   - Expected by `start_blog.sh` / `start-production.sh`: `http://localhost:5000/health`
-   - Observed: no process listening on `:5000`
 2. **Multiple uvicorn processes on `:9000`**
    - Expected under `--reload` (PID footprint is redundant but functional)
 3. **Two cloudflared tunnels active simultaneously**
@@ -116,9 +113,18 @@ The audit did not find true orphaned services (everything listening is intention
 
 ## 7. Cockpit Readiness Implications (for your next step)
 - The fastest safe path to a “Unified Cockpit” is:
-  1. Re-introduce BlogForge at the expected `localhost:5000` (or route it explicitly)
-  2. Add Cockpit-level password/auth in the Cockpit layer (reverse proxy or in-app middleware)
-  3. Keep Cloudflare Tunnel ingress as the single public entry point
+  1. Keep BlogForge reachable at `localhost:5000` (verified) and route cockpit UI explicitly.
+  2. Add Cockpit-level password/auth in the Cockpit layer (reverse proxy or in-app middleware).
+  3. Keep Cloudflare Tunnel ingress as the single public entry point.
+
+### 7.1 Verified BlogForge startup command (Port 5000)
+From `/Users/autojenny/Documents/projects/blog`:
+```bash
+nohup ./venv/bin/python ./unified_app.py > ./unified_app.out 2>&1 &
+```
+Verified:
+- `curl -fsS http://127.0.0.1:5000/health` returns `200`
+- `curl -fsS http://127.0.0.1:5000/planning/calendar` returns `200`
 
 ## 8. Unified Cockpit (AI Hub) — Single Point of Entry Proposal
 

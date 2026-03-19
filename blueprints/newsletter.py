@@ -6,8 +6,12 @@ This file stays small (<100 LOC) and delegates to specialized modules.
 from flask import Blueprint
 import os, sys
 
-# Ensure the newsletter package (under blog-core/newsletter) is importable
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'blog-core'))
+# Ensure the newsletter package is importable.
+# The legacy implementation lives under `archives/legacy_services/blog-core/` after root triage.
+_ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+_candidate_1 = os.path.join(_ROOT_DIR, 'blog-core')
+_candidate_2 = os.path.join(_ROOT_DIR, 'archives', 'legacy_services', 'blog-core')
+sys.path.append(_candidate_1 if os.path.exists(_candidate_1) else _candidate_2)
 
 # Create main blueprint
 bp = Blueprint('newsletter', __name__)

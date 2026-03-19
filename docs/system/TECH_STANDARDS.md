@@ -33,3 +33,11 @@ This document codifies the "Gold Standard" technology framework so new projects 
 2. Pages should override only semantically relevant blocks (content/body/title/etc).
 3. Keep includes and blocks consistent so templates compose predictably across domains.
 
+## 4. Global Navigation Anchor
+
+**Rule:** All project UIs must feature the AI Hub logo at the far-left of the primary header, linking back to the Unified Cockpit root `http://localhost:9000/`.
+
+**Why:** This provides a universal "Home" state and reduces UI fragmentation for the sole operator.
+
+**Constraint:** The anchor must be a hard-link (single navigation target) and must not depend on the selected project state.
+
