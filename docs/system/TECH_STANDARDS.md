@@ -1,37 +1,39 @@
-# TECH_STANDARDS.md (Tech Stack v1)
+# TECH_STANDARDS.md (Tech Stack v2)
 
-**Generated:** 2026-03-18
+**Generated:** 2026-03-19
 **Owner:** Sole Operator (BlogForge / Unified Cockpit)
 
-This document codifies the "Gold Standard" technology framework so new projects do not drift into ad-hoc port + UI + template patterns.
+This document codifies the "Gold Standard" technology framework so multi-domain projects do not drift into ad-hoc architecture, schema leakage, or UI fragmentation.
 
-## 1. Logic Layer (Governed Backend Architecture)
+## 1. Platform Logic Layer (Governed Multi-Domain Architecture)
 
-**Standard:** Unified Flask using the **Application Factory Pattern** and **Blueprints**.
-
-**Rules:**
-1. All request logic for a project must live in a self-contained Blueprint (or a small set of Blueprints) registered into `unified_app.py`.
-2. Every new project (e.g., Legal Advice, Civil Law) must be implemented as a self-contained Blueprint so it can be enabled/disabled without cross-project coupling.
-3. Avoid direct logic edits in the root `unified_app.py` beyond Blueprint registration.
-
-## 2. Styling Layer (UI Consistency)
-
-**Standard:** **Tailwind CSS** (utility-first) is mandatory for layout and branding.
+**Standard:** Domain backends are modular and registry-driven.
 
 **Rules:**
-1. Prefer Tailwind utility classes for layout, spacing, typography, colors, and responsive behavior.
-2. Custom CSS should be minimal and only for edge cases that cannot be expressed cleanly via Tailwind utilities.
-3. New styles must remain compatible with existing theme variables and avoid introducing one-off “widget CSS”.
+1. Project identity (`project_id`) is the canonical partition key for retrieval, memory, threads, and orchestration.
+2. Every project must be explicitly registered in the platform project registry before it is selectable in AI Hub.
+3. Domain services must remain modular (Blueprints/modules per domain) and avoid cross-domain table coupling.
+4. Avoid direct logic edits in root entry files beyond service/module registration and configuration wiring.
 
-## 3. Template Layer (Semantic Jinja2)
+## 2. UI Layer (Consistency Across Domains)
 
-**Standard:** Semantic Jinja2 with a strict inheritance model:
-`base.html` -> `layout.html` -> `page.html`
+**Standard:** Tailwind CSS (utility-first) is the baseline UI standard for new interfaces.
 
 **Rules:**
-1. Page templates must extend `layout.html` (not `base.html`) unless a framework-wide exception is approved.
-2. Pages should override only semantically relevant blocks (content/body/title/etc).
-3. Keep includes and blocks consistent so templates compose predictably across domains.
+1. Prefer Tailwind utility classes for layout, spacing, typography, colors, and responsive behavior in newly built screens.
+2. Existing legacy CSS may be retained for stability, but new work should trend toward utility-first patterns.
+3. Custom CSS should be minimal and reserved for edge cases that cannot be expressed cleanly via utility classes.
+4. New styles must remain compatible with shared theme variables and avoid one-off widget-specific drift.
+
+## 3. Template Layer (Semantic Composition)
+
+**Standard:** Semantic templating with strict inheritance and predictable block contracts.
+
+**Rules:**
+1. For Flask/Jinja domains, follow `base.html` -> `layout.html` -> `page.html`.
+2. For non-Jinja domains, enforce equivalent parent/child layout contracts.
+3. Pages should override only semantically relevant blocks.
+4. Keep includes and block naming consistent so templates compose predictably across domains.
 
 ## 4. Global Navigation Anchor
 
@@ -40,4 +42,24 @@ This document codifies the "Gold Standard" technology framework so new projects 
 **Why:** This provides a universal "Home" state and reduces UI fragmentation for the sole operator.
 
 **Constraint:** The anchor must be a hard-link (single navigation target) and must not depend on the selected project state.
+
+## 5. Data and Recovery Standards (Post-Renaissance)
+
+**Database Standard:** PostgreSQL @17 is the canonical operational target.
+
+**Rules:**
+1. No SQLite adoption for production workflows.
+2. Schema additions require explicit approval before implementation.
+3. Backups must use custom binary dumps (`pg_dump -Fc`) as the default recovery artifact.
+4. Recovery operations must produce verifiable row-count audits for critical tables.
+
+## 6. Future-Proofing: AI Hub as Research Facility
+
+**Position:** AI Hub is not only a chat surface; it is the project-aware research control plane.
+
+**Rules:**
+1. AI Hub must expose both System Knowledge and Domain Knowledge lanes.
+2. Research outputs should be evidence-backed, traceable, and reusable by downstream lifecycle phases.
+3. Project switching must preserve strict context isolation and deterministic retrieval boundaries.
+4. Architecture and standards docs must be updated whenever platform behavior changes materially.
 
