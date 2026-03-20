@@ -51,6 +51,10 @@ def create_app(config_name=None):
     # Register posts management blueprint (consolidated post listing and status management)
     from blueprints.posts import bp as posts_bp
     app.register_blueprint(posts_bp)
+
+    # Register germination (Seed-to-Brief) studio UI
+    from blueprints.germination_studio import bp as germination_bp
+    app.register_blueprint(germination_bp)
     
     # Register modular launchpad blueprints
     from blueprints.launchpad import bp as launchpad_bp
