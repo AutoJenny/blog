@@ -1,0 +1,48 @@
+<style>
+    @import url("http://localhost:9000/static/css/styles.css");
+</style>
+
+<header class="top-bar">
+    <div class="top-bar-left">
+        <a
+            href="http://localhost:9000/"
+            class="hub-home-link"
+            aria-label="AI Hub Home"
+            style="display:flex; align-items:center; justify-content:center; text-decoration:none;"
+        >
+            <img
+                src="http://localhost:9000/static/aihub-icon.svg"
+                class="site-logo"
+                alt="Hub"
+                style="width:20px; height:20px;"
+            />
+        </a>
+        <span class="app-title" style="font-size:0.92rem;">AI Hub</span>
+        <nav class="nav-links">
+            <a href="http://localhost:9000/">Dashboard</a>
+            <a href="http://localhost:9000/research">Research</a>
+            <a href="http://localhost:9000/archive">Archive</a>
+            <a href="http://localhost:9000/git">Git</a>
+            <a href="http://localhost:9000/escalations">Escalations</a>
+        </nav>
+    </div>
+    <div class="top-bar-right">
+        <label for="project-select">Project:</label>
+        <select id="project-select">
+            <option value="blog" selected>BlogForge</option>
+        </select>
+        <a
+            id="project-site-bridge"
+            class="project-site-bridge"
+            href="http://localhost:5000/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Project Site Bridge"
+            title="Open selected project site"
+        >
+            <span class="bridge-icon" aria-hidden="true">↗</span>
+        </a>
+        <span id="model-display" class="model-display"></span>
+    </div>
+</header>
+

@@ -27,12 +27,13 @@
     <!-- Dark Theme Styles (moved to shared CSS includes to avoid overrides) -->
 </head>
 <body>
+    {% include 'includes/_global_header.html' %}
     {# Phase 4: Mount channel preview modal at top level under <body> #}
     {% include 'includes/channel_preview_modal.html' %}
 
     <!-- Navigation -->
     {% block navigation %}
-        {% include 'shared/header.html' %}
+        {% include 'includes/_header_nav.html' %}
     {% endblock %}
     
     <!-- Main Content -->
